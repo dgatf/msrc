@@ -67,4 +67,4 @@ It has to be measured without blades at full throttle (disable governor). Then a
 
 ## Flash to Arduino
 
-If using Arduino IDE create a folder 'rpm_vol_sensor' and copy the files from the folder in src. Select Arduino Nano and flash it
+If using Arduino IDE create a folder 'rpm_volt_sensor' and copy the files from the folder in src. Select Arduino Nano and flash it
