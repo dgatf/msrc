@@ -1,14 +1,43 @@
-# HW ESC RPM telemetry to smartport
+# ESC RPM telemetry to Smartport
 
-The Hobbywing ESC Platinum V3 has a digital output for the RPM but needs to be converted to the smartport protocol. To send the RPM over the smartport I've made a converter with an Arduino Nano which also sends the battery voltage
+The Hobbywing ESC Platinum V3 has a digital output for the RPM but needs to be converted to Smartport protocol (FrSky). To send the RPM over the smartport I've made a converter with an Arduino Nano which also sends the battery voltage
 
-Either RPM digital out or PWM signal can be used. Digital signal does not need to be calibrated but is specific for Hobbywing protocol. PWM signal can be from any ESC which has this output but the RPM value needs to be calibrated. To use the PWM signal from the ESC comment the sketch line #define ESC_DIGITAL
+## ESC telemetry
 
-The Arduino reads the battery voltage with a voltage divider and send it as VFAT sensor
+Either RPM digital out or PWM signal can be used. The signal is send to Smartport as RPM sensor
 
-Also it is possible to read the lipo voltage with and op amp like the TL084. To use an op amp uncomment the sketch line #define BATT_SENSOR_CELLS and plug the readings from the op amp to A1, A2 and A3 on the Arduino. Readings are send as CELLS sensor
+- Digital signal does not need to be calibrated but only Hobbywing protocol is implemented (other protocols can be implemented)
+- PWM signal can be from any ESC which has this output. The RPM value needs to be calibrated. To use the PWM signal from the ESC comment the sketch line #define ESC_DIGITAL
 
-The wiring is (with voltage divider):
+## Battery voltage
+
+The battery voltage can be measured with a voltage divider (total voltage) or individual cells with a TL084 
+
+- Voltage divider needs to be calibrated in Opentx with multiplier in VFAT sensor
+- Individual cells can measured with an op amp like TL084. Then uncomment line #define BATT_SENSOR_CELLS 
+
+If voltage measurement is not needed comment line #define BATT_SENSOR_VOLT
+
+## Voltage divider circuit
+
+Metal resistors are recommended as gives more accurate readings and 0.1W or more
+Arduino can read up to 5V and is optimized for readings inputs with signal impedance of 10K
+
+To select R values apply formulas: 
+
+Vo=Vi*R2/(R1+R2)<5V
+Z=1/((1/R1)+(1/R2))<10K
+
+image
+
+For 3S battery you can choose :
+
+- R1 22K
+- R2 12K
+
+For more than 3S change R values or you may burn the Arduino!
+
+## wiring is (with voltage divider):
 
 - ESC Vcc to Arduino Vcc
 - ESC Gnd to Arduino Gnd
@@ -17,17 +46,18 @@ The wiring is (with voltage divider):
 - Voltage divider + to A4
 - Voltage divider - to GND
 
-For the voltage divider and using up to 3S battery:
+## Adjusting RPM value
 
-- R1 22K
-- R2 12K
+If using digital RPM and leaving POLES 1 in the code, adjust RPM sensor in Opentx:
 
-For more than 3S change R values or you may burn your Arduino!
+- Blades/poles: number of pair of poles * main gear teeth
+- Multiplies: pinion gear teeth
 
-If you leave POLES 1 in the sketch, then adjust RPM sensor in Opentx:
+If using PWM, signal needs to be calibrated with a tachometer
 
-Blades/poles: number of pair of poles * main gear teeth
-Multiplies: pinion gear teeth
+Altough max rotor speed can be estimated with the formula: 
 
-Head speed can be estimated by the formula: HS =(pack voltage x motor kv)/(main gear/pinion)
-Then apply efficiency factor of 90%
+HS =(pack voltage x motor kv)/(main gear/pinion)
+Then apply an efficiency factor of 90%
+
+It has to be measured without blades at full throttle (disable governor). Then adjust the value in Opentx with the divisor Poles/blades in RPM sensor
