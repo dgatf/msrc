@@ -56,9 +56,7 @@ If using digital RPM and leaving POLES 1 in the code, adjust RPM sensor in Opent
 - Blades/poles: number of pair of poles * main gear teeth  
 - Multiplies: pinion gear teeth
 
-If using PWM, signal needs to be calibrated with a tachometer
-
-Altough max head speed can be estimated with the formula: 
+If using PWM, signal needs to be calibrated with a tachometer. Although max head speed can be estimated with the formula: 
 
 Head speed =(pack voltage * motor kv)/(main gear/pinion) 
 Then apply an efficiency factor of 90%
