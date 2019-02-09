@@ -30,7 +30,7 @@ To select R values apply formulas:
 
 ![Image](./images/Resistive_divider.png?raw=true)
 
-For 3S battery you can choose :
+For 3S battery:
 
 - R1 22K
 - R2 12K
