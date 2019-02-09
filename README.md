@@ -58,9 +58,9 @@ If using digital RPM and leaving POLES 1 in the code, adjust RPM sensor in Opent
 
 If using PWM, signal needs to be calibrated with a tachometer
 
-Altough max rotor speed can be estimated with the formula: 
+Altough max head speed can be estimated with the formula: 
 
-HS =(pack voltage x motor kv)/(main gear/pinion)
+Head speed =(pack voltage * motor kv)/(main gear/pinion)
 Then apply an efficiency factor of 90%
 
 It has to be measured without blades at full throttle (disable governor). Then adjust the value in Opentx with the divisor Poles/blades in RPM sensor
