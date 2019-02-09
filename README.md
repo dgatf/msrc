@@ -25,8 +25,8 @@ Arduino can read up to 5V and is optimized for readings inputs with signal imped
 
 To select R values apply formulas: 
 
-Vo=Vi*R2/(R1+R2)<5V  
-Z=1/((1/R1)+(1/R2))<10K
+*Vo=Vi\*R2/(R1+R2)<5V*  
+*Z=1/((1/R1)+(1/R2))<10K*
 
 ![Image](./images/Resistive_divider.png?raw=true)
 
@@ -58,7 +58,7 @@ If using digital RPM and leaving POLES 1 in the code, adjust RPM sensor in Opent
 
 If using PWM, signal needs to be calibrated with a tachometer. Although max head speed can be estimated with the formula: 
 
-Head speed =(pack voltage * motor kv)/(main gear/pinion) 
+*Head speed =(pack voltage \* motor kv)/(main gear/pinion)* 
 Then apply an efficiency factor of 90%
 
 It has to be measured without blades at full throttle (disable governor). Then adjust the value in Opentx with the divisor Poles/blades in RPM sensor
