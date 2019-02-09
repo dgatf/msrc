@@ -1,6 +1,6 @@
 # ESC RPM telemetry to Smartport
 
-The Hobbywing ESC Platinum V3 has a digital output for the RPM but needs to be converted to Smartport protocol (FrSky). To send the RPM over the smartport I've made a converter with an Arduino Nano which also sends the battery voltage
+Any PWM signal from ESC or sensor can be sent to Smartport to get the head speed RPM of your RC heli (also suitable for drones or planes) on your receiver. Some ESCs have also a digital out that provides more accurate values, like the Hobbywing ESC Platinum V3. This values can be converted to Smartport protocol (FrSky) with an Arduino Nano
 
 ## ESC telemetry
 
@@ -11,7 +11,7 @@ Either RPM digital out or PWM signal can be used. The signal is sent to Smartpor
 
 ## Battery voltage
 
-The battery voltage can be measured with a voltage divider (total voltage) or individual cells with a TL084 
+The Nano can be used also to measure th0e battery voltage. This can be done with a voltage divider (total voltage) or individual cells with a TL084
 
 - Voltage divider needs to be calibrated in Opentx with multiplier in VFAT sensor
 - Individual cells can measured with an op amp like TL084. Then uncomment line #define BATT_SENSOR_CELLS 
@@ -60,7 +60,7 @@ If using PWM, signal needs to be calibrated with a tachometer
 
 Altough max head speed can be estimated with the formula: 
 
-Head speed =(pack voltage * motor kv)/(main gear/pinion)
+Head speed =(pack voltage * motor kv)/(main gear/pinion) 
 Then apply an efficiency factor of 90%
 
 It has to be measured without blades at full throttle (disable governor). Then adjust the value in Opentx with the divisor Poles/blades in RPM sensor
