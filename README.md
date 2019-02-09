@@ -64,3 +64,7 @@ Head speed =(pack voltage * motor kv)/(main gear/pinion)
 Then apply an efficiency factor of 90%
 
 It has to be measured without blades at full throttle (disable governor). Then adjust the value in Opentx with the divisor Poles/blades in RPM sensor
+
+## Flash to Arduino
+
+If using Arduino IDE create a folder 'rpm_vol_sensor' and copy the files from the folder in src. Select Arduino Nano and flash it
