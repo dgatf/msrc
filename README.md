@@ -49,6 +49,8 @@ For more than 3S change R values or you may burn the Arduino!
 ![Image](./images/nano1.jpg?raw=true)
 ![Image](./images/nano2.jpg?raw=true)
 
+[Video](https://youtu.be/q-e1SoEPNao"]https://youtu.be/q-e1SoEPNao)
+
 ## Adjusting RPM value
 
 If using digital RPM and leaving POLES 1 in the code, adjust RPM sensor in Opentx:
