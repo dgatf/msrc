@@ -49,8 +49,6 @@ For more than 3S change R values or you may burn the Arduino!
 ![Image](./images/nano1.jpg?raw=true)
 ![Image](./images/nano2.jpg?raw=true)
 
-# [Youtube video](https://youtu.be/q-e1SoEPNao)
-
 ## Adjusting RPM value
 
 If using digital RPM and leaving POLES 1 in the code, adjust RPM sensor in Opentx:
@@ -70,3 +68,5 @@ It has to be measured without blades at full throttle (disable governor). Then a
 ## Flash to Arduino
 
 If using Arduino IDE create a folder 'rpm_volt_sensor' and copy the files from the folder in src. Select Arduino Nano and flash it
+
+# [Youtube video](https://youtu.be/q-e1SoEPNao)
