@@ -46,6 +46,7 @@ For more than 3S change R values or you may burn the Arduino!
 - Voltage divider + to A4
 - Voltage divider - to GND
 
+<img src="./images/rmp_bb.png" width="400">
 <img src="./images/nano1.jpg" width="400">
 <img src="./images/nano2.jpg" width="400">
 
