@@ -4,7 +4,7 @@ The Hobbywing ESC Platinum V3 has a digital output for the RPM but needs to be c
 
 ## ESC telemetry
 
-Either RPM digital out or PWM signal can be used. The signal is send to Smartport as RPM sensor
+Either RPM digital out or PWM signal can be used. The signal is sent to Smartport as RPM sensor
 
 - Digital signal does not need to be calibrated but only Hobbywing protocol is implemented (other protocols can be implemented)
 - PWM signal can be from any ESC which has this output. The RPM value needs to be calibrated. To use the PWM signal from the ESC comment the sketch line #define ESC_DIGITAL
