@@ -1,6 +1,6 @@
 # ESC RPM telemetry to Smartport
 
-Any PWM signal from ESC or sensor can be sent to Smartport to get the head speed RPM of your RC heli (also suitable for drones or planes) on your receiver. Some ESCs have also a digital out that provides more accurate values, like the Hobbywing ESC Platinum V3. This values can be converted to Smartport protocol (FrSky) with an Arduino Nano
+The PWM or digital signal from ESC can be sent to Smartport and sent to the receiver. An Arduino Nano can convert this signal to Smartport protocol (FrSky)
 
 ## ESC telemetry
 
