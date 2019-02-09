@@ -28,7 +28,7 @@ To select R values apply formulas:
 Vo=Vi*R2/(R1+R2)<5V
 Z=1/((1/R1)+(1/R2))<10K
 
-image
+![Image](./images/Resistive_divider.png?raw=true)
 
 For 3S battery you can choose :
 
