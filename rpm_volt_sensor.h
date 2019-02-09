@@ -42,7 +42,6 @@
 #define VOLT_QUEUE_SIZE 20
 
 #include <Arduino.h>
-#include <Queue.h>
 #include <SoftwareSerial.h>
 
 void queueInit();
@@ -60,3 +59,71 @@ void readCell(float &cell1, float &cell2, float &cell3);
 float readVolt();
 void setup();
 void loop();
+
+template <typename T>
+class Queue {
+	class Node {
+	public:
+		T item;
+		Node* next;
+		Node() {
+			next = NULL;
+		}
+		~Node() {
+			next = NULL;
+		}
+	};
+	Node* head;
+	Node* tail;
+public:
+	Queue() {
+		head = NULL;
+		tail = NULL;
+	}
+
+	~Queue() {
+		for (Node* node = head; node != NULL; node = head) {
+			head = node->next;
+			delete node;
+		}
+	}
+
+	bool enqueue(T item) {
+		Node* node = new Node;
+		if (node == NULL) {
+			return false;
+		}
+		node->item = item;
+		if (head == NULL) {
+			head = node;
+			tail = node;
+			return true;
+		}
+		tail->next = node;
+		tail = node;
+		return true;
+	}
+
+	T dequeue() {
+		if (head == NULL) {
+			return T();
+		}
+		Node* node = head;
+		head = node->next;
+		T item = node->item;
+		delete node;
+		node = NULL;
+		if (head == NULL) {
+			tail = NULL;
+		}
+		return item;
+	}
+
+	T front() {
+		if (head == NULL) {
+			return T();
+		}
+		T item = head->item;
+		return item;
+	}
+};
