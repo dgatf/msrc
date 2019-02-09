@@ -28,3 +28,6 @@ If you leave POLES 1 in the sketch, then adjust RPM sensor in Opentx:
 
 Blades/poles: number of pair of poles * main gear teeth
 Multiplies: pinion gear teeth
+
+Head speed can be estimated by the formula: HS =(pack voltage x motor kv)/(main gear/pinion)
+Then apply efficiency factor of 90%
