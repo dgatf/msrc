@@ -36,10 +36,10 @@
 #define PIN_BATT A4
 #define CELLS 3
 #define ESC_DIGITAL
-#define BATT_SENSOR_CELLS
+//#define BATT_SENSOR_CELLS
 #define BATT_SENSOR_VOLT
-#define RPM_QUEUE_SIZE 3
-#define VOLT_QUEUE_SIZE 5
+#define RPM_QUEUE_SIZE 20
+#define VOLT_QUEUE_SIZE 20
 
 #include <Arduino.h>
 #include <Queue.h>

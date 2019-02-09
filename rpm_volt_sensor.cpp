@@ -135,18 +135,22 @@ void sendRpm(float rpm) {
 }
 
 float escDigitalRead() {
-  uint8_t data[10];
   escSerial.listen();
-  escSerial.setTimeout(20);
-  escSerial.find(155);
-  uint8_t cont = escSerial.readBytes(data, 10);
-  if (cont == 10 and data[4] == 0 and data[6] == 0) {
-    uint16_t rpmCycle = data[8] << 8 | data[9];
-    return 6e7 / ((float)rpmCycle * POLES);
-  } else if (cont == 0)
+  delay(20);
+  escSerial.setTimeout(10);
+  if (escSerial.available() >= 10) {
+    escSerial.find(155);
+    uint8_t data[10];
+    uint8_t cont = escSerial.readBytesUntil(155, data, 10);
+    if (cont == 10 and data[4] == 0 and data[6] == 0) {
+      uint16_t rpmCycle = data[8] << 8 | data[9];
+      return 6e7 / ((float)rpmCycle * POLES);
+    } else {
+      return; // error
+    }
+  } else {
     return 0;
-  else
-    return 0;
+  }
 }
 
 void escPwmRead(float &rpm) {
@@ -175,29 +179,26 @@ void setup() {
   pinMode(PIN_CELL2, INPUT);
   pinMode(PIN_CELL3, INPUT);
 #else
-  pinMode(PIN_BATT, INPUT);
+  pinMode(PIN_BATT,
+ INPUT);
 #endif
   smartportSerial.begin(57600);
 #ifdef ESC_DIGITAL
   escSerial.begin(19200);
 #endif
-  Serial.begin(19200);
-  while (!Serial) {
-  }
-  Serial.println("Inicio");
   queueInit();
 }
 
 void loop() {
   float rpm;
-  #ifdef ESC_DIGITAL
-    rpm=escDigitalRead();
-  #else
-    rpm=escPwmRead();
-  #endif
+#ifdef ESC_DIGITAL
+  rpm = escDigitalRead();
+#else
+  rpm = escPwmRead();
+#endif
   queueRpm.enqueue(rpm);
   avRpm += rpm - queueRpm.front();
-  sendVolt(avRpm / RPM_QUEUE_SIZE);
+  sendRpm(avRpm / RPM_QUEUE_SIZE);
   queueRpm.dequeue();
 
 #ifdef BATT_SENSOR_CELLS
@@ -213,5 +214,6 @@ void loop() {
   avVolt += volt - queueVolt.front();
   sendVolt(avVolt / VOLT_QUEUE_SIZE);
   queueVolt.dequeue();
+  // Serial.println(avVolt / VOLT_QUEUE_SIZE);
 #endif
 }
