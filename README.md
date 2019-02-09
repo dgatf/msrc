@@ -69,8 +69,7 @@ It has to be measured without blades at full throttle (disable governor). Then a
 
 The values sent to Smartport are averaged with 20 readings. This can be adjusted with:
 
-#define RPM_QUEUE_SIZE 20
-
+#define RPM_QUEUE_SIZE 20  
 #define VOLT_QUEUE_SIZE 20
 
 ## Flash to Arduino
