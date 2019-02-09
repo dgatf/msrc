@@ -7,16 +7,16 @@ Any PWM signal from ESC or sensor can be sent to Smartport to get the head speed
 Either RPM digital out or PWM signal can be used. The signal is sent to Smartport as RPM sensor
 
 - Digital signal does not need to be calibrated but only Hobbywing protocol is implemented (other protocols can be implemented)
-- PWM signal can be from any ESC which has this output. The RPM value needs to be calibrated. To use the PWM signal from the ESC comment the sketch line #define ESC_DIGITAL
+- PWM signal can be from any ESC which has this output. The RPM value needs to be calibrated. To use the PWM signal from the ESC comment the sketch line *#define ESC_DIGITAL*
 
 ## Battery voltage
 
 The Nano can be used also to measure th0e battery voltage. This can be done with a voltage divider (total voltage) or individual cells with a TL084
 
 - Voltage divider needs to be calibrated in Opentx with multiplier in VFAT sensor
-- Individual cells can measured with an op amp like TL084. Then uncomment line #define BATT_SENSOR_CELLS 
+- Individual cells can measured with an op amp like TL084. Then uncomment line *#define BATT_SENSOR_CELLS* 
 
-If voltage measurement is not needed comment line #define BATT_SENSOR_VOLT
+If voltage measurement is not needed comment line *#define BATT_SENSOR_VOLT*
 
 ## Voltage divider circuit
 
@@ -67,8 +67,8 @@ It has to be measured without blades at full throttle (disable governor). Then a
 
 The values sent to Smartport are averaged with 20 readings. This can be adjusted with:
 
-#define RPM_QUEUE_SIZE 20  
-#define VOLT_QUEUE_SIZE 20
+*#define RPM_QUEUE_SIZE 20  
+#define VOLT_QUEUE_SIZE 20*
 
 ## Flash to Arduino
 
