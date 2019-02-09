@@ -67,7 +67,7 @@ It has to be measured without blades at full throttle (disable governor). Then a
 
 ## Values average
 
-The values are averaged with 50 readings. This can be changed with:
+The values are averaged with 20 readings. This can be changed with:
 
 #define RPM_QUEUE_SIZE 20
 #define VOLT_QUEUE_SIZE 20
