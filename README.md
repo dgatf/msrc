@@ -37,7 +37,7 @@ For 3S battery you can choose :
 
 For more than 3S change R values or you may burn the Arduino!
 
-## wiring is (with voltage divider):
+## Wiring (with voltage divider):
 
 - ESC Vcc to Arduino Vcc
 - ESC Gnd to Arduino Gnd
@@ -45,6 +45,9 @@ For more than 3S change R values or you may burn the Arduino!
 - Receiver smartport to Arduino 8
 - Voltage divider + to A4
 - Voltage divider - to GND
+
+![Image](./images/nano1.jpg?raw=true)
+![Image](./images/nano2.jpg?raw=true)
 
 ## Adjusting RPM value
 
