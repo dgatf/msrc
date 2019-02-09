@@ -1,6 +1,6 @@
-# ESC rpm telemetry to smartport
+# HW ESC RPM telemetry to smartport
 
-The hobbywing ESC Platinum V3 has a digital output for the RPM but needs to be converted to the smartport protocol. To send the RPM over the smartport I've made a converter with an Arduino Nano which also sends the battery voltage
+The Hobbywing ESC Platinum V3 has a digital output for the RPM but needs to be converted to the smartport protocol. To send the RPM over the smartport I've made a converter with an Arduino Nano which also sends the battery voltage
 
 Either RPM digital out or PWM signal can be used. Digital signal does not need to be calibrated but is specific for Hobbywing protocol. PWM signal can be from any ESC which has this output but the RPM value needs to be calibrated. To use the PWM signal from the ESC comment the sketch line #define ESC_DIGITAL
 
