@@ -53,7 +53,7 @@ For more than 3S change R values or you may burn the Arduino!
 
 If using digital RPM and leaving POLES 1 in the code, adjust RPM sensor in Opentx:
 
-- Blades/poles: number of pair of poles * main gear teeth
+- Blades/poles: number of pair of poles * main gear teeth  
 - Multiplies: pinion gear teeth
 
 If using PWM, signal needs to be calibrated with a tachometer
