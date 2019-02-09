@@ -6,7 +6,7 @@ Either RPM digital out or PWM signal can be used. Digital signal does not need t
 
 The Arduino reads the battery voltage with a voltage divider and send it as VFAT sensor
 
-Also it is possible to read the lipo voltage with and op amp like the TL084 (I made the code but not tested). To use an op amp uncomment the sketch line #define BATT_SENSOR_CELLS and plug the readings from the op amp to A1, A2 and A3 on the Arduino. Readings are send as CELLS sensor
+Also it is possible to read the lipo voltage with and op amp like the TL084. To use an op amp uncomment the sketch line #define BATT_SENSOR_CELLS and plug the readings from the op amp to A1, A2 and A3 on the Arduino. Readings are send as CELLS sensor
 
 The wiring is (with voltage divider):
 
