@@ -25,7 +25,7 @@ Arduino can read up to 5V and is optimized for readings inputs with signal imped
 
 To select R values apply formulas: 
 
-Vo=Vi*R2/(R1+R2)<5V 
+Vo=Vi*R2/(R1+R2)<5V  
 Z=1/((1/R1)+(1/R2))<10K
 
 ![Image](./images/Resistive_divider.png?raw=true)
