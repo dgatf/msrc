@@ -75,6 +75,6 @@ The values sent to Smartport are averaged with 20 readings. This can be adjusted
 
 ## Flash to Arduino
 
-If using Arduino IDE create a folder 'rpm_volt_sensor' and copy the files from the folder in src. Select Arduino Nano and flash it
+If using Arduino IDE copy folder 'rpm_volt_sensor' and open rpm_volt_sensor.ino. Select Arduino Nano and flash it
 
 # [Youtube video](https://youtu.be/q-e1SoEPNao)
