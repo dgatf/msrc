@@ -65,6 +65,13 @@ Then apply an efficiency factor of 90%
 
 It has to be measured without blades at full throttle (disable governor). Then adjust the value in Opentx with the divisor Poles/blades in RPM sensor
 
+## Values average
+
+The values are averaged with 50 readings. This can be changed with:
+
+#define RPM_QUEUE_SIZE 20
+#define VOLT_QUEUE_SIZE 20
+
 ## Flash to Arduino
 
 If using Arduino IDE create a folder 'rpm_volt_sensor' and copy the files from the folder in src. Select Arduino Nano and flash it
