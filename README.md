@@ -1,6 +1,6 @@
 # ESC RPM telemetry to Smartport
 
-The PWM or digital signal from ESC can be converted to Smartport and sent to the receiver. An Arduino Nano can convert this signal to Smartport protocol (FrSky)
+The PWM or digital signal from ESC can be converted to Smartport and send to the receiver. An Arduino Nano can convert this signal to Smartport protocol (FrSky)
 
 ## ESC telemetry
 
