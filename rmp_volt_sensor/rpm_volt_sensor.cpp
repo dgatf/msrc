@@ -15,8 +15,10 @@ SoftwareSerial escSerial(PIN_ESC, PIN_ESC);
 void queueInit() {
   for (int8_t i = 0; i < RPM_QUEUE_SIZE; i++)
     queueRpm.enqueue(0);
+#ifdef BATT_SENSOR_VOLT
   for (int8_t i = 0; i < VOLT_QUEUE_SIZE; i++)
     queueVolt.enqueue(0);
+#endif
 }
 
 void sendByte(uint8_t c, uint16_t *crcp) {
@@ -146,18 +148,19 @@ float escDigitalRead() {
       uint16_t rpmCycle = data[8] << 8 | data[9];
       return 6e7 / ((float)rpmCycle * POLES);
     } else {
-      return; // error
+      return -1; // error
     }
   } else {
     return 0;
   }
 }
 
-void escPwmRead(float &rpm) {
+float escPwmRead() {
   uint16_t pwm_value = pulseIn(PIN_ESC, HIGH);
   if (pwm_value != 0) {
-    rpm = (float)100000000 / pwm_value;
-  }
+    return (float)100000000 / pwm_value;
+  } else
+    return 0;
 }
 
 void readCell(float &cell1, float &cell2, float &cell3) {
@@ -179,8 +182,7 @@ void setup() {
   pinMode(PIN_CELL2, INPUT);
   pinMode(PIN_CELL3, INPUT);
 #else
-  pinMode(PIN_BATT,
- INPUT);
+  pinMode(PIN_BATT, INPUT);
 #endif
   smartportSerial.begin(57600);
 #ifdef ESC_DIGITAL

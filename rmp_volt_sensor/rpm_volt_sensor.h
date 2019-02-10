@@ -37,7 +37,7 @@
 #define CELLS 3
 #define ESC_DIGITAL
 //#define BATT_SENSOR_CELLS
-#define BATT_SENSOR_VOLT
+//#define BATT_SENSOR_VOLT
 #define RPM_QUEUE_SIZE 20
 #define VOLT_QUEUE_SIZE 20
 
@@ -54,7 +54,7 @@ void sendVolt(float volt);
 void sendCell(float cell1, float cell2, float cell3);
 void sendRpm(float rpm);
 float escDigitalRead();
-void escPwmRead(float &rpm);
+float escPwmRead();
 void readCell(float &cell1, float &cell2, float &cell3);
 float readVolt();
 void setup();
