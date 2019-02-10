@@ -20,7 +20,7 @@ If voltage measurement is not needed comment line *#define BATT_SENSOR_VOLT*
 
 ## Voltage divider circuit
 
-Metal resistors are recommended as gives more accurate readings and 0.1W or more
+Metal resistors are recommended as gives more accurate readings and 0.1W or more  
 Arduino can read up to 5V and is optimized for readings inputs with signal impedance of 10K
 
 To select R values apply formulas: 
