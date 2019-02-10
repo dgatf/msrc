@@ -1,27 +1,27 @@
 # ESC RPM telemetry to Smartport
 
-The PWM or digital signal from ESC can be converted to Smartport and send to the receiver. An Arduino Nano can convert this signal to Smartport protocol (FrSky)
+Newer ESCs outputs telemetry data by PWM or digital signal that can be converted to Smartport and send to the receiver. An Arduino Nano can do this conversion
 
 ## ESC telemetry
 
 Either RPM digital out or PWM signal can be used. The signal is sent to Smartport as RPM sensor
 
-- Digital signal does not need to be calibrated (for now only Hobbywing protocol is implemented. Other protocols can be implemented)
+- Digital signal does not need to be calibrated. Only Hobbywing protocol is implemented. Other protocols may be implemented
 - PWM signal can be from any ESC which has this output. The RPM value needs to be calibrated. To use the PWM signal from the ESC comment the sketch line *#define ESC_DIGITAL*
 
 ## Battery voltage
 
-The Nano can be used also to measure th0e battery voltage. This can be done with a voltage divider (total voltage) or individual cells with a TL084
+The Nano can be used also to measure the battery voltage. This can be done with a voltage divider (total voltage) or individual cells with a TL084
 
 - Voltage divider needs to be calibrated in Opentx with multiplier in VFAT sensor
-- Individual cells can measured with an op amp like TL084. Then uncomment line *#define BATT_SENSOR_CELLS* 
+- Individual cells can measured with an op amp like TL084. Then uncomment line *#define BATT_SENSOR_CELLS* . Values are sent as CELL sensor
 
 If voltage measurement is not needed comment line *#define BATT_SENSOR_VOLT*
 
 ## Voltage divider circuit
 
 Metal resistors are recommended as gives more accurate readings and 0.1W or more  
-Arduino can read up to 5V and is optimized for readings inputs with signal impedance of 10K
+Arduino can read up to 5V and is optimized for signal inputs with 10K impedance 
 
 To select R values apply formulas: 
 
@@ -35,7 +35,7 @@ For 3S battery:
 - R1 22K
 - R2 12K
 
-For more than 3S change R values or you may burn the Arduino!
+If more than 3S change R values or you may burn the Arduino!
 
 ## Wiring (with voltage divider):
 
@@ -52,7 +52,7 @@ For more than 3S change R values or you may burn the Arduino!
 
 ## Adjusting RPM value
 
-If using digital RPM and leaving POLES 1 in the code, adjust RPM sensor in Opentx:
+If using digital RPM and leaving POLES 1 in the code, adjust RPM sensor in Opentx as follows:
 
 - Blades/poles: number of pair of poles * main gear teeth  
 - Multiplies: pinion gear teeth
