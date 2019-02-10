@@ -169,7 +169,8 @@ void setup() {
   pinMode(PIN_CELL1, INPUT);
   pinMode(PIN_CELL2, INPUT);
   pinMode(PIN_CELL3, INPUT);
-#else
+#endif
+#ifdef BATT_SENSOR_VOLT
   pinMode(PIN_BATT, INPUT);
 #endif
   smartportSerial.begin(57600);
