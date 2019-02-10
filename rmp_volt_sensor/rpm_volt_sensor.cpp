@@ -1,17 +1,5 @@
 #include "rpm_volt_sensor.h"
 
-Queue<uint32_t> queueRpm;
-float avRpm = 0;
-#ifdef BATT_SENSOR_VOLT
-Queue<float> queueVolt;
-float avVolt = 0;
-#endif
-SoftwareSerial smartportSerial(PIN_SMARTPORT, PIN_SMARTPORT, true);
-
-#ifdef ESC_DIGITAL
-SoftwareSerial escSerial(PIN_ESC, PIN_ESC);
-#endif
-
 void queueInit() {
   for (int8_t i = 0; i < RPM_QUEUE_SIZE; i++)
     queueRpm.enqueue(0);
@@ -136,7 +124,7 @@ void sendRpm(float rpm) {
   }
 }
 
-float escDigitalRead() {
+float escDigitalRead(SoftwareSerial &escSerial) {
   escSerial.listen();
   delay(20);
   escSerial.setTimeout(10);
@@ -194,7 +182,7 @@ void setup() {
 void loop() {
   float rpm;
 #ifdef ESC_DIGITAL
-  rpm = escDigitalRead();
+  rpm = escDigitalRead(escSerial);
 #else
   rpm = escPwmRead();
 #endif

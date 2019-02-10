@@ -37,7 +37,7 @@
 #define CELLS 3
 #define ESC_DIGITAL
 //#define BATT_SENSOR_CELLS
-//#define BATT_SENSOR_VOLT
+#define BATT_SENSOR_VOLT
 #define RPM_QUEUE_SIZE 20
 #define VOLT_QUEUE_SIZE 20
 
@@ -53,7 +53,7 @@ uint32_t lipoCell(uint8_t id, float val);
 void sendVolt(float volt);
 void sendCell(float cell1, float cell2, float cell3);
 void sendRpm(float rpm);
-float escDigitalRead();
+float escDigitalRead(SoftwareSerial &escSerial);
 float escPwmRead();
 void readCell(float &cell1, float &cell2, float &cell3);
 float readVolt();
@@ -127,3 +127,14 @@ public:
 		return item;
 	}
 };
+
+Queue<uint32_t> queueRpm;
+float avRpm = 0;
+SoftwareSerial smartportSerial(PIN_SMARTPORT, PIN_SMARTPORT, true);
+#ifdef BATT_SENSOR_VOLT
+Queue<float> queueVolt;
+float avVolt = 0;
+#endif
+#ifdef ESC_DIGITAL
+SoftwareSerial escSerial(PIN_ESC, PIN_ESC);
+#endif
