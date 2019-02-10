@@ -1,4 +1,4 @@
-# ESC RPM telemetry to Smartport
+# ESC RPM telemetry to Smartport FrSky
 
 Newer ESCs outputs telemetry data by PWM or digital signal that can be converted to Smartport and send to the receiver. An Arduino Nano can do this conversion
 
