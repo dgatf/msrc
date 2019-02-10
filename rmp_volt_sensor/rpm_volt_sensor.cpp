@@ -1,14 +1,5 @@
 #include "rpm_volt_sensor.h"
 
-void queueInit() {
-  for (int8_t i = 0; i < RPM_QUEUE_SIZE; i++)
-    queueRpm.enqueue(0);
-#ifdef BATT_SENSOR_VOLT
-  for (int8_t i = 0; i < VOLT_QUEUE_SIZE; i++)
-    queueVolt.enqueue(0);
-#endif
-}
-
 void sendByte(uint8_t c, uint16_t *crcp) {
   if (c == 0x7D || c == 0x7E) {
     smartportSerial.write(0x7D);
@@ -172,12 +163,13 @@ void setup() {
 #endif
 #ifdef BATT_SENSOR_VOLT
   pinMode(PIN_BATT, INPUT);
+  queueVolt.init(0, VOLT_QUEUE_SIZE);
 #endif
   smartportSerial.begin(57600);
 #ifdef ESC_DIGITAL
   escSerial.begin(19200);
 #endif
-  queueInit();
+  queueRpm.init(0, RPM_QUEUE_SIZE);
 }
 
 void loop() {
@@ -188,10 +180,8 @@ void loop() {
   rpm = escPwmRead();
 #endif
   queueRpm.enqueue(rpm);
-  avRpm += rpm - queueRpm.front();
+  avRpm += rpm - queueRpm.dequeue();
   sendRpm(avRpm / RPM_QUEUE_SIZE);
-  queueRpm.dequeue();
-
 #ifdef BATT_SENSOR_CELLS
   float cell1 = 0;
   float cell2 = 0;
@@ -202,9 +192,7 @@ void loop() {
 #ifdef BATT_SENSOR_VOLT
   float volt = readVolt();
   queueVolt.enqueue(volt);
-  avVolt += volt - queueVolt.front();
+  avVolt += volt - queueVolt.dequeue();
   sendVolt(avVolt / VOLT_QUEUE_SIZE);
-  queueVolt.dequeue();
-  // Serial.println(avVolt / VOLT_QUEUE_SIZE);
 #endif
 }

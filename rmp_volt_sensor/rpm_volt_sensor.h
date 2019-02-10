@@ -44,7 +44,6 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
-void queueInit();
 void sendByte(uint8_t c, uint16_t *crcp);
 void sendByte(uint8_t c, uint16_t *crcp);
 void sendData(uint16_t id, int32_t val);
@@ -90,9 +89,7 @@ public:
 
 	bool enqueue(T item) {
 		Node* node = new Node;
-		if (node == NULL) {
-			return false;
-		}
+		if (node == NULL) return false;
 		node->item = item;
 		if (head == NULL) {
 			head = node;
@@ -105,27 +102,20 @@ public:
 	}
 
 	T dequeue() {
-		if (head == NULL) {
-			return T();
-		}
+		if (head == NULL) return T();
 		Node* node = head;
 		head = node->next;
 		T item = node->item;
 		delete node;
 		node = NULL;
-		if (head == NULL) {
-			tail = NULL;
-		}
+		if (head == NULL) tail = NULL;
 		return item;
 	}
 
-	T front() {
-		if (head == NULL) {
-			return T();
-		}
-		T item = head->item;
-		return item;
-	}
+	void init(T item, uint8_t size) {
+    for (int8_t i = 0; i < size; i++)
+      this->enqueue(item);
+  }
 };
 
 Queue<uint32_t> queueRpm;
