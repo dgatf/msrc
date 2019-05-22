@@ -52,7 +52,7 @@ If more than 6S change R values or you may burn the Arduino!
  - Voltage divider + to PIN_BATT (A1)
  - Voltage divider - to Gnd
 
-<img src="./images/esc_smartport6.png" width="600">
+<img src="./images/esc_smartport7.png" width="600">
 <img src="./images/top.jpg" width="400">
 <img src="./images/bottom.jpg" width="400">
 
