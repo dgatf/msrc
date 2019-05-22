@@ -147,7 +147,6 @@ private:
   struct Element {
     uint16_t dataId;
     float value;
-    float prevValue;
     uint8_t refresh;
     uint16_t ts;
     Element *nextP;

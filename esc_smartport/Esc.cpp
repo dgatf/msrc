@@ -117,7 +117,7 @@ ISR(TIMER1_COMPA_vect) {
 Esc::Esc(Stream &serial) : _serial(serial) {}
 
 bool Esc::readHWV3() {
-  uint16_t tsEsc = 0;
+  static uint16_t tsEsc = 0;
   while (_serial.available() >= 10) {
     if (_serial.read() == 0x9B) {
       uint8_t data[9];
@@ -141,7 +141,7 @@ bool Esc::readHWV3() {
   if (rpm == 0)
     return false;
 
-  if ((uint16_t)millis() - tsEsc > 100) {
+  if ((uint16_t)millis() - tsEsc > 150) {
     rpm = 0;
     return true;
   }
@@ -180,7 +180,7 @@ bool Esc::readHWV4() {
 }
 
 void Esc::readPWM() {
-  if (pwmInLenght < 1500000) {
+  if (pwmInLenght < 15000) {
     rpm = (float)60000000 / pwmInLenght;
   } else {
     rpm = 0;
@@ -215,8 +215,8 @@ bool Esc::read() {
     statusChange = readCastle();
     break;
   }
-  if (_pwmOut == true && _protocol != PROTOCOL_PWM) {
-    if (rpm >= 2000 && statusChange) {
+  if (_pwmOut == true && _protocol != PROTOCOL_PWM && statusChange) {
+    if (rpm >= 2000) {
       noInterrupts();
       pwmOutLow =
           (uint16_t)((float)6.225 * F_CPU / rpm); // (Hz/scaler)*60/rpm*0.83
@@ -225,7 +225,7 @@ bool Esc::read() {
       pwmOutActive = true;
       interrupts();
     }
-    else if (rpm < 2000 && statusChange) {
+    else {
       noInterrupts();
       pwmOutLow = 5000;
       pwmOutHigh = 5000;
@@ -324,6 +324,7 @@ void Esc::setPwmOut(uint8_t pwmOut) {
     // init comp
     TIMSK1 |= (1 << OCIE1A);
     interrupts();
+
   } else if (_protocol != PROTOCOL_CASTLE)
     TIMSK1 = 0;
 }

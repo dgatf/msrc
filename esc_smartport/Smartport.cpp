@@ -180,8 +180,7 @@ float *Smartport::addElement(uint16_t dataId, uint16_t refresh) {
   newElementP->dataId = dataId;
   newElementP->refresh = refresh / 100;
   newElementP->value = 0;
-  newElementP->prevValue = 0;
-
+  
   return &newElementP->value;
 }
 
@@ -223,13 +222,8 @@ uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
         return PACKET_SENT;
       }
       if (elementP != NULL) {
-        if (((uint16_t)millis() - elementP->ts >=
-                 (uint16_t)elementP->refresh * 100 &&
-             elementP->value != elementP->prevValue) ||
-            elementP->ts == 0) {
-          // if ((uint16_t)millis() - elementP->ts >=
-          // (uint16_t)elementP->refresh * 100) {
-          elementP->prevValue = elementP->value;
+          if ((uint16_t)millis() - elementP->ts >=
+          (uint16_t)elementP->refresh * 100) {
           sendData(elementP->dataId, elementP->value);
           elementP->ts = millis();
           elementP = elementP->nextP;
@@ -240,6 +234,7 @@ uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
           dataId = 0;
           value = 0;
           sendVoid();
+          elementP = elementP->nextP;
           return PACKET_SENT_VOID;
         }
       }

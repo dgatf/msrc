@@ -38,13 +38,13 @@
 
 // Pins
 
-#define PIN_SMARTPORT_RX 11  // only pins 8,9,10,11
+#define PIN_SMARTPORT_RX 8  // only pins 8,9,10,11
 #define PIN_SMARTPORT_TX 11
 #define PIN_BATT A1
 
 // Telemetry refresh rate in ms
 
-#define REFRESH_RPM 1000
+#define REFRESH_RPM 200
 #define REFRESH_VOLT 1000
 #define REFRESH_TEMP 1000
 #define REFRESH_CURR 1000

@@ -111,6 +111,7 @@ void loop() {
     }
     break;
   case PROTOCOL_PWM:
+    esc.read();
     *telemetry.rpmP = smartport.formatData(T2_FIRST_ID, esc.getRpm());
     break;
   case PROTOCOL_CASTLE:
