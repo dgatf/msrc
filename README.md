@@ -73,7 +73,7 @@ The configuration is modified with a lua script (openTx 2.2 or higher)
 <img src="./images/escSp2.png">
 
 Options:
-
+h
 - ESC protocol. HobbyWing Platinum V3, HobbyWing Platinum V4/Hobbywing Flyfun V5 or PWM signal
 - Battery. For voltage divider
 - PWM. To generate PWM output from ESC serial  (for obbywing Flyfun V5)
