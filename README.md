@@ -26,15 +26,15 @@ Arduino can read up to 5V and is optimized for signal inputs with 10K impedance
 
 To select R values apply formulas:
 
-Vo=Vi*R2/(R1+R2)<5V
+Vo = Vi*R2/(R1+R2) < 3.3V or 5V
 
-Z=1/((1/R1)+(1/R2))<10K
+Z = 1/((1/R1)+(1/R2)) < 10K
 
 <img src="./images/Resistive_divider.png" width="200">
 
-For 6S battery (or lower):
+For 6S battery(or lower) and Pro Mini 3.3v:
 
- - R1 50K
+ - R1 68K
  - R2 12K
 
 If more than 6S change R values or you may burn the Arduino!
