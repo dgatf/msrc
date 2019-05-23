@@ -130,7 +130,7 @@ bool Esc::readHWV3() {
   while (_serial.available() >= 10) {
     if (_serial.read() == 0x9B) {
       uint8_t data[9];
-      uint8_t cont = _serial.readBytes(data, 64);
+      uint8_t cont = _serial.readBytes(data, 9);
       if (cont == 9 && data[3] == 0 && data[5] == 0) {
         uint16_t rpmCycle = data[7] << 8 | data[8];
         rpm = (float)60000000 / rpmCycle;
@@ -164,10 +164,10 @@ bool Esc::readHWV4() {
       uint8_t data[18];
       uint8_t cont = _serial.readBytes(data, 18);
       if (cont == 18 && data[1] != 155) {
-        rpm = (float)((uint32_t)data[7] << 16 | data[8] << 8 | data[9]);
-        voltage = (float)((uint16_t)(data[10] << 8 | data[11])) / 100;
-        temp1 = (float)((uint16_t)(data[14] << 8 | data[15])) / 100;
-        temp2 = (float)((uint16_t)(data[16] << 8 | data[17])) / 100;
+        rpm = (uint32_t)data[7] << 16 | data[8] << 8 | data[9];
+        voltage = (float)(data[10] << 8 | data[11]) / 100;
+        temp1 = (float)(data[14] << 8 | data[15]) / 100;
+        temp2 = (float)(data[16] << 8 | data[17]) / 100;
 #ifdef DEBUG
         uint32_t pn = (uint32_t)data[0] << 16 | data[1] << 8 | data[2];
         _serial.print("PN: ");
