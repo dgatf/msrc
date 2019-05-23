@@ -24,7 +24,7 @@
 #define INT0_PWM_IN 0
 #define INT0_RX 1
 
-#define DEBUG
+//#define DEBUG
 
 #include <Arduino.h>
 

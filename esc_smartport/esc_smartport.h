@@ -69,7 +69,7 @@
 // Telemetry may not work properly in debug mode
 // Connect arduino Rx to FTDI Tx for flashing, then connect arduino Rx to esc
 
-#define DEBUG
+//#define DEBUG
 
 #include <Arduino.h>
 #include <SoftwareSerial.h>
