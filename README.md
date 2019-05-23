@@ -35,7 +35,7 @@ Z = 1/((1/R1)+(1/R2)) < 10K
 For 6S battery(or lower) and Pro Mini 3.3v:
 
  - R1 68K
- - R2 12K
+ - R2 10K
 
 If more than 6S change R values or you may burn the Arduino!
 
