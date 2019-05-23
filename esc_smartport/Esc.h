@@ -10,10 +10,9 @@
 
 // Pins
 
-#define PIN_PWM_IN 2 // only pins 2 or 3
+#define PIN_PWM_IN_RX 2 // only pins 2 or 3
 #define PIN_PWM_OUT 4
 #define PIN_CASTLE 3 // only pins 2 or 3
-#define PIN_RX 2     // only pins 2 or 3
 
 // ISR Timer1
 
@@ -33,13 +32,13 @@
 struct IsrTelemetry {
   uint16_t ms1 = 0;
   uint16_t ms = 0;
-  uint16_t voltage;
-  uint16_t rippleVoltage;
-  uint16_t current;
-  uint16_t rpm;
-  uint16_t becVoltage;
-  uint16_t becCurrent;
-  uint16_t temperature;
+  float voltage;
+  float rippleVoltage;
+  float current;
+  float rpm;
+  float becVoltage;
+  float becCurrent;
+  float temperature;
 };
 
 // Pwm in INT0

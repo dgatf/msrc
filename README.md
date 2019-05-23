@@ -10,8 +10,8 @@ ESC serial protocols implemented:
 
 - Hobbywing Platinum V3: RPM
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature and battery voltage
-- Castle Link: Voltage, ripple voltage, RPM, temperature, NTC temperature, BEC current and BEC voltage
 - PWM signal: RPM
+- Castle Link (beta): Voltage, ripple voltage, RPM, temperature, NTC temperature, BEC current and BEC voltage
 
 ## PWM output
 
@@ -52,7 +52,7 @@ If more than 6S change R values or you may burn the Arduino!
  - Voltage divider + to PIN_BATT (A1)
  - Voltage divider - to Gnd
 
-<img src="./images/esc_smartport7.png" width="600">
+<img src="./images/esc_smartport6.png" width="600">
 <img src="./images/top.jpg" width="400">
 <img src="./images/bottom.jpg" width="400">
 

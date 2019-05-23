@@ -27,8 +27,11 @@ ISR(INT0_vect) {
     pwmInInit = micros();
     break;
   case INT0_RX: // pin rx
-    if (!digitalRead(PIN_RX)) {
-      pwmOutLow = ((uint16_t)micros() - pwmInInit) * F_CPU / 8000;
+
+    if (!digitalRead(PIN_PWM_IN_RX)) {
+
+      pwmOutLow = ((uint16_t)micros() - pwmInInit) * (uint32_t)F_CPU / 8000000;
+
       pwmOutHigh = F_CPU / 400 - pwmOutLow;
     }
     pwmInInit = micros();
@@ -47,26 +50,32 @@ ISR(INT1_vect) {
         isrTelemetry.ms1 = castlelinkLenght;
         break;
       case 1:
-        isrTelemetry.voltage = castlelinkLenght;
+        isrTelemetry.voltage = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 20) / (2 * isrTelemetry.ms);
+        if (isrTelemetry.voltage < 0) isrTelemetry.voltage = 0;
         break;
       case 2:
-        isrTelemetry.rippleVoltage = castlelinkLenght;
+        isrTelemetry.rippleVoltage = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 4) / (2 * isrTelemetry.ms);
+        if (isrTelemetry.rippleVoltage < 0) isrTelemetry.rippleVoltage = 0;
         break;
       case 3:
-        isrTelemetry.current = castlelinkLenght;
+        isrTelemetry.current = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 50) / (2 * isrTelemetry.ms);
+        if (isrTelemetry.current < 0) isrTelemetry.current = 0;
         break;
       case 6:
-        isrTelemetry.rpm = castlelinkLenght;
+        isrTelemetry.rpm = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 20416.7) / (2 * isrTelemetry.ms);
+        if (isrTelemetry.rpm < 0) isrTelemetry.rpm = 0;
         break;
       case 7:
-        isrTelemetry.becVoltage = castlelinkLenght;
+        isrTelemetry.becVoltage = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 4) / (2 * isrTelemetry.ms);
+        if (isrTelemetry.becVoltage < 0) isrTelemetry.becVoltage = 0;
         break;
       case 8:
-        isrTelemetry.becCurrent = castlelinkLenght;
+        isrTelemetry.becCurrent = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 4) / (2 * isrTelemetry.ms);
+        if (isrTelemetry.becCurrent < 0) isrTelemetry.becCurrent = 0;
         break;
       case 9:
         if (castlelinkLenght > 700) {
-          isrTelemetry.temperature = castlelinkLenght;
+          isrTelemetry.temperature = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 30) / (2 * isrTelemetry.ms);
         } else {
           isrTelemetry.ms = (isrTelemetry.ms1 + 2 * castlelinkLenght) / 2;
           cont--;
@@ -74,7 +83,7 @@ ISR(INT1_vect) {
         break;
       case 10:
         if (castlelinkLenght > 700) {
-          isrTelemetry.temperature = castlelinkLenght;
+          isrTelemetry.temperature = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 30) / (2 * isrTelemetry.ms);;
         } else {
           isrTelemetry.ms = (isrTelemetry.ms1 + 2 * castlelinkLenght) / 2;
         }
@@ -188,13 +197,13 @@ void Esc::readPWM() {
 }
 
 bool Esc::readCastle() {
-  voltage = (float)((2 * isrTelemetry.voltage - isrTelemetry.ms) * 20) / (2 * isrTelemetry.ms);
-  rippleVoltage = (float)((2 * isrTelemetry.rippleVoltage - isrTelemetry.ms) * 20) / (2 * isrTelemetry.ms);
-  current = (float)((2 * isrTelemetry.current - isrTelemetry.ms) * 20) / (2 * isrTelemetry.ms);
-  rpm = (float)((2 * isrTelemetry.rpm - isrTelemetry.ms) * 20) / (2 * isrTelemetry.ms);
-  becVoltage = (float)((2 * isrTelemetry.becVoltage - isrTelemetry.ms) * 20) / (2 * isrTelemetry.ms);
-  becCurrent = (float)((2 * isrTelemetry.becCurrent - isrTelemetry.ms) * 20) / (2 * isrTelemetry.ms);
-  temp1 = (float)((2 * isrTelemetry.temperature - isrTelemetry.ms) * 20) / (2 * isrTelemetry.ms);
+  voltage = isrTelemetry.voltage;
+  rippleVoltage = isrTelemetry.rippleVoltage;
+  current = isrTelemetry.current;
+  rpm = isrTelemetry.rpm;
+  becVoltage = isrTelemetry.becVoltage;
+  becCurrent = isrTelemetry.becCurrent;
+  temp1 = isrTelemetry.temperature;
   return true;
 }
 
@@ -242,7 +251,7 @@ void Esc::setProtocol(uint8_t protocol) {
   switch (_protocol) {
   case PROTOCOL_PWM:
     isr_int0 = INT0_PWM_IN;
-    pinMode(PIN_PWM_IN, INPUT);
+    pinMode(PIN_PWM_IN_RX, INPUT);
     noInterrupts();
     DDRD &= ~(1 << DDD2);   // PIN 2 input
     PORTD |= (1 << PORTD2); // Pull up
@@ -267,7 +276,7 @@ void Esc::setProtocol(uint8_t protocol) {
     EIMSK |= (1 << INT1); // Enable external interrupt INT1 (PIN 3)
 
     // Rx interrupt (pin 2)
-    pinMode(PIN_PWM_IN, INPUT);
+    pinMode(PIN_PWM_IN_RX, INPUT);
     DDRD &= ~(1 << DDD2);   // PIN 2 input
     PORTD |= (1 << PORTD2); // Pull up PIN 2
     EICRA |= (1 << ISC00);  // Trigger INT0 on change

@@ -5,11 +5,12 @@
  *
  * Arduino sketch to send to Frsky SmartPort ESC telemetry:
  *
- * - Hobywing V3 and V4/V5 serial telemetry supported (ESC_DIGITAL_V3 or
- * ESC_DIGITAL_V4)
- * - RPM PWM signal supported (PIN_PWM_ESC)
- * - Battery voltage with voltage divider (PIN_BATT)
- * - PWM output for HW V5 Flyfun (PIN_PWM_OUT)
+ * - Hobywing V3
+ * - Hobywing V4/V5
+ * - RPM PWM signal supported
+ * - Battery voltage with voltage divider
+ * - PWM output (for HW V5 Flyfun)
+ * - Castle Link (beta)
  *
  * Adjust RPM sensor in OpenTx:
  *
@@ -19,13 +20,14 @@
  * Wiring
  * ------
  *
- * - SmartPort Vcc to Arduino Vcc
+ * - For Pro Mini 3.3V: SmartPort Vcc to Arduino RAW. For Pro Mini 5V: SmartPort Vcc to Arduino Vcc
  * - SmartPort Gnd to Arduino Gnd
- * - Smartport Signal to Arduino PIN_SMARTPORT (11)
+ * - Smartport Signal to Arduino PIN_SMARTPORT_RX (8)
+ * - Smartport Signal to R3 (4.7k)
+ * - R3 (4.7k) to Arduino PIN_SMARTPORT_TX (11)
  * - If using ESC serial: ESC serial signal to Arduino Rx
  * - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (2)
- * - If PWM output is required (for HobbyWing Flyfun V5): Flybarless PWM signal
- * input to Arduino PIN_PWM_OUT (4)
+ * - If PWM output is required (for HobbyWing Flyfun V5): Flybarless PWM signal input to Arduino PIN_PWM_OUT (4)
  * - Voltage divider + to PIN_BATT (A1)
  * - Voltage divider - to Gnd
  *
@@ -88,6 +90,8 @@ struct Config {
 
 struct Telemetry {
   float *rpmP = NULL;
+  float *escRpmConsP = NULL;
+  float *escPowerP = NULL;
   float *voltageP = NULL;
   float *rippleVoltageP = NULL;
   float *currentP = NULL;

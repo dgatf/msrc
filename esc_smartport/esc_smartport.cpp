@@ -52,22 +52,21 @@ void initConfig() {
   switch (config.protocol) {
   case PROTOCOL_HW_V3:
   case PROTOCOL_PWM:
-    telemetry.rpmP = smartport.addElement(RPM_FIRST_ID, REFRESH_RPM);
+    telemetry.escRpmConsP = smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
     break;
   case PROTOCOL_HW_V4:
-    telemetry.rpmP = smartport.addElement(RPM_FIRST_ID, REFRESH_RPM);
-    telemetry.voltageP = smartport.addElement(VFAS_FIRST_ID, REFRESH_VOLT);
-    telemetry.temp1P = smartport.addElement(T1_FIRST_ID, REFRESH_TEMP);
-    telemetry.temp2P = smartport.addElement(T2_FIRST_ID, REFRESH_TEMP);
+    telemetry.escRpmConsP = smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
+    telemetry.escPowerP = smartport.addElement(ESC_POWER_FIRST_ID, REFRESH_VOLT);
+    telemetry.temp1P = smartport.addElement(ESC_TEMPERATURE_FIRST_ID, REFRESH_TEMP);
+    telemetry.temp2P = smartport.addElement(ESC_TEMPERATURE_FIRST_ID + 1, REFRESH_TEMP);
     break;
   case PROTOCOL_CASTLE:
-    telemetry.rpmP = smartport.addElement(RPM_FIRST_ID, REFRESH_RPM);
-    telemetry.currentP = smartport.addElement(CURR_FIRST_ID,REFRESH_CURR);
-    telemetry.voltageP = smartport.addElement(VFAS_FIRST_ID, REFRESH_VOLT);
-    telemetry.rippleVoltageP = smartport.addElement(VFAS_FIRST_ID + 1, REFRESH_VOLT);
-    telemetry.becCurrentP = smartport.addElement(CURR_FIRST_ID + 1, REFRESH_CURR);
-    telemetry.becVoltageP = smartport.addElement(VFAS_FIRST_ID + 2, REFRESH_VOLT);
-    telemetry.temp1P = smartport.addElement(T1_FIRST_ID, REFRESH_TEMP);
+    telemetry.escRpmConsP = smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
+    telemetry.escPowerP = smartport.addElement(ESC_POWER_FIRST_ID,REFRESH_CURR);
+    telemetry.rippleVoltageP = smartport.addElement(VFAS_FIRST_ID, REFRESH_VOLT);
+    telemetry.becCurrentP = smartport.addElement(CURR_FIRST_ID, REFRESH_CURR);
+    telemetry.becVoltageP = smartport.addElement(VFAS_FIRST_ID + 1, REFRESH_VOLT);
+    telemetry.temp1P = smartport.addElement(ESC_TEMPERATURE_FIRST_ID, REFRESH_TEMP);
     break;
   }
   if (config.battery == true) {
@@ -99,30 +98,29 @@ void loop() {
   switch (config.protocol) {
   case PROTOCOL_HW_V3:
     if (esc.read()) {
-      *telemetry.rpmP = smartport.formatData(RPM_FIRST_ID, esc.getRpm());
+      *telemetry.escRpmConsP = smartport.formatEscRpmCons(esc.getRpm(), 0);
     }
     break;
   case PROTOCOL_HW_V4:
     if (esc.read()) {
-      *telemetry.rpmP = smartport.formatData(RPM_FIRST_ID, esc.getRpm());
-      *telemetry.voltageP = smartport.formatData(CURR_FIRST_ID, esc.getVolt());
-      *telemetry.temp1P = smartport.formatData(T1_FIRST_ID, esc.getTemp1());
-      *telemetry.temp2P = smartport.formatData(T2_FIRST_ID, esc.getTemp2());
+      *telemetry.escRpmConsP = smartport.formatEscRpmCons(esc.getRpm(), 0);
+      *telemetry.escPowerP = smartport.formatEscPower(esc.getVolt(), 0);
+      *telemetry.temp1P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID, esc.getTemp1());
+      *telemetry.temp2P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID + 1, esc.getTemp2());
     }
     break;
   case PROTOCOL_PWM:
     esc.read();
-    *telemetry.rpmP = smartport.formatData(T2_FIRST_ID, esc.getRpm());
+    *telemetry.escRpmConsP = smartport.formatEscRpmCons(esc.getRpm(), 0);
     break;
   case PROTOCOL_CASTLE:
     if (esc.read()) {
-      *telemetry.rpmP = smartport.formatData(RPM_FIRST_ID, esc.getRpm());
-      *telemetry.currentP = smartport.formatData(CURR_FIRST_ID, esc.getRpm());
-      *telemetry.voltageP = smartport.formatData(VFAS_FIRST_ID, esc.getVolt());
-      *telemetry.rippleVoltageP = smartport.formatData(VFAS_FIRST_ID + 1, esc.getRippleVoltage());
-      *telemetry.becCurrentP = smartport.formatData(CURR_FIRST_ID + 1, esc.getBecCurrent());
-      *telemetry.becVoltageP = smartport.formatData(VFAS_FIRST_ID + 2, esc.getBecVoltage());
-      *telemetry.temp1P = smartport.formatData(T2_FIRST_ID, esc.getTemp1());
+      *telemetry.escRpmConsP = smartport.formatEscRpmCons(esc.getRpm(), 0);
+      *telemetry.escPowerP = smartport.formatEscPower(esc.getVolt(), esc.getCurrent());
+      *telemetry.rippleVoltageP = smartport.formatData(VFAS_FIRST_ID, esc.getRippleVoltage());
+      *telemetry.becCurrentP = smartport.formatData(CURR_FIRST_ID, esc.getBecCurrent());
+      *telemetry.becVoltageP = smartport.formatData(VFAS_FIRST_ID + 1, esc.getBecVoltage());
+      *telemetry.temp1P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID, esc.getTemp1());
     }
     break;
   }
