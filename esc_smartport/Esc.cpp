@@ -1,129 +1,132 @@
 #include "Esc.h"
 
-// Pwm in INT0
-volatile uint16_t pwmInInit = 0;
-volatile uint16_t pwmInLenght = 0;
-volatile uint8_t isr_int0;
+// Pwm in: TIMER 1 CAPT, PIN 8
+volatile uint16_t pwmInLenght;
 
-// Pwm out TIMER1
-volatile uint16_t pwmOutLow;
-volatile uint16_t pwmOutHigh;
-volatile bool pwmOutState = false;
-volatile bool pwmOutActive = false;
-volatile uint8_t isr_timer;
+// Rx in: EXT INT0
+volatile uint16_t rxLenght;
 
 // Castle INT1
-volatile uint16_t castlelinkInit = 0;
-volatile uint16_t castlelinkLenght = 0;
+volatile uint16_t castleInit = 0;
+volatile uint16_t castleLenght;
 volatile uint8_t cont = 0;
+
+// TIMER2: disable PCINT for Rx
+volatile uint8_t contTimer2 = 0;
+volatile uint8_t  _PCMSK0;
+volatile uint8_t  _PCMSK1;
+volatile uint8_t  _PCMSK2;
 
 // Isr telemetry
 volatile IsrTelemetry isrTelemetry;
 
+ISR(TIMER1_CAPT_vect) {
+  static uint16_t pwmInInit = 0;
+  pwmInLenght = COMP_TO_MS * (ICR1 - pwmInInit);
+  pwmInInit = ICR1;
+}
+
+ISR(TIMER2_OVF_vect) {
+  if (contTimer2 == 1) {
+    _PCMSK0 = PCMSK0;
+    _PCMSK1 = PCMSK1;
+    _PCMSK2 = PCMSK2;
+    PCMSK0 = 0;
+    PCMSK1 = 0;
+    PCMSK2 = 0;
+    contTimer2 = 0;
+  } else contTimer2++;
+}
+
 ISR(INT0_vect) {
-  switch (isr_int0) {
-  case INT0_PWM_IN:
-    pwmInLenght = (uint16_t)micros() - pwmInInit;
-    pwmInInit = micros();
-    break;
-  case INT0_RX: // pin rx
-
-    if (!digitalRead(PIN_PWM_IN_RX)) {
-
-      pwmOutLow = ((uint16_t)micros() - pwmInInit) * (uint32_t)F_CPU / 8000000;
-
-      pwmOutHigh = F_CPU / 400 - pwmOutLow;
-    }
-    pwmInInit = micros();
-    break;
+  static uint16_t rxInit = 0;
+  if (digitalRead(PIN_RX)) {
+    rxInit = micros();
+    TIMSK2 = 1 << TOIE2;
+  } else {
+    rxLenght = micros()-rxInit;
+    OCR1A = rxLenght / COMP_TO_MS;
+    PCMSK0 = _PCMSK0;
+    PCMSK1 = _PCMSK0;
+    PCMSK2 = _PCMSK0;
+    TIMSK2 = 0;
   }
 }
 
 ISR(INT1_vect) {
-  castlelinkLenght = (uint16_t)micros() - castlelinkInit;
-  castlelinkInit = micros();
-  if (castlelinkLenght > 19800) {
+  pinMode(9, INPUT);
+  castleLenght = micros() - castleInit;
+  castleInit = micros();
+  if (castleLenght > 19500)
     cont = 0;
-  } else if (castlelinkLenght < 10000) {
+  if (castleLenght < 7000) {
     switch (cont) {
-      case 0:
-        isrTelemetry.ms1 = castlelinkLenght;
-        break;
-      case 1:
-        isrTelemetry.voltage = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 20) / (2 * isrTelemetry.ms);
-        if (isrTelemetry.voltage < 0) isrTelemetry.voltage = 0;
-        break;
-      case 2:
-        isrTelemetry.rippleVoltage = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 4) / (2 * isrTelemetry.ms);
-        if (isrTelemetry.rippleVoltage < 0) isrTelemetry.rippleVoltage = 0;
-        break;
-      case 3:
-        isrTelemetry.current = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 50) / (2 * isrTelemetry.ms);
-        if (isrTelemetry.current < 0) isrTelemetry.current = 0;
-        break;
-      case 6:
-        isrTelemetry.rpm = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 20416.7) / (2 * isrTelemetry.ms);
-        if (isrTelemetry.rpm < 0) isrTelemetry.rpm = 0;
-        break;
-      case 7:
-        isrTelemetry.becVoltage = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 4) / (2 * isrTelemetry.ms);
-        if (isrTelemetry.becVoltage < 0) isrTelemetry.becVoltage = 0;
-        break;
-      case 8:
-        isrTelemetry.becCurrent = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 4) / (2 * isrTelemetry.ms);
-        if (isrTelemetry.becCurrent < 0) isrTelemetry.becCurrent = 0;
-        break;
-      case 9:
-        if (castlelinkLenght > 700) {
-          isrTelemetry.temperature = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 30) / (2 * isrTelemetry.ms);
-        } else {
-          isrTelemetry.ms = (isrTelemetry.ms1 + 2 * castlelinkLenght) / 2;
-          cont--;
-        }
-        break;
-      case 10:
-        if (castlelinkLenght > 700) {
-          isrTelemetry.temperature = ((2 * (float)castlelinkLenght - isrTelemetry.ms) * 30) / (2 * isrTelemetry.ms);;
-        } else {
-          isrTelemetry.ms = (isrTelemetry.ms1 + 2 * castlelinkLenght) / 2;
-        }
-        break;
+    case 0:
+      isrTelemetry.ms1 = castleLenght;
+      break;
+    case 1:
+      isrTelemetry.voltage =
+          (float)((2 * castleLenght - isrTelemetry.ms) * 20) /
+          (2 * isrTelemetry.ms);
+      break;
+    case 2:
+      isrTelemetry.rippleVoltage =
+          (float)((2 * castleLenght - isrTelemetry.ms) * 4) /
+          (2 * isrTelemetry.ms);
+      break;
+    case 3:
+      isrTelemetry.current =
+          (float)((2 * castleLenght - isrTelemetry.ms) * 50) /
+          (2 * isrTelemetry.ms);
+      break;
+    case 6:
+      isrTelemetry.rpm =
+          (float)((2 * castleLenght - isrTelemetry.ms) * 20416.7) /
+          (2 * isrTelemetry.ms);
+      break;
+    case 7:
+      isrTelemetry.becVoltage =
+          (float)((2 * castleLenght - isrTelemetry.ms) * 4) /
+          (2 * isrTelemetry.ms);
+      break;
+    case 8:
+      isrTelemetry.becCurrent =
+          (float)((2 * castleLenght - isrTelemetry.ms) * 4) /
+          (2 * isrTelemetry.ms);
+      break;
+    case 9:
+      if (castleLenght > 700) {
+        isrTelemetry.temperature =
+            (float)((2 * castleLenght - isrTelemetry.ms) * 30) /
+            (2 * isrTelemetry.ms);
+      } else {
+        isrTelemetry.ms = (isrTelemetry.ms1 + 2 * castleLenght) / 2;
+        cont--;
+      }
+      break;
+    case 10:
+      if (castleLenght > 700) {
+        isrTelemetry.temperature =
+            (float)((2 * castleLenght - isrTelemetry.ms) * 30) /
+            (2 * isrTelemetry.ms);
+      } else {
+        isrTelemetry.ms = (isrTelemetry.ms1 + 2 * castleLenght) / 2;
+      }
+      break;
     }
     cont++;
   }
+  TCNT2 = 0;
+  TIMSK2 = 1 << OCIE2A;
 }
 
-ISR(TIMER1_COMPA_vect) {
-  switch (isr_timer) {
-  case TIMER_PWM_OUT:
-    if (pwmOutActive) {
-      if (pwmOutState) {
-        digitalWrite(PIN_PWM_OUT, LOW);
-        pwmOutState = false;
-        OCR1A = pwmOutLow;
-      } else {
-        digitalWrite(PIN_PWM_OUT, HIGH);
-        pwmOutState = true;
-        OCR1A = pwmOutHigh;
-      }
-    }
-    break;
-  case TIMER_CASTLE:
-    if (pwmOutState) {
-      pinMode(PIN_CASTLE, OUTPUT);
-      digitalWrite(PIN_CASTLE, LOW);
-      pwmOutState = false;
-      OCR1A = pwmOutLow;
-    } else {
-      pinMode(PIN_CASTLE, INPUT);
-      pwmOutState = true;
-      OCR1A = pwmOutHigh;
-    }
-    break;
-  }
-}
+ISR(TIMER1_COMPB_vect) { pinMode(PIN_CASTLE, OUTPUT); }
 
-Esc::Esc(Stream &serial) : _serial(serial) {}
+Esc::Esc(Stream &serial) : _serial(serial) {
+  _PCMSK0 = PCMSK0;
+  _PCMSK1 = PCMSK1;
+  _PCMSK2 = PCMSK2;
+}
 
 bool Esc::readHWV3() {
   static uint16_t tsEsc = 0;
@@ -226,21 +229,11 @@ bool Esc::read() {
   }
   if (_pwmOut == true && _protocol != PROTOCOL_PWM && statusChange) {
     if (rpm >= 2000) {
-      noInterrupts();
-      pwmOutLow =
-          (uint16_t)((float)6.225 * F_CPU / rpm); // (Hz/scaler)*60/rpm*0.83
-      pwmOutHigh =
-          (uint16_t)((float)1.275 * F_CPU / rpm); // (Hz/scaler)*60/rpm*0.17
-      pwmOutActive = true;
-      interrupts();
-    }
-    else {
-      noInterrupts();
-      pwmOutLow = 5000;
-      pwmOutHigh = 5000;
-      pwmOutActive = false;
-      digitalWrite(PIN_PWM_OUT, LOW);
-      interrupts();
+      TCCR1A |= 1 << COM1A1;
+      ICR1 = 7.5 * (uint32_t)F_CPU / rpm;
+      OCR1A = 0.17 * ICR1;
+    } else {
+      TCCR1A &= ~(1 << COM1A1);
     }
   }
   return statusChange;
@@ -250,33 +243,43 @@ void Esc::setProtocol(uint8_t protocol) {
   _protocol = protocol;
   switch (_protocol) {
   case PROTOCOL_PWM:
-    isr_int0 = INT0_PWM_IN;
-    pinMode(PIN_PWM_IN_RX, INPUT);
-    noInterrupts();
-    DDRD &= ~(1 << DDD2);   // PIN 2 input
-    PORTD |= (1 << PORTD2); // Pull up
-    EIMSK |= (1 << INT0);   // Enable external interrupt INT0 (PIN 2)
-    EICRA |= (1 << ISC00);  // Trigger INT0 on rising edge
-    EICRA |= (1 << ISC01);
-    EIMSK |= (0 << INT1);
-    TIMSK1 = 0;
-    interrupts();
+    // TIMER1,capture ext int, scaler 8. PIN 8
+    TCCR1A = 0;
+    TCCR1B = 1 << CS11;
+    TIMSK1 = 1 << ICIE1;
+
+    TIMSK2 = 0;
+    EIMSK = 0;
+    //PCMSK0 = _PCMSK0;
+    //PCMSK1 = _PCMSK1;
+    //PCMSK2 = _PCMSK2;
     break;
   case PROTOCOL_CASTLE:
-    isr_timer = TIMER_CASTLE;
-    isr_int0 = INT0_RX;
+    pinMode(PIN_RX, INPUT);
     pinMode(PIN_CASTLE, INPUT);
-    noInterrupts();
-    // Castle interrupt (pin 3)
+
+    // TIMER1, PWM ICR, scaler 8
+    TCCR1A = 1 << COM1A1 | 1 << WGM11;
+    TCCR1B = 1 << WGM13 | 1 << WGM12 | 1 << CS11;
+    ICR1 = 20000 * F_CPU_SCALER;
+    OCR1A = 19000 * F_CPU_SCALER;
+    OCR1B = 10000 * F_CPU_SCALER;
+    TIMSK1 = 1 << OCIE1B;
+
+    // EXT PIN INT
     DDRD &= ~(1 << DDD3);   // PIN 3 input
     PORTD |= (1 << PORTD3); // Pull up PIN 3
-    EICRA |= (1 << ISC10);  // Trigger INT1 on xx edge
-    EICRA |= (1 << ISC11);  // Trigger INT1 on xx edge
+    EICRA |= (1 << ISC10);  // Trigger INT1 on rising edge
+    EICRA |= (1 << ISC11);  // Trigger INT1 on rising edge
     // EIMSK |= (0 << INT1);   // Disable external interrupt INT1 (PIN 3)
     EIMSK |= (1 << INT1); // Enable external interrupt INT1 (PIN 3)
 
+    // TIMER2
+    TCCR2A = 0;
+    TCCR2B =  1 << CS22 | 1 << CS21 | 1 << CS20;
+    TIMSK2 = 1 << TOIE2;
+
     // Rx interrupt (pin 2)
-    pinMode(PIN_PWM_IN_RX, INPUT);
     DDRD &= ~(1 << DDD2);   // PIN 2 input
     PORTD |= (1 << PORTD2); // Pull up PIN 2
     EICRA |= (1 << ISC00);  // Trigger INT0 on change
@@ -284,58 +287,30 @@ void Esc::setProtocol(uint8_t protocol) {
     // EIMSK |= (0 << INT0);   // Disable external interrupt INT0 (PIN 2)
     EIMSK |= (1 << INT0); // Enable external interrupt INT0 (PIN 2)
 
-    // Timer interrupt (pwm out)
-    pwmOutHigh = F_CPU / 8000 * 19;
-    pwmOutLow = F_CPU / 8000;
-    // CTC mode
-    TCCR1A = 0;
-    TCCR1B = 0;
-    TCCR1B |= (1 << WGM12);
-    // scaler 8
-    TCCR1B |= 1 << CS11;
-    // cont = 0
-    TCNT1 = 0;
-    // comp
-    OCR1A = pwmOutHigh;
-    // init comp
-    TIMSK1 |= (1 << OCIE1A);
-    interrupts();
-
     break;
 
   default:
-    noInterrupts();
-    EIMSK |= (0 << INT0);
-    EIMSK |= (0 << INT1);
+    EIMSK = 0 ;
+    TIMSK2 = 0;
+    //PCMSK0 = _PCMSK0;
+    //PCMSK1 = _PCMSK1;
+    //PCMSK2 = _PCMSK2;
     if (_pwmOut == false)
       TIMSK1 = 0;
-    interrupts();
   }
 }
 
 void Esc::setPwmOut(uint8_t pwmOut) {
   _pwmOut = pwmOut;
   if (_pwmOut) {
-    isr_timer = TIMER_PWM_OUT;
-    pinMode(PIN_PWM_OUT, OUTPUT);
-    digitalWrite(PIN_PWM_OUT, LOW);
-    noInterrupts();
-    // CTC mode
-    TCCR1A = 0;
-    TCCR1B = 0;
-    TCCR1B |= (1 << WGM12);
-    // scaler 8
-    TCCR1B |= 1 << CS11;
-    // cont = 0
-    TCNT1 = 0;
-    // comp
-    OCR1A = 5000;
-    // init comp
-    TIMSK1 |= (1 << OCIE1A);
-    interrupts();
-
-  } else if (_protocol != PROTOCOL_CASTLE)
-    TIMSK1 = 0;
+    // Init pin
+    pinMode(9, OUTPUT);
+    digitalWrite(9, LOW);
+    // Set timer1: WGM mode 14, scaler 8 (pin 9)
+    TCCR1A = 1 << WGM11;
+    TCCR1B = 1 << WGM13 | 1 << WGM12 | 1 << CS11;
+  } else // if (_protocol != PROTOCOL_CASTLE)
+    TCCR1A &= ~(1 << COM1A1);
 }
 
 float Esc::getRpm() { return rpm; }

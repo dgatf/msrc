@@ -180,7 +180,7 @@ float *Smartport::addElement(uint16_t dataId, uint16_t refresh) {
   newElementP->dataId = dataId;
   newElementP->refresh = refresh / 100;
   newElementP->value = 0;
-  
+
   return &newElementP->value;
 }
 

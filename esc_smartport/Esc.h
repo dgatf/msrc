@@ -10,19 +10,13 @@
 
 // Pins
 
-#define PIN_PWM_IN_RX 2 // only pins 2 or 3
-#define PIN_PWM_OUT 4
-#define PIN_CASTLE 3 // only pins 2 or 3
+#define PIN_RX 2 // only pins 2 or 3. ext int
+#define PIN_CASTLE 9 // only pin 9. timer1 pwm
+#define PIN_PWM_IN 8 // only pin 8. timer1 capt
 
-// ISR Timer1
 
-#define TIMER_PWM_OUT 0
-#define TIMER_CASTLE 1
-
-// ISR Int0
-
-#define INT0_PWM_IN 0
-#define INT0_RX 1
+#define F_CPU_SCALER (uint8_t)((uint32_t)F_CPU/8000000)
+#define COMP_TO_MS (float)8000/F_CPU
 
 //#define DEBUG
 
@@ -41,22 +35,22 @@ struct IsrTelemetry {
   float temperature;
 };
 
-// Pwm in INT0
-extern volatile uint16_t pwmInInit;
+// Pwm in: TIMER 1 CAPT, PIN 8
 extern volatile uint16_t pwmInLenght;
-extern volatile uint8_t isr_int0;
 
-// Pwm out TIMER1
-extern volatile uint16_t pwmOutLow;
-extern volatile uint16_t pwmOutHigh;
-extern volatile bool pwmOutActive;
-extern volatile bool pwmOutState;
-extern volatile uint8_t isr_timer;
+// Rx in: EXT INT0
+extern volatile uint16_t rxLenght;
 
-// Castle INT1
-extern volatile uint16_t castlelinkInit;
-extern volatile uint16_t castlelinkLenght;
+// Castle telemetry. EXT INT1
+extern volatile uint16_t castleInit;
+extern volatile uint16_t castleLenght;
 extern volatile uint8_t cont;
+
+// TIMER2: disable PCINT for Rx
+extern volatile uint8_t contTimer2;
+extern volatile uint8_t  _PCMSK0;
+extern volatile uint8_t  _PCMSK1;
+extern volatile uint8_t  _PCMSK2;
 
 extern volatile IsrTelemetry isrTelemetry;
 
