@@ -56,12 +56,12 @@ If more than 6S change R values or you may burn the Arduino!
 <img src="./images/bottom.jpg" width="400">
 
 
-## Adjust RPM sensor value
+## Adjust RPM sensor
 
 - Blades/poles: number of pair of poles * main gear teeth  
 - Multiplies: pinion gear teeth
 
-## Adjust VFAS sensor value (only for voltage divider)
+## Adjust A1 sensor (for voltage divider)
 
 Measure the voltage of the battery with a voltmeter and adjust Ratio in VFAS sensor
 
