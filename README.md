@@ -11,7 +11,6 @@ ESC serial protocols implemented:
 - Hobbywing Platinum V3: RPM
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature and battery voltage
 - PWM signal: RPM
-- Castle Link (beta): Voltage, ripple voltage, RPM, temperature, NTC temperature, BEC current and BEC voltage
 
 ## PWM output
 
