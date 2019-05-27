@@ -8,7 +8,7 @@ local sendConfigOk = true
 local lcdChange = false
 local config =
    {firmwareVersion = '',
-    protocol = {selected = 5, list = {'HW V3', 'HW V4/V5', 'Castle', 'PWM', ''}, elements = 4},
+    protocol = {selected = 5, list = {'HW V3', 'HW V4/V5', 'PWM', ''}, elements = 3},
     battery = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
     pwm = {selected = 3, list = {'Off', 'On', ''}, elements = 2}}
 local selection = {selected = 1, state = false, list = {'protocol', 'battery', 'pwm'}, elements = 3}
@@ -62,7 +62,7 @@ local function run_func(event)
     if receiveConfigOk == false then lcd.drawText(35, 43, 'Connecting...', SMLSIZE) end
     lcdChange = false;
   end
-  
+
   if receiveConfigOk == false or sendConfigOk == false then
     local physicalId, primId, dataId, value = sportTelemetryPop()          -- frsky/lua: phys_id/sensor id, type/frame_id, sensor_id/data_id
     if physicalId == 9 and dataId == 0x5001 then

@@ -52,26 +52,24 @@ void initConfig() {
   switch (config.protocol) {
   case PROTOCOL_HW_V3:
   case PROTOCOL_PWM:
-    telemetry.escRpmConsP = smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
+    telemetry.escRpmConsP =
+        smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
     break;
   case PROTOCOL_HW_V4:
-    telemetry.escRpmConsP = smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
-    telemetry.escPowerP = smartport.addElement(ESC_POWER_FIRST_ID, REFRESH_VOLT);
-    telemetry.temp1P = smartport.addElement(ESC_TEMPERATURE_FIRST_ID, REFRESH_TEMP);
-    telemetry.temp2P = smartport.addElement(ESC_TEMPERATURE_FIRST_ID + 1, REFRESH_TEMP);
-    break;
-  case PROTOCOL_CASTLE:
-    telemetry.escRpmConsP = smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
-    telemetry.escPowerP = smartport.addElement(ESC_POWER_FIRST_ID,REFRESH_CURR);
-    telemetry.rippleVoltageP = smartport.addElement(VFAS_FIRST_ID, REFRESH_VOLT);
-    telemetry.becCurrentP = smartport.addElement(CURR_FIRST_ID, REFRESH_CURR);
-    telemetry.becVoltageP = smartport.addElement(VFAS_FIRST_ID + 1, REFRESH_VOLT);
-    telemetry.temp1P = smartport.addElement(ESC_TEMPERATURE_FIRST_ID, REFRESH_TEMP);
+    telemetry.escRpmConsP =
+        smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
+    telemetry.escPowerP =
+        smartport.addElement(ESC_POWER_FIRST_ID, REFRESH_VOLT);
+    telemetry.temp1P =
+        smartport.addElement(ESC_TEMPERATURE_FIRST_ID, REFRESH_TEMP);
+    telemetry.temp2P =
+        smartport.addElement(ESC_TEMPERATURE_FIRST_ID + 1, REFRESH_TEMP);
     break;
   }
-  if (config.battery == true) {
-    telemetry.voltageAnalogP = smartport.addElement(A1_ID, (uint16_t)REFRESH_VOLT);
 
+  if (config.battery == true) {
+    telemetry.voltageAnalogP =
+        smartport.addElement(A1_ID, (uint16_t)REFRESH_VOLT);
   }
 }
 
@@ -105,34 +103,27 @@ void loop() {
     if (esc.read()) {
       *telemetry.escRpmConsP = smartport.formatEscRpmCons(esc.getRpm(), 0);
       *telemetry.escPowerP = smartport.formatEscPower(esc.getVolt(), 0);
-      *telemetry.temp1P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID, esc.getTemp1());
-      *telemetry.temp2P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID + 1, esc.getTemp2());
+      *telemetry.temp1P =
+          smartport.formatData(ESC_TEMPERATURE_FIRST_ID, esc.getTemp1());
+      *telemetry.temp2P =
+          smartport.formatData(ESC_TEMPERATURE_FIRST_ID + 1, esc.getTemp2());
     }
     break;
   case PROTOCOL_PWM:
     esc.read();
     *telemetry.escRpmConsP = smartport.formatEscRpmCons(esc.getRpm(), 0);
     break;
-  case PROTOCOL_CASTLE:
-    if (esc.read()) {
-      *telemetry.escRpmConsP = smartport.formatEscRpmCons(esc.getRpm(), 0);
-      *telemetry.escPowerP = smartport.formatEscPower(esc.getVolt(), esc.getCurrent());
-      *telemetry.rippleVoltageP = smartport.formatData(VFAS_FIRST_ID, esc.getRippleVoltage());
-      *telemetry.becCurrentP = smartport.formatData(CURR_FIRST_ID, esc.getBecCurrent());
-      *telemetry.becVoltageP = smartport.formatData(VFAS_FIRST_ID + 1, esc.getBecVoltage());
-      *telemetry.temp1P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID, esc.getTemp1());
-    }
-    break;
   }
 
   if (config.battery == true) {
-    *telemetry.voltageAnalogP = smartport.formatData(A1_ID, readVoltageAnalog());
-    #ifdef DEBUG
-      escSerial.print("Analog volt:");
-      escSerial.print(readVoltageAnalog());
-      escSerial.print(" ");
-      escSerial.println(*telemetry.voltageAnalogP);
-    #endif
+    *telemetry.voltageAnalogP =
+        smartport.formatData(A1_ID, readVoltageAnalog());
+#ifdef DEBUG
+    escSerial.print("Analog volt:");
+    escSerial.print(readVoltageAnalog());
+    escSerial.print(" ");
+    escSerial.println(*telemetry.voltageAnalogP);
+#endif
   }
   uint16_t dataId;
   uint32_t value;

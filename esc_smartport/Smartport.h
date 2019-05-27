@@ -167,7 +167,6 @@ public:
   void sendData(uint16_t dataId, int32_t val);
   void sendVoid();
   uint8_t readPacket(uint8_t data[]);
-  uint8_t readPacket2(uint8_t data[]);
   uint8_t available();
   uint32_t formatData(uint16_t dataId, float value);
   uint32_t formatEscPower(float volt, float curr);

@@ -57,7 +57,7 @@ void Smartport::sendVoid() {
   _serial.write((uint8_t)0xFF);
 }
 
-uint8_t Smartport::readPacket2(uint8_t data[]) {
+/*uint8_t Smartport::readPacket2(uint8_t data[]) {
   uint8_t cont = 0;
   if (_serial.available()) {
     uint16_t tsRead = millis();
@@ -91,7 +91,7 @@ uint8_t Smartport::readPacket2(uint8_t data[]) {
       return PACKET_TYPE_POLL;
   }
   return PACKET_TYPE_NONE;
-}
+}*/
 
 uint8_t Smartport::readPacket(uint8_t data[]) {
   uint8_t cont = 0;
