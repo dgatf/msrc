@@ -69,7 +69,7 @@ void initConfig() {
 
   if (config.battery == true) {
     telemetry.voltageAnalogP =
-        smartport.addElement(A1_ID, (uint16_t)REFRESH_VOLT);
+        smartport.addElement(A3_FIRST_ID, (uint16_t)REFRESH_VOLT);
   }
 }
 
@@ -117,7 +117,7 @@ void loop() {
 
   if (config.battery == true) {
     *telemetry.voltageAnalogP =
-        smartport.formatData(A1_ID, readVoltageAnalog());
+        smartport.formatData(A3_FIRST_ID, readVoltageAnalog());
   }
   uint16_t dataId;
   uint32_t value;
