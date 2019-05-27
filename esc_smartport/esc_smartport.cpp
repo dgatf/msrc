@@ -118,10 +118,6 @@ void loop() {
   if (config.battery == true) {
     *telemetry.voltageAnalogP =
         smartport.formatData(A1_ID, readVoltageAnalog());
-#ifdef DEBUG
-    escSerial.print("Analog volt:");
-    escSerial.print(readVoltageAnalog());
-#endif
   }
   uint16_t dataId;
   uint32_t value;

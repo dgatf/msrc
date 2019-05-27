@@ -48,15 +48,35 @@ bool Esc::readHWV3() {
 bool Esc::readHWV4() {
   while (_serial.available() >= 19) {
     if (_serial.read() == 0x9B) {
-      uint8_t data[18];
-      uint8_t cont = _serial.readBytes(data, 18);
-      if (cont == 18 && data[1] != 155) {
+      uint8_t data[32];
+      uint8_t cont = _serial.readBytes(data, 32);
+      if (cont == 18 && data[0] != 155) {
         rpm = (uint32_t)data[7] << 16 | data[8] << 8 | data[9];
         voltage = (float)(data[10] << 8 | data[11]) / 100;
         temp1 = (float)(data[14] << 8 | data[15]) / 100;
         temp2 = (float)(data[16] << 8 | data[17]) / 100;
 #ifdef DEBUG
         uint32_t pn = (uint32_t)data[0] << 16 | data[1] << 8 | data[2];
+        _serial.print("PN: ");
+        _serial.print(pn);
+        _serial.print(" RPM: ");
+        _serial.print(rpm);
+        _serial.print(" Volt: ");
+        _serial.print(voltage);
+        _serial.print(" Temp1: ");
+        _serial.print(temp1);
+        _serial.print(" Temp2: ");
+        _serial.println(temp2);
+#endif
+        return true;
+      }
+      if (cont == 31) {
+        rpm = (uint32_t)data[20] << 16 | data[21] << 8 | data[22];
+        voltage = (float)(data[23] << 8 | data[24]) / 100;
+        temp1 = (float)(data[27] << 8 | data[28]) / 100;
+        temp2 = (float)(data[29] << 8 | data[30]) / 100;
+#ifdef DEBUG
+        uint32_t pn = (uint32_t)data[13] << 16 | data[14] << 8 | data[15];
         _serial.print("PN: ");
         _serial.print(pn);
         _serial.print(" RPM: ");
