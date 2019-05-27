@@ -121,8 +121,6 @@ void loop() {
 #ifdef DEBUG
     escSerial.print("Analog volt:");
     escSerial.print(readVoltageAnalog());
-    escSerial.print(" ");
-    escSerial.println(*telemetry.voltageAnalogP);
 #endif
   }
   uint16_t dataId;
