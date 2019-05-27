@@ -8,7 +8,7 @@ local sendConfigOk = true
 local lcdChange = false
 local config =
    {firmwareVersion = '',
-    protocol = {selected = 5, list = {'HW V3', 'HW V4/V5', 'PWM', ''}, elements = 3},
+    protocol = {selected = 4, list = {'HW V3', 'HW V4/V5', 'PWM', ''}, elements = 3},
     battery = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
     pwm = {selected = 3, list = {'Off', 'On', ''}, elements = 2}}
 local selection = {selected = 1, state = false, list = {'protocol', 'battery', 'pwm'}, elements = 3}
