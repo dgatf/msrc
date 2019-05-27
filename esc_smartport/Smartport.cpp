@@ -239,8 +239,8 @@ uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
         }
       }
     } else if (type == PACKET_TYPE_PACKET && data[1] == SMARTPORT_SENSOR_TX) {
-      dataId = data[4] << 8 | data[3];
-      value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 | data[6] << 8 |
+      dataId = (uint16_t)data[4] << 8 | data[3];
+      value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 | (uint16_t)data[6] << 8 |
               data[5];
       return PACKET_RECEIVED;
     }

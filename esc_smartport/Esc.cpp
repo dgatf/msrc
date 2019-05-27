@@ -19,11 +19,11 @@ bool Esc::readHWV3() {
       uint8_t data[9];
       uint8_t cont = _serial.readBytes(data, 9);
       if (cont == 9 && data[3] == 0 && data[5] == 0) {
-        uint16_t rpmCycle = data[7] << 8 | data[8];
+        uint16_t rpmCycle = (uint16_t)data[7] << 8 | data[8];
         rpm = (float)60000000 / rpmCycle;
         tsEsc = millis();
 #ifdef DEBUG
-        uint32_t pn = (uint32_t)data[0] << 16 | data[1] << 8 | data[2];
+        uint32_t pn = (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
         _serial.print("PN: ");
         _serial.print(pn);
         _serial.print(" RPM: ");
@@ -51,12 +51,12 @@ bool Esc::readHWV4() {
       uint8_t data[32];
       uint8_t cont = _serial.readBytes(data, 32);
       if (cont == 18 && data[0] != 155) {
-        rpm = (uint32_t)data[7] << 16 | data[8] << 8 | data[9];
-        voltage = (float)(data[10] << 8 | data[11]) / 100;
-        temp1 = (float)(data[14] << 8 | data[15]) / 100;
-        temp2 = (float)(data[16] << 8 | data[17]) / 100;
+        rpm = (uint32_t)data[7] << 16 | (uint16_t)data[8] << 8 | data[9];
+        voltage = (float)((uint16_t)data[10] << 8 | data[11]) / 100;
+        temp1 = (float)((uint16_t)data[14] << 8 | data[15]) / 100;
+        temp2 = (float)((uint16_t)data[16] << 8 | data[17]) / 100;
 #ifdef DEBUG
-        uint32_t pn = (uint32_t)data[0] << 16 | data[1] << 8 | data[2];
+        uint32_t pn = (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
         _serial.print("PN: ");
         _serial.print(pn);
         _serial.print(" RPM: ");
@@ -66,17 +66,23 @@ bool Esc::readHWV4() {
         _serial.print(" Temp1: ");
         _serial.print(temp1);
         _serial.print(" Temp2: ");
-        _serial.println(temp2);
+        _serial.print(temp2);
+        _serial.print(" 7:");
+        _serial.print(data[7],HEX);
+        _serial.print(" 8:");
+        _serial.print(data[8],HEX);
+        _serial.print(" 9:");
+        _serial.println(data[9],HEX);
 #endif
         return true;
       }
       if (cont == 31) {
-        rpm = (uint32_t)data[20] << 16 | data[21] << 8 | data[22];
-        voltage = (float)(data[23] << 8 | data[24]) / 100;
-        temp1 = (float)(data[27] << 8 | data[28]) / 100;
-        temp2 = (float)(data[29] << 8 | data[30]) / 100;
+        rpm = (uint32_t)data[20] << 16 | (uint16_t)data[21] << 8 | data[22];
+        voltage = (float)((uint16_t)data[23] << 8 | data[24]) / 100;
+        temp1 = (float)((uint16_t)data[27] << 8 | data[28]) / 100;
+        temp2 = (float)((uint16_t)data[29] << 8 | data[30]) / 100;
 #ifdef DEBUG
-        uint32_t pn = (uint32_t)data[13] << 16 | data[14] << 8 | data[15];
+        uint32_t pn = (uint32_t)data[13] << 16 | (uint16_t)data[14] << 8 | data[15];
         _serial.print("PN: ");
         _serial.print(pn);
         _serial.print(" RPM: ");
