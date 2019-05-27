@@ -40,7 +40,7 @@
 
 // Pins
 
-#define PIN_SMARTPORT_RX 8  // only pins 8,9,10,11
+#define PIN_SMARTPORT_RX 10  // pins 10,11 (8 and 9 used for pwm in and pwm out)
 #define PIN_SMARTPORT_TX 11
 #define PIN_BATT A1
 
