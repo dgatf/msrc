@@ -9,8 +9,8 @@
 
 // Pins
 
-#define PIN_PWM_IN 8 // only pin 8. timer1 capt
-#define PIN_PWM_OUT 9 // only pin 9. timer1 pwm
+#define PIN_PWM_IN 8 // TIMER1 CAPT PIN8
+#define PIN_PWM_OUT 9 // TIMER1 PWM PIN 9
 
 #define F_CPU_SCALER (uint8_t)((uint32_t)F_CPU/8000000)
 #define COMP_TO_MS (float)8000/F_CPU
