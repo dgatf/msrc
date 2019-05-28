@@ -25,7 +25,7 @@ Arduino can read up to 3.3V/5V and is optimized for signal inputs with 10K imped
 
 To select R values apply formulas:
 
-*Vo = Vi*R2/(R1+R2) < 3.3V or 5V*
+*Vo = Vi*R2/(R1+R2) < 3.3V or 5V
 
 *Z = 1/((1/R1)+(1/R2)) < 10K*
 
