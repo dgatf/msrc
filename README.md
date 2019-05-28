@@ -20,7 +20,7 @@ PWM signal properties: logic level 3.3V and duty cycle 17%
 
 ## Voltage divider circuit (optional)
 
-Metal resistors are recommended as gives more accurate readings (0.1W or more)
+Metal resistors are recommended as gives more accurate readings (0.1W or higher)
 Arduino can read up to 5V and is optimized for signal inputs with 10K impedance
 
 To select R values apply formulas:
@@ -31,7 +31,7 @@ To select R values apply formulas:
 
 <p align="center"><img src="./images/Resistive_divider.png" width="200"></p>
 
-For 6S battery(or lower) and Pro Mini 3.3v:
+For 6S battery (or lower) and Pro Mini 3.3v:
 
  - R1 68K
  - R2 10K
