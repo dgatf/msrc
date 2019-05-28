@@ -59,7 +59,7 @@ If more than 6S change R values or you may burn the Arduino!
 ## Adjust RPM sensor
 
 - Blades/poles: number of pair of poles * main gear teeth  
-- Multiplies: pinion gear teeth
+- Multiplier: pinion gear teeth
 
 ## Adjust A3 sensor (for voltage divider)
 
