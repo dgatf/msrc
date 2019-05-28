@@ -63,7 +63,7 @@ If more than 6S change R values or you may burn the Arduino!
 
 ## Adjust A3 sensor (for voltage divider)
 
-Measure the voltage of the battery with a voltmeter and adjust Ratio in VFAS sensor
+Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3 sensor
 
 ## Configuration
 
@@ -77,7 +77,7 @@ Options:
 - Battery. For voltage divider
 - PWM. To generate PWM output from ESC serial  (for obbywing Flyfun V5)
 
-Copy the file escSp.lua to the TELEMETRY folder in the sdcard of the Tx and add ther script to a telemetry screen (Script->escSp)
+Copy the file escSp.lua to the TELEMETRY folder in the sdcard of the Tx and add ther script to a telemetry screen (*Script->escSp*)
 
 ## Flash to Arduino
 
