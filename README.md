@@ -25,11 +25,11 @@ Arduino can read up to 5V and is optimized for signal inputs with 10K impedance
 
 To select R values apply formulas:
 
-Vo = Vi*R2/(R1+R2) < 3.3V or 5V
+*Vo = Vi*R2/(R1+R2) < 3.3V or 5V*
 
-Z = 1/((1/R1)+(1/R2)) < 10K
+*Z = 1/((1/R1)+(1/R2)) < 10K*
 
-<img src="./images/Resistive_divider.png" width="200">
+<p align="center"><img src="./images/Resistive_divider.png" width="200"></p>
 
 For 6S battery(or lower) and Pro Mini 3.3v:
 
@@ -51,9 +51,9 @@ If more than 6S change R values or you may burn the Arduino!
  - Voltage divider + to PIN_BATT (A1)
  - Voltage divider - to Gnd
 
-<img src="./images/esc_smartport11.png" width="600">
+<p align="center"><img src="./images/esc_smartport11.png" width="600">
 <img src="./images/top.jpg" width="400">
-<img src="./images/bottom.jpg" width="400">
+<img src="./images/bottom.jpg" width="400"></p>
 
 
 ## Adjust RPM sensor
