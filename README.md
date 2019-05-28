@@ -69,7 +69,7 @@ Measure the voltage of the battery with a voltmeter and adjust Ratio in VFAS sen
 
 The configuration is modified with a lua script (openTx 2.2 or higher)
 
-<img src="./images/escSp.bmp" width="300">
+<p align="center"><img src="./images/escSp.bmp" width="300"></p>
 
 Options:
 
