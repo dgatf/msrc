@@ -21,7 +21,7 @@ PWM signal properties: logic level 3.3V and duty cycle 17%
 ## Voltage divider circuit (optional)
 
 Metal resistors are recommended as gives more accurate readings (0.1W or higher)
-Arduino can read up to 5V and is optimized for signal inputs with 10K impedance
+Arduino can read up to 3.3V/5V and is optimized for signal inputs with 10K impedance
 
 To select R values apply formulas:
 
