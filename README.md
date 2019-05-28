@@ -61,7 +61,7 @@ If more than 6S change R values or you may burn the Arduino!
 - Blades/poles: number of pair of poles * main gear teeth  
 - Multiplies: pinion gear teeth
 
-## Adjust A1 sensor (for voltage divider)
+## Adjust A3 sensor (for voltage divider)
 
 Measure the voltage of the battery with a voltmeter and adjust Ratio in VFAS sensor
 
