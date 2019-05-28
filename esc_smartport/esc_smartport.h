@@ -10,7 +10,6 @@
  * - RPM PWM signal supported
  * - Battery voltage with voltage divider
  * - PWM output (for HW V5 Flyfun)
- * - Castle Link (beta)
  *
  * Adjust RPM sensor in OpenTx:
  *
