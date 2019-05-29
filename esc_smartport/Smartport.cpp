@@ -6,23 +6,20 @@ Smartport::Smartport(Stream &serial) : _serial(serial), elementP(), packetP() {
 
 void Smartport::sendByte(uint8_t c, uint16_t *crcp) {
   uint16_t crc = *crcp;
-  if (c == 0x7D || c == 0x7E) {
+
+  if (crcp != NULL) {
     crc += c;
     crc += crc >> 8;
     crc &= 0x00FF;
     *crcp = crc;
-    c ^= 0x20;
-    _serial.write(0x7D);
-    _serial.write(c);
-    return;
   }
+
+  if (c == 0x7D || c == 0x7E) {
+    _serial.write(0x7D);
+    c ^= 0x20;
+  }
+
   _serial.write(c);
-  if (crcp == NULL)
-    return;
-  crc += c;
-  crc += crc >> 8;
-  crc &= 0x00FF;
-  *crcp = crc;
 }
 
 void Smartport::sendData(uint16_t dataId, int32_t val) {
@@ -47,51 +44,11 @@ void Smartport::sendData(uint16_t dataId, int32_t val) {
 }
 
 void Smartport::sendVoid() {
-  _serial.write((uint8_t)0x00);
-  _serial.write((uint8_t)0x00);
-  _serial.write((uint8_t)0x00);
-  _serial.write((uint8_t)0x00);
-  _serial.write((uint8_t)0x00);
-  _serial.write((uint8_t)0x00);
-  _serial.write((uint8_t)0x00);
+  for (uint8_t i = 0; i < 7; i++) {
+    _serial.write((uint8_t)0x00);
+  }
   _serial.write((uint8_t)0xFF);
 }
-
-/*uint8_t Smartport::readPacket2(uint8_t data[]) {
-  uint8_t cont = 0;
-  if (_serial.available()) {
-    uint16_t tsRead = millis();
-    uint16_t crc = 0;
-    while ((uint16_t)millis() - tsRead < SMARTPORT_TIMEOUT) {
-      if (_serial.available()) {
-        data[cont] = _serial.read();
-        if (data[cont] == 0x7D) {
-          data[cont] = _serial.read() ^ 0x20;
-        }
-        if (data[cont] == 0x7E) {
-          cont = 0;
-          crc = 0;
-        }
-        if (cont > 1 && cont < 9) {
-          crc += data[cont];
-          crc += crc >> 8;
-          crc &= 0x00FF;
-        }
-        cont++;
-      }
-    }
-    if (cont == 10) {
-      crc = 0xFF - (uint8_t)crc;
-      if (crc != data[9])
-        return PACKET_TYPE_NONE;
-      else
-        return PACKET_TYPE_PACKET;
-    }
-    if (cont == 2)
-      return PACKET_TYPE_POLL;
-  }
-  return PACKET_TYPE_NONE;
-}*/
 
 uint8_t Smartport::readPacket(uint8_t data[]) {
   uint8_t cont = 0;
@@ -222,8 +179,8 @@ uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
         return PACKET_SENT;
       }
       if (elementP != NULL) {
-          if ((uint16_t)millis() - elementP->ts >=
-          (uint16_t)elementP->refresh * 100) {
+        if ((uint16_t)millis() - elementP->ts >=
+            (uint16_t)elementP->refresh * 100) {
           sendData(elementP->dataId, elementP->value);
           elementP->ts = millis();
           elementP = elementP->nextP;
@@ -240,8 +197,8 @@ uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
       }
     } else if (type == PACKET_TYPE_PACKET && data[1] == SMARTPORT_SENSOR_TX) {
       dataId = (uint16_t)data[4] << 8 | data[3];
-      value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 | (uint16_t)data[6] << 8 |
-              data[5];
+      value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 |
+              (uint16_t)data[6] << 8 | data[5];
       return PACKET_RECEIVED;
     }
   }
@@ -249,7 +206,25 @@ uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
 }
 
 uint8_t Smartport::processTelemetry() {
-  uint16_t dataId;
-  uint32_t value;
-  return processTelemetry(dataId, value);
+  if (available()) {
+    uint8_t data[64];
+    uint8_t type;
+    type = readPacket(data);
+    if (type == PACKET_TYPE_POLL && data[1] == SMARTPORT_SENSOR) {
+      if (elementP != NULL) {
+        if ((uint16_t)millis() - elementP->ts >=
+            (uint16_t)elementP->refresh * 100) {
+          sendData(elementP->dataId, elementP->value);
+          elementP->ts = millis();
+          elementP = elementP->nextP;
+          return PACKET_SENT_TELEMETRY;
+        } else {
+          sendVoid();
+          elementP = elementP->nextP;
+          return PACKET_SENT_VOID;
+        }
+      }
+    }
+  }
+  return PACKET_NONE;
 }

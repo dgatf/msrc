@@ -39,8 +39,8 @@
 
 // Pins
 
-#define PIN_SMARTPORT_RX 7
-#define PIN_SMARTPORT_TX 12
+#define PIN_SMARTPORT_RX 8
+#define PIN_SMARTPORT_TX 8
 #define PIN_BATT A1
 
 // Telemetry refresh rate in ms

@@ -9,8 +9,7 @@ ISR(TIMER1_CAPT_vect) {
   pwmInInit = ICR1;
 }
 
-Esc::Esc(Stream &serial) : _serial(serial) {
-}
+Esc::Esc(Stream &serial) : _serial(serial) {}
 
 bool Esc::readHWV3() {
   static uint16_t tsEsc = 0;
@@ -23,7 +22,8 @@ bool Esc::readHWV3() {
         rpm = (float)60000000 / rpmCycle;
         tsEsc = millis();
 #ifdef DEBUG
-        uint32_t pn = (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
+        uint32_t pn =
+            (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
         _serial.print("PN: ");
         _serial.print(pn);
         _serial.print(" RPM: ");
@@ -56,7 +56,8 @@ bool Esc::readHWV4() {
         temp1 = (float)((uint16_t)data[14] << 8 | data[15]) / 100;
         temp2 = (float)((uint16_t)data[16] << 8 | data[17]) / 100;
 #ifdef DEBUG
-        uint32_t pn = (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
+        uint32_t pn =
+            (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
         _serial.print("PN: ");
         _serial.print(pn);
         _serial.print(" RPM: ");
@@ -68,11 +69,11 @@ bool Esc::readHWV4() {
         _serial.print(" Temp2: ");
         _serial.print(temp2);
         _serial.print(" 7:");
-        _serial.print(data[7],HEX);
+        _serial.print(data[7], HEX);
         _serial.print(" 8:");
-        _serial.print(data[8],HEX);
+        _serial.print(data[8], HEX);
         _serial.print(" 9:");
-        _serial.println(data[9],HEX);
+        _serial.println(data[9], HEX);
 #endif
         return true;
       }
@@ -82,7 +83,8 @@ bool Esc::readHWV4() {
         temp1 = (float)((uint16_t)data[27] << 8 | data[28]) / 100;
         temp2 = (float)((uint16_t)data[29] << 8 | data[30]) / 100;
 #ifdef DEBUG
-        uint32_t pn = (uint32_t)data[13] << 16 | (uint16_t)data[14] << 8 | data[15];
+        uint32_t pn =
+            (uint32_t)data[13] << 16 | (uint16_t)data[14] << 8 | data[15];
         _serial.print("PN: ");
         _serial.print(pn);
         _serial.print(" RPM: ");
@@ -96,6 +98,15 @@ bool Esc::readHWV4() {
 #endif
         return true;
       }
+#ifdef DEBUG
+      if (!(cont == 18 && data[0] != 155) && cont != 31) {
+        for (uint8_t i = 0; i < cont; i++) {
+          Serial.print(data[cont]);
+          Serial.print(" ");
+        }
+        Serial.println();
+      }
+#endif
     }
   }
   return false;
