@@ -46,72 +46,75 @@ bool Esc::readHWV3() {
 }
 
 bool Esc::readHWV4() {
-  if (_serial.available() >= 19) {
-    uint8_t data[33];
-    uint8_t cont = _serial.readBytes(data, 33);
-    if (cont == 19 && data[1] != 155) {
-      rpm = (uint32_t)data[8] << 16 | (uint16_t)data[9] << 8 | data[10];
-      voltage = (float)((uint16_t)data[11] << 8 | data[12]) / 100;
-      temp1 = (float)((uint16_t)data[15] << 8 | data[16]) / 100;
-      temp2 = (float)((uint16_t)data[17] << 8 | data[18]) / 100;
+  while (_serial.available() >= 19) {
+    
+    uint8_t header = _serial.read();
 
+    //short packet
+    if (header == 0x9B) {
+      uint8_t data[18];
+      uint8_t cont = _serial.readBytes(data, 18);
+      if (cont == 18 && data[0] != 0x9B) {
+        rpm = (uint32_t)data[7] << 16 | (uint16_t)data[8] << 8 | data[9];
+        voltage = (float)((uint16_t)data[10] << 8 | data[11]) / 100;
+        temp1 = (float)((uint16_t)data[14] << 8 | data[15]) / 100;
+        temp2 = (float)((uint16_t)data[16] << 8 | data[17]) / 100;
 #ifdef DEBUG
-      uint32_t pn = (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
-      _serial.print("PN: ");
-      _serial.print(pn);
-      _serial.print(" RPM: ");
-      _serial.print(rpm);
-      _serial.print(" Volt: ");
-      _serial.print(voltage);
-      _serial.print(" Temp1: ");
-      _serial.print(temp1);
-      _serial.print(" Temp2: ");
-      _serial.print(temp2);
-      _serial.print("  ");
-      for (uint8_t i = 0; i < cont; i++) {
-        _serial.print(data[i]);
-        _serial.print(" ");
-      }
-      _serial.println();
+        uint32_t pn =
+            (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
+        _serial.print("PN: ");
+        _serial.print(pn);
+        _serial.print(" RPM: ");
+        _serial.print(rpm);
+        _serial.print(" Volt: ");
+        _serial.print(voltage);
+        _serial.print(" Temp1: ");
+        _serial.print(temp1);
+        _serial.print(" Temp2: ");
+        _serial.print(temp2);
+        _serial.print("  ");
+        for (uint8_t i = 0; i < cont; i++) {
+          _serial.print(data[i], HEX);
+          _serial.print(" ");
+        }
+        _serial.println();
 #endif
-      return true;
+        return true;
+      }
     }
-    if (cont == 33) {
-      rpm = (uint32_t)data[22] << 16 | (uint16_t)data[23] << 8 | data[24];
-      voltage = (float)((uint16_t)data[25] << 8 | data[26]) / 100;
-      temp1 = (float)((uint16_t)data[29] << 8 | data[30]) / 100;
-      temp2 = (float)((uint16_t)data[31] << 8 | data[32]) / 100;
+
+    //long packet
+    if (header == 0xB9) {
+      uint8_t data[31];
+      uint8_t cont = _serial.readBytes(data, 31);
+      if (cont == 31 && data[0] == 0x9B) {
+        rpm = (uint32_t)data[20] << 16 | (uint16_t)data[21] << 8 | data[22];
+        voltage = (float)((uint16_t)data[23] << 8 | data[24]) / 100;
+        temp1 = (float)((uint16_t)data[27] << 8 | data[28]) / 100;
+        temp2 = (float)((uint16_t)data[29] << 8 | data[30]) / 100;
 #ifdef DEBUG
-      uint32_t pn =
-          (uint32_t)data[15] << 16 | (uint16_t)data[16] << 8 | data[17];
-      _serial.print("PN: ");
-      _serial.print(pn);
-      _serial.print(" RPM: ");
-      _serial.print(rpm);
-      _serial.print(" Volt: ");
-      _serial.print(voltage);
-      _serial.print(" Temp1: ");
-      _serial.print(temp1);
-      _serial.print(" Temp2: ");
-      _serial.println(temp2);
-      _serial.print("  ");
-      for (uint8_t i = 0; i < cont; i++) {
-        _serial.print(data[i]);
-        _serial.print(" ");
-      }
-      _serial.println();
+        uint32_t pn =
+            (uint32_t)data[13] << 16 | (uint16_t)data[14] << 8 | data[15];
+        _serial.print("PN: ");
+        _serial.print(pn);
+        _serial.print(" RPM: ");
+        _serial.print(rpm);
+        _serial.print(" Volt: ");
+        _serial.print(voltage);
+        _serial.print(" Temp1: ");
+        _serial.print(temp1);
+        _serial.print(" Temp2: ");
+        _serial.println(temp2);
+        _serial.print("  ");
+        for (uint8_t i = 0; i < cont; i++) {
+          _serial.print(data[i], HEX);
+          _serial.print(" ");
+        }
+        _serial.println();
 #endif
-      return true;
-    }
-#ifdef DEBUG
-    if (!(cont == 19 && data[1] != 155) && cont != 33) {
-      for (uint8_t i = 0; i < cont; i++) {
-        _serial.print(data[i]);
-        _serial.print(" ");
+        return true;
       }
-      _serial.println();
     }
-#endif
   }
   return false;
 }
