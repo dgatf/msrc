@@ -47,7 +47,7 @@ bool Esc::readHWV3() {
 
 bool Esc::readHWV4() {
   while (_serial.available() >= 19) {
-    
+
     uint8_t header = _serial.read();
 
     //short packet
@@ -85,16 +85,16 @@ bool Esc::readHWV4() {
 
     //long packet
     if (header == 0xB9) {
-      uint8_t data[31];
-      uint8_t cont = _serial.readBytes(data, 31);
-      if (cont == 31 && data[0] == 0x9B) {
-        rpm = (uint32_t)data[20] << 16 | (uint16_t)data[21] << 8 | data[22];
-        voltage = (float)((uint16_t)data[23] << 8 | data[24]) / 100;
-        temp1 = (float)((uint16_t)data[27] << 8 | data[28]) / 100;
-        temp2 = (float)((uint16_t)data[29] << 8 | data[30]) / 100;
+      uint8_t data[32];
+      uint8_t cont = _serial.readBytes(data, 32);
+      if (cont == 32 && data[0] == 0x9B) {
+        rpm = (uint32_t)data[21] << 16 | (uint16_t)data[22] << 8 | data[23];
+        voltage = (float)((uint16_t)data[24] << 8 | data[25]) / 100;
+        temp1 = (float)((uint16_t)data[28] << 8 | data[29]) / 100;
+        temp2 = (float)((uint16_t)data[30] << 8 | data[31]) / 100;
 #ifdef DEBUG
         uint32_t pn =
-            (uint32_t)data[13] << 16 | (uint16_t)data[14] << 8 | data[15];
+            (uint32_t)data[14] << 16 | (uint16_t)data[15] << 8 | data[16];
         _serial.print("PN: ");
         _serial.print(pn);
         _serial.print(" RPM: ");
