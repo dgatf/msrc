@@ -68,8 +68,7 @@ void initConfig() {
   }
 
   if (config.battery == true) {
-    telemetry.voltageAnalogP =
-        smartport.addElement(A3_FIRST_ID, (uint16_t)REFRESH_VOLT);
+    telemetry.voltageAnalogP = smartport.addElement(A3_FIRST_ID, REFRESH_VOLT);
   }
 }
 
@@ -119,9 +118,18 @@ void loop() {
     *telemetry.voltageAnalogP =
         smartport.formatData(A3_FIRST_ID, readVoltageAnalog());
   }
+
   uint16_t dataId;
   uint32_t value;
   uint8_t type = smartport.processTelemetry(dataId, value);
+#ifdef DEBUG
+  Serial.print("Type: ");
+  Serial.print(type);
+  Serial.print(" DataId: ");
+  Serial.print(dataId);
+  Serial.print(" Value: ");
+  Serial.println(value);
+#endif
   if (type == PACKET_RECEIVED) {
     if (dataId == 0x5000) {
       uint16_t value = 0;
