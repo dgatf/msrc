@@ -122,14 +122,14 @@ void loop() {
   uint16_t dataId;
   uint32_t value;
   uint8_t type = smartport.processTelemetry(dataId, value);
-#ifdef DEBUG
+/*#ifdef DEBUG
   Serial.print("Type: ");
   Serial.print(type);
   Serial.print(" DataId: ");
   Serial.print(dataId);
   Serial.print(" Value: ");
   Serial.println(value);
-#endif
+#endif*/
   if (type == PACKET_RECEIVED) {
     if (dataId == 0x5000) {
       uint16_t value = 0;
