@@ -22,7 +22,7 @@ end
 
 local function increase(data)
   data.selected = data.selected + 1
-  if data.selected == data.elements + 1 then data.selected = 1 end
+  if data.selected > data.elements then data.selected = 1 end
 end
 
 local function decrease(data)
@@ -67,13 +67,13 @@ local function run_func(event)
   if receiveConfigOk == false or sendConfigOk == false then
     local physicalId, primId, dataId, value = sportTelemetryPop()          -- frsky/lua: phys_id/sensor id, type/frame_id, sensor_id/data_id
     if physicalId == 9 and dataId == 0x5001 then
-      if bit32.extract(value,0,2) + 1 >= 0 and bit32.extract(value,0,2) + 1 <= 2 then
+      if bit32.extract(value,0,2) + 1 >= 1 and bit32.extract(value,0,2) + 1 <= 3 then
         config.protocol.selected = bit32.extract(value,0,2) + 1                      -- bits 1,2
       end
-      if bit32.extract(value,2) + 1 == 0 or bit32.extract(value,2) + 1 == 1 then
+      if bit32.extract(value,2) + 1 >= 1 or bit32.extract(value,2) + 1 <= 2 then
         config.battery.selected = bit32.extract(value,2) + 1                         -- bit 3
       end
-      if bit32.extract(value,3) + 1 == 0 or bit32.extract(value,3) + 1 == 1 then
+      if bit32.extract(value,3) + 1 >= 1 or bit32.extract(value,3) + 1 <= 2 then
         config.pwm.selected = bit32.extract(value,3) + 1                             -- bit 4
       end
       config.firmwareVersion = bit32.extract(value,4,4) .. '.' .. bit32.extract(value,8,4) -- bits 5-8.9-12
