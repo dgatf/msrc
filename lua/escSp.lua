@@ -47,6 +47,7 @@ local function bg_func(event)
 end
 
 local function run_func(event)
+
   if refresh == 5 or lcdChange == true or selection.state == true then
     lcd.clear()
     lcd.drawScreenTitle('ESC SmartPort v' .. scriptVersion, 1, 1)
@@ -66,9 +67,15 @@ local function run_func(event)
   if receiveConfigOk == false or sendConfigOk == false then
     local physicalId, primId, dataId, value = sportTelemetryPop()          -- frsky/lua: phys_id/sensor id, type/frame_id, sensor_id/data_id
     if physicalId == 9 and dataId == 0x5001 then
-      config.protocol.selected = bit32.extract(value,0,2) + 1                      -- bits 1,2
-      config.battery.selected = bit32.extract(value,2) + 1                         -- bit 3
-      config.pwm.selected = bit32.extract(value,3) + 1                             -- bit 4
+      if bit32.extract(value,0,2) + 1 >= 0 and bit32.extract(value,0,2) + 1 <= 2 then
+        config.protocol.selected = bit32.extract(value,0,2) + 1                      -- bits 1,2
+      end
+      if bit32.extract(value,2) + 1 == 0 or bit32.extract(value,2) + 1 == 1 then
+        config.battery.selected = bit32.extract(value,2) + 1                         -- bit 3
+      end
+      if bit32.extract(value,3) + 1 == 0 or bit32.extract(value,3) + 1 == 1 then
+        config.pwm.selected = bit32.extract(value,3) + 1                             -- bit 4
+      end
       config.firmwareVersion = bit32.extract(value,4,4) .. '.' .. bit32.extract(value,8,4) -- bits 5-8.9-12
       lcdChange = true
       receiveConfigOk = true
