@@ -33,10 +33,24 @@ To select R values apply formulas:
 
 For 6S battery (or lower) and Pro Mini 3.3v:
 
- - R1 68K
- - R2 10K
+ - R1 68k
+ - R2 10k
 
 If more than 6S change R values or you may burn the Arduino!
+
+## Thermistors (optional)
+
+Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta if needed (default is 4190). Sensor output us in Celsius
+
+
+## OpenTx sensors (sensor Id 10)
+
+- RPM: EscR
+- ESC voltage: EscV
+- ESC temp: EscT
+- Voltage divider: A3
+- Thermistor 1: Tmp1
+- Thermistor 2 : Tmp1
 
 ## Wiring:
 
