@@ -12,8 +12,12 @@ void readConfig() {
   escSerial.println("Read config");
   escSerial.print("Protocol: ");
   escSerial.println(config.protocol);
-  escSerial.print("Battery: ");
-  escSerial.println(config.battery);
+  escSerial.print("Voltage1: ");
+  escSerial.println(config.voltage1);
+  escSerial.print("Voltage2: ");
+  escSerial.println(config.voltage2);
+  escSerial.print("Current: ");
+  escSerial.println(config.current);
   escSerial.print("NTC1: ");
   escSerial.println(config.ntc1);
   escSerial.print("NTC2: ");
@@ -31,8 +35,12 @@ void writeConfig() {
   escSerial.println("Write config");
   escSerial.print("Protocol: ");
   escSerial.println(config.protocol);
-  escSerial.print("Battery: ");
-  escSerial.println(config.battery);
+  escSerial.print("Voltage1: ");
+  escSerial.println(config.voltage1);
+  escSerial.print("Voltage2: ");
+  escSerial.println(config.voltage2);
+  escSerial.print("Current: ");
+  escSerial.println(config.current);
   escSerial.print("NTC1: ");
   escSerial.println(config.ntc1);
   escSerial.print("NTC2: ");
@@ -67,8 +75,14 @@ void initConfig() {
     break;
   }
 
-  if (config.battery == true) {
-    telemetry.voltageAnalogP = smartport.addElement(A3_FIRST_ID, REFRESH_VOLT);
+  if (config.voltage1 == true) {
+    telemetry.voltageAnalog1P = smartport.addElement(A3_FIRST_ID, REFRESH_VOLT);
+  }
+  if (config.voltage2 == true) {
+    telemetry.voltageAnalog2P = smartport.addElement(A3_FIRST_ID + 1, REFRESH_VOLT);
+  }
+  if (config.current == true) {
+    telemetry.currentAnalogP = smartport.addElement(VFAS_FIRST_ID, REFRESH_VOLT);
   }
   if (config.ntc1 == true) {
     telemetry.ntc1P = smartport.addElement(T1_FIRST_ID, REFRESH_TEMP);
@@ -78,15 +92,14 @@ void initConfig() {
   }
 }
 
-float readVoltageAnalog() {
+float readVoltageAnalog(uint8_t pin) {
   const float analogToVolt = (float)BOARD_VCC / 1024;
-  uint16_t value = analogRead(PIN_BATT);
+  uint16_t value = analogRead(pin);
   return value * analogToVolt;
 }
 
 float readNtc(uint8_t pin) {
-  const float analogToVolt = (float)BOARD_VCC / 1024;
-  float volt = analogRead(pin) * analogToVolt;
+  float volt = readVoltageAnalog(pin);
   float ntcR_Rref = (volt * NTC_R1 / (BOARD_VCC - volt)) / NTC_R_REF;
   /*return
       1 / (NTC_A1 + NTC_B1 * log(ntcR_Rref) + NTC_C1 * pow(log(ntcR_Rref), 2) +
@@ -135,9 +148,17 @@ void loop() {
     break;
   }
 
-  if (config.battery == true) {
-    *telemetry.voltageAnalogP =
-        smartport.formatData(A3_FIRST_ID, readVoltageAnalog());
+  if (config.voltage1 == true) {
+    *telemetry.voltageAnalog1P =
+        smartport.formatData(A3_FIRST_ID, readVoltageAnalog(PIN_VOLTAGE1));
+  }
+  if (config.voltage2 == true) {
+    *telemetry.voltageAnalog2P =
+        smartport.formatData(A3_FIRST_ID + 1, readVoltageAnalog(PIN_VOLTAGE2));
+  }
+  if (config.current == true) {
+    *telemetry.currentAnalogP =
+        smartport.formatData(VFAS_FIRST_ID, readVoltageAnalog(PIN_CURRENT));
   }
   if (config.ntc1 == true) {
     *telemetry.ntc1P = smartport.formatData(T1_FIRST_ID, readNtc(PIN_NTC1));
@@ -149,7 +170,7 @@ void loop() {
   uint16_t dataId;
   uint32_t value;
   uint8_t type = smartport.processTelemetry(dataId, value);
-#ifdef DEBUG
+#ifdef DEBUG2
   Serial.print("Type: ");
   Serial.print(type);
   Serial.print(" DataId: ");
@@ -161,20 +182,25 @@ void loop() {
     if (dataId == 0x5000) {
       uint32_t value = 0;
       value = config.protocol;
-      value |= config.battery << 2;
-      value |= config.pwmOut << 3;
-      value |= config.ntc1 << 4;
-      value |= config.ntc2 << 5;
+      value |= config.voltage1 << 2;
+      value |= config.voltage2 << 3;
+      value |= config.current << 4;
+      value |= config.ntc1 << 5;
+      value |= config.ntc2 << 6;
+      value |= config.pwmOut << 7;
       value |= (uint32_t)VERSION_MAJOR << 24;
       value |= (uint32_t)VERSION_MINOR << 16;
       smartport.addPacket(0x5001, value);
     }
     if (dataId == 0x5002) {
       config.protocol = value & BITMASK_PROTOCOL;
-      config.battery = value & BITMASK_BATTERY;
-      config.pwmOut = value & BITMASK_PWM;
+      config.voltage1 = value & BITMASK_VOLTAGE1;
+      config.voltage2 = value & BITMASK_VOLTAGE2;
+      config.current = value & BITMASK_CURRENT;
       config.ntc1 = value & BITMASK_NTC1;
       config.ntc2 = value & BITMASK_NTC2;
+      config.pwmOut = value & BITMASK_PWM;
+
       writeConfig();
       initConfig();
       smartport.addPacket(0x5003, 0);

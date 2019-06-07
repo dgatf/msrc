@@ -41,9 +41,14 @@
 
 #define PIN_SMARTPORT_RX 7
 #define PIN_SMARTPORT_TX 12
+
+// Analog inputs
+
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
-#define PIN_BATT A2
+#define PIN_VOLTAGE1 A2
+#define PIN_VOLTAGE2 A3
+#define PIN_CURRENT A4
 
 // Telemetry refresh rate in ms
 
@@ -72,10 +77,12 @@
 
 // byte 1: config
 #define BITMASK_PROTOCOL 0B00000011
-#define BITMASK_BATTERY 0B00000100
-#define BITMASK_PWM  0B00001000
-#define BITMASK_NTC1 0B00010000
-#define BITMASK_NTC2 0B00100000
+#define BITMASK_VOLTAGE1 0B00000100
+#define BITMASK_VOLTAGE2 0B00001000
+#define BITMASK_CURRENT  0B00010000
+#define BITMASK_NTC1     0B00100000
+#define BITMASK_NTC2     0B01000000
+#define BITMASK_PWM      0B10000000
 
 // byte 2: free
 
@@ -108,7 +115,9 @@
 
 struct Config {
   uint8_t protocol = PROTOCOL_HW_V3;
-  bool battery = false;
+  bool voltage1 = false;
+  bool voltage2 = false;
+  bool current = false;
   bool ntc1 = false;
   bool ntc2 = false;
   bool pwmOut = false;
@@ -122,16 +131,18 @@ struct Telemetry {
   float *currentP = NULL;
   float *temp1P = NULL;
   float *temp2P = NULL;
-  float *voltageAnalogP = NULL;
+  float *voltageAnalog1P = NULL;
+  float *voltageAnalog2P = NULL;
+  float *currentAnalogP = NULL;
   float *ntc1P = NULL;
   float *ntc2P = NULL;
-
 };
 
 void readConfig();
 void writeConfig();
 void initConfig();
-float readVoltageAnalog();
+float readVoltageAnalog(uint8_t pin);
+float readNtc(uint8_t pin);
 void setup();
 void loop();
 

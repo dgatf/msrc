@@ -9,11 +9,13 @@ local lcdChange = false
 local config =
    {firmwareVersion = '',
     protocol = {selected = 4, list = {'HW V3', 'HW V4/V5', 'PWM', ''}, elements = 3},
-    battery = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
+    voltage1 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
+    voltage2 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
     ntc1 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
     ntc2 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
+    current = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
     pwm = {selected = 3, list = {'Off', 'On', ''}, elements = 2}}
-local selection = {selected = 1, state = false, list = {'protocol', 'battery', 'ntc1', 'ntc2', 'pwm'}, elements = 5}
+local selection = {selected = 1, state = false, list = {'protocol', 'voltage1', 'voltage2', 'ntc1', 'ntc2', 'current', 'pwm'}, elements = 8}
 
 local function getFlags(element)
   if selection.selected ~= element then return SMLSIZE end
@@ -29,16 +31,18 @@ end
 
 local function decrease(data)
   data.selected = data.selected - 1
-  if data.selected == 0 then data.selected = data.elements end
+  if data.selected < 1 then data.selected = data.elements end
 end
 
 local function sendConfig()
   local value = 0
   value = bit32.bor(value, config.protocol.selected - 1)                 -- bits 1,2
-  value = bit32.bor(value, bit32.lshift(config.battery.selected - 1, 2)) -- bit 3
-  value = bit32.bor(value, bit32.lshift(config.pwm.selected - 1, 3))     -- bit 4
-  value = bit32.bor(value, bit32.lshift(config.ntc1.selected - 1, 4))     -- bit 5
-  value = bit32.bor(value, bit32.lshift(config.ntc2.selected - 1, 5))     -- bit 6
+  value = bit32.bor(value, bit32.lshift(config.voltage1.selected - 1, 2)) -- bit 3
+  value = bit32.bor(value, bit32.lshift(config.voltage2.selected - 1, 3)) -- bit 4
+  value = bit32.bor(value, bit32.lshift(config.current.selected - 1, 4)) -- bit 5
+  value = bit32.bor(value, bit32.lshift(config.ntc1.selected - 1, 5))     -- bit 6
+  value = bit32.bor(value, bit32.lshift(config.ntc1.selected - 1, 6))     -- bit 7
+  value = bit32.bor(value, bit32.lshift(config.pwm.selected - 1, 7))     -- bit 8
   sportTelemetryPush(10, 0x10, 0x5002, value)
   sendConfigOk = false
 end
@@ -57,16 +61,20 @@ local function run_func(event)
     lcd.drawScreenTitle('ESC SmartPort v' .. scriptVersion, 1, 1)
     lcd.drawText(1, 9, 'Firmware', SMLSIZE)
     lcd.drawText(1, 17, 'Protocol', SMLSIZE)
-    lcd.drawText(1, 25, 'Battery', SMLSIZE)
-    lcd.drawText(1, 33, 'Ntc 1', SMLSIZE)
-    lcd.drawText(1, 41, 'Ntc 2', SMLSIZE)
-    lcd.drawText(1, 49, 'PWM out', SMLSIZE)
+    lcd.drawText(1, 25, 'Voltage1', SMLSIZE)
+    lcd.drawText(64, 25, 'Voltage2', SMLSIZE)
+    lcd.drawText(1, 33, 'Ntc1', SMLSIZE)
+    lcd.drawText(64, 33, 'Ntc2', SMLSIZE)
+    lcd.drawText(1, 41, 'Current', SMLSIZE)
+    lcd.drawText(64, 41, 'PWM out', SMLSIZE)
     lcd.drawText(50, 9, config.firmwareVersion, SMLSIZE)
     lcd.drawText(50, 17, config.protocol.list[config.protocol.selected], getFlags(1))
-    lcd.drawText(50, 25, config.battery.list[config.battery.selected], getFlags(2))
-    lcd.drawText(50, 33, config.ntc1.list[config.ntc1.selected], getFlags(3))
-    lcd.drawText(50, 41, config.ntc2.list[config.ntc2.selected], getFlags(4))
-    lcd.drawText(50, 49, config.pwm.list[config.pwm.selected], getFlags(5))
+    lcd.drawText(45, 25, config.voltage1.list[config.voltage1.selected], getFlags(2))
+    lcd.drawText(109, 25, config.voltage2.list[config.voltage2.selected], getFlags(3))
+    lcd.drawText(45, 33, config.ntc1.list[config.ntc1.selected], getFlags(4))
+    lcd.drawText(109, 33, config.ntc2.list[config.ntc2.selected], getFlags(5))
+    lcd.drawText(45, 41, config.current.list[config.current.selected], getFlags(6))
+    lcd.drawText(109, 41, config.pwm.list[config.pwm.selected], getFlags(7))
     if receiveConfigOk == false then lcd.drawText(35, 28, 'Connecting...', INVERS) end
     lcd.drawText(1, 57, 'Long press [MENU] to update', SMLSIZE)
     lcdChange = false;
@@ -79,16 +87,22 @@ local function run_func(event)
         config.protocol.selected = bit32.extract(value,0,2) + 1                      -- bits 1,2
       end
       if bit32.extract(value,2) + 1 >= 1 or bit32.extract(value,2) + 1 <= 2 then
-        config.battery.selected = bit32.extract(value,2) + 1                         -- bit 3
+        config.voltage1.selected = bit32.extract(value,2) + 1                         -- bit 3
       end
       if bit32.extract(value,3) + 1 >= 1 or bit32.extract(value,3) + 1 <= 2 then
-        config.pwm.selected = bit32.extract(value,3) + 1                             -- bit 4
+        config.voltage2.selected = bit32.extract(value,3) + 1                         -- bit 4
       end
       if bit32.extract(value,4) + 1 >= 1 or bit32.extract(value,4) + 1 <= 2 then
-        config.ntc1.selected = bit32.extract(value,4) + 1                             -- bit 5
+        config.current.selected = bit32.extract(value,4) + 1                         -- bit 5
       end
       if bit32.extract(value,5) + 1 >= 1 or bit32.extract(value,5) + 1 <= 2 then
-        config.ntc2.selected = bit32.extract(value,5) + 1                             -- bit 6
+        config.ntc1.selected = bit32.extract(value,5) + 1                             -- bit 6
+      end
+      if bit32.extract(value,6) + 1 >= 1 or bit32.extract(value,6) + 1 <= 2 then
+        config.ntc2.selected = bit32.extract(value,6) + 1                             -- bit 7
+      end
+      if bit32.extract(value,7) + 1 >= 1 or bit32.extract(value,7) + 1 <= 2 then
+        config.pwm.selected = bit32.extract(value,7) + 1                             -- bit 8
       end
       config.firmwareVersion = bit32.extract(value,24,8) .. '.' .. bit32.extract(value,16,8) -- bits 32-25-24-17
       lcdChange = true
