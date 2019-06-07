@@ -23,7 +23,7 @@ bool Esc::readHWV3() {
         uint16_t rpmCycle = (uint16_t)data[7] << 8 | data[8];
         rpm = (float)60000000 / rpmCycle;
         tsEsc = millis();
-#ifdef DEBUG
+#ifdef DEBUG_ESC
         uint32_t pn =
             (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
         _serial.print("PN: ");
@@ -61,7 +61,7 @@ bool Esc::readHWV4() {
         voltage = (float)((uint16_t)data[10] << 8 | data[11]) / 100;
         temp1 = (float)((uint16_t)data[14] << 8 | data[15]) / 100;
         temp2 = (float)((uint16_t)data[16] << 8 | data[17]) / 100;
-#ifdef DEBUG
+#ifdef DEBUG_ESC
         uint32_t pn =
             (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
         _serial.print("PN: ");
@@ -94,7 +94,7 @@ bool Esc::readHWV4() {
         voltage = (float)((uint16_t)data[24] << 8 | data[25]) / 100;
         temp1 = (float)((uint16_t)data[28] << 8 | data[29]) / 100;
         temp2 = (float)((uint16_t)data[30] << 8 | data[31]) / 100;
-#ifdef DEBUG
+#ifdef DEBUG_ESC
         uint32_t pn =
             (uint32_t)data[14] << 16 | (uint16_t)data[15] << 8 | data[16];
         _serial.print("PN: ");
@@ -123,8 +123,8 @@ bool Esc::readHWV4() {
 
 void Esc::readPWM() {
   if (pwmInLenght > 0 && pwmInLenght < 14000) {
-    rpm = (float)60000000 / pwmInLenght;
-#ifdef DEBUG
+    rpm = 60000000L / pwmInLenght;
+#ifdef DEBUG_ESC
     Serial.print("RPM: ");
     Serial.println(rpm);
 #endif
@@ -151,7 +151,7 @@ bool Esc::read() {
     if (rpm >= 2000) {
       TCCR1A |= 1 << COM1A1;
       ICR1 = 7.5 * (uint32_t)F_CPU / rpm;
-      OCR1A = 0.17 * ICR1;
+      OCR1A = DUTY * ICR1;
     } else {
       TCCR1A &= ~(1 << COM1A1);
     }

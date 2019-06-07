@@ -1,4 +1,4 @@
-local scriptVersion = '0.1'
+local scriptVersion = '0.2'
 local refresh = 0
 local tsReceiveConfig = 0
 local tsSendConfig = 0
@@ -10,8 +10,10 @@ local config =
    {firmwareVersion = '',
     protocol = {selected = 4, list = {'HW V3', 'HW V4/V5', 'PWM', ''}, elements = 3},
     battery = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
+    ntc1 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
+    ntc2 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
     pwm = {selected = 3, list = {'Off', 'On', ''}, elements = 2}}
-local selection = {selected = 1, state = false, list = {'protocol', 'battery', 'pwm'}, elements = 3}
+local selection = {selected = 1, state = false, list = {'protocol', 'battery', 'ntc1', 'ntc2', 'pwm'}, elements = 5}
 
 local function getFlags(element)
   if selection.selected ~= element then return SMLSIZE end
@@ -35,6 +37,8 @@ local function sendConfig()
   value = bit32.bor(value, config.protocol.selected - 1)                 -- bits 1,2
   value = bit32.bor(value, bit32.lshift(config.battery.selected - 1, 2)) -- bit 3
   value = bit32.bor(value, bit32.lshift(config.pwm.selected - 1, 3))     -- bit 4
+  value = bit32.bor(value, bit32.lshift(config.ntc1.selected - 1, 4))     -- bit 5
+  value = bit32.bor(value, bit32.lshift(config.ntc2.selected - 1, 5))     -- bit 6
   sportTelemetryPush(10, 0x10, 0x5002, value)
   sendConfigOk = false
 end
@@ -54,13 +58,17 @@ local function run_func(event)
     lcd.drawText(1, 9, 'Firmware', SMLSIZE)
     lcd.drawText(1, 17, 'Protocol', SMLSIZE)
     lcd.drawText(1, 25, 'Battery', SMLSIZE)
-    lcd.drawText(1, 33, 'PWM out', SMLSIZE)
+    lcd.drawText(1, 33, 'Ntc 1', SMLSIZE)
+    lcd.drawText(1, 41, 'Ntc 2', SMLSIZE)
+    lcd.drawText(1, 49, 'PWM out', SMLSIZE)
     lcd.drawText(50, 9, config.firmwareVersion, SMLSIZE)
-    lcd.drawText(1, 54, 'Long press [MENU] to update', SMLSIZE)
     lcd.drawText(50, 17, config.protocol.list[config.protocol.selected], getFlags(1))
     lcd.drawText(50, 25, config.battery.list[config.battery.selected], getFlags(2))
-    lcd.drawText(50, 33, config.pwm.list[config.pwm.selected], getFlags(3))
-    if receiveConfigOk == false then lcd.drawText(35, 43, 'Connecting...', SMLSIZE) end
+    lcd.drawText(50, 33, config.ntc1.list[config.ntc1.selected], getFlags(3))
+    lcd.drawText(50, 41, config.ntc2.list[config.ntc2.selected], getFlags(4))
+    lcd.drawText(50, 49, config.pwm.list[config.pwm.selected], getFlags(5))
+    if receiveConfigOk == false then lcd.drawText(35, 28, 'Connecting...', INVERS) end
+    lcd.drawText(1, 57, 'Long press [MENU] to update', SMLSIZE)
     lcdChange = false;
   end
 
@@ -76,7 +84,13 @@ local function run_func(event)
       if bit32.extract(value,3) + 1 >= 1 or bit32.extract(value,3) + 1 <= 2 then
         config.pwm.selected = bit32.extract(value,3) + 1                             -- bit 4
       end
-      config.firmwareVersion = bit32.extract(value,4,4) .. '.' .. bit32.extract(value,8,4) -- bits 5-8.9-12
+      if bit32.extract(value,4) + 1 >= 1 or bit32.extract(value,4) + 1 <= 2 then
+        config.ntc1.selected = bit32.extract(value,4) + 1                             -- bit 5
+      end
+      if bit32.extract(value,5) + 1 >= 1 or bit32.extract(value,5) + 1 <= 2 then
+        config.ntc2.selected = bit32.extract(value,5) + 1                             -- bit 6
+      end
+      config.firmwareVersion = bit32.extract(value,24,8) .. '.' .. bit32.extract(value,16,8) -- bits 32-25-24-17
       lcdChange = true
       receiveConfigOk = true
     end

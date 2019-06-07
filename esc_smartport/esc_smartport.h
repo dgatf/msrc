@@ -35,13 +35,15 @@
 // Version
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 1
+#define VERSION_MINOR 2
 
 // Pins
 
 #define PIN_SMARTPORT_RX 7
 #define PIN_SMARTPORT_TX 12
-#define PIN_BATT A1
+#define PIN_NTC1 A0
+#define PIN_NTC2 A1
+#define PIN_BATT A2
 
 // Telemetry refresh rate in ms
 
@@ -50,13 +52,36 @@
 #define REFRESH_TEMP 1000
 #define REFRESH_CURR 1000
 
+#if F_CPU==16000000UL
+#define BOARD_VCC 5
+#else
+#define BOARD_VCC 3.3
+#endif
+
+// NTC 100k, R1 10k
+
+#define NTC_R_REF 100000UL
+#define NTC_R1 10000
+#define NTC_BETA 4190
+//#define NTC_A1 3.35E-03
+//#define NTC_B1 2.46E-04
+//#define NTC_C1 3.41E-06
+//#define NTC_D1 1.03E-07
+
 // Config bitmask
 
-#define BITMASK_PROTOCOL B00000011
-#define BITMASK_BATTERY B00000100
-#define BITMASK_PWM B00001000
-#define BITMASK_VERSION_MAJOR B11110000
-#define BITMASK_VERSION_MINOR B00001111
+// byte 1: config
+#define BITMASK_PROTOCOL 0B00000011
+#define BITMASK_BATTERY 0B00000100
+#define BITMASK_PWM  0B00001000
+#define BITMASK_NTC1 0B00010000
+#define BITMASK_NTC2 0B00100000
+
+// byte 2: free
+
+// byte 3: version minor
+
+// byte 4: version major
 
 #define ESCSERIAL_TIMEOUT 3
 
@@ -76,15 +101,17 @@
 #include "Esc.h"
 #include "Smartport.h"
 
-// Default config values
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 2
+
+// Default config
 
 struct Config {
-  uint8_t versionMajor = VERSION_MAJOR;
-  uint8_t versionMinor = VERSION_MINOR;
   uint8_t protocol = PROTOCOL_HW_V3;
-  bool battery = false; // Read voltage from voltage divider. Adjust VFAS sensor
-                        // ratio on Tx
-  bool pwmOut = false; // Generate PWM output from esc serial (for HW Flyfun V5)
+  bool battery = false;
+  bool ntc1 = false;
+  bool ntc2 = false;
+  bool pwmOut = false;
 };
 
 struct Telemetry {
@@ -92,13 +119,13 @@ struct Telemetry {
   float *escRpmConsP = NULL;
   float *escPowerP = NULL;
   float *voltageP = NULL;
-  float *rippleVoltageP = NULL;
   float *currentP = NULL;
-  float *becCurrentP = NULL;
-  float *becVoltageP = NULL;
   float *temp1P = NULL;
   float *temp2P = NULL;
   float *voltageAnalogP = NULL;
+  float *ntc1P = NULL;
+  float *ntc2P = NULL;
+
 };
 
 void readConfig();

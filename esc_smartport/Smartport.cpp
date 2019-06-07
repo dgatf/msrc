@@ -44,10 +44,8 @@ void Smartport::sendData(uint16_t dataId, int32_t val) {
 }
 
 void Smartport::sendVoid() {
-  for (uint8_t i = 0; i < 7; i++) {
-    _serial.write((uint8_t)0x00);
-  }
-  _serial.write((uint8_t)0xFF);
+  uint8_t buf[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF};
+  _serial.write(buf, 8);
 }
 
 uint8_t Smartport::readPacket(uint8_t data[]) {
