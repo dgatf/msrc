@@ -40,7 +40,7 @@ If more than 6S change R values or you may burn the Arduino!
 
 ## Thermistors (optional)
 
-Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta if needed (default is 4190). Sensor output us in Celsius
+Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta if needed (default is 4190). Sensor output in Celsius
 
 
 ## OpenTx sensors (sensor Id 10)
