@@ -65,8 +65,11 @@ Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta if n
  - Voltage divider + to PIN_BATT (A2)
  - Voltage divider - to Gnd
 
-<p align="center"><img src="./images/esc_smartport12.png" width="600">
-<img src="./images/top.jpg" width="400">
+<p align="center"><img src="./images/esc_smartport_min.png" width="600"><br>
+  *Minimum circuit*<br><br>
+  <img src="./images/esc_smartport_full.png" width="600"><br>
+  *Full circuit*<br><br>
+<img src="./images/top.jpg" width="400"><br>
 <img src="./images/bottom.jpg" width="400"></p>
 
 
