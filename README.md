@@ -62,7 +62,7 @@ Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta if n
  - If using ESC serial: ESC serial signal to Arduino Rx
  - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (8)
  - If PWM output is required (for HobbyWing Flyfun V5): Flybarless PWM signal input to Arduino PIN_PWM_OUT (9)
- - Voltage divider + to PIN_BATT (A1)
+ - Voltage divider + to PIN_BATT (A2)
  - Voltage divider - to Gnd
 
 <p align="center"><img src="./images/esc_smartport12.png" width="600">
