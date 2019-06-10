@@ -82,7 +82,7 @@ void initConfig() {
     telemetry.voltageAnalog2P = smartport.addElement(A3_FIRST_ID + 1, REFRESH_VOLT);
   }
   if (config.current == true) {
-    telemetry.currentAnalogP = smartport.addElement(VFAS_FIRST_ID, REFRESH_VOLT);
+    telemetry.currentAnalogP = smartport.addElement(CURR_FIRST_ID, REFRESH_VOLT);
   }
   if (config.ntc1 == true) {
     telemetry.ntc1P = smartport.addElement(T1_FIRST_ID, REFRESH_TEMP);
@@ -101,6 +101,7 @@ float readVoltageAnalog(uint8_t pin) {
 float readNtc(uint8_t pin) {
   float volt = readVoltageAnalog(pin);
   float ntcR_Rref = (volt * NTC_R1 / (BOARD_VCC - volt)) / NTC_R_REF;
+  if (ntcR_Rref < 1) return 0;
   /*return
       1 / (NTC_A1 + NTC_B1 * log(ntcR_Rref) + NTC_C1 * pow(log(ntcR_Rref), 2) +
            NTC_D1 * pow(log(ntcR_Rref), 3)) -
@@ -158,7 +159,7 @@ void loop() {
   }
   if (config.current == true) {
     *telemetry.currentAnalogP =
-        smartport.formatData(VFAS_FIRST_ID, readVoltageAnalog(PIN_CURRENT));
+        smartport.formatData(CURR_FIRST_ID, readVoltageAnalog(PIN_CURRENT));
   }
   if (config.ntc1 == true) {
     *telemetry.ntc1P = smartport.formatData(T1_FIRST_ID, readNtc(PIN_NTC1));
