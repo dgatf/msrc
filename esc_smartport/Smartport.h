@@ -171,6 +171,7 @@ public:
   uint32_t formatData(uint16_t dataId, float value);
   uint32_t formatEscPower(float volt, float curr);
   uint32_t formatEscRpmCons(float rpm, float cons);
+  uint32_t formatBecPower(float volt, float curr);
   uint32_t formatCell(uint8_t cellId, float val);
   float *addElement(uint16_t dataId, uint16_t refresh);
   bool addPacket(uint16_t dataId, uint32_t value);

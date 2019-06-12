@@ -109,6 +109,10 @@ uint32_t Smartport::formatEscPower(float volt, float curr) {
   return (uint32_t)(curr * 100) << 16 | (uint16_t)(volt * 100);
 }
 
+uint32_t Smartport::formatBecPower(float volt, float curr) {
+  return (uint32_t)(curr * 1000) << 16 | (uint16_t)(volt * 1000);
+}
+
 uint32_t Smartport::formatEscRpmCons(float rpm, float cons) {
   return (uint32_t)cons << 16 | (uint16_t)(rpm / 100);
 }
