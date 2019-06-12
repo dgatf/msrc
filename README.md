@@ -79,16 +79,30 @@ Current is measured through analog pin A4
 <img src="./images/top.jpg" width="400"><br>
 <img src="./images/bottom.jpg" width="400"></p>
 
+<<<<<<< HEAD
 ## Adjust RPM sensor (EscR)
+=======
+## Analog inputs (optional)
+
+### Adjust RPM sensor (EscR)
+>>>>>>> 2e2b6157e0c5152bdb4be4a910a49ee47c07530a
 
 - Blades/poles: number of pair of poles * main gear teeth  
 - Multiplier: pinion gear teeth
 
+<<<<<<< HEAD
 ## Adjust voltage sensors (A3)
 
 Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3 sensor
 
 ## Adjust current sensor (Curr)
+=======
+### Adjust voltage sensors (A3)
+
+Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3 sensor
+
+### Adjust current sensor (Curr)
+>>>>>>> 2e2b6157e0c5152bdb4be4a910a49ee47c07530a
 
 Adjust sensor ratio: *1000 / output sensitivity (mV/A)*
 
