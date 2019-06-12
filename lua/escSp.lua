@@ -41,7 +41,7 @@ local function sendConfig()
   value = bit32.bor(value, bit32.lshift(config.voltage2.selected - 1, 3)) -- bit 4
   value = bit32.bor(value, bit32.lshift(config.current.selected - 1, 4)) -- bit 5
   value = bit32.bor(value, bit32.lshift(config.ntc1.selected - 1, 5))     -- bit 6
-  value = bit32.bor(value, bit32.lshift(config.ntc1.selected - 1, 6))     -- bit 7
+  value = bit32.bor(value, bit32.lshift(config.ntc2.selected - 1, 6))     -- bit 7
   value = bit32.bor(value, bit32.lshift(config.pwm.selected - 1, 7))     -- bit 8
   sportTelemetryPush(10, 0x10, 0x5002, value)
   sendConfigOk = false
