@@ -50,7 +50,6 @@ Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in e
 
 Current is measured through analog pin A4
 
-
 ## OpenTx sensors (sensor Id 10)
 
 - RPM: EscR (0x0b60)
@@ -63,7 +62,7 @@ Current is measured through analog pin A4
 - Thermistor 2 : Tmp1 (0x0401)
 - Current: Curr (0x020f)
 
-## Wiring:
+## Minumum wiring:
 
  - SmartPort Vcc to Arduino RAW
  - SmartPort Gnd to Arduino Gnd
@@ -72,9 +71,6 @@ Current is measured through analog pin A4
  - R3 (4.7k) to Arduino PIN_SMARTPORT_TX (12)
  - If using ESC serial: ESC serial signal to Arduino Rx
  - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (8)
- - If PWM output is required (for HobbyWing Flyfun V5): Flybarless PWM signal input to Arduino PIN_PWM_OUT (9)
- - Voltage divider + to PIN_BATT (A2)
- - Voltage divider - to Gnd
 
 <p align="center"><img src="./images/esc_smartport_min.png" width="600"><br>
   *Minimum circuit*<br><br>
@@ -83,15 +79,18 @@ Current is measured through analog pin A4
 <img src="./images/top.jpg" width="400"><br>
 <img src="./images/bottom.jpg" width="400"></p>
 
-
-## Adjust RPM sensor
+## Adjust RPM sensor (EscR)
 
 - Blades/poles: number of pair of poles * main gear teeth  
 - Multiplier: pinion gear teeth
 
-## Adjust A3 sensor (for voltage divider)
+## Adjust voltage sensors (A3)
 
 Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3 sensor
+
+## Adjust current sensor (Curr)
+
+Adjust sensor ratio: *1000 / output sensitivity (mV/A)*
 
 ## Configuration
 
