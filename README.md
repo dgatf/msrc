@@ -18,8 +18,11 @@ PWM signal generation from ESC serial (for HW V5 which does not have PWM output)
 
 PWM signal properties: logic level 3.3V and duty cycle 17%
 
-## Voltage divider circuit (optional)
+## Analog sensors (optional)
 
+### Voltage divider circuit
+
+Two battery voltages can be measured through the analog pins A2 and A3
 Metal resistors are recommended as gives more accurate readings (0.1W or higher)
 Arduino can read up to 3.3V/5V and is optimized for signal inputs with 10K impedance
 
@@ -38,9 +41,14 @@ For 6S battery (or lower) and Pro Mini 3.3v:
 
 If more than 6S change R values or you may burn the Arduino!
 
-## Thermistors (optional)
+## Thermistors
 
-Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta if needed (default is 4190). Sensor output in Celsius
+Two temperature sensors can be installed through the analog pins A0 and A1
+Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in esc_smartport.h if needed (NTC_BETA, default is 4190). Sensor output in Celsius
+
+## Current
+
+Current is measured through analog pin A4
 
 
 ## OpenTx sensors (sensor Id 10)
