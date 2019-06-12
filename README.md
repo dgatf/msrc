@@ -53,12 +53,15 @@ Current is measured through analog pin A4
 
 ## OpenTx sensors (sensor Id 10)
 
-- RPM: EscR
-- ESC voltage: EscV
-- ESC temp: EscT
-- Voltage divider: A3
-- Thermistor 1: Tmp1
-- Thermistor 2 : Tmp1
+- RPM: EscR (0x0b60)
+- ESC voltage: EscV (0x0b50)
+- ESC temp1: EscT (0x0b70)
+- ESC temp2: EscT (0x0b71)
+- Voltage 1: A3 (0x0900)
+- Voltage 2: A3 (0x0901)
+- Thermistor 1: Tmp1 (0x0400)
+- Thermistor 2 : Tmp1 (0x0401)
+- Current: Curr (0x020f)
 
 ## Wiring:
 
