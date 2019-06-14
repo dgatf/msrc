@@ -122,7 +122,7 @@ bool Esc::readHWV4() {
 }
 
 void Esc::readPWM() {
-  if (pwmInLenght > 0 && pwmInLenght < 14000) {
+  if (pwmInLenght > 0 && pwmInLenght < 8000) {
     rpm = 60000000L / pwmInLenght;
 #ifdef DEBUG_ESC
     Serial.print("RPM: ");
