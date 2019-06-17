@@ -13,7 +13,7 @@
 #define PIN_PWM_OUT_ICRA 9 // TIMER1 PWM PIN 9
 #define PIN_PWM_OUT_OCR 10 // TIMER1 PWM PIN 10
 
-// PWM out
+// PWM out (OCR pin 10, ICR pin 9)
 
 #define MODE_PWM_OUT OCR // ICR
 #define DUTY 0.5  // 0.5 = 50%

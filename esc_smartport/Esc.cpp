@@ -150,16 +150,30 @@ bool Esc::read() {
   if (_pwmOut == true && _protocol != PROTOCOL_PWM && statusChange) {
     noInterrupts();
     if (rpm >= 2000) {
+#ifdef DEBUG_ESC
+      _serial.print(rpm);
+      _serial.print(" ");
+#endif
 #if MODE_PWM_OUT == ICR
       // ICR
       TCCR1A |= _BV(COM1A1);
       ICR1 = (7.5 * (uint32_t)F_CPU / rpm) - 1;
       OCR1A = DUTY * ICR1;
+#ifdef DEBUG_ESC
+      _serial.print(ICR1);
+      _serial.print(" ");
+      _serial.println(OCR1A);
+#endif
 #else
       // OCR
       TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
-      OCR1A = (7.5 * (uint32_t)F_CPU / rpm) -1;
+      OCR1A = (7.5 * (uint32_t)F_CPU / rpm) - 1;
       OCR1B = DUTY * OCR1A;
+#ifdef DEBUG_ESC
+      _serial.print(OCR1A);
+      _serial.print(" ");
+      _serial.println(OCR1B);
+#endif
 #endif
     } else {
       TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
