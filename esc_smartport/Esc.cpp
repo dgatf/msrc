@@ -148,13 +148,23 @@ bool Esc::read() {
     break;
   }
   if (_pwmOut == true && _protocol != PROTOCOL_PWM && statusChange) {
+    noInterrupts();
     if (rpm >= 2000) {
-      TCCR1A |= 1 << COM1A1;
-      ICR1 = 7.5 * (uint32_t)F_CPU / rpm;
+#if MODE_PWM_OUT == ICR
+      // ICR
+      TCCR1A |= _BV(COM1A1);
+      ICR1 = (7.5 * (uint32_t)F_CPU / rpm) - 1;
       OCR1A = DUTY * ICR1;
+#else
+      // OCR
+      TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
+      OCR1A = (7.5 * (uint32_t)F_CPU / rpm) -1;
+      OCR1B = DUTY * OCR1A;
+#endif
     } else {
-      TCCR1A &= ~(1 << COM1A1);
+      TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
     }
+    interrupts();
   }
   return statusChange;
 }
@@ -176,15 +186,25 @@ void Esc::setProtocol(uint8_t protocol) {
 
 void Esc::setPwmOut(uint8_t pwmOut) {
   _pwmOut = pwmOut;
+  noInterrupts();
   if (_pwmOut) {
     // Init pin
-    pinMode(PIN_PWM_OUT, OUTPUT);
-    digitalWrite(PIN_PWM_OUT, LOW);
-    // Set timer1: WGM mode 14, scaler 8 (pin 9)
-    TCCR1A = 1 << WGM11;
-    TCCR1B = 1 << WGM13 | 1 << WGM12 | 1 << CS11;
-  } else
-    TCCR1A &= ~(1 << COM1A1);
+    pinMode(PIN_PWM_OUT_OCR, OUTPUT);
+    digitalWrite(PIN_PWM_OUT_OCR, LOW);
+    pinMode(PIN_PWM_OUT_ICRA, OUTPUT);
+    digitalWrite(PIN_PWM_OUT_ICRA, LOW);
+#if MODE_PWM_OUT == ICR
+    // Set timer1: WGM mode 14 (ICR), scaler 8 (OC1A, PB1, pin 9)
+    TCCR1A = _BV(WGM11);
+#else
+    // Set timer1: WGM mode 15 (OCR), scaler 8 (OC1B, PB2, pin 10)
+    TCCR1A = _BV(WGM11) | _BV(WGM10);
+#endif
+    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);
+  } else {
+    TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
+  }
+  interrupts();
 }
 
 float Esc::getRpm() { return rpm; }

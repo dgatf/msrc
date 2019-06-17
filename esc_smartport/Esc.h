@@ -10,12 +10,14 @@
 // Pins
 
 #define PIN_PWM_IN 8 // TIMER1 CAPT PIN8
-#define PIN_PWM_OUT 9 // TIMER1 PWM PIN 9
+#define PIN_PWM_OUT_ICRA 9 // TIMER1 PWM PIN 9
+#define PIN_PWM_OUT_OCR 10 // TIMER1 PWM PIN 10
 
+// PWM out
+
+#define MODE_PWM_OUT OCR // ICR
 #define DUTY 0.5  // 0.5 = 50%
 
-//#define F_CPU_SCALER (uint8_t)((uint32_t)F_CPU/8000000L)
-#define F_CPU_SCALER ((uint8_t)(F_CPU/8000000UL))
 #define COMP_TO_MICROS ((float)8000000UL/F_CPU)
 
 //#define DEBUG_ESC
