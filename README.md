@@ -101,10 +101,14 @@ The configuration is modified with a lua script (openTx 2.2 or higher)
 Options:
 
 - ESC protocol. HobbyWing Platinum V3, HobbyWing Platinum V4/Hobbywing Flyfun V5 or PWM signal
-- Battery. For voltage divider
-- PWM. To generate PWM output from ESC serial  (for obbywing Flyfun V5)
+- Voltage1. For voltage divider 1
+- Voltage2. For voltage divider 1
+- Ntc1. Thermistor 1
+- Ntc2. Thermistor 2
+- Current
+- PWM out. To generate PWM output from ESC serial  (for obbywing Flyfun V5)
 
-Copy the file escSp.lua to the TELEMETRY folder in the sdcard of the Tx and add ther script to a telemetry screen (*Script->escSp*)
+Copy the file escSp.lua to the SCRIPTS folder in the sdcard of the Tx and execute as one-time script from SD-HD-CARD screen (long press and Execute). It can be executed also as telemetry script if copied to TELEMETRY folder and assigned to a model telemetry screen but this is discouraged
 
 ## Flash to Arduino
 
