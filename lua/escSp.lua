@@ -174,7 +174,7 @@ local function run_func(event)
       lcdChange = true
     end
   end
-  if event == EVT_ENTER_BREAK and receiveConfigOk == true and sendConfigOk == true then
+  if event == EVT_ENTER_BREAK and receiveConfigOk == true and sendConfigOk == true and getTime() - tsSendConfig > 200 then
     selection.state = not selection.state
     lcdChange = true
   end
