@@ -5,7 +5,7 @@ local tsSendConfig = 0
 local sendConfigIntents = 0
 local receiveConfigOk = false
 local sendConfigOk = true
-local lcdChange = false
+local lcdChange = true
 local config =
    {firmwareVersion = '',
     protocol = {selected = 4, list = {'HW V3', 'HW V4/V5', 'PWM', ''}, elements = 3},
@@ -166,6 +166,7 @@ local function run_func(event)
     end
   end
   refresh = 0
+  return 0
 end
 
 return {run=run_func, background=bg_func, init=init_func}
