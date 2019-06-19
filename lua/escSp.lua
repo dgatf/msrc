@@ -1,4 +1,4 @@
-local scriptVersion = '0.2'
+local scriptVersion = '0.3'
 local refresh = 0
 local tsReceiveConfig = 0
 local tsSendConfig = 0
@@ -54,30 +54,56 @@ local function bg_func(event)
   if refresh < 5 then refresh = refresh + 1 end
 end
 
+local function refreshHorus()
+  lcd.drawText(1, 1, 'ESC SmartPort v' .. scriptVersion)
+  lcd.drawText(1, 20, 'Firmware', SMLSIZE)
+  lcd.drawText(1, 40, 'Protocol', SMLSIZE)
+  lcd.drawText(1, 60, 'Voltage1', SMLSIZE)
+  lcd.drawText(240, 60, 'Voltage2', SMLSIZE)
+  lcd.drawText(1, 80, 'Ntc1', SMLSIZE)
+  lcd.drawText(240, 80, 'Ntc2', SMLSIZE)
+  lcd.drawText(1, 100, 'Current', SMLSIZE)
+  lcd.drawText(240, 100, 'PWM out', SMLSIZE)
+  lcd.drawText(120, 20, config.firmwareVersion, SMLSIZE)
+  lcd.drawText(120, 40, config.protocol.list[config.protocol.selected], getFlags(1))
+  lcd.drawText(120, 60, config.voltage1.list[config.voltage1.selected], getFlags(2))
+  lcd.drawText(360, 60, config.voltage2.list[config.voltage2.selected], getFlags(3))
+  lcd.drawText(120, 80, config.ntc1.list[config.ntc1.selected], getFlags(4))
+  lcd.drawText(360, 80, config.ntc2.list[config.ntc2.selected], getFlags(5))
+  lcd.drawText(120, 100, config.current.list[config.current.selected], getFlags(6))
+  lcd.drawText(360, 100, config.pwm.list[config.pwm.selected], getFlags(7))
+  if receiveConfigOk == false then lcd.drawText(80, 200, 'Connecting...', INVERS) end
+  lcd.drawText(1, 150, 'Long press [ENTER] to update', SMLSIZE)
+end
+
+local function refreshTaranis()
+  lcd.drawScreenTitle('ESC SmartPort v' .. scriptVersion, 1, 1)
+  lcd.drawText(1, 9, 'Firmware', SMLSIZE)
+  lcd.drawText(1, 17, 'Protocol', SMLSIZE)
+  lcd.drawText(1, 25, 'Voltage1', SMLSIZE)
+  lcd.drawText(64, 25, 'Voltage2', SMLSIZE)
+  lcd.drawText(1, 33, 'Ntc1', SMLSIZE)
+  lcd.drawText(64, 33, 'Ntc2', SMLSIZE)
+  lcd.drawText(1, 41, 'Current', SMLSIZE)
+  lcd.drawText(64, 41, 'PWM out', SMLSIZE)
+  lcd.drawText(50, 9, config.firmwareVersion, SMLSIZE)
+  lcd.drawText(50, 17, config.protocol.list[config.protocol.selected], getFlags(1))
+  lcd.drawText(45, 25, config.voltage1.list[config.voltage1.selected], getFlags(2))
+  lcd.drawText(109, 25, config.voltage2.list[config.voltage2.selected], getFlags(3))
+  lcd.drawText(45, 33, config.ntc1.list[config.ntc1.selected], getFlags(4))
+  lcd.drawText(109, 33, config.ntc2.list[config.ntc2.selected], getFlags(5))
+  lcd.drawText(45, 41, config.current.list[config.current.selected], getFlags(6))
+  lcd.drawText(109, 41, config.pwm.list[config.pwm.selected], getFlags(7))
+  if receiveConfigOk == false then lcd.drawText(35, 28, 'Connecting...', INVERS) end
+  lcd.drawText(1, 57, 'Long press [ENTER] to update', SMLSIZE)
+end
+
 local function run_func(event)
 
   if refresh == 5 or lcdChange == true or selection.state == true then
     lcd.clear()
-    lcd.drawScreenTitle('ESC SmartPort v' .. scriptVersion, 1, 1)
-    lcd.drawText(1, 9, 'Firmware', SMLSIZE)
-    lcd.drawText(1, 17, 'Protocol', SMLSIZE)
-    lcd.drawText(1, 25, 'Voltage1', SMLSIZE)
-    lcd.drawText(64, 25, 'Voltage2', SMLSIZE)
-    lcd.drawText(1, 33, 'Ntc1', SMLSIZE)
-    lcd.drawText(64, 33, 'Ntc2', SMLSIZE)
-    lcd.drawText(1, 41, 'Current', SMLSIZE)
-    lcd.drawText(64, 41, 'PWM out', SMLSIZE)
-    lcd.drawText(50, 9, config.firmwareVersion, SMLSIZE)
-    lcd.drawText(50, 17, config.protocol.list[config.protocol.selected], getFlags(1))
-    lcd.drawText(45, 25, config.voltage1.list[config.voltage1.selected], getFlags(2))
-    lcd.drawText(109, 25, config.voltage2.list[config.voltage2.selected], getFlags(3))
-    lcd.drawText(45, 33, config.ntc1.list[config.ntc1.selected], getFlags(4))
-    lcd.drawText(109, 33, config.ntc2.list[config.ntc2.selected], getFlags(5))
-    lcd.drawText(45, 41, config.current.list[config.current.selected], getFlags(6))
-    lcd.drawText(109, 41, config.pwm.list[config.pwm.selected], getFlags(7))
-    if receiveConfigOk == false then lcd.drawText(35, 28, 'Connecting...', INVERS) end
-    lcd.drawText(1, 57, 'Long press [MENU] to update', SMLSIZE)
-    lcdChange = false;
+    lcdChange = false
+    if LCD_W == 480 then refreshHorus() else refreshTaranis() end
   end
 
   if receiveConfigOk == false or sendConfigOk == false then
@@ -114,7 +140,6 @@ local function run_func(event)
     end
     if receiveConfigOk == false and getTime() - tsReceiveConfig > 100 then
       sportTelemetryPush(10, 0x10, 0x5000, 0)
-
       tsReceiveConfig = getTime()
     end
     if sendConfigOk == false and getTime() - tsSendConfig > 100 then
@@ -130,26 +155,26 @@ local function run_func(event)
   end
 -- left = up/decrease right = down/increase
   if selection.state == false then
-    if event == EVT_ROT_LEFT or event == EVT_MINUS_BREAK then
+    if event == EVT_ROT_LEFT or event == EVT_MINUS_BREAK or event == EVT_DOWN_BREAK then
       decrease(selection)
       lcdChange = true
     end
-    if event == EVT_ROT_RIGHT or event == EVT_PLUS_BREAK then
+    if event == EVT_ROT_RIGHT or event == EVT_PLUS_BREAK or event == EVT_UP_BREAK then
       increase(selection)
       lcdChange = true
     end
   end
   if selection.state == true then
-    if event == EVT_ROT_LEFT or event == EVT_MINUS_BREAK then
+    if event == EVT_ROT_LEFT or event == EVT_MINUS_BREAK or event == EVT_DOWN_BREAK then
       decrease(config[selection.list[selection.selected]])
       lcdChange = true
     end
-    if event == EVT_ROT_RIGHT or event == EVT_PLUS_BREAK then
+    if event == EVT_ROT_RIGHT or event == EVT_PLUS_BREAK or event == EVT_UP_BREAK then
       increase(config[selection.list[selection.selected]])
       lcdChange = true
     end
   end
-  if event == EVT_ENTER_BREAK and receiveConfigOk == true then
+  if event == EVT_ENTER_BREAK and receiveConfigOk == true and sendConfigOk == true then
     selection.state = not selection.state
     lcdChange = true
   end
@@ -157,8 +182,9 @@ local function run_func(event)
     selection.state = false
     lcdChange = true
   end
-  if event == EVT_MENU_BREAK then
-    if receiveConfigOk and sendConfigOk then
+  if event == EVT_ENTER_LONG then
+    -- killEvents(EVT_ENTER_LONG) -- not working
+    if receiveConfigOk == true and sendConfigOk == true then
       sendConfig()
       tsSendConfig = getTime()
     else
