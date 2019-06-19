@@ -94,7 +94,7 @@ Adjust sensor ratio: *1000 / output sensitivity (mV/A)*
 
 ## Configuration
 
-The configuration is modified with a lua script (openTx 2.2 or higher)
+The configuration is modified with a lua script (X7, X9, X-lite and Horus with openTx 2.2 or higher)
 
 <p align="center"><img src="./images/escSp.bmp" width="300"></p>
 
