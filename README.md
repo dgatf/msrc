@@ -102,13 +102,13 @@ Options:
 
 - ESC protocol. HobbyWing Platinum V3, HobbyWing Platinum V4/Hobbywing Flyfun V5 or PWM signal
 - Voltage1. For voltage divider 1
-- Voltage2. For voltage divider 1
+- Voltage2. For voltage divider 2
 - Ntc1. Thermistor 1
 - Ntc2. Thermistor 2
 - Current
 - PWM out. To generate PWM output from ESC serial  (for obbywing Flyfun V5)
 
-Copy the file escSp.lua to the SCRIPTS folder in the sdcard of the Tx and execute as one-time script from SD-HD-CARD screen (long press and Execute). It can be executed also as telemetry script if copied to TELEMETRY folder and assigned to a model telemetry screen but this is discouraged
+Copy the file escSp.lua to the SCRIPTS folder in the sdcard of the Tx and execute as one-time script from SD-HD-CARD screen (long press and Execute). It can be executed also as telemetry script if copied to TELEMETRY folder and assigned to a model telemetry screen
 
 ## Flash to Arduino
 
