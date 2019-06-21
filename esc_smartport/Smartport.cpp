@@ -119,7 +119,7 @@ uint32_t Smartport::formatEscRpmCons(float rpm, float cons) {
 
 uint32_t Smartport::formatCell(uint8_t cellId, float val) {
   val *= 500;
-  return (uint8_t)val << 8 | cellId;
+  return (uint16_t)val << 8 | cellId;
 }
 
 float *Smartport::addElement(uint16_t dataId, uint16_t refresh) {
