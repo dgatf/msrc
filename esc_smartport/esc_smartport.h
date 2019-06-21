@@ -40,8 +40,8 @@
 
 // Pins
 
-#define PIN_SMARTPORT_RX 7
-#define PIN_SMARTPORT_TX 12
+#define PIN_SMARTPORT_RX 8
+#define PIN_SMARTPORT_TX 8
 
 // Analog inputs
 
@@ -95,6 +95,13 @@
 
 #define escSerial Serial
 
+// Queues sizes
+
+#define QUEUE_RPM 20
+#define QUEUE_VOLT 20
+#define QUEUE_TEMP 20
+#define QUEUE_CURR 20
+
 // Debug. Uncommnent for debugging
 // Disconnect Vcc from the RC model to the Arduino
 // Do not connect at the same time Vcc from the model and usb (FTDI)
@@ -109,8 +116,76 @@
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
 
-#define VERSION_MAJOR 0
-#define VERSION_MINOR 2
+template <typename T> class Queue {
+  class Node {
+  public:
+    T item;
+    Node *next;
+    Node() { next = NULL; }
+    ~Node() { next = NULL; }
+  };
+  Node *head;
+  Node *tail;
+
+public:
+  Queue() {
+    head = NULL;
+    tail = NULL;
+  }
+
+  ~Queue() {
+    for (Node *node = head; node != NULL; node = head) {
+      head = node->next;
+      delete node;
+    }
+  }
+
+  bool enqueue(T item) {
+    Node *node = new Node;
+    if (node == NULL)
+      return false;
+    node->item = item;
+    if (head == NULL) {
+      head = node;
+      tail = node;
+      return true;
+    }
+    tail->next = node;
+    tail = node;
+    return true;
+  }
+
+  T dequeue() {
+    if (head == NULL)
+      return T();
+    Node *node = head;
+    head = node->next;
+    T item = node->item;
+    delete node;
+    node = NULL;
+    if (head == NULL)
+      tail = NULL;
+    return item;
+  }
+
+  void init(T item, uint8_t size) {
+    for (uint8_t i = 0; i < size; i++)
+      this->enqueue(item);
+  }
+
+  /*void del() {
+    T item = this->dequeue();
+    while (item != NULL) {
+      item = this->dequeue();
+    }
+  }*/
+
+  void del(uint8_t size) {
+    for (uint8_t i = 0; i < size; i++)
+      this->dequeue();
+  }
+
+};
 
 // Default config
 
@@ -125,7 +200,6 @@ struct Config {
 };
 
 struct Telemetry {
-  float *rpmP = NULL;
   float *escRpmConsP = NULL;
   float *escPowerP = NULL;
   float *voltageP = NULL;
@@ -137,6 +211,17 @@ struct Telemetry {
   float *currentAnalogP = NULL;
   float *ntc1P = NULL;
   float *ntc2P = NULL;
+  Queue<float> escRpmConsQP;
+  Queue<float> escPowerQP;
+  Queue<float> voltageQP;
+  Queue<float> currentQP;
+  Queue<float> temp1QP;
+  Queue<float> temp2QP;
+  Queue<float> voltageAnalog1QP;
+  Queue<float> voltageAnalog2QP;
+  Queue<float> currentAnalogQP;
+  Queue<float> ntc1QP;
+  Queue<float> ntc2QP;
 };
 
 void readConfig();
