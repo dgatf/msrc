@@ -154,8 +154,7 @@ bool Esc::read() {
     noInterrupts();
     if (rpm >= 2000) {
 #ifdef DEBUG_ESC
-      _s
-erial.print(rpm);
+      _s erial.print(rpm);
       _serial.print(" ");
 #endif
 #if MODE_PWM_OUT == ICR
