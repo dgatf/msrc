@@ -58,13 +58,22 @@
 #define REFRESH_TEMP 1000
 #define REFRESH_CURR 1000
 
+// Queues sizes
+
+#define QUEUE_RPM 20
+#define QUEUE_VOLT 20
+#define QUEUE_TEMP 20
+#define QUEUE_CURR 20
+
+// Board Vcc
+
 #if F_CPU == 16000000UL
 #define BOARD_VCC 5
 #else
 #define BOARD_VCC 3.3
 #endif
 
-// NTC 100k, R1 10k
+// Thermistors (NTC 100k, R1 10k)
 
 #define NTC_R_REF 100000UL
 #define NTC_R1 10000
@@ -92,15 +101,7 @@
 // byte 4: version major
 
 #define ESCSERIAL_TIMEOUT 3
-
 #define escSerial Serial
-
-// Queues sizes
-
-#define QUEUE_RPM 20
-#define QUEUE_VOLT 20
-#define QUEUE_TEMP 20
-#define QUEUE_CURR 20
 
 // Debug. Uncommnent for debugging
 // Disconnect Vcc from the RC model to the Arduino
