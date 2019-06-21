@@ -6,34 +6,34 @@
 #define SMARTPORT_SENSOR SENSOR_ID_10
 #define SMARTPORT_SENSOR_TX SENSOR_ID_11
 
-#define SENSOR_ID_1 0x00 // 0  int in opentx
-#define SENSOR_ID_2 0xA1
-#define SENSOR_ID_3 0x22
-#define SENSOR_ID_4 0x83
-#define SENSOR_ID_5 0xE4
-#define SENSOR_ID_6 0x45
-#define SENSOR_ID_7 0xC6
+#define SENSOR_ID_1 0x00 // VARIO 0x100 (0 in opentx lua: id - 1)
+#define SENSOR_ID_2 0xA1 // FLVSS 0x300
+#define SENSOR_ID_3 0x22 // FAS40-S 0x200
+#define SENSOR_ID_4 0x83 // GPS 0x800
+#define SENSOR_ID_5 0xE4 // RPM 0x500
+#define SENSOR_ID_6 0x45 // UART
+#define SENSOR_ID_7 0xC6 // UART
 #define SENSOR_ID_8 0x67
-#define SENSOR_ID_9 0x48  // 8
-#define SENSOR_ID_10 0xE9 // 9
-#define SENSOR_ID_11 0x6A // 10
-#define SENSOR_ID_12 0xCB // 11
-#define SENSOR_ID_13 0xAC // 12
-#define SENSOR_ID_14 0xD  // 13
-#define SENSOR_ID_15 0x8E // 14
-#define SENSOR_ID_16 0x2F // 15
-#define SENSOR_ID_17 0xD0 // 16
+#define SENSOR_ID_9 0x48
+#define SENSOR_ID_10 0xE9
+#define SENSOR_ID_11 0x6A
+#define SENSOR_ID_12 0xCB
+#define SENSOR_ID_13 0xAC
+#define SENSOR_ID_14 0xD
+#define SENSOR_ID_15 0x8E
+#define SENSOR_ID_16 0x2F
+#define SENSOR_ID_17 0xD0
 #define SENSOR_ID_18 0x71
 #define SENSOR_ID_19 0xF2
 #define SENSOR_ID_20 0x53
 #define SENSOR_ID_21 0x34
 #define SENSOR_ID_22 0x95
 #define SENSOR_ID_23 0x16
-#define SENSOR_ID_24 0xB7
+#define SENSOR_ID_24 0xB7 // Accel 0x700
 #define SENSOR_ID_25 0x98
-#define SENSOR_ID_26 0x39
-#define SENSOR_ID_27 0xBA
-#define SENSOR_ID_28 0x1B
+#define SENSOR_ID_26 0x39 // Power box
+#define SENSOR_ID_27 0xBA // Temp
+#define SENSOR_ID_28 0x1B // Fuel 0x600
 
 #define ALT_FIRST_ID 0x0100 // 100 m
 #define ALT_LAST_ID 0x010f

@@ -1,5 +1,5 @@
 /*
- * esc_smartport v0.1
+ * esc_smartport
  *
  * License https://www.gnu.org/licenses/gpl-3.0.en.html
  *
@@ -26,7 +26,8 @@
  * - R3 (4.7k) to Arduino PIN_SMARTPORT_TX (12)
  * - If using ESC serial: ESC serial signal to Arduino Rx
  * - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (8)
- * - If PWM output is required (for HobbyWing Flyfun V5): Flybarless PWM signal input to Arduino PIN_PWM_OUT (9)
+ * - If PWM output is required (for HobbyWing Flyfun V5): Flybarless PWM signal
+ * input to Arduino PIN_PWM_OUT (9)
  * - Voltage divider + to PIN_BATT (A1)
  * - Voltage divider - to Gnd
  *
@@ -57,7 +58,7 @@
 #define REFRESH_TEMP 1000
 #define REFRESH_CURR 1000
 
-#if F_CPU==16000000UL
+#if F_CPU == 16000000UL
 #define BOARD_VCC 5
 #else
 #define BOARD_VCC 3.3
@@ -79,10 +80,10 @@
 #define BITMASK_PROTOCOL 0B00000011
 #define BITMASK_VOLTAGE1 0B00000100
 #define BITMASK_VOLTAGE2 0B00001000
-#define BITMASK_CURRENT  0B00010000
-#define BITMASK_NTC1     0B00100000
-#define BITMASK_NTC2     0B01000000
-#define BITMASK_PWM      0B10000000
+#define BITMASK_CURRENT 0B00010000
+#define BITMASK_NTC1 0B00100000
+#define BITMASK_NTC2 0B01000000
+#define BITMASK_PWM 0B10000000
 
 // byte 2: free
 
@@ -102,11 +103,11 @@
 
 //#define DEBUG
 
-#include <Arduino.h>
-#include <SoftwareSerial.h>
-#include <EEPROM.h>
 #include "Esc.h"
 #include "Smartport.h"
+#include <Arduino.h>
+#include <EEPROM.h>
+#include <SoftwareSerial.h>
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 2
