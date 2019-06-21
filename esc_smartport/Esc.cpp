@@ -162,7 +162,7 @@ bool Esc::read() {
       TCCR1A |= _BV(COM1A1);
       ICR1 = (7.5 * (uint32_t)F_CPU / rpm) - 1;
       OCR1A = DUTY * ICR1;
-#ifdef DEBUG_ESC
+#ifdef DEBUG_ESC_PWM
       _serial.print(ICR1);
       _serial.print(" ");
       _serial.println(OCR1A);
@@ -172,7 +172,7 @@ bool Esc::read() {
       TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
       OCR1A = (7.5 * (uint32_t)F_CPU / rpm) - 1;
       OCR1B = DUTY * OCR1A;
-#ifdef DEBUG_ESC
+#ifdef DEBUG_ESC_PWM
       _serial.print(OCR1A);
       _serial.print(" ");
       _serial.println(OCR1B);
@@ -192,8 +192,8 @@ void Esc::setProtocol(uint8_t protocol) {
   case PROTOCOL_PWM:
     // TIMER1,capture ext int, scaler 8. PIN 8
     TCCR1A = 0;
-    TCCR1B = 1 << CS11;
-    TIMSK1 = 1 << ICIE1;
+    TCCR1B = _BV(CS11);
+    TIMSK1 = _BV(ICIE1);
     break;
   default:
     if (_pwmOut == false)
