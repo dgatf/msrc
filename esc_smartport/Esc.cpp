@@ -74,11 +74,11 @@ bool Esc::readHWV4() {
         _serial.print(temp1);
         _serial.print(" Temp2: ");
         _serial.print(temp2);
-        _serial.print("  ");
+        /*_serial.print("  ");
         for (uint8_t i = 0; i < cont; i++) {
           _serial.print(data[i], HEX);
           _serial.print(" ");
-        }
+        }*/
         _serial.println();
 #endif
         return true;
@@ -107,11 +107,11 @@ bool Esc::readHWV4() {
         _serial.print(temp1);
         _serial.print(" Temp2: ");
         _serial.println(temp2);
-        _serial.print("  ");
+        /*_serial.print("  ");
         for (uint8_t i = 0; i < cont; i++) {
           _serial.print(data[i], HEX);
           _serial.print(" ");
-        }
+        }*/
         _serial.println();
 #endif
         return true;
@@ -147,11 +147,15 @@ bool Esc::read() {
     statusChange = true;
     break;
   }
+#ifdef DEBUG_ESC_PLOTTER
+  _serial.println(DEBUG_ESC_PLOTTER);
+#endif
   if (_pwmOut == true && _protocol != PROTOCOL_PWM && statusChange) {
     noInterrupts();
     if (rpm >= 2000) {
 #ifdef DEBUG_ESC
-      _serial.print(rpm);
+      _s
+erial.print(rpm);
       _serial.print(" ");
 #endif
 #if MODE_PWM_OUT == ICR
