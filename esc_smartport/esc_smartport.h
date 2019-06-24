@@ -40,8 +40,8 @@
 
 // Pins
 
-#define PIN_SMARTPORT_RX 8
-#define PIN_SMARTPORT_TX 8
+#define PIN_SMARTPORT_RX 7
+#define PIN_SMARTPORT_TX 12
 
 // Analog inputs
 
