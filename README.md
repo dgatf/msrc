@@ -57,9 +57,9 @@ Current is measured through analog pin A4
 - ESC temp1: EscT (0x0b70)
 - ESC temp2: EscT (0x0b71)
 - Voltage 1: A3 (0x0900)
-- Voltage 2: A3 (0x0901)
+- Voltage 2: A4 (0x0910)
 - Thermistor 1: Tmp1 (0x0400)
-- Thermistor 2 : Tmp1 (0x0401)
+- Thermistor 2 : Tmp2 (0x0410)
 - Current: Curr (0x020f)
 
 ## Minumum wiring:
@@ -115,3 +115,11 @@ Copy the file escSp.lua to the SCRIPTS folder in the sdcard of the Tx and execut
 Using Arduino IDE copy folder *esc_smartport* and open *esc_smartport.ino*. Select board *Arduino Pro or Pro Mini*, processor *ATMega168 or ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
 
 ## [Video](https://youtu.be/Mby2rlmAMlU)
+
+Change log:
+
+v0.3
+
+- Averaging telemetry added
+- Voltage2 sensor changed from A3 to A4
+- Ntc2 sensor changed from Tmp1 to Tmp2
