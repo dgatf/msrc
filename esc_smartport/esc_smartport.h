@@ -203,8 +203,6 @@ struct Config {
 struct Telemetry {
   float *escRpmConsP = NULL;
   float *escPowerP = NULL;
-  float *voltageP = NULL;
-  float *currentP = NULL;
   float *temp1P = NULL;
   float *temp2P = NULL;
   float *voltageAnalog1P = NULL;
@@ -212,17 +210,24 @@ struct Telemetry {
   float *currentAnalogP = NULL;
   float *ntc1P = NULL;
   float *ntc2P = NULL;
-  Queue<float> escRpmConsQP;
-  Queue<float> escPowerQP;
-  Queue<float> voltageQP;
-  Queue<float> currentQP;
-  Queue<float> temp1QP;
-  Queue<float> temp2QP;
-  Queue<float> voltageAnalog1QP;
-  Queue<float> voltageAnalog2QP;
-  Queue<float> currentAnalogQP;
-  Queue<float> ntc1QP;
-  Queue<float> ntc2QP;
+  Queue<float> rpmQ;
+  Queue<float> voltageQ;
+  Queue<float> temp1Q;
+  Queue<float> temp2Q;
+  Queue<float> voltageAnalog1Q;
+  Queue<float> voltageAnalog2Q;
+  Queue<float> currentAnalogQ;
+  Queue<float> ntc1Q;
+  Queue<float> ntc2Q;
+  float rpmAvg = 0;
+  float voltageAvg = 0;
+  float temp1Avg = 0;
+  float temp2Avg = 0;
+  float voltageAnalog1Avg = 0;
+  float voltageAnalog2Avg = 0;
+  float currentAnalogAvg = 0;
+  float ntc1Avg = 0;
+  float ntc2Avg = 0;
 };
 
 void readConfig();

@@ -55,60 +55,59 @@ void initConfig() {
 
   smartport.deleteElements();
 
-  telemetry.escRpmConsQP.del(QUEUE_RPM);
-  telemetry.escPowerQP.del(QUEUE_VOLT);
-  telemetry.currentQP.del(QUEUE_CURR);
-  telemetry.temp1QP.del(QUEUE_TEMP);
-  telemetry.temp2QP.del(QUEUE_TEMP);
-  telemetry.voltageAnalog1QP.del(QUEUE_VOLT);
-  telemetry.voltageAnalog2QP.del(QUEUE_VOLT);
-  telemetry.currentAnalogQP.del(QUEUE_CURR);
-  telemetry.ntc1QP.del(QUEUE_TEMP);
-  telemetry.ntc2QP.del(QUEUE_TEMP);
+  telemetry.rpmQ.del(QUEUE_RPM);
+  telemetry.voltageQ.del(QUEUE_VOLT);
+  telemetry.temp1Q.del(QUEUE_TEMP);
+  telemetry.temp2Q.del(QUEUE_TEMP);
+  telemetry.voltageAnalog1Q.del(QUEUE_VOLT);
+  telemetry.voltageAnalog2Q.del(QUEUE_VOLT);
+  telemetry.currentAnalogQ.del(QUEUE_CURR);
+  telemetry.ntc1Q.del(QUEUE_TEMP);
+  telemetry.ntc2Q.del(QUEUE_TEMP);
 
   switch (config.protocol) {
   case PROTOCOL_HW_V3:
   case PROTOCOL_PWM:
     telemetry.escRpmConsP =
         smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
-    telemetry.escRpmConsQP.init(0, QUEUE_RPM);
+    telemetry.rpmQ.init(0, QUEUE_RPM);
     break;
   case PROTOCOL_HW_V4:
     telemetry.escRpmConsP =
         smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
-    telemetry.escRpmConsQP.init(0, QUEUE_RPM);
+    telemetry.rpmQ.init(0, QUEUE_RPM);
     telemetry.escPowerP =
         smartport.addElement(ESC_POWER_FIRST_ID, REFRESH_VOLT);
-    telemetry.escPowerQP.init(0, QUEUE_VOLT);
+    telemetry.voltageQ.init(0, QUEUE_VOLT);
     telemetry.temp1P =
         smartport.addElement(ESC_TEMPERATURE_FIRST_ID, REFRESH_TEMP);
-    telemetry.temp1QP.init(0, QUEUE_TEMP);
+    telemetry.temp1Q.init(0, QUEUE_TEMP);
     telemetry.temp2P =
         smartport.addElement(ESC_TEMPERATURE_FIRST_ID + 1, REFRESH_TEMP);
-    telemetry.temp2QP.init(0, QUEUE_TEMP);
+    telemetry.temp2Q.init(0, QUEUE_TEMP);
     break;
   }
 
   if (config.voltage1 == true) {
     telemetry.voltageAnalog1P = smartport.addElement(A3_FIRST_ID, REFRESH_VOLT);
-    telemetry.voltageAnalog1QP.init(0, QUEUE_VOLT);
+    telemetry.voltageAnalog1Q.init(0, QUEUE_VOLT);
   }
   if (config.voltage2 == true) {
     telemetry.voltageAnalog2P = smartport.addElement(A4_FIRST_ID, REFRESH_VOLT);
-    telemetry.voltageAnalog2QP.init(0, QUEUE_VOLT);
+    telemetry.voltageAnalog2Q.init(0, QUEUE_VOLT);
   }
   if (config.current == true) {
     telemetry.currentAnalogP =
         smartport.addElement(CURR_FIRST_ID, REFRESH_CURR);
-    telemetry.currentAnalogQP.init(0, QUEUE_CURR);
+    telemetry.currentAnalogQ.init(0, QUEUE_CURR);
   }
   if (config.ntc1 == true) {
     telemetry.ntc1P = smartport.addElement(T1_FIRST_ID, REFRESH_TEMP);
-    telemetry.ntc1QP.init(0, QUEUE_TEMP);
+    telemetry.ntc1Q.init(0, QUEUE_TEMP);
   }
   if (config.ntc2 == true) {
     telemetry.ntc2P = smartport.addElement(T2_FIRST_ID, REFRESH_TEMP);
-    telemetry.ntc2QP.init(0, QUEUE_TEMP);
+    telemetry.ntc2Q.init(0, QUEUE_TEMP);
   }
 }
 
@@ -148,91 +147,83 @@ void setup() {
 }
 
 void loop() {
+
   switch (config.protocol) {
   case PROTOCOL_HW_V3:
-    if (esc.read()) {
-      float value = esc.getRpm() / QUEUE_RPM;
-      *telemetry.escRpmConsP +=
-          smartport.formatEscRpmCons(value, 0) -
-          smartport.formatEscRpmCons(telemetry.escRpmConsQP.dequeue(), 0);
-      telemetry.escRpmConsQP.enqueue(value);
-    }
+    esc.read();
+    float value1 = esc.getRpm() / QUEUE_RPM;
+    telemetry.rpmAvg += value1 - telemetry.rpmQ.dequeue();
+    telemetry.rpmQ.enqueue(value1);
+    *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpmAvg, 0);
     break;
   case PROTOCOL_HW_V4:
     if (esc.read()) {
 
       float value = esc.getRpm() / QUEUE_RPM;
-      *telemetry.escRpmConsP +=
-          smartport.formatEscRpmCons(value, 0) -
-          smartport.formatEscRpmCons(telemetry.escRpmConsQP.dequeue(), 0);
-      telemetry.escRpmConsQP.enqueue(value);
+      telemetry.rpmAvg += value - telemetry.rpmQ.dequeue();
+      telemetry.rpmQ.enqueue(value);
+      *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpmAvg, 0);
 
       value = esc.getVolt() / QUEUE_VOLT;
-      *telemetry.escPowerP +=
-          smartport.formatEscPower(value, 0) -
-          smartport.formatEscPower(telemetry.escPowerQP.dequeue(), 0);
-      telemetry.escPowerQP.enqueue(value);
+      telemetry.voltageAvg += value - telemetry.voltageQ.dequeue();
+      telemetry.voltageQ.enqueue(value);
+      *telemetry.escRpmConsP =
+          smartport.formatEscPower(telemetry.voltageAvg, 0);
 
       value = esc.getTemp1() / QUEUE_TEMP;
-      *telemetry.temp1P +=
-          smartport.formatData(ESC_TEMPERATURE_FIRST_ID, value) -
-          smartport.formatData(ESC_TEMPERATURE_FIRST_ID,
-                               -telemetry.temp1QP.dequeue());
-      telemetry.temp1QP.enqueue(value);
+      telemetry.temp1Avg += value - telemetry.temp1Q.dequeue();
+      telemetry.temp1Q.enqueue(value);
+      *telemetry.escRpmConsP =
+          smartport.formatData(ESC_TEMPERATURE_FIRST_ID, telemetry.temp1Avg);
 
       value = esc.getTemp2() / QUEUE_TEMP;
-      *telemetry.temp2P +=
-          smartport.formatData(ESC_TEMPERATURE_FIRST_ID + 1, value) -
-          smartport.formatData(ESC_TEMPERATURE_FIRST_ID + 1,
-                               -telemetry.temp2QP.dequeue());
-      telemetry.temp2QP.enqueue(value);
+      telemetry.temp2Avg += value - telemetry.temp2Q.dequeue();
+      telemetry.temp2Q.enqueue(value);
+      *telemetry.escRpmConsP = smartport.formatData(
+          ESC_TEMPERATURE_FIRST_ID + 1, telemetry.temp1Avg);
     }
     break;
   case PROTOCOL_PWM:
     esc.read();
-    float value = esc.getRpm() / QUEUE_RPM;
-    *telemetry.escRpmConsP +=
-        smartport.formatEscRpmCons(value, 0) -
-        smartport.formatEscRpmCons(telemetry.escRpmConsQP.dequeue(), 0);
-    telemetry.escRpmConsQP.enqueue(value);
+    float value2 = esc.getRpm() / QUEUE_RPM;
+    telemetry.rpmAvg += value2 - telemetry.rpmQ.dequeue();
+    telemetry.rpmQ.enqueue(value2);
+    *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpmAvg, 0);
     break;
   }
 
   if (config.voltage1 == true) {
     float value = readVoltageAnalog(PIN_VOLTAGE1) / QUEUE_VOLT;
-    *telemetry.voltageAnalog1P +=
-        smartport.formatData(A3_FIRST_ID, value) -
-        smartport.formatData(A3_FIRST_ID, telemetry.voltageAnalog1QP.dequeue());
-    telemetry.voltageAnalog1QP.enqueue(value);
+    telemetry.voltageAnalog1Avg += value - telemetry.voltageAnalog1Q.dequeue();
+    telemetry.voltageAnalog1Q.enqueue(value);
+    *telemetry.voltageAnalog1P =
+        smartport.formatData(A3_FIRST_ID, telemetry.voltageAnalog1Avg);
   }
   if (config.voltage2 == true) {
     float value = readVoltageAnalog(PIN_VOLTAGE2) / QUEUE_VOLT;
-    *telemetry.voltageAnalog2P +=
-        smartport.formatData(A4_FIRST_ID, value) -
-        smartport.formatData(A4_FIRST_ID, telemetry.voltageAnalog2QP.dequeue());
-    telemetry.voltageAnalog2QP.enqueue(value);
+    telemetry.voltageAnalog2Avg += value - telemetry.voltageAnalog2Q.dequeue();
+    telemetry.voltageAnalog2Q.enqueue(value);
+    *telemetry.voltageAnalog2P =
+        smartport.formatData(A4_FIRST_ID, telemetry.voltageAnalog2Avg);
   }
   if (config.current == true) {
     float value = readVoltageAnalog(PIN_CURRENT) / QUEUE_CURR;
-    *telemetry.currentAnalogP +=
-        smartport.formatData(CURR_FIRST_ID, value) -
-        smartport.formatData(CURR_FIRST_ID,
-                             -telemetry.currentAnalogQP.dequeue());
-    telemetry.currentAnalogQP.enqueue(value);
+    telemetry.currentAnalogAvg += value - telemetry.currentAnalogQ.dequeue();
+    telemetry.currentAnalogQ.enqueue(value);
+    *telemetry.currentAnalogP =
+        smartport.formatData(CURR_FIRST_ID, telemetry.currentAnalogAvg);
   }
   if (config.ntc1 == true) {
     float value = readNtc(PIN_NTC1) / QUEUE_TEMP;
-    *telemetry.ntc1P +=
-        smartport.formatData(T1_FIRST_ID, value) -
-        smartport.formatData(T1_FIRST_ID, -telemetry.ntc1QP.dequeue());
-    telemetry.ntc1QP.enqueue(value);
+    telemetry.ntc1Avg += value - telemetry.ntc1Q.dequeue();
+    telemetry.ntc1Q.enqueue(value);
+    *telemetry.ntc1P = smartport.formatData(T1_FIRST_ID, telemetry.ntc1Avg);
   }
   if (config.ntc2 == true) {
     float value = readNtc(PIN_NTC2) / QUEUE_TEMP;
-    *telemetry.ntc2P +=
-        smartport.formatData(T2_FIRST_ID, value) -
-        smartport.formatData(T2_FIRST_ID, -telemetry.ntc2QP.dequeue());
-    telemetry.ntc2QP.enqueue(value);
+    telemetry.ntc2Avg += value - telemetry.ntc2Q.dequeue();
+    telemetry.ntc2Q.enqueue(value);
+    *telemetry.ntc2P = smartport.formatData(T2_FIRST_ID, telemetry.ntc2Avg);
   }
 
   uint16_t dataId;
