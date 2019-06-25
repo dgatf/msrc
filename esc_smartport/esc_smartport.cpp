@@ -147,7 +147,8 @@ void setup() {
 }
 
 void loop() {
-float valueTelemetry;
+  
+  float valueTelemetry;
   switch (config.protocol) {
   case PROTOCOL_HW_V3:
     esc.read();
