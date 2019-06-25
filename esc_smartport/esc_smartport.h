@@ -60,10 +60,10 @@
 
 // Queues sizes
 
-#define QUEUE_RPM 20
-#define QUEUE_VOLT 20
-#define QUEUE_TEMP 20
-#define QUEUE_CURR 20
+#define QUEUE_RPM 5
+#define QUEUE_VOLT 5
+#define QUEUE_TEMP 5
+#define QUEUE_CURR 5
 
 // Board Vcc
 
