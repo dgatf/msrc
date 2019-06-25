@@ -70,44 +70,44 @@ void initConfig() {
   case PROTOCOL_PWM:
     telemetry.escRpmConsP =
         smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
-    telemetry.rpmQ.init(0, QUEUE_RPM);
+    telemetry.rpmQ.initQueue(0, QUEUE_RPM);
     break;
   case PROTOCOL_HW_V4:
     telemetry.escRpmConsP =
         smartport.addElement(ESC_RPM_CONS_FIRST_ID, REFRESH_RPM);
-    telemetry.rpmQ.init(0, QUEUE_RPM);
+    telemetry.rpmQ.initQueue(0, QUEUE_RPM);
     telemetry.escPowerP =
         smartport.addElement(ESC_POWER_FIRST_ID, REFRESH_VOLT);
-    telemetry.voltageQ.init(0, QUEUE_VOLT);
+    telemetry.voltageQ.initQueue(0, QUEUE_VOLT);
     telemetry.temp1P =
         smartport.addElement(ESC_TEMPERATURE_FIRST_ID, REFRESH_TEMP);
-    telemetry.temp1Q.init(0, QUEUE_TEMP);
+    telemetry.temp1Q.initQueue(0, QUEUE_TEMP);
     telemetry.temp2P =
         smartport.addElement(ESC_TEMPERATURE_FIRST_ID + 1, REFRESH_TEMP);
-    telemetry.temp2Q.init(0, QUEUE_TEMP);
+    telemetry.temp2Q.initQueue(0, QUEUE_TEMP);
     break;
   }
 
   if (config.voltage1 == true) {
     telemetry.voltageAnalog1P = smartport.addElement(A3_FIRST_ID, REFRESH_VOLT);
-    telemetry.voltageAnalog1Q.init(0, QUEUE_VOLT);
+    telemetry.voltageAnalog1Q.initQueue(0, QUEUE_VOLT);
   }
   if (config.voltage2 == true) {
     telemetry.voltageAnalog2P = smartport.addElement(A4_FIRST_ID, REFRESH_VOLT);
-    telemetry.voltageAnalog2Q.init(0, QUEUE_VOLT);
+    telemetry.voltageAnalog2Q.initQueue(0, QUEUE_VOLT);
   }
   if (config.current == true) {
     telemetry.currentAnalogP =
         smartport.addElement(CURR_FIRST_ID, REFRESH_CURR);
-    telemetry.currentAnalogQ.init(0, QUEUE_CURR);
+    telemetry.currentAnalogQ.initQueue(0, QUEUE_CURR);
   }
   if (config.ntc1 == true) {
     telemetry.ntc1P = smartport.addElement(T1_FIRST_ID, REFRESH_TEMP);
-    telemetry.ntc1Q.init(0, QUEUE_TEMP);
+    telemetry.ntc1Q.initQueue(0, QUEUE_TEMP);
   }
   if (config.ntc2 == true) {
     telemetry.ntc2P = smartport.addElement(T2_FIRST_ID, REFRESH_TEMP);
-    telemetry.ntc2Q.init(0, QUEUE_TEMP);
+    telemetry.ntc2Q.initQueue(0, QUEUE_TEMP);
   }
 }
 
@@ -147,7 +147,7 @@ void setup() {
 }
 
 void loop() {
-  
+
   float valueTelemetry;
   switch (config.protocol) {
   case PROTOCOL_HW_V3:

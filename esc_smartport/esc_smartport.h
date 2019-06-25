@@ -169,7 +169,7 @@ public:
     return item;
   }
 
-  void init(T item, uint8_t size) {
+  void initQueue(T item, uint8_t size) {
     for (uint8_t i = 0; i < size; i++)
       this->enqueue(item);
   }
