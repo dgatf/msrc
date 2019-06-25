@@ -96,7 +96,8 @@ local function refreshTaranis()
   lcd.drawText(45, 41, config.current.list[config.current.selected], getFlags(6))
   lcd.drawText(109, 41, config.pwm.list[config.pwm.selected], getFlags(7))
   if receiveConfigOk == false then lcd.drawText(35, 28, 'Connecting...', INVERS) end
-  lcd.drawText(1, 57, 'Long press [ENTER] to update', SMLSIZE)
+  lcd.drawText(1, 50, 'Long press [ENTER] or [MENU]', SMLSIZE)
+  lcd.drawText(1, 57, '              to update', SMLSIZE)
 end
 
 local function run_func(event)
@@ -183,7 +184,7 @@ local function run_func(event)
     selection.state = false
     lcdChange = true
   end
-  if event == EVT_ENTER_LONG then
+  if event == EVT_ENTER_LONG or event == EVT_MENU_LONG then
     -- killEvents(EVT_ENTER_LONG) -- not working
     if receiveConfigOk == true and sendConfigOk == true then
       sendConfig()
