@@ -46,6 +46,14 @@ If more than 6S change R values or you may burn the Arduino!
 Two temperature sensors can be installed through the analog pins A0 and A1
 Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in esc_smartport.h if needed (NTC_BETA, default is 4190). Sensor output in Celsius
 
+Using Beta formula:
+
+*T = 1/[ln(R/Ro)/B+1/To]*
+
+More accurate formula (Steinhart and Hart Equation) if data available:
+
+*T = 1/[A+Bln(R/Ro)+Cln(R/Ro)²+Dln(R/Ro)³]*
+
 ## Current
 
 Current is measured through analog pin A4
