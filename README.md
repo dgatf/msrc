@@ -92,6 +92,12 @@ Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3 sen
 
 Adjust sensor ratio: *1000 / output sensitivity (mV/A)*
 
+To get battery consumption add a new sensor:
+
+- Type: Calculated
+- Formula: Consumption
+- Sensor: Curr
+
 ## Configuration
 
 The configuration is modified with a lua script (X7, X9, X-lite and Horus with openTx 2.2 or higher)
