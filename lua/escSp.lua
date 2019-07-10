@@ -133,7 +133,7 @@ local function refreshHorus()
   lcd.drawText(170, 220, config.queuePwm.selected, getFlags(16))
 
   if receiveConfigOk == false then lcd.drawText(180, 155, 'Connecting...', INVERS) end
-  lcd.drawText(110, 250, 'UPDATE', getFlags(17))
+  lcd.drawText(200, 250, 'UPDATE', getFlags(17))
 end
 
 local function refreshTaranis()
