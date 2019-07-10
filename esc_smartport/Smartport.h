@@ -178,6 +178,7 @@ public:
   void deleteElements();
   uint8_t processTelemetry(uint16_t &dataId, uint32_t &value);
   uint8_t processTelemetry();
+  bool packetReady();
 };
 
 #endif

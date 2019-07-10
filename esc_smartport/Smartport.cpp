@@ -208,25 +208,12 @@ uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
 }
 
 uint8_t Smartport::processTelemetry() {
-  if (available()) {
-    uint8_t data[64];
-    uint8_t type;
-    type = readPacket(data);
-    if (type == PACKET_TYPE_POLL && data[1] == SMARTPORT_SENSOR) {
-      if (elementP != NULL) {
-        if ((uint16_t)millis() - elementP->ts >=
-            (uint16_t)elementP->refresh * 100) {
-          sendData(elementP->dataId, elementP->value);
-          elementP->ts = millis();
-          elementP = elementP->nextP;
-          return PACKET_SENT_TELEMETRY;
-        } else {
-          sendVoid();
-          elementP = elementP->nextP;
-          return PACKET_SENT_VOID;
-        }
-      }
-    }
-  }
-  return PACKET_NONE;
+  uint16_t dataId;
+  uint32_t value;
+  return processTelemetry(dataId, value);
+}
+
+bool Smartport::packetReady() {
+  if (packetP != NULL) return false;
+  return true;
 }

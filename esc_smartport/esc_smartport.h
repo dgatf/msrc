@@ -37,6 +37,7 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 3
+#define VERSION_PATCH 0
 
 // Pins
 
@@ -51,19 +52,9 @@
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A4
 
-// Telemetry refresh rate in ms
+// Config
 
-#define REFRESH_RPM 200
-#define REFRESH_VOLT 1000
-#define REFRESH_TEMP 1000
-#define REFRESH_CURR 1000
-
-// Queues sizes
-
-#define QUEUE_RPM 5
-#define QUEUE_VOLT 5
-#define QUEUE_TEMP 5
-#define QUEUE_CURR 5
+#define CONFIG_LUA
 
 // Board Vcc
 
@@ -83,22 +74,50 @@
 //#define NTC_C1 3.41E-06
 //#define NTC_D1 1.03E-07
 
+// PWM out (OCR pin 10, ICR pin 9)
+
+#define MODE_PWM_OUT OCR // ICR
+#define DUTY 0.5  // 0.5 = 50%
+#define PIN_PWM_OUT_ICRA 9 // TIMER1 PWM PIN 9
+#define PIN_PWM_OUT_OCR 10 // TIMER1 PWM PIN 10
+
 // Config bitmask
 
-// byte 1: config
-#define BITMASK_PROTOCOL 0B00000011
-#define BITMASK_VOLTAGE1 0B00000100
-#define BITMASK_VOLTAGE2 0B00001000
-#define BITMASK_CURRENT 0B00010000
-#define BITMASK_NTC1 0B00100000
-#define BITMASK_NTC2 0B01000000
-#define BITMASK_PWM 0B10000000
+// packet 1
 
-// byte 2: free
+// byte 1
+#define BM_PROTOCOL(VALUE) VALUE & 0B00000011
+#define BM_VOLTAGE1(VALUE) VALUE >> 2 & 0B00000001
+#define BM_VOLTAGE2(VALUE) VALUE >> 3 & 0B00000001
+#define BM_CURRENT(VALUE) VALUE >> 4 & 0B00000001
+#define BM_NTC1(VALUE) VALUE >> 5 & 0B00000001
+#define BM_NTC2(VALUE) VALUE >> 6 & 0B00000001
+#define BM_PWM(VALUE) VALUE >> 7 & 0B00000001
+
+// byte 2
+#define BM_QUEUE_PWM(VALUE) VALUE >> 8 & 0B00001111
 
 // byte 3: version minor
 
 // byte 4: version major
+
+// packet 2
+
+// byte 1
+#define BM_REFRESH_RPM(VALUE) VALUE & 0B00001111
+#define BM_REFRESH_VOLT(VALUE) VALUE >> 4 & 0B00001111
+
+// byte 2
+#define BM_REFRESH_CURR(VALUE) VALUE >> 8 & 0B00001111
+#define BM_REFRESH_TEMP(VALUE) VALUE >> 12 & 0B00001111
+
+// byte 3
+#define BM_QUEUE_RPM(VALUE) VALUE >> 16 & 0B00001111
+#define BM_QUEUE_VOLT(VALUE) VALUE >> 20 & 0B00001111
+
+//byte 4
+#define BM_QUEUE_CURR(VALUE) VALUE >> 24 & 0B00001111
+#define BM_QUEUE_TEMP(VALUE) VALUE >> 28 & 0B00001111
 
 #define ESCSERIAL_TIMEOUT 3
 #define escSerial Serial
@@ -110,6 +129,8 @@
 // Connect arduino Rx to FTDI Tx for flashing, then connect arduino Rx to esc
 
 //#define DEBUG
+//#define DEBUG_PLOTTER rpm/60
+//#define DEBUG_TELEMETRY
 
 #include "Esc.h"
 #include "Smartport.h"
@@ -198,6 +219,16 @@ struct Config {
   bool ntc1 = false;
   bool ntc2 = false;
   bool pwmOut = false;
+  uint8_t refreshRpm = 2;
+  uint8_t refreshVolt = 10;
+  uint8_t refreshCurr = 10;
+  uint8_t refreshTemp = 10;
+  //max queue size 16
+  uint8_t queueRpm = 5;
+  uint8_t queueVolt = 5;
+  uint8_t queueCurr = 5;
+  uint8_t queueTemp = 5;
+  uint8_t queuePwm = 5;
 };
 
 struct Telemetry {
@@ -219,6 +250,7 @@ struct Telemetry {
   Queue<float> currentAnalogQ;
   Queue<float> ntc1Q;
   Queue<float> ntc2Q;
+  Queue<float> pwmQ;
   float rpmAvg = 0;
   float voltageAvg = 0;
   float temp1Avg = 0;
@@ -228,11 +260,13 @@ struct Telemetry {
   float currentAnalogAvg = 0;
   float ntc1Avg = 0;
   float ntc2Avg = 0;
+  float pwmAvg = 0;
 };
 
 void readConfig();
 void writeConfig();
 void initConfig();
+void setPwmOut();
 float readVoltageAnalog(uint8_t pin);
 float readNtc(uint8_t pin);
 void setup();

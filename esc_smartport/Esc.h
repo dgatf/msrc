@@ -10,13 +10,6 @@
 // Pins
 
 #define PIN_PWM_IN 8 // TIMER1 CAPT PIN8
-#define PIN_PWM_OUT_ICRA 9 // TIMER1 PWM PIN 9
-#define PIN_PWM_OUT_OCR 10 // TIMER1 PWM PIN 10
-
-// PWM out (OCR pin 10, ICR pin 9)
-
-#define MODE_PWM_OUT OCR // ICR
-#define DUTY 0.5  // 0.5 = 50%
 
 #define COMP_TO_MICROS ((float)8000000UL/F_CPU)
 
@@ -27,6 +20,7 @@
 
 // Pwm in: TIMER 1 CAPT, PIN 8
 extern volatile uint16_t pwmInLenght;
+extern volatile uint32_t tsPwmIn;
 
 class Esc {
 
@@ -47,7 +41,6 @@ private:
 public:
   Esc(Stream& serial);
   void setProtocol(uint8_t protocol);
-  void setPwmOut(uint8_t pwmOut);
   bool read();
   float getRpm();
   float getVolt();

@@ -124,6 +124,8 @@ Options:
 
 Copy the file escSp.lua to the SCRIPTS folder in the sdcard of the Tx and execute as one-time script from SD-HD-CARD screen (long press and Execute). It can be executed also as telemetry script if copied to TELEMETRY folder and assigned to a model telemetry screen
 
+If not using lua script comment *#define CONFIG_LUA* and assign values, lines 219-237, in esc_smartport.h
+
 ## Flash to Arduino
 
 Using Arduino IDE copy folder *esc_smartport* and open *esc_smartport.ino*. Select board *Arduino Pro or Pro Mini*, processor *ATMega168 or ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
@@ -137,3 +139,5 @@ v0.3
 - Averaging telemetry added
 - Voltage2 sensor changed from A3 to A4
 - Ntc2 sensor changed from Tmp1 to Tmp2
+- Averaging governor added
+- Refresh rate and averaging size added to lua config script
