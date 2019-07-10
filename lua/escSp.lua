@@ -30,11 +30,11 @@ local config =
 local selection = {selected = 1, state = false, list = {'protocol', 'voltage1', 'voltage2', 'ntc1', 'ntc2', 'current', 'pwm', 'refreshRpm', 'refreshVolt', 'refreshCurr', 'refreshTemp', 'queueRpm', 'queueVolt', 'queueCurr', 'queueTemp', 'queuePwm', 'btnUpdate'}, elements = 17}
 
 local function getFlags(element)
-  if string.find(selection.list[element], 'btn') == 1 and selection.selected == element then return SMLSIZE + INVERS + BLINK end
-  if string.find(selection.list[element], 'btn') == 1 and selection.selected ~= element then return SMLSIZE + INVERS end
-  if selection.selected ~= element then return SMLSIZE end
-  if selection.selected == element and selection.state == false then return SMLSIZE + INVERS end
-  if selection.selected == element and selection.state == true then return SMLSIZE + INVERS + BLINK end
+  if string.find(selection.list[element], 'btn') == 1 and selection.selected == element then return INVERS + BLINK end
+  if string.find(selection.list[element], 'btn') == 1 and selection.selected ~= element then return INVERS end
+  if selection.selected ~= element then return 0 end
+  if selection.selected == element and selection.state == false then return INVERS end
+  if selection.selected == element and selection.state == true then return INVERS + BLINK end
   return
 end
 
@@ -90,7 +90,7 @@ local function bg_func(event)
 end
 
 local function refreshHorus()
-  lcd.drawRectangle(40, 30, 400, 120)
+  lcd.drawRectangle(40, 30, 400, 217)
   lcd.drawText(150, 5, 'ESC SmartPort v' .. scriptVersion, INVERS)
   lcd.drawText(50, 40, 'Firmware', 0)
   lcd.drawText(170, 40, config.firmwareVersion, 0)
@@ -108,54 +108,78 @@ local function refreshHorus()
   lcd.drawText(170, 120, config.current.list[config.current.selected], getFlags(6))
   lcd.drawText(290, 120, 'PWM out', 0)
   lcd.drawText(410, 120, config.pwm.list[config.pwm.selected], getFlags(7))
+
+  lcd.drawText(50, 140, 'Ref RPM', 0)
+  lcd.drawText(170, 140, (config.refreshRpm.selected - 1) * 100, getFlags(8))
+  lcd.drawText(290, 140, 'Ref Volt', 0)
+  lcd.drawText(410, 140, (config.refreshVolt.selected - 1) * 100, getFlags(9))
+
+  lcd.drawText(50, 160, 'Ref Curr', 0)
+  lcd.drawText(170, 160, (config.refreshCurr.selected - 1) * 100, getFlags(10))
+  lcd.drawText(290, 160, 'Ref Temp', 0)
+  lcd.drawText(410, 160, (config.refreshTemp.selected - 1) * 100, getFlags(11))
+
+  lcd.drawText(50, 180, 'Avg RPM', 0)
+  lcd.drawText(170, 180, config.queueRpm.selected, getFlags(12))
+  lcd.drawText(290, 180, 'Avg Volt', 0)
+  lcd.drawText(410, 180, config.queueVolt.selected, getFlags(13))
+
+  lcd.drawText(50, 200, 'Avg Curr', 0)
+  lcd.drawText(170, 200, config.queueCurr.selected, getFlags(14))
+  lcd.drawText(290, 200, 'Avg Temp', 0)
+  lcd.drawText(410, 200, config.queueTemp.selected, getFlags(15))
+
+  lcd.drawText(50, 220, 'Avg PWM', 0)
+  lcd.drawText(170, 220, config.queuePwm.selected, getFlags(16))
+
   if receiveConfigOk == false then lcd.drawText(180, 155, 'Connecting...', INVERS) end
-  lcd.drawText(110, 180, 'Long press [ENTER] to update', 0 + INVERS)
+  lcd.drawText(110, 250, 'Long press [ENTER] to update', 0 + INVERS)
 end
 
 local function refreshTaranis()
   lcd.drawText(1, 9 - scroll * 8, 'Firmware', SMLSIZE)
   lcd.drawText(44, 9 - scroll * 8, config.firmwareVersion, SMLSIZE)
   lcd.drawText(1, 17 - scroll * 8, 'Protocol', SMLSIZE)
-  lcd.drawText(44, 17 - scroll * 8, config.protocol.list[config.protocol.selected], getFlags(1))
+  lcd.drawText(44, 17 - scroll * 8, config.protocol.list[config.protocol.selected], SMLSIZE + getFlags(1))
   lcd.drawText(1, 25 - scroll * 8, 'Voltage1', SMLSIZE)
-  lcd.drawText(44, 25 - scroll * 8, config.voltage1.list[config.voltage1.selected], getFlags(2))
+  lcd.drawText(44, 25 - scroll * 8, config.voltage1.list[config.voltage1.selected], SMLSIZE + getFlags(2))
   lcd.drawText(64, 25 - scroll * 8, 'Voltage2', SMLSIZE)
-  lcd.drawText(108, 25 - scroll * 8, config.voltage2.list[config.voltage2.selected], getFlags(3))
+  lcd.drawText(108, 25 - scroll * 8, config.voltage2.list[config.voltage2.selected], SMLSIZE + getFlags(3))
   lcd.drawText(1, 33 - scroll * 8, 'Ntc1', SMLSIZE)
-  lcd.drawText(44, 33 - scroll * 8, config.ntc1.list[config.ntc1.selected], getFlags(4))
+  lcd.drawText(44, 33 - scroll * 8, config.ntc1.list[config.ntc1.selected], SMLSIZE + getFlags(4))
   lcd.drawText(64, 33 - scroll * 8, 'Ntc2', SMLSIZE)
-  lcd.drawText(108, 33 - scroll * 8, config.ntc2.list[config.ntc2.selected], getFlags(5))
+  lcd.drawText(108, 33 - scroll * 8, config.ntc2.list[config.ntc2.selected], SMLSIZE + getFlags(5))
   lcd.drawText(1, 41 - scroll * 8, 'Current', SMLSIZE)
-  lcd.drawText(44, 41 - scroll * 8, config.current.list[config.current.selected], getFlags(6))
+  lcd.drawText(44, 41 - scroll * 8, config.current.list[config.current.selected], SMLSIZE + getFlags(6))
   lcd.drawText(64, 41 - scroll * 8, 'PWM out', SMLSIZE)
-  lcd.drawText(108, 41 - scroll * 8, config.pwm.list[config.pwm.selected], getFlags(7))
+  lcd.drawText(108, 41 - scroll * 8, config.pwm.list[config.pwm.selected], SMLSIZE + getFlags(7))
 
   lcd.drawText(1, 49 - scroll * 8, 'Ref RPM', SMLSIZE)
-  lcd.drawText(44, 49 - scroll * 8, (config.refreshRpm.selected - 1) * 100, getFlags(8))
+  lcd.drawText(44, 49 - scroll * 8, (config.refreshRpm.selected - 1) * 100, SMLSIZE + getFlags(8))
   lcd.drawText(64, 49 - scroll * 8, 'Ref Volt', SMLSIZE)
-  lcd.drawText(108, 49 - scroll * 8, (config.refreshVolt.selected - 1) * 100, getFlags(9))
+  lcd.drawText(108, 49 - scroll * 8, (config.refreshVolt.selected - 1) * 100, SMLSIZE + getFlags(9))
 
   lcd.drawText(1, 57 - scroll * 8, 'Ref Curr', SMLSIZE)
-  lcd.drawText(44, 57 - scroll * 8, (config.refreshCurr.selected - 1) * 100, getFlags(10))
+  lcd.drawText(44, 57 - scroll * 8, (config.refreshCurr.selected - 1) * 100, SMLSIZE + getFlags(10))
   lcd.drawText(64, 57 - scroll * 8, 'Ref Temp', SMLSIZE)
-  lcd.drawText(108, 57 - scroll * 8, (config.refreshTemp.selected - 1) * 100, getFlags(11))
+  lcd.drawText(108, 57 - scroll * 8, (config.refreshTemp.selected - 1) * 100, SMLSIZE + getFlags(11))
 
   lcd.drawText(1, 65 - scroll * 8, 'Avg RPM', SMLSIZE)
-  lcd.drawText(44, 65 - scroll * 8, config.queueRpm.selected, getFlags(12))
+  lcd.drawText(44, 65 - scroll * 8, config.queueRpm.selected, SMLSIZE + getFlags(12))
   lcd.drawText(64, 65 - scroll * 8, 'Avg Volt', SMLSIZE)
-  lcd.drawText(108, 65 - scroll * 8, config.queueVolt.selected, getFlags(13))
+  lcd.drawText(108, 65 - scroll * 8, config.queueVolt.selected, SMLSIZE + getFlags(13))
 
   lcd.drawText(1, 73 - scroll * 8, 'Avg Curr', SMLSIZE)
-  lcd.drawText(44, 73 - scroll * 8, config.queueCurr.selected, getFlags(14))
+  lcd.drawText(44, 73 - scroll * 8, config.queueCurr.selected, SMLSIZE + getFlags(14))
   lcd.drawText(64, 73 - scroll * 8, 'Avg Temp', SMLSIZE)
-  lcd.drawText(108, 73 - scroll * 8, config.queueTemp.selected, getFlags(15))
+  lcd.drawText(108, 73 - scroll * 8, config.queueTemp.selected, SMLSIZE + getFlags(15))
 
   lcd.drawText(1, 81 - scroll * 8, 'Avg PWM', SMLSIZE)
-  lcd.drawText(44, 81 - scroll * 8, config.queuePwm.selected, getFlags(16))
+  lcd.drawText(44, 81 - scroll * 8, config.queuePwm.selected, SMLSIZE + getFlags(16))
 
   if receiveConfigOk == false then lcd.drawText(35, 28, 'Connecting...', INVERS) end
 
-  lcd.drawText(1, 89 - scroll * 8, 'UPDATE', getFlags(17))
+  lcd.drawText(1, 89 - scroll * 8, 'UPDATE', SMLSIZE + getFlags(17))
   lcd.drawScreenTitle('ESC SmartPort v' .. scriptVersion, 1, 1)
 end
 
