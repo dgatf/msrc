@@ -133,7 +133,7 @@ local function refreshHorus()
   lcd.drawText(170, 220, config.queuePwm.selected, getFlags(16))
 
   if receiveConfigOk == false then lcd.drawText(180, 155, 'Connecting...', INVERS) end
-  lcd.drawText(110, 250, 'Long press [ENTER] to update', 0 + INVERS)
+  lcd.drawText(110, 250, 'UPDATE', getFlags(17))
 end
 
 local function refreshTaranis()
@@ -302,15 +302,6 @@ local function run_func(event)
   if event == EVT_EXIT_BREAK then
     selection.state = false
     lcdChange = true
-  end
-  if event == EVT_ENTER_LONG or event == EVT_MENU_LONG then
-    -- killEvents(EVT_ENTER_LONG) -- not working
-    if receiveConfigOk == true and sendConfigState == 2 then
-      sendConfig()
-      tsSendConfig = getTime()
-    else
-      if receiveConfigOk == false then popupWarning('Not connected', EVT_EXIT_BREAK) end
-    end
   end
   scroll = 0
   if selection.selected > 7 then scroll = 1 end
