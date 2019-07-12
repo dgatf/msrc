@@ -2,7 +2,7 @@ local scriptVersion = '0.3'
 local tsReadConfig = 0
 local tsSendConfig = 0
 local readConfigState = 0
-local sendConfigState = 60
+local sendConfigState = 60 -- 40 ok, 50 error, 60 nil
 local refresh = 0
 local lcdChange = true
 local scroll = 0
@@ -138,7 +138,10 @@ local function refreshHorus()
   lcd.drawText(170, 220, config.queuePwm.selected, getFlags(16))
 
   if readConfigState < 30 then lcd.drawText(180, 155, 'Connecting...', INVERS) end
-  lcd.drawText(200, 250, 'UPDATE', getFlags(17))
+  if sendConfigState < 40 then lcd.drawText(200, 250, 'UPDATING', SMLSIZE + getFlags(17))
+  else lcd.drawText(200, 250, 'UPDATE', SMLSIZE + getFlags(17)) end
+  if sendConfigState == 40 then lcd.drawText(250, 250, 'OK', 0)
+  elseif sendConfigState == 50 then lcd.drawText(250, 250, 'ERROR', 0) end
 end
 
 local function refreshTaranis()
@@ -184,8 +187,9 @@ local function refreshTaranis()
 
   if readConfigState < 30 then lcd.drawText(35, 28, 'Connecting...', INVERS) end
 
-  lcd.drawText(1, 89 - scroll * 8, 'UPDATE', SMLSIZE + getFlags(17))
-  if sendConfigState == 40 then lcd.drawText(35, 89 - scroll * 8, 'Ok', SMLSIZE)
+  if sendConfigState < 40 then lcd.drawText(1, 89 - scroll * 8, 'UPDATING', SMLSIZE + getFlags(17))
+  else lcd.drawText(1, 89 - scroll * 8, 'UPDATE', SMLSIZE + getFlags(17)) end
+  if sendConfigState == 40 then lcd.drawText(35, 89 - scroll * 8, 'OK', SMLSIZE)
   elseif sendConfigState == 50 then lcd.drawText(35, 89 - scroll * 8, 'ERROR', SMLSIZE) end
   lcd.drawScreenTitle('ESC SmartPort v' .. scriptVersion, 1, 1)
 end
@@ -274,12 +278,14 @@ local function run_func(event)
       sendConfigState = 20
     end
     if physicalId == 9 and dataId == 0x5021 and sendConfigState == 20 then
-      sendConfigState = 60
+      sendConfigState = 30
       lcdChange = false
     end
-
   end
-
+  -- check send ok
+  if sendConfigState == 20 and getTime() - tsSendConfig > 500 then
+    sendConfigState = 50
+  end
   -- send packets
   if readConfigState == 15 and getTime() - tsReadConfig > 100 then
     readConfigState = 0
@@ -319,7 +325,7 @@ local function run_func(event)
         lcdChange = true
       end
     else
-      if readConfigState == 30 then
+      if readConfigState == 30 and sendConfigState >= 40 then
         sendConfigState = 0
       end
     end
