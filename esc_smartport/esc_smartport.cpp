@@ -5,6 +5,16 @@ void readConfig() {
   EEPROM.get(0, chk);
   if (chk == 0x64616E69) {
     EEPROM.get(4, config);
+    if (config.queueRpm > 16)
+      config.queueRpm = 5;
+    if (config.queueVolt > 16)
+      config.queueVolt = 5;
+    if (config.queueCurr > 16)
+      config.queueCurr = 5;
+    if (config.queueTemp > 16)
+      config.queueTemp = 5;
+    if (config.queuePwm > 16)
+      config.queuePwm = 5;
   } else {
     writeConfig();
   }
@@ -148,6 +158,9 @@ void initConfig() {
     telemetry.ntc2P = smartport.addElement(T2_FIRST_ID, config.refreshTemp);
     telemetry.ntc2Q.initQueue(0, config.queueTemp);
   }
+  if (config.pwmOut == true) {
+    telemetry.pwmQ.initQueue(0, config.queuePwm);
+  }
 }
 
 void setPwmOut() {
@@ -186,7 +199,8 @@ float readNtc(uint8_t pin) {
            NTC_D1 * pow(log(ntcR_Rref), 3)) -
       273.15;*/
   float temp = 1 / (log(ntcR_Rref) / NTC_BETA + 1 / 298.15) - 273.15;
-  if (temp < 0) return 0;
+  if (temp < 0)
+    return 0;
   return temp;
 }
 
@@ -201,7 +215,9 @@ void setup() {
   escSerial.print("V");
   escSerial.print(VERSION_MAJOR);
   escSerial.print(".");
-  escSerial.println(VERSION_MINOR);
+  escSerial.print(VERSION_MINOR);
+  escSerial.print(".");
+  escSerial.println(VERSION_PATCH);
 #endif
 
 #ifdef CONFIG_LUA
@@ -261,9 +277,11 @@ void loop() {
     break;
   }
 
-  if (config.pwmOut == true && config.protocol != PROTOCOL_PWM && statusChange) {
-    telemetry.pwmAvg += esc.getRpm() / config.queuePwm - telemetry.pwmQ.dequeue();
-    telemetry.pwmQ.enqueue(esc.getRpm() / config.queuePwm);
+  if (config.pwmOut == true && config.protocol != PROTOCOL_PWM &&
+      statusChange) {
+    valueTelemetry = esc.getRpm() / config.queuePwm;
+    telemetry.pwmAvg += valueTelemetry - telemetry.pwmQ.dequeue();
+    telemetry.pwmQ.enqueue(valueTelemetry);
     noInterrupts();
     if (esc.getRpm() >= 2000) {
 #if MODE_PWM_OUT == ICR
@@ -320,78 +338,115 @@ void loop() {
     *telemetry.ntc2P = smartport.formatData(T2_FIRST_ID, telemetry.ntc2Avg);
   }
 
+  uint8_t frameId;
   uint16_t dataId;
   uint32_t value;
-  uint8_t type = smartport.processTelemetry(dataId, value);
+  uint8_t type = smartport.processSmartport(frameId, dataId, value);
 
   if (type == PACKET_RECEIVED) {
-    #ifdef DEBUG_TELEMETRY
-      Serial.print("Type: ");
-      Serial.print(type);
-      Serial.print(" DataId: ");
-      Serial.print(dataId);
-      Serial.print(" Value: ");
-      Serial.println(value);
-    #endif
-    if (dataId == 0x5000) {
-      uint32_t value = 0;
-      value = config.protocol;
-      value |= config.voltage1 << 2;
-      value |= config.voltage2 << 3;
-      value |= config.current << 4;
-      value |= config.ntc1 << 5;
-      value |= config.ntc2 << 6;
-      value |= config.pwmOut << 7;
-      value |= (uint32_t)config.queuePwm << 8;
-      value |= (uint32_t)VERSION_MAJOR << 24;
-      value |= (uint32_t)VERSION_MINOR << 16;
-      while (!smartport.packetReady()) {
-        smartport.processTelemetry();
-      }
-      smartport.addPacket(0x5001, value);
+#ifdef DEBUG
+    Serial.print("Type: ");
+    Serial.print(type, HEX);
+    Serial.print(" FrameId: ");
+    Serial.print(frameId, HEX);
+    Serial.print(" DataId: ");
+    Serial.print(dataId, HEX);
+    Serial.print(" Value: ");
+    Serial.println(value);
+#endif
+    if (frameId == 0x21 && dataId == 0xFFFF && value == 0x80) {
+      smartport.maintenanceMode(true);
+    }
+    if (frameId == 0x20 && dataId == 0xFFFF && value == 0x80) {
+      smartport.maintenanceMode(false);
+    }
+    if (smartport.maintenanceMode()) {
+      if (dataId == 0x5000) {
+        uint32_t value = 0;
 
-      value = config.refreshRpm;
-      value |= config.refreshVolt << 4;
-      value |= (uint32_t)config.refreshCurr << 8;
-      value |= (uint32_t)config.refreshTemp << 12;
-      value |= (uint32_t)config.queueRpm << 16;
-      value |= (uint32_t)config.queueVolt << 20;
-      value |= (uint32_t)config.queueCurr << 24;
-      value |= (uint32_t)config.queueTemp << 28;
-      while (!smartport.packetReady()) {
-        smartport.processTelemetry();
+        // packet 1
+        value = VERSION_PATCH;
+        value |= (uint32_t)VERSION_MINOR << 8;
+        value |= (uint32_t)VERSION_MAJOR << 16;
+        while (!smartport.packetReady()) {
+          smartport.processSmartport();
+        }
+        smartport.addPacket(0x5001, value);
+#ifdef DEBUG
+        Serial.print("Sent config packet 0x5001: ");
+        Serial.println(value);
+#endif
+
+        // packet 2
+        value = config.protocol;
+        value |= config.voltage1 << 2;
+        value |= config.voltage2 << 3;
+        value |= config.current << 4;
+        value |= config.ntc1 << 5;
+        value |= config.ntc2 << 6;
+        value |= config.pwmOut << 7;
+        value |= (uint32_t)config.refreshRpm << 8;
+        value |= (uint32_t)config.refreshVolt << 12;
+        value |= (uint32_t)config.refreshCurr << 16;
+        value |= (uint32_t)config.refreshTemp << 20;
+        while (!smartport.packetReady()) {
+          smartport.processSmartport();
+        }
+        smartport.addPacket(0x5002, value);
+#ifdef DEBUG
+        Serial.print("Sent config packet 0x5002: ");
+        Serial.println(value);
+#endif
+
+        // packet 3
+        value = config.queueRpm;
+        value |= config.queueVolt << 4;
+        value |= (uint32_t)config.queueCurr << 8;
+        value |= (uint32_t)config.queueTemp << 12;
+        value |= (uint32_t)config.queuePwm << 16;
+        while (!smartport.packetReady()) {
+          smartport.processSmartport();
+        }
+        smartport.addPacket(0x5003, value);
+#ifdef DEBUG
+        Serial.print("Sent config packet 0x5003: ");
+        Serial.println(value);
+#endif
       }
-      smartport.addPacket(0x5002, value);
-    }
-    if (dataId == 0x5011) {
-      config.protocol = BM_PROTOCOL(value);
-      config.voltage1 = BM_VOLTAGE1(value);
-      config.voltage2 = BM_VOLTAGE2(value);
-      config.current = BM_CURRENT(value);
-      config.ntc1 = BM_NTC1(value);
-      config.ntc2 = BM_NTC2(value);
-      config.pwmOut = BM_PWM(value);
-      config.queuePwm = BM_QUEUE_PWM(value);
-    }
-    if (dataId == 0x5012) {
-      config.refreshRpm = BM_REFRESH_RPM(value);
-      config.refreshVolt = BM_REFRESH_VOLT(value);
-      config.refreshCurr = BM_REFRESH_CURR(value);
-      config.refreshTemp = BM_REFRESH_TEMP(value);
-      config.queueRpm = BM_QUEUE_RPM(value);
-      config.queueVolt = BM_QUEUE_VOLT(value);
-      config.queueCurr = BM_QUEUE_CURR(value);
-      config.queueTemp = BM_QUEUE_TEMP(value);
-      writeConfig();
-      initConfig();
-      while (!smartport.packetReady()) {
-        smartport.processTelemetry();
+      if (dataId == 0x5011) {
+        config.protocol = BM_PROTOCOL(value);
+        config.voltage1 = BM_VOLTAGE1(value);
+        config.voltage2 = BM_VOLTAGE2(value);
+        config.current = BM_CURRENT(value);
+        config.ntc1 = BM_NTC1(value);
+        config.ntc2 = BM_NTC2(value);
+        config.pwmOut = BM_PWM(value);
+        config.refreshRpm = BM_REFRESH_RPM(value);
+        config.refreshVolt = BM_REFRESH_VOLT(value);
+        config.refreshCurr = BM_REFRESH_CURR(value);
+        config.refreshTemp = BM_REFRESH_TEMP(value);
+        while (!smartport.packetReady()) {
+          smartport.processSmartport();
+        }
+        smartport.addPacket(0x5020, 0);
       }
-      smartport.addPacket(0x5020, 0);
+      if (dataId == 0x5012) {
+        config.queueRpm = BM_QUEUE_RPM(value);
+        config.queueVolt = BM_QUEUE_VOLT(value);
+        config.queueCurr = BM_QUEUE_CURR(value);
+        config.queueTemp = BM_QUEUE_TEMP(value);
+        config.queuePwm = BM_QUEUE_PWM(value);
+        writeConfig();
+        initConfig();
+        while (!smartport.packetReady()) {
+          smartport.processSmartport();
+        }
+        smartport.addPacket(0x5021, 0);
+      }
     }
   }
 
-#ifdef DEBUG_TELEMETRY2
+#ifdef DEBUG_TELEMETRY
   Serial.print("Type: ");
   Serial.print(type);
   Serial.print(" DataId: ");
@@ -400,6 +455,6 @@ void loop() {
   Serial.println(value);
 #endif
 #ifdef DEBUG_PLOTTER
-  _serial.println(DEBUG_PLOTTER);
+  Serial.println(DEBUG_PLOTTER);
 #endif
 }

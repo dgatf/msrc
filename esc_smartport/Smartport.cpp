@@ -166,13 +166,13 @@ void Smartport::deleteElements() {
   }
 }
 
-uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
+uint8_t Smartport::processSmartport(uint8_t &frameId, uint16_t &dataId, uint32_t &value) {
   if (available()) {
     uint8_t data[64];
     uint8_t type;
     type = readPacket(data);
     if (type == PACKET_TYPE_POLL && data[1] == SMARTPORT_SENSOR) {
-      if (packetP != NULL) {
+      if (packetP != NULL  && _maintenanceMode) {
         sendData(packetP->dataId, packetP->value);
         dataId = packetP->dataId;
         value = packetP->value;
@@ -180,7 +180,7 @@ uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
         packetP = NULL;
         return PACKET_SENT;
       }
-      if (elementP != NULL) {
+      if (elementP != NULL && !_maintenanceMode) {
         if ((uint16_t)millis() - elementP->ts >=
             (uint16_t)elementP->refresh * 100) {
           sendData(elementP->dataId, elementP->value);
@@ -198,6 +198,7 @@ uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
         }
       }
     } else if (type == PACKET_TYPE_PACKET && data[1] == SMARTPORT_SENSOR_TX) {
+      frameId = data[2];
       dataId = (uint16_t)data[4] << 8 | data[3];
       value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 |
               (uint16_t)data[6] << 8 | data[5];
@@ -207,10 +208,19 @@ uint8_t Smartport::processTelemetry(uint16_t &dataId, uint32_t &value) {
   return PACKET_NONE;
 }
 
-uint8_t Smartport::processTelemetry() {
+uint8_t Smartport::processSmartport() {
+  uint8_t frameId;
   uint16_t dataId;
   uint32_t value;
-  return processTelemetry(dataId, value);
+  return processSmartport(frameId, dataId, value);
+}
+
+void Smartport::maintenanceMode(bool maintenanceMode) {
+  _maintenanceMode = maintenanceMode;
+}
+
+bool Smartport::maintenanceMode() {
+  return _maintenanceMode;
 }
 
 bool Smartport::packetReady() {

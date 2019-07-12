@@ -157,6 +157,8 @@ private:
     float value;
   };
 
+  bool _maintenanceMode = false;
+
   void sendByte(uint8_t c, uint16_t *crcp);
   Stream &_serial;
   Element *elementP = NULL;
@@ -176,9 +178,11 @@ public:
   float *addElement(uint16_t dataId, uint16_t refresh);
   bool addPacket(uint16_t dataId, uint32_t value);
   void deleteElements();
-  uint8_t processTelemetry(uint16_t &dataId, uint32_t &value);
-  uint8_t processTelemetry();
+  uint8_t processSmartport(uint8_t &frameId, uint16_t &dataId, uint32_t &value);
+  uint8_t processSmartport();
   bool packetReady();
+  void maintenanceMode(bool maintenanceMode);
+  bool maintenanceMode();
 };
 
 #endif

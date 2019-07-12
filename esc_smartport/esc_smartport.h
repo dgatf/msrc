@@ -86,6 +86,17 @@
 // packet 1
 
 // byte 1
+
+// byte 2
+
+
+// byte 3: version minor
+
+// byte 4: version major
+
+// packet 2
+
+// byte 1
 #define BM_PROTOCOL(VALUE) VALUE & 0B00000011
 #define BM_VOLTAGE1(VALUE) VALUE >> 2 & 0B00000001
 #define BM_VOLTAGE2(VALUE) VALUE >> 3 & 0B00000001
@@ -95,29 +106,25 @@
 #define BM_PWM(VALUE) VALUE >> 7 & 0B00000001
 
 // byte 2
-#define BM_QUEUE_PWM(VALUE) VALUE >> 8 & 0B00001111
-
-// byte 3: version minor
-
-// byte 4: version major
-
-// packet 2
-
-// byte 1
-#define BM_REFRESH_RPM(VALUE) VALUE & 0B00001111
-#define BM_REFRESH_VOLT(VALUE) VALUE >> 4 & 0B00001111
-
-// byte 2
-#define BM_REFRESH_CURR(VALUE) VALUE >> 8 & 0B00001111
-#define BM_REFRESH_TEMP(VALUE) VALUE >> 12 & 0B00001111
+#define BM_REFRESH_RPM(VALUE) VALUE >> 8 & 0B00001111
+#define BM_REFRESH_VOLT(VALUE) VALUE >> 12 & 0B00001111
 
 // byte 3
-#define BM_QUEUE_RPM(VALUE) VALUE >> 16 & 0B00001111
-#define BM_QUEUE_VOLT(VALUE) VALUE >> 20 & 0B00001111
+#define BM_REFRESH_CURR(VALUE) VALUE >> 16 & 0B00001111
+#define BM_REFRESH_TEMP(VALUE) VALUE >> 20 & 0B00001111
 
-//byte 4
-#define BM_QUEUE_CURR(VALUE) VALUE >> 24 & 0B00001111
-#define BM_QUEUE_TEMP(VALUE) VALUE >> 28 & 0B00001111
+// packet 3
+
+// byte 1
+#define BM_QUEUE_RPM(VALUE) VALUE & 0B00001111
+#define BM_QUEUE_VOLT(VALUE) VALUE >> 4 & 0B00001111
+
+//byte 2
+#define BM_QUEUE_CURR(VALUE) VALUE >> 8 & 0B00001111
+#define BM_QUEUE_TEMP(VALUE) VALUE >> 12 & 0B00001111
+
+// byte 3
+#define BM_QUEUE_PWM(VALUE) VALUE >> 16 & 0B00001111
 
 #define ESCSERIAL_TIMEOUT 3
 #define escSerial Serial
