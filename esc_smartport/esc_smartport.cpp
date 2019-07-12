@@ -5,6 +5,14 @@ void readConfig() {
   EEPROM.get(0, chk);
   if (chk == 0x64616E69) {
     EEPROM.get(4, config);
+    if (config.refreshRpm > 16)
+      config.refreshRpm = 2;
+    if (config.refreshVolt > 16)
+      config.refreshVolt = 10;
+    if (config.refreshCurr > 16)
+      config.refreshCurr = 10;
+    if (config.refreshTemp > 16)
+      config.refreshTemp = 10;
     if (config.queueRpm > 16)
       config.queueRpm = 5;
     if (config.queueVolt > 16)
