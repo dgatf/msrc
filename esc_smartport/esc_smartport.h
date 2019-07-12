@@ -51,8 +51,10 @@
 #define PIN_VOLTAGE1 A2
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A4
+#define PIN_PWM_OUT_ICRA 9 // TIMER1 PWM PIN 9
+#define PIN_PWM_OUT_OCR 10 // TIMER1 PWM PIN 10
 
-// Config
+// Config type
 
 #define CONFIG_LUA
 
@@ -78,21 +80,14 @@
 
 #define MODE_PWM_OUT OCR // ICR
 #define DUTY 0.5  // 0.5 = 50%
-#define PIN_PWM_OUT_ICRA 9 // TIMER1 PWM PIN 9
-#define PIN_PWM_OUT_OCR 10 // TIMER1 PWM PIN 10
 
 // Config bitmask
 
 // packet 1
 
-// byte 1
-
-// byte 2
-
-
-// byte 3: version minor
-
-// byte 4: version major
+// byte 1: version patch
+// byte 2: version minor
+// byte 3: version major
 
 // packet 2
 
@@ -119,7 +114,7 @@
 #define BM_QUEUE_RPM(VALUE) VALUE & 0B00001111
 #define BM_QUEUE_VOLT(VALUE) VALUE >> 4 & 0B00001111
 
-//byte 2
+// byte 2
 #define BM_QUEUE_CURR(VALUE) VALUE >> 8 & 0B00001111
 #define BM_QUEUE_TEMP(VALUE) VALUE >> 12 & 0B00001111
 

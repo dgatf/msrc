@@ -119,51 +119,52 @@ void initConfig() {
   telemetry.currentAnalogQ.del(16);
   telemetry.ntc1Q.del(16);
   telemetry.ntc2Q.del(16);
+  telemetry.pwmQ.del(16);
 
   switch (config.protocol) {
   case PROTOCOL_HW_V3:
   case PROTOCOL_PWM:
     telemetry.escRpmConsP =
-        smartport.addElement(ESC_RPM_CONS_FIRST_ID, config.refreshRpm);
+        smartport.addElement(ESC_RPM_CONS_FIRST_ID, config.refreshRpm * 100);
     telemetry.rpmQ.initQueue(0, config.queueRpm);
     break;
   case PROTOCOL_HW_V4:
     telemetry.escRpmConsP =
-        smartport.addElement(ESC_RPM_CONS_FIRST_ID, config.refreshRpm);
+        smartport.addElement(ESC_RPM_CONS_FIRST_ID, config.refreshRpm * 100);
     telemetry.rpmQ.initQueue(0, config.queueRpm);
     telemetry.escPowerP =
-        smartport.addElement(ESC_POWER_FIRST_ID, config.refreshVolt);
+        smartport.addElement(ESC_POWER_FIRST_ID, config.refreshVolt * 100);
     telemetry.voltageQ.initQueue(0, config.queueVolt);
     telemetry.temp1P =
-        smartport.addElement(ESC_TEMPERATURE_FIRST_ID, config.refreshTemp);
+        smartport.addElement(ESC_TEMPERATURE_FIRST_ID, config.refreshTemp * 100);
     telemetry.temp1Q.initQueue(0, config.queueTemp);
     telemetry.temp2P =
-        smartport.addElement(ESC_TEMPERATURE_FIRST_ID + 1, config.refreshTemp);
+        smartport.addElement(ESC_TEMPERATURE_FIRST_ID + 1, config.refreshTemp * 100);
     telemetry.temp2Q.initQueue(0, config.queueTemp);
     break;
   }
 
   if (config.voltage1 == true) {
     telemetry.voltageAnalog1P =
-        smartport.addElement(A3_FIRST_ID, config.refreshVolt);
+        smartport.addElement(A3_FIRST_ID, config.refreshVolt * 100);
     telemetry.voltageAnalog1Q.initQueue(0, config.queueVolt);
   }
   if (config.voltage2 == true) {
     telemetry.voltageAnalog2P =
-        smartport.addElement(A4_FIRST_ID, config.refreshVolt);
+        smartport.addElement(A4_FIRST_ID, config.refreshVolt * 100);
     telemetry.voltageAnalog2Q.initQueue(0, config.queueVolt);
   }
   if (config.current == true) {
     telemetry.currentAnalogP =
-        smartport.addElement(CURR_FIRST_ID, config.refreshCurr);
+        smartport.addElement(CURR_FIRST_ID, config.refreshCurr * 100);
     telemetry.currentAnalogQ.initQueue(0, config.queueCurr);
   }
   if (config.ntc1 == true) {
-    telemetry.ntc1P = smartport.addElement(T1_FIRST_ID, config.refreshTemp);
+    telemetry.ntc1P = smartport.addElement(T1_FIRST_ID, config.refreshTemp * 100);
     telemetry.ntc1Q.initQueue(0, config.queueTemp);
   }
   if (config.ntc2 == true) {
-    telemetry.ntc2P = smartport.addElement(T2_FIRST_ID, config.refreshTemp);
+    telemetry.ntc2P = smartport.addElement(T2_FIRST_ID, config.refreshTemp * 100);
     telemetry.ntc2Q.initQueue(0, config.queueTemp);
   }
   if (config.pwmOut == true) {
