@@ -52,6 +52,7 @@ local function readConfig()
     readConfigState = readConfigState + 2
   elseif readConfigState == 10 then
     sportTelemetryPush(10, 0x10, 0x5000, 0)
+    readConfigState = 15
   elseif readConfigState >= 20 then
     sportTelemetryPush(10, 0x20, 0xFFFF, 0x80)
     readConfigState = readConfigState + 2
@@ -280,6 +281,9 @@ local function run_func(event)
   end
 
   -- send packets
+  if readConfigState == 15 and getTime() - tsReadConfig > 100 then
+    readConfigState = 0
+  end
   if readConfigState < 30 and getTime() - tsReadConfig > 100 then
     readConfig()
   end
