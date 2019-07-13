@@ -14,7 +14,6 @@
 #define COMP_TO_MICROS ((float)8000000UL/F_CPU)
 
 //#define DEBUG_ESC
-//#define DEBUG_ESC_PLOTTER rpm/60
 
 #include <Arduino.h>
 

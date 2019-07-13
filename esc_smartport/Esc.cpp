@@ -9,6 +9,7 @@ ISR(TIMER1_CAPT_vect) {
   if (ICR1 - pwmInInit > 0) {
     pwmInLenght = COMP_TO_MICROS * (ICR1 - pwmInInit);
     pwmInInit = ICR1;
+    tsPwmIn = millis();
   }
 }
 
