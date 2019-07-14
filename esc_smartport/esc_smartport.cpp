@@ -243,7 +243,7 @@ void loop() {
 
   switch (config.protocol) {
   case PROTOCOL_HW_V3:
-    if (statusChange) {
+    if (statusChange && esc.getRpm() == 0) {
       valueTelemetry = esc.getRpm() / config.queueRpm;
       telemetry.rpmAvg += valueTelemetry - telemetry.rpmQ.dequeue();
       telemetry.rpmQ.enqueue(valueTelemetry);
