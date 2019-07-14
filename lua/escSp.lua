@@ -49,13 +49,13 @@ end
 local function readConfig()
   if readConfigState < 10 then
     sportTelemetryPush(10, 0x21, 0xFFFF, 0x80)
-    readConfigState = readConfigState + 2
+    readConfigState = readConfigState + 5
   elseif readConfigState == 10 then
     sportTelemetryPush(10, 0x10, 0x5000, 0)
     readConfigState = 15
   elseif readConfigState >= 20 then
     sportTelemetryPush(10, 0x20, 0xFFFF, 0x80)
-    readConfigState = readConfigState + 2
+    readConfigState = readConfigState + 5
     lcdChange = true
   end
   tsReadConfig = getTime()
@@ -64,7 +64,7 @@ end
 local function sendConfig()
   if sendConfigState < 10 then
     sportTelemetryPush(10, 0x21, 0xFFFF, 0x80)
-    sendConfigState = sendConfigState + 2
+    sendConfigState = sendConfigState + 5
   elseif sendConfigState == 10 then
     local value = 0
     value = bit32.bor(value, config.protocol.selected - 1)                      -- bits 1-2
@@ -89,7 +89,7 @@ local function sendConfig()
     sportTelemetryPush(10, 0x10, 0x5012, value)
   elseif sendConfigState >= 30 then
     sportTelemetryPush(10, 0x20, 0xFFFF, 0x80)
-    sendConfigState = sendConfigState + 2
+    sendConfigState = sendConfigState + 5
   end
   tsSendConfig = getTime()
 end
@@ -114,14 +114,14 @@ local function refreshHorus()
   lcd.drawText(290, 120, 'PWM out', 0)
   lcd.drawText(410, 120, config.pwm.list[config.pwm.selected], getFlags(7))
 
-  lcd.drawText(50, 140, 'Ref RPM', 0)
+  lcd.drawText(50, 140, 'Rate RPM', 0)
   lcd.drawText(170, 140, (config.refreshRpm.selected - 1) * 100, getFlags(8))
-  lcd.drawText(290, 140, 'Ref Volt', 0)
+  lcd.drawText(290, 140, 'Rate Volt', 0)
   lcd.drawText(410, 140, (config.refreshVolt.selected - 1) * 100, getFlags(9))
 
-  lcd.drawText(50, 160, 'Ref Curr', 0)
+  lcd.drawText(50, 160, 'Rate Curr', 0)
   lcd.drawText(170, 160, (config.refreshCurr.selected - 1) * 100, getFlags(10))
-  lcd.drawText(290, 160, 'Ref Temp', 0)
+  lcd.drawText(290, 160, 'Rate Temp', 0)
   lcd.drawText(410, 160, (config.refreshTemp.selected - 1) * 100, getFlags(11))
 
   lcd.drawText(50, 180, 'Avg RPM', 0)
@@ -162,14 +162,14 @@ local function refreshTaranis()
   lcd.drawText(64, 41 - scroll * 8, 'PWM out', SMLSIZE)
   lcd.drawText(108, 41 - scroll * 8, config.pwm.list[config.pwm.selected], SMLSIZE + getFlags(7))
 
-  lcd.drawText(1, 49 - scroll * 8, 'Ref RPM', SMLSIZE)
+  lcd.drawText(1, 49 - scroll * 8, 'Rate RPM', SMLSIZE)
   lcd.drawText(44, 49 - scroll * 8, (config.refreshRpm.selected - 1) * 100, SMLSIZE + getFlags(8))
-  lcd.drawText(64, 49 - scroll * 8, 'Ref Volt', SMLSIZE)
+  lcd.drawText(64, 49 - scroll * 8, 'Rate Volt', SMLSIZE)
   lcd.drawText(108, 49 - scroll * 8, (config.refreshVolt.selected - 1) * 100, SMLSIZE + getFlags(9))
 
-  lcd.drawText(1, 57 - scroll * 8, 'Ref Curr', SMLSIZE)
+  lcd.drawText(1, 57 - scroll * 8, 'Rate Curr', SMLSIZE)
   lcd.drawText(44, 57 - scroll * 8, (config.refreshCurr.selected - 1) * 100, SMLSIZE + getFlags(10))
-  lcd.drawText(64, 57 - scroll * 8, 'Ref Temp', SMLSIZE)
+  lcd.drawText(64, 57 - scroll * 8, 'Rate Temp', SMLSIZE)
   lcd.drawText(108, 57 - scroll * 8, (config.refreshTemp.selected - 1) * 100, SMLSIZE + getFlags(11))
 
   lcd.drawText(1, 65 - scroll * 8, 'Avg RPM', SMLSIZE)
