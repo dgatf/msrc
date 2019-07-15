@@ -192,6 +192,7 @@ local function refreshTaranis()
   if sendConfigState == 40 then lcd.drawText(35, 89 - scroll * 8, 'OK', SMLSIZE)
   elseif sendConfigState == 50 then lcd.drawText(35, 89 - scroll * 8, 'ERROR', SMLSIZE) end
   lcd.drawScreenTitle('ESC SmartPort v' .. scriptVersion, 1, 1)
+
 end
 
 local function init_func()
@@ -211,14 +212,15 @@ local function run_func(event)
   end
 
   -- check incoming packets
-  if readConfigState == 10 or sendConfigState == 10 or sendConfigState == 20 then
+  if readConfigState == 15 or readConfigState == 16 or readConfigState == 17 or sendConfigState == 10 or sendConfigState == 20 then
     local physicalId, primId, dataId, value = sportTelemetryPop()
 
     -- read config
     if physicalId == 9 and dataId == 0x5001 then
       config.firmwareVersion = bit32.extract(value,16,8) .. '.' .. bit32.extract(value,8,8) .. '.' .. bit32.extract(value,0,8)
+      readConfigState = 16
     end
-    if physicalId == 9 and dataId == 0x5002 then
+    if physicalId == 9 and dataId == 0x5002 and readConfigState == 16 then
       if bit32.extract(value,0,2) + 1 >= 1 and bit32.extract(value,0,2) + 1 <= 3 then
         config.protocol.selected = bit32.extract(value,0,2) + 1                             -- bits 1,2
       end
@@ -252,8 +254,9 @@ local function run_func(event)
       if bit32.extract(value,20,4) >= 1 and bit32.extract(value,20,4) <= 16 then
         config.refreshTemp.selected = bit32.extract(value,20,4) + 1                         -- bits 21-24
       end
+      readConfigState = 17
     end
-    if physicalId == 9 and dataId == 0x5003 then
+    if physicalId == 9 and dataId == 0x5003 and readConfigState == 17 then
       if bit32.extract(value,0,4) >= 1 and bit32.extract(value,0,4) <= 16 then
         config.queueRpm.selected = bit32.extract(value,0,4)                                -- bits 1-4
       end
@@ -282,14 +285,15 @@ local function run_func(event)
       lcdChange = false
     end
   end
-  -- check send ok
+  -- check send
   if sendConfigState == 20 and getTime() - tsSendConfig > 500 then
     sendConfigState = 50
   end
-  -- send packets
-  if readConfigState == 15 and getTime() - tsReadConfig > 100 then
+  -- check read
+  if readConfigState == 15 and getTime() - tsReadConfig > 500 then
     readConfigState = 0
   end
+  -- send packets
   if readConfigState < 30 and getTime() - tsReadConfig > 100 then
     readConfig()
   end
