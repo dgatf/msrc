@@ -214,23 +214,24 @@ public:
 // Default config
 
 struct Config {
-  uint8_t protocol = PROTOCOL_HW_V3;
-  bool voltage1 = false;
-  bool voltage2 = false;
-  bool current = false;
-  bool ntc1 = false;
-  bool ntc2 = false;
-  bool pwmOut = false;
-  uint8_t refreshRpm = 2;
-  uint8_t refreshVolt = 10;
-  uint8_t refreshCurr = 10;
-  uint8_t refreshTemp = 10;
-  //max queue size 16
-  uint8_t queueRpm = 5;
-  uint8_t queueVolt = 5;
-  uint8_t queueCurr = 5;
-  uint8_t queueTemp = 5;
-  uint8_t queuePwm = 5;
+  uint8_t protocol = PROTOCOL_HW_V3;  // protocol (PROTOCOL_HW_V3, PROTOCOL_HW_V4, PWM)
+  bool voltage1 = false;              // enable/disable voltage1 analog reading
+  bool voltage2 = false;              // enable/disable voltage2 analog reading
+  bool current = false;               // enable/disable current analog reading
+  bool ntc1 = false;                  // enable/disable ntc1 analog reading
+  bool ntc2 = false;                  // enable/disable ntc2 analog reading
+  bool pwmOut = false;                // enable/disable pwm out generation (governor)
+  // max refresh rate 15 (1.5s)
+  uint8_t refreshRpm = 2;             // telemetry rpm refresh rate (ms / 100)
+  uint8_t refreshVolt = 10;           // telemetry voltage refresh rate (ms / 100)
+  uint8_t refreshCurr = 10;           // telemetry current refresh rate (ms / 100)
+  uint8_t refreshTemp = 10;           // telemetry temperature refresh rate (ms / 100)
+  // max queue size 16
+  uint8_t queueRpm = 5;               // rpm averaging elements
+  uint8_t queueVolt = 5;              // voltage averaging elements
+  uint8_t queueCurr = 5;              // current averaging elements
+  uint8_t queueTemp = 5;              // temperature averaging elements
+  uint8_t queuePwm = 5;               // pwm out averaging elements (governor)
 };
 
 struct Telemetry {
