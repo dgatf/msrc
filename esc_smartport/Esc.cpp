@@ -7,7 +7,7 @@ volatile uint32_t tsPwmIn = 0;
 ISR(TIMER1_CAPT_vect) {
   volatile static uint16_t pwmInInit = 0;
   if (ICR1 - pwmInInit > 0) {
-    pwmInLenght = COMP_TO_MICROS * (ICR1 - pwmInInit);
+    pwmInLenght = ICR1 - pwmInInit;
     pwmInInit = ICR1;
     tsPwmIn = millis();
   }
@@ -23,7 +23,7 @@ bool Esc::readHWV3() {
       uint8_t cont = _serial.readBytes(data, 9);
       if (cont == 9 && data[3] == 0 && data[5] == 0) {
         uint16_t rpmCycle = (uint16_t)data[7] << 8 | data[8];
-        rpm = (float)60000000 / rpmCycle;
+        rpm = (float)60000000UL / rpmCycle;
         tsEsc = millis();
 #ifdef DEBUG_ESC
         uint32_t pn =
@@ -124,8 +124,8 @@ bool Esc::readHWV4() {
 }
 
 void Esc::readPWM() {
-  if (pwmInLenght > 0 && pwmInLenght < 30000 && millis() - tsPwmIn < 32) {
-    rpm = 60000000L / pwmInLenght;
+  if (pwmInLenght > 0 && pwmInLenght * COMP_TO_MICROS < 10000 && millis() - tsPwmIn < 32) {
+    rpm = 60000000UL / pwmInLenght * COMP_TO_MICROS;
 #ifdef DEBUG_ESC
     Serial.print("RPM: ");
     Serial.println(rpm);
