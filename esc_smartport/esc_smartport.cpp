@@ -262,20 +262,20 @@ void loop() {
       valueTelemetry = esc.getVolt() / config.queueVolt;
       telemetry.voltageAvg += valueTelemetry - telemetry.voltageQ.dequeue();
       telemetry.voltageQ.enqueue(valueTelemetry);
-      *telemetry.escRpmConsP =
+      *telemetry.escPowerP =
           smartport.formatEscPower(telemetry.voltageAvg, 0);
 
       valueTelemetry = esc.getTemp1() / config.queueTemp;
       telemetry.temp1Avg += valueTelemetry - telemetry.temp1Q.dequeue();
       telemetry.temp1Q.enqueue(valueTelemetry);
-      *telemetry.escRpmConsP =
+      *telemetry.temp1P =
           smartport.formatData(ESC_TEMPERATURE_FIRST_ID, telemetry.temp1Avg);
 
       valueTelemetry = esc.getTemp2() / config.queueTemp;
       telemetry.temp2Avg += valueTelemetry - telemetry.temp2Q.dequeue();
       telemetry.temp2Q.enqueue(valueTelemetry);
-      *telemetry.escRpmConsP = smartport.formatData(
-          ESC_TEMPERATURE_FIRST_ID + 1, telemetry.temp1Avg);
+      *telemetry.temp2P = smartport.formatData(
+          ESC_TEMPERATURE_FIRST_ID + 1, telemetry.temp2Avg);
     }
     break;
   case PROTOCOL_PWM:
@@ -382,7 +382,7 @@ void loop() {
         }
         smartport.addPacket(0x5001, value);
 #ifdef DEBUG
-        Serial.print("Sent config packet 0x5001: ");
+        Serial.print("Sent 0x5001: ");
         Serial.println(value);
 #endif
 
@@ -403,7 +403,7 @@ void loop() {
         }
         smartport.addPacket(0x5002, value);
 #ifdef DEBUG
-        Serial.print("Sent config packet 0x5002: ");
+        Serial.print("Sent 0x5002: ");
         Serial.println(value);
 #endif
 
@@ -418,7 +418,7 @@ void loop() {
         }
         smartport.addPacket(0x5003, value);
 #ifdef DEBUG
-        Serial.print("Sent config packet 0x5003: ");
+        Serial.print("Sent 0x5003: ");
         Serial.println(value);
 #endif
       }
