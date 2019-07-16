@@ -282,23 +282,24 @@ local function run_func(event)
     end
     if physicalId == 9 and dataId == 0x5021 and sendConfigState == 20 then
       sendConfigState = 30
-      lcdChange = false
     end
   end
   -- check send
-  if sendConfigState == 20 and getTime() - tsSendConfig > 500 then
+  if (sendConfigState > 0 and sendConfigState < 30) and getTime() - tsSendConfig > 200 then
     sendConfigState = 50
   end
   -- check read
-  if readConfigState == 15 and getTime() - tsReadConfig > 500 then
+  if (readConfigState > 0 and readConfigState < 20) and getTime() - tsReadConfig > 200 then
     readConfigState = 0
   end
   -- send packets
-  if readConfigState < 30 and getTime() - tsReadConfig > 100 then
-    readConfig()
-  end
-  if sendConfigState < 40 and getTime() - tsSendConfig > 100 then
-    sendConfig()
+  if sportTelemetryPush() == true then
+    if readConfigState < 30 then
+      readConfig()
+    end
+    if sendConfigState < 40 then
+      sendConfig()
+    end
   end
 
   -- key events (left = up/decrease right = down/increase)
