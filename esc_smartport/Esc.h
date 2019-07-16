@@ -7,11 +7,9 @@
 #define PROTOCOL_HW_V4 1
 #define PROTOCOL_PWM 2
 
-// Pins
-
-#define PIN_PWM_IN 8 // TIMER1 CAPT PIN8
-
 #define COMP_TO_MICROS ((float)8000000UL/F_CPU)
+
+#define PWN_IN_LENGHT_TRIGGER_MICROS 8000
 
 //#define DEBUG_ESC
 
