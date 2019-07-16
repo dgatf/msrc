@@ -9,7 +9,7 @@ ISR(TIMER1_CAPT_vect) {
   if (ICR1 - pwmInInit > 0) {
     pwmInLenght = ICR1 - pwmInInit;
     pwmInInit = ICR1;
-    tsPwmIn = millis();
+    tsPwmIn = micros();
   }
 }
 
@@ -124,7 +124,7 @@ bool Esc::readHWV4() {
 }
 
 void Esc::readPWM() {
-  if (pwmInLenght > 0 && pwmInLenght * COMP_TO_MICROS < 10000 && millis() - tsPwmIn < 32) {
+  if (pwmInLenght > 0 && pwmInLenght * COMP_TO_MICROS < PWN_IN_LENGHT_TRIGGER_MICROS && micros() - tsPwmIn < PWN_IN_LENGHT_TRIGGER_MICROS) {
     rpm = 60000000UL / pwmInLenght * COMP_TO_MICROS;
 #ifdef DEBUG_ESC
     Serial.print("RPM: ");
