@@ -124,14 +124,21 @@ bool Esc::readHWV4() {
 }
 
 void Esc::readPWM() {
-  if (pwmInLenght > 0 && pwmInLenght * COMP_TO_MICROS < PWN_IN_LENGHT_TRIGGER_MICROS && micros() - tsPwmIn < PWN_IN_LENGHT_TRIGGER_MICROS) {
-    rpm = 60000000UL / pwmInLenght * COMP_TO_MICROS;
+  static uint8_t cont = 0;
+  if (pwmInLenght > 0 &&
+      pwmInLenght * COMP_TO_MICROS < PWM_IN_TRIGGER_MICROS &&
+      micros() - tsPwmIn < PWM_IN_TRIGGER_MICROS) {
+    if (cont > PWM_IN_TRIGGER_PULSES) {
+      rpm = 60000000UL / pwmInLenght * COMP_TO_MICROS;
+    }
+    if (cont <= PWM_IN_TRIGGER_PULSES) cont++;
 #ifdef DEBUG_ESC
     Serial.print("RPM: ");
     Serial.println(rpm);
 #endif
   } else {
     rpm = 0;
+    cont = 0;
   }
 }
 
@@ -149,9 +156,6 @@ bool Esc::read() {
     statusChange = true;
     break;
   }
-#ifdef DEBUG_ESC_PLOTTER
-  _serial.println(DEBUG_ESC_PLOTTER);
-#endif
   return statusChange;
 }
 
