@@ -49,13 +49,13 @@ end
 local function readConfig()
   if readConfigState < 10 then
     sportTelemetryPush(10, 0x21, 0xFFFF, 0x80)
-    readConfigState = readConfigState + 10
+    readConfigState = readConfigState + 5
   elseif readConfigState == 10 then
     sportTelemetryPush(10, 0x10, 0x5000, 0)
     readConfigState = 15
   elseif readConfigState >= 20 then
     sportTelemetryPush(10, 0x20, 0xFFFF, 0x80)
-    readConfigState = readConfigState + 10
+    readConfigState = readConfigState + 5
     lcdChange = true
   end
   tsReadConfig = getTime()
@@ -64,7 +64,7 @@ end
 local function sendConfig()
   if sendConfigState < 10 then
     sportTelemetryPush(10, 0x21, 0xFFFF, 0x80)
-    sendConfigState = sendConfigState + 10
+    sendConfigState = sendConfigState + 5
   elseif sendConfigState == 10 then
     local value = 0
     value = bit32.bor(value, config.protocol.selected - 1)                      -- bits 1-2
@@ -89,7 +89,7 @@ local function sendConfig()
     sportTelemetryPush(10, 0x10, 0x5012, value)
   elseif sendConfigState >= 30 then
     sportTelemetryPush(10, 0x20, 0xFFFF, 0x80)
-    sendConfigState = sendConfigState + 10
+    sendConfigState = sendConfigState + 5
   end
   tsSendConfig = getTime()
 end
