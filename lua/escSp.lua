@@ -1,8 +1,8 @@
 local scriptVersion = '0.3'
 local tsReadConfig = 0
 local tsSendConfig = 0
-local readConfigState = 0
-local sendConfigState = 60 -- 40 ok, 50 error, 60 nil
+local readConfigState = 0 -- 0-9 stop sensors, 10-15 request config, 16-19 read config, 20-29 restart sensors, 30 ok
+local sendConfigState = 60 -- 0-9 stop sensors, 10 send config 1, 20 received config 1 send config 2, 30 received config 2 send config 3, 40 ok, 50 error, 60 nil
 local refresh = 0
 local lcdChange = true
 local scroll = 0
@@ -47,24 +47,25 @@ local function decrease(data)
 end
 
 local function readConfig()
+  if readConfigState == 0 then tsReadConfig = getTime() end
   if readConfigState < 10 then
     sportTelemetryPush(10, 0x21, 0xFFFF, 0x80)
-    readConfigState = readConfigState + 5
+    readConfigState = readConfigState + 10
   elseif readConfigState == 10 then
     sportTelemetryPush(10, 0x10, 0x5000, 0)
     readConfigState = 15
   elseif readConfigState >= 20 then
     sportTelemetryPush(10, 0x20, 0xFFFF, 0x80)
-    readConfigState = readConfigState + 5
+    readConfigState = readConfigState + 10
     lcdChange = true
   end
-  tsReadConfig = getTime()
 end
 
 local function sendConfig()
+  if sendConfigState == 0 then tsSendConfig = getTime() end
   if sendConfigState < 10 then
     sportTelemetryPush(10, 0x21, 0xFFFF, 0x80)
-    sendConfigState = sendConfigState + 5
+    sendConfigState = sendConfigState + 10
   elseif sendConfigState == 10 then
     local value = 0
     value = bit32.bor(value, config.protocol.selected - 1)                      -- bits 1-2
@@ -89,9 +90,8 @@ local function sendConfig()
     sportTelemetryPush(10, 0x10, 0x5012, value)
   elseif sendConfigState >= 30 then
     sportTelemetryPush(10, 0x20, 0xFFFF, 0x80)
-    sendConfigState = sendConfigState + 5
+    sendConfigState = sendConfigState + 10
   end
-  tsSendConfig = getTime()
 end
 
 local function refreshHorus()
@@ -192,7 +192,6 @@ local function refreshTaranis()
   if sendConfigState == 40 then lcd.drawText(35, 89 - scroll * 8, 'OK', SMLSIZE)
   elseif sendConfigState == 50 then lcd.drawText(35, 89 - scroll * 8, 'ERROR', SMLSIZE) end
   lcd.drawScreenTitle('ESC SmartPort v' .. scriptVersion, 1, 1)
-
 end
 
 local function init_func()
