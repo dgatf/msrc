@@ -61,6 +61,7 @@ bool Esc::readHWV4() {
       if (cont == 18 && data[0] != 0x9B) {
         rpm = (uint32_t)data[7] << 16 | (uint16_t)data[8] << 8 | data[9];
         voltage = (float)((uint16_t)data[10] << 8 | data[11]) / 100;
+        current = (float)((uint16_t)data[12] << 8 | data[13]) / 100;
         temp1 = (float)((uint16_t)data[14] << 8 | data[15]) / 100;
         temp2 = (float)((uint16_t)data[16] << 8 | data[17]) / 100;
 #ifdef DEBUG_ESC
@@ -72,6 +73,8 @@ bool Esc::readHWV4() {
         _serial.print(rpm);
         _serial.print(" Volt: ");
         _serial.print(voltage);
+        _serial.print(" Curr: ");
+        _serial.print(current);
         _serial.print(" Temp1: ");
         _serial.print(temp1);
         _serial.print(" Temp2: ");
@@ -94,6 +97,7 @@ bool Esc::readHWV4() {
       if (cont == 32 && data[0] == 0x9B) {
         rpm = (uint32_t)data[21] << 16 | (uint16_t)data[22] << 8 | data[23];
         voltage = (float)((uint16_t)data[24] << 8 | data[25]) / 100;
+        current = (float)((uint16_t)data[26] << 8 | data[27]) / 100;
         temp1 = (float)((uint16_t)data[28] << 8 | data[29]) / 100;
         temp2 = (float)((uint16_t)data[30] << 8 | data[31]) / 100;
 #ifdef DEBUG_ESC
@@ -105,10 +109,12 @@ bool Esc::readHWV4() {
         _serial.print(rpm);
         _serial.print(" Volt: ");
         _serial.print(voltage);
+        _serial.print(" Curr: ");
+        _serial.print(current);
         _serial.print(" Temp1: ");
         _serial.print(temp1);
         _serial.print(" Temp2: ");
-        _serial.println(temp2);
+        _serial.print(temp2);
         /*_serial.print("  ");
         for (uint8_t i = 0; i < cont; i++) {
           _serial.print(data[i], HEX);

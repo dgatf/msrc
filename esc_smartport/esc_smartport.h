@@ -246,6 +246,7 @@ struct Telemetry {
   float *ntc2P = NULL;
   Queue<float> rpmQ;
   Queue<float> voltageQ;
+  Queue<float> currentQ;
   Queue<float> temp1Q;
   Queue<float> temp2Q;
   Queue<float> voltageAnalog1Q;
@@ -256,6 +257,7 @@ struct Telemetry {
   Queue<float> pwmQ;
   float rpmAvg = 0;
   float voltageAvg = 0;
+  float currentAvg = 0;
   float temp1Avg = 0;
   float temp2Avg = 0;
   float voltageAnalog1Avg = 0;

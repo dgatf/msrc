@@ -135,11 +135,11 @@ void initConfig() {
     telemetry.escPowerP =
         smartport.addElement(ESC_POWER_FIRST_ID, config.refreshVolt * 100);
     telemetry.voltageQ.initQueue(0, config.queueVolt);
-    telemetry.temp1P =
-        smartport.addElement(ESC_TEMPERATURE_FIRST_ID, config.refreshTemp * 100);
+    telemetry.temp1P = smartport.addElement(ESC_TEMPERATURE_FIRST_ID,
+                                            config.refreshTemp * 100);
     telemetry.temp1Q.initQueue(0, config.queueTemp);
-    telemetry.temp2P =
-        smartport.addElement(ESC_TEMPERATURE_FIRST_ID + 1, config.refreshTemp * 100);
+    telemetry.temp2P = smartport.addElement(ESC_TEMPERATURE_FIRST_ID + 1,
+                                            config.refreshTemp * 100);
     telemetry.temp2Q.initQueue(0, config.queueTemp);
     break;
   }
@@ -160,11 +160,13 @@ void initConfig() {
     telemetry.currentAnalogQ.initQueue(0, config.queueCurr);
   }
   if (config.ntc1 == true) {
-    telemetry.ntc1P = smartport.addElement(T1_FIRST_ID, config.refreshTemp * 100);
+    telemetry.ntc1P =
+        smartport.addElement(T1_FIRST_ID, config.refreshTemp * 100);
     telemetry.ntc1Q.initQueue(0, config.queueTemp);
   }
   if (config.ntc2 == true) {
-    telemetry.ntc2P = smartport.addElement(T2_FIRST_ID, config.refreshTemp * 100);
+    telemetry.ntc2P =
+        smartport.addElement(T2_FIRST_ID, config.refreshTemp * 100);
     telemetry.ntc2Q.initQueue(0, config.queueTemp);
   }
   if (config.pwmOut == true) {
@@ -262,8 +264,10 @@ void loop() {
       valueTelemetry = esc.getVolt() / config.queueVolt;
       telemetry.voltageAvg += valueTelemetry - telemetry.voltageQ.dequeue();
       telemetry.voltageQ.enqueue(valueTelemetry);
-      *telemetry.escPowerP =
-          smartport.formatEscPower(telemetry.voltageAvg, 0);
+      valueTelemetry = esc.getCurrent() / config.queueCurr;
+      telemetry.currentAvg += valueTelemetry - telemetry.currentQ.dequeue();
+      telemetry.currentQ.enqueue(valueTelemetry);
+      *telemetry.escPowerP = smartport.formatEscPower(telemetry.voltageAvg, telemetry.currentAvg);
 
       valueTelemetry = esc.getTemp1() / config.queueTemp;
       telemetry.temp1Avg += valueTelemetry - telemetry.temp1Q.dequeue();
@@ -274,8 +278,8 @@ void loop() {
       valueTelemetry = esc.getTemp2() / config.queueTemp;
       telemetry.temp2Avg += valueTelemetry - telemetry.temp2Q.dequeue();
       telemetry.temp2Q.enqueue(valueTelemetry);
-      *telemetry.temp2P = smartport.formatData(
-          ESC_TEMPERATURE_FIRST_ID + 1, telemetry.temp2Avg);
+      *telemetry.temp2P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID + 1,
+                                               telemetry.temp2Avg);
     }
     break;
   case PROTOCOL_PWM:
