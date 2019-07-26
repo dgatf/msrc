@@ -9,7 +9,7 @@ The input is either ESC serial data or PWM signal
 ESC serial protocols implemented:
 
 - Hobbywing Platinum V3: RPM
-- Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature and battery voltage
+- Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature, voltage and current
 - PWM signal: RPM
 
 ## PWM output
@@ -62,6 +62,7 @@ Current is measured through analog pin A4
 
 - RPM: EscR (0x0b60)
 - ESC voltage: EscV (0x0b50)
+- ESC current: EscA (0x0b50)
 - ESC temp1: EscT (0x0b70)
 - ESC temp2: EscT (0x0b71)
 - Voltage 1: A3 (0x0900)
@@ -136,7 +137,7 @@ Change log:
 
 v0.3
 
-- Esc current sensor added (HW V4/V5, >60A)
+- Esc current sensor (EscA) added (HW V4/V5, >60A)
 - Averaging telemetry and pwm out added
 - Voltage2 sensor changed from A3 to A4
 - Ntc2 sensor changed from Tmp1 to Tmp2
