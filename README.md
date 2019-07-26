@@ -138,7 +138,7 @@ Change log:
 v0.3
 
 - Esc current sensor (EscA) added (HW V4/V5, >60A)
-- Averaging telemetry and pwm out added
+- Averaging telemetry added
 - Voltage2 sensor changed from A3 to A4
 - Ntc2 sensor changed from Tmp1 to Tmp2
 - Averaging governor added
