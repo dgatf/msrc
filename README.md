@@ -136,8 +136,9 @@ Change log:
 
 v0.3
 
-- Averaging telemetry added
+- Esc current sensor added (HW V4/V5, >60A)
+- Averaging telemetry and pwm out added
 - Voltage2 sensor changed from A3 to A4
 - Ntc2 sensor changed from Tmp1 to Tmp2
 - Averaging governor added
-- Refresh rate and averaging size added to lua config script
+- Refresh rate and averaging added to lua config script
