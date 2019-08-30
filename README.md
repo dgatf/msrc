@@ -149,6 +149,9 @@ Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
 Value | Package Head (0x9B) | Package Number 1 | Package Number 2 | Package Number 3 | Rx Throttle 1 | Rx Throttle  2 | Output PWM 1 | Output PWM 2 | RPM Cycle 1 | RPM Cycle 2
 
+*RPM = 60000000 / RPM Cycle*
+
+
 ### Hobbywing V4/V5
 
 Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19
