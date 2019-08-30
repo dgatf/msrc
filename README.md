@@ -159,7 +159,7 @@ Remarks:
 
 1. There are two temperatures values. No idea what's the difference
 
-2. Voltage output is 7%-9% than actual battery voltage
+2. Telemetry voltage is 7%-9% higher than actual battery voltage
 
 3. Before throttle is raised from 0, programming packets are sent between telemetry packets:
 
