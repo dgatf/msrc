@@ -134,7 +134,7 @@ Using Arduino IDE copy folder *esc_smartport* and open *esc_smartport.ino*. Sele
 ## [Video](https://youtu.be/Mby2rlmAMlU)
 
 
-## Protocols
+## Protocols specifications
 
 Serial parameters:
 
