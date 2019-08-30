@@ -160,11 +160,13 @@ Value | Package Head (0x9B) | Package Number 1 |	Package Number 2 | Package Numb
 
 Remarks:
 
-1. There are two temperatures values. No idea what's the difference
+1. Voltage, current, temperatures values to be divided by 100
 
-2. Telemetry voltage is 7%-9% higher than actual battery voltage
+2. There are two temperatures values. No idea what's the difference
 
-3. Before throttle is raised from 0, programming packets are sent between telemetry packets:
+3. Telemetry voltage is 7%-9% higher than actual battery voltage
+
+4. Before throttle is raised from 0, programming packets are sent between telemetry packets:
 
 Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
