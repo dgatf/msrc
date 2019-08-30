@@ -153,7 +153,7 @@ Value | Package Head (0x9B) | Package Number 1 | Package Number 2 | Package Numb
 
 Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
-Value | Package Head (0x9B) | Package Number 1 |	Package Number 1	| Package Number 1	| Rx Throttle 1	| Rx Throttle  2 | Output PWM 1 | Output PWM 2	| RPM 1 | RPM 2	| RPM 3	| Voltage 1 |	Voltage 2	| Consumption 1	| Consumption 2	| Temp1 1	| Temp1 2	| Temp2 1 |	Temp2 2
+Value | Package Head (0x9B) | Package Number 1 |	Package Number 2 | Package Number 3	| Rx Throttle 1	| Rx Throttle  2 | Output PWM 1 | Output PWM 2	| RPM 1 | RPM 2	| RPM 3	| Voltage 1 |	Voltage 2	| Consumption 1	| Consumption 2	| Temp1 1	| Temp1 2	| Temp2 1 |	Temp2 2
 
 Remarks:
 
@@ -164,7 +164,7 @@ Remarks:
 3. Before throttle is raised from 0, programming packets are sent between telemetry packets:
 
 Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13
-- |
+--- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
 Value | 0x9B | 0x9B	| 0x3	| 0xE8	| 0x1	| 0xB	| 0x41	| 0x21	| 0x44	| 0xB9	| 0x21	| 0x21	| 0xB9
 
 
