@@ -142,6 +142,14 @@ Serial parameters:
 - 1 packet every 20 ms
 - Big endian
 
+
+Markdown | Less | Pretty
+--- | --- | ---
+*Still* | `renders` | **nicely**
+1 | 2 | 3
+
+
+
 ### Hobbywing V3
 
 Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
