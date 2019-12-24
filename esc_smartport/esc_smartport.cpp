@@ -200,7 +200,7 @@ void setPwmOut() {
   interrupts();
 }
 
-uint8_t setCellCount (float voltage) {
+uint8_t setCellCount(float voltage) {
   if (voltage > 42) return 12;
   if (voltage > 33.6) return 10;
   if (voltage > 29.4) return 8;

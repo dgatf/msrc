@@ -274,7 +274,7 @@ void readConfig();
 void writeConfig();
 void initConfig();
 void setPwmOut();
-uint8_t setCellCount ();
+uint8_t setCellCount();
 float readVoltageAnalog(uint8_t pin);
 float readNtc(uint8_t pin);
 void setup();
