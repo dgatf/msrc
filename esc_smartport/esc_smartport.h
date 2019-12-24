@@ -37,7 +37,7 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 3
-#define VERSION_PATCH 0
+#define VERSION_PATCH 1
 
 // Pins
 
@@ -237,6 +237,7 @@ struct Config {
 struct Telemetry {
   float *escRpmConsP = NULL;
   float *escPowerP = NULL;
+  float *cellP = NULL;
   float *temp1P = NULL;
   float *temp2P = NULL;
   float *voltageAnalog1P = NULL;
@@ -266,12 +267,14 @@ struct Telemetry {
   float ntc1Avg = 0;
   float ntc2Avg = 0;
   float pwmAvg = 0;
+  uint8_t cellCount = 0;
 };
 
 void readConfig();
 void writeConfig();
 void initConfig();
 void setPwmOut();
+uint8_t setCellCount ();
 float readVoltageAnalog(uint8_t pin);
 float readNtc(uint8_t pin);
 void setup();

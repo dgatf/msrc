@@ -112,6 +112,7 @@ void initConfig() {
 
   telemetry.rpmQ.del(16);
   telemetry.voltageQ.del(16);
+  telemetry.currentQ.del(16);
   telemetry.temp1Q.del(16);
   telemetry.temp2Q.del(16);
   telemetry.voltageAnalog1Q.del(16);
@@ -134,7 +135,10 @@ void initConfig() {
     telemetry.rpmQ.initQueue(0, config.queueRpm);
     telemetry.escPowerP =
         smartport.addElement(ESC_POWER_FIRST_ID, config.refreshVolt * 100);
+    telemetry.cellP =
+        smartport.addElement(VFAS_FIRST_ID, config.refreshVolt * 100);
     telemetry.voltageQ.initQueue(0, config.queueVolt);
+    telemetry.currentQ.initQueue(0, config.queueCurr);
     telemetry.temp1P = smartport.addElement(ESC_TEMPERATURE_FIRST_ID,
                                             config.refreshTemp * 100);
     telemetry.temp1Q.initQueue(0, config.queueTemp);
@@ -196,6 +200,19 @@ void setPwmOut() {
   interrupts();
 }
 
+uint8_t setCellCount (float voltage) {
+  if (voltage > 42) return 12;
+  if (voltage > 33.6) return 10;
+  if (voltage > 29.4) return 8;
+  if (voltage > 25.2) return 7;
+  if (voltage > 21) return 6;
+  if (voltage > 16.8) return 5;
+  if (voltage > 12.6) return 4;
+  if (voltage > 8.4) return 3;
+  if (voltage > 4.2) return 2;
+  return 1;
+}
+
 float readVoltageAnalog(uint8_t pin) {
   const float analogToVolt = (float)BOARD_VCC / 1024;
   uint16_t value = analogRead(pin);
@@ -255,6 +272,7 @@ void loop() {
   case PROTOCOL_HW_V4:
 
     if (statusChange) {
+      if (telemetry.cellCount == 0 && millis() > 2000) telemetry.cellCount = setCellCount(telemetry.voltageAvg);
 
       valueTelemetry = esc.getRpm() / config.queueRpm;
       telemetry.rpmAvg += valueTelemetry - telemetry.rpmQ.dequeue();
@@ -264,6 +282,8 @@ void loop() {
       valueTelemetry = esc.getVolt() / config.queueVolt;
       telemetry.voltageAvg += valueTelemetry - telemetry.voltageQ.dequeue();
       telemetry.voltageQ.enqueue(valueTelemetry);
+      *telemetry.cellP = smartport.formatData(VFAS_FIRST_ID, telemetry.voltageAvg / telemetry.cellCount);
+
       valueTelemetry = esc.getCurrent() / config.queueCurr;
       telemetry.currentAvg += valueTelemetry - telemetry.currentQ.dequeue();
       telemetry.currentQ.enqueue(valueTelemetry);
