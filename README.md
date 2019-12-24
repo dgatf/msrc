@@ -12,11 +12,13 @@ ESC serial protocols implemented:
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature, voltage and current
 - PWM signal: RPM
 
+Average cell voltage for HW V4/V5 is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. Two seconds after power on cell count is autodetected and fixed (cell voltage to be >3.8v for proper cell count)
+
 ## PWM output
 
 PWM signal generation from ESC serial (for HW V5 which does not have PWM output) for FLB systems
 
-PWM signal properties: logic level 3.3V and duty cycle 17%
+PWM signal properties: logic level 3.3V and default duty cycle 50%
 
 ## Analog sensors (optional)
 
@@ -62,6 +64,7 @@ Current is measured through analog pin A4
 
 - RPM: EscR (0x0b60)
 - ESC voltage: EscV (0x0b50)
+- ESC cell average: VFAS (0x0210)
 - ESC current: EscA (0x0b50)
 - ESC temp1: EscT (0x0b70)
 - ESC temp2: EscT (0x0b71)
@@ -174,6 +177,12 @@ Value | 0x9B | 0x9B	| 0x3	| 0xE8	| 0x1	| 0xB	| 0x41	| 0x21	| 0x44	| 0xB9	| 0x21	
 
 
 ## Change log
+
+v0.3.1
+
+- Added cell voltage average (HW V4/V5, VFAS sensor)
+- Fixed esc current sensor bug
+- Adjusted multiplier for esc voltage (HW V4/V5)
 
 v0.3
 
