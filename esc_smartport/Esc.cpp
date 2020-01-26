@@ -96,7 +96,7 @@ bool Esc::readHWV4() {
       uint8_t cont = _serial.readBytes(data, 32);
       if (cont == 32 && data[0] == 0x9B) {
         rpm = (uint32_t)data[21] << 16 | (uint16_t)data[22] << 8 | data[23];
-        voltage = (float)((uint16_t)data[24] << 8 | data[25]) / 100;
+        voltage = (float)((uint16_t)data[24] << 8 | data[25]) / 113;
         current = (float)((uint16_t)data[26] << 8 | data[27]) / 100;
         temp1 = (float)((uint16_t)data[28] << 8 | data[29]) / 100;
         temp2 = (float)((uint16_t)data[30] << 8 | data[31]) / 100;
