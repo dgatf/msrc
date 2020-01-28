@@ -6,7 +6,7 @@ This is a DIY project to send ESC telemetry and optionally other sensors to Frsk
 
 The ESC telemetry can be ESC serial data or PWM signal (from the ESC or RPM sensor)
 
-ESC serial protocols implemented:
+ESC protocols implemented:
 
 - Hobbywing Platinum V3: RPM
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature, voltage and current
@@ -199,11 +199,6 @@ Using Beta formula:
 More accurate formula (Steinhart and Hart Equation) if data available:
 
 *T = 1/[A+Bln(R/Ro)+Cln(R/Ro)²+Dln(R/Ro)³]*
-
-### Current sensor
-
-Current is measured through analog pin A4
-
 
 ## Change log
 
