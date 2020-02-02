@@ -62,8 +62,11 @@ bool Esc::readHWV4() {
         rpm = (uint32_t)data[7] << 16 | (uint16_t)data[8] << 8 | data[9];
         voltage = (float)((uint16_t)data[10] << 8 | data[11]) / 113;
         current = (float)((uint16_t)data[12] << 8 | data[13]) / 100;
-        temp1 = (float)((uint16_t)data[14] << 8 | data[15]) / 100;
-        temp2 = (float)((uint16_t)data[16] << 8 | data[17]) / 100;
+        //currentRaw = (float)((uint16_t)data[12] << 8 | data[13]);
+        //current = ((currentRaw - 27.8) * 16.4 - 5290) * 100 / 1968;
+        temp1 = calcTempHW((uint16_t)data[16] << 8 | data[17]);
+        temp2 = calcTempHW(((uint16_t)data[14] << 8 | data[15]));
+
 #ifdef DEBUG_ESC
         uint32_t pn =
             (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
@@ -98,8 +101,10 @@ bool Esc::readHWV4() {
         rpm = (uint32_t)data[21] << 16 | (uint16_t)data[22] << 8 | data[23];
         voltage = (float)((uint16_t)data[24] << 8 | data[25]) / 113;
         current = (float)((uint16_t)data[26] << 8 | data[27]) / 100;
-        temp1 = (float)((uint16_t)data[28] << 8 | data[29]) / 100;
-        temp2 = (float)((uint16_t)data[30] << 8 | data[31]) / 100;
+        //currentRaw = (float)((uint16_t)data[12] << 8 | data[13]);
+        //current = ((currentRaw - 27.8) * 16.4 - 5290) * 100 / 1968;
+        temp1 = calcTempHW((uint16_t)data[28] << 8 | data[29]);
+        temp2 = calcTempHW(((uint16_t)data[30] << 8 | data[31]));
 #ifdef DEBUG_ESC
         uint32_t pn =
             (uint32_t)data[14] << 16 | (uint16_t)data[15] << 8 | data[16];
@@ -188,3 +193,38 @@ float Esc::getTemp1() { return temp1; }
 float Esc::getTemp2() { return temp2; }
 
 float Esc::getCurrent() { return current; }
+
+float Esc::calcTempHW (uint16_t tempRaw) {
+  uint16_t tempFunc[26][2]=
+ {{ 0,  1},
+  {14,  2},
+  {28,  3},
+  {58,  5},
+  {106, 8},
+  {158, 11},
+  {234, 15},
+  {296, 18},
+  {362, 21},
+  {408, 23},
+  {505, 27},
+  {583, 30},
+  {664, 33},
+  {720, 35},
+  {807, 38},
+  {897, 41},
+  {1021,  45},
+  {1150,  49},
+  {1315,  54},
+  {1855,  70},
+  {1978,  74},
+  {2239,  82},
+  {2387,  87},
+  {2472,  90},
+  {2656,  97},
+  {2705,  99}};
+  if (tempRaw > 3828) return 0;
+  if (tempRaw < 1123) return 100;
+  tempraw = 3828 - tempraw;
+  while (i < 26 && tempRaw >= tempFunc[i][0]) { i++; }
+  return tempFunc[i-1][1] + (tempFunc[i][1] - tempFunc[i-1][1]) * (tempRaw - tempFunc[i-1][0]) / (tempFunc[i][0] - tempFunc[i-1][0]));
+}

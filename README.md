@@ -94,8 +94,8 @@ Depending on your configuration you may have some or all of the following sensor
 - ESC voltage: EscV (0x0b50)
 - ESC cell average: VFAS (0x0210)
 - ESC current: EscA (0x0b50)
-- ESC temp1: EscT (0x0b70)
-- ESC temp2: EscT (0x0b71)
+- ESC temp FET: EscT (0x0b70)
+- ESC temp: EscT (0x0b71)
 - Voltage 1: A3 (0x0900)
 - Voltage 2: A4 (0x0910)
 - Thermistor 1: Tmp1 (0x0400)
@@ -157,15 +157,11 @@ Value | Package Head (0x9B) | Package Number 1 | Package Number 2 | Package Numb
 
 Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
-Value | Package Head (0x9B) | Package Number 1 |	Package Number 2 | Package Number 3	| Rx Throttle 1	| Rx Throttle  2 | Output PWM 1 | Output PWM 2	| RPM 1 | RPM 2	| RPM 3	| Voltage 1 |	Voltage 2	| Consumption 1	| Consumption 2	| Temp1 1	| Temp1 2	| Temp2 1 |	Temp2 2
+Value | Package Head (0x9B) | Package Number 1 |	Package Number 2 | Package Number 3	| Rx Throttle 1	| Rx Throttle  2 | Output PWM 1 | Output PWM 2	| RPM 1 | RPM 2	| RPM 3	| Voltage 1 |	Voltage 2	| Current 1	| Current 2	| TempFET 1	| TempFET 2	| Temp 1 |	Temp 2
 
-Remarks:
+Remark:
 
-1. Multipliers: Voltage 1/113, current 1/100(?), temperatures 1/100(?)
-
-2. There are two temperatures values. No idea what's the difference
-
-3. Before throttle is raised from 0, programming packets are sent between telemetry packets:
+Before throttle is raised from 0, programming packets are sent between telemetry packets:
 
 Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
@@ -212,7 +208,7 @@ v0.3.1
 
 - Added cell voltage average (HW V4/V5, VFAS sensor)
 - Fixed esc current sensor bug (HW V4/V5)
-- Adjusted multiplier for esc voltage (HW V4/V5)
+- Applied correct transformation for esc voltage and temperature (HW V4/V5)
 
 v0.3
 
