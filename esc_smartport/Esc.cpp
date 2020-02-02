@@ -194,7 +194,7 @@ float Esc::getTemp2() { return temp2; }
 
 float Esc::getCurrent() { return current; }
 
-float Esc::calcTempHW (uint16_t tempRaw) {
+float Esc::calcTempHW(uint16_t tempRaw) {
   uint16_t tempFunc[26][2] =
  {{ 0,  1},
   {14,  2},
