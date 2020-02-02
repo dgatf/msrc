@@ -195,7 +195,7 @@ float Esc::getTemp2() { return temp2; }
 float Esc::getCurrent() { return current; }
 
 float Esc::calcTempHW (uint16_t tempRaw) {
-  uint16_t tempFunc[26][2]=
+  uint16_t tempFunc[26][2] =
  {{ 0,  1},
   {14,  2},
   {28,  3},
@@ -226,5 +226,5 @@ float Esc::calcTempHW (uint16_t tempRaw) {
   if (tempRaw < 1123) return 100;
   tempraw = 3828 - tempraw;
   while (i < 26 && tempRaw >= tempFunc[i][0]) { i++; }
-  return tempFunc[i-1][1] + (tempFunc[i][1] - tempFunc[i-1][1]) * (tempRaw - tempFunc[i-1][0]) / (tempFunc[i][0] - tempFunc[i-1][0]));
+  return tempFunc[i-1][1] + (tempFunc[i][1] - tempFunc[i-1][1]) * (tempRaw - tempFunc[i-1][0]) / (tempFunc[i][0] - tempFunc[i-1][0]);
 }
