@@ -64,8 +64,8 @@ bool Esc::readHWV4() {
         current = (float)((uint16_t)data[12] << 8 | data[13]) / 100;
         //currentRaw = (float)((uint16_t)data[12] << 8 | data[13]);
         //current = ((currentRaw - 27.8) * 16.4 - 5290) * 100 / 1968;
-        temp1 = calcTempHW((uint16_t)data[16] << 8 | data[17]);
-        temp2 = calcTempHW(((uint16_t)data[14] << 8 | data[15]));
+        temp1 = calcTempHW((uint16_t)data[14] << 8 | data[15]);
+        temp2 = calcTempHW(((uint16_t)data[16] << 8 | data[17]));
 
 #ifdef DEBUG_ESC
         uint32_t pn =
