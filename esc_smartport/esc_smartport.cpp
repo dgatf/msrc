@@ -242,8 +242,7 @@ void loop() {
   case PROTOCOL_HW_V3:
     if (statusChange || esc.getRpm() == 0) {
       telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
-      *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);
-      
+      *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);      
     }
     break;
 
