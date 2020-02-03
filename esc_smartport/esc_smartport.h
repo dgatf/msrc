@@ -111,15 +111,15 @@
 // packet 3
 
 // byte 1
-#define BM_QUEUE_RPM(VALUE) VALUE & 0B00001111
-#define BM_QUEUE_VOLT(VALUE) VALUE >> 4 & 0B00001111
+#define BM_AVG_ELEM_RPM(VALUE) VALUE & 0B00001111
+#define BM_AVG_ELEM_VOLT(VALUE) VALUE >> 4 & 0B00001111
 
 // byte 2
-#define BM_QUEUE_CURR(VALUE) VALUE >> 8 & 0B00001111
-#define BM_QUEUE_TEMP(VALUE) VALUE >> 12 & 0B00001111
+#define BM_AVG_ELEM_CURR(VALUE) VALUE >> 8 & 0B00001111
+#define BM_AVG_ELEM_TEMP(VALUE) VALUE >> 12 & 0B00001111
 
 // byte 3
-#define BM_QUEUE_PWM(VALUE) VALUE >> 16 & 0B00001111
+#define BM_AVG_ELEM_PWM(VALUE) VALUE >> 16 & 0B00001111
 
 #define ESCSERIAL_TIMEOUT 3
 #define escSerial Serial
@@ -140,77 +140,6 @@
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
 
-template <typename T> class Queue {
-  class Node {
-  public:
-    T item;
-    Node *next;
-    Node() { next = NULL; }
-    ~Node() { next = NULL; }
-  };
-  Node *head;
-  Node *tail;
-
-public:
-  Queue() {
-    head = NULL;
-    tail = NULL;
-  }
-
-  ~Queue() {
-    for (Node *node = head; node != NULL; node = head) {
-      head = node->next;
-      delete node;
-    }
-  }
-
-  bool enqueue(T item) {
-    Node *node = new Node;
-    if (node == NULL)
-      return false;
-    node->item = item;
-    if (head == NULL) {
-      head = node;
-      tail = node;
-      return true;
-    }
-    tail->next = node;
-    tail = node;
-    return true;
-  }
-
-  T dequeue() {
-    if (head == NULL)
-      return T();
-    Node *node = head;
-    head = node->next;
-    T item = node->item;
-    delete node;
-    node = NULL;
-    if (head == NULL)
-      tail = NULL;
-    return item;
-  }
-
-  void initQueue(T item, uint8_t size) {
-    for (uint8_t i = 0; i < size; i++)
-      this->enqueue(item);
-  }
-
-  /*void del() {
-    T item = this->dequeue();
-    while (item != NULL) {
-      item = this->dequeue();
-    }
-  }*/
-
-  void del(uint8_t size) {
-    for (uint8_t i = 0; i < size; i++)
-      this->dequeue();
-  }
-
-};
-
 // Default config
 
 struct Config {
@@ -227,11 +156,11 @@ struct Config {
   uint8_t refreshCurr = 10;           // telemetry current refresh rate (ms / 100)
   uint8_t refreshTemp = 10;           // telemetry temperature refresh rate (ms / 100)
   // max queue size 16
-  uint8_t queueRpm = 5;               // rpm averaging elements
-  uint8_t queueVolt = 5;              // voltage averaging elements
-  uint8_t queueCurr = 5;              // current averaging elements
-  uint8_t queueTemp = 5;              // temperature averaging elements
-  uint8_t queuePwm = 5;               // pwm out averaging elements (governor)
+  float alphaRpm = 1 / 3;               // rpm averaging elements
+  float alphaVolt = 1 / 3;              // voltage averaging elements
+  float alphaCurr = 1 / 3;              // current averaging elements
+  float alphaTemp = 1 / 3;              // temperature averaging elements
+  float alphaPwm = 1 / 3;               // pwm out averaging elements (governor)
 };
 
 struct Telemetry {
@@ -245,34 +174,24 @@ struct Telemetry {
   float *currentAnalogP = NULL;
   float *ntc1P = NULL;
   float *ntc2P = NULL;
-  Queue<float> rpmQ;
-  Queue<float> voltageQ;
-  Queue<float> currentQ;
-  Queue<float> temp1Q;
-  Queue<float> temp2Q;
-  Queue<float> voltageAnalog1Q;
-  Queue<float> voltageAnalog2Q;
-  Queue<float> currentAnalogQ;
-  Queue<float> ntc1Q;
-  Queue<float> ntc2Q;
-  Queue<float> pwmQ;
-  float rpmAvg = 0;
-  float voltageAvg = 0;
-  float currentAvg = 0;
-  float temp1Avg = 0;
-  float temp2Avg = 0;
-  float voltageAnalog1Avg = 0;
-  float voltageAnalog2Avg = 0;
-  float currentAnalogAvg = 0;
-  float ntc1Avg = 0;
-  float ntc2Avg = 0;
-  float pwmAvg = 0;
+  float rpm = 0;
+  float voltage = 0;
+  float current = 0;
+  float temp1 = 0;
+  float temp2 = 0;
+  float voltageAnalog1 = 0;
+  float voltageAnalog2 = 0;
+  float currentAnalog = 0;
+  float ntc1 = 0;
+  float ntc2 = 0;
+  float pwm = 0;
   uint8_t cellCount = 0;
 };
 
 void readConfig();
 void writeConfig();
 void initConfig();
+float calcAlpha(uint8_t elements);
 void setPwmOut();
 uint8_t setCellCount();
 float readVoltageAnalog(uint8_t pin);
