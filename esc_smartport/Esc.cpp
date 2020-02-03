@@ -4,9 +4,11 @@
 volatile uint16_t pwmInLenght = 60000;
 volatile uint32_t tsPwmIn = 0;
 
-ISR(TIMER1_CAPT_vect) {
+ISR(TIMER1_CAPT_vect)
+{
   volatile static uint16_t pwmInInit = 0;
-  if (ICR1 - pwmInInit > 0) {
+  if (ICR1 - pwmInInit > 0)
+  {
     pwmInLenght = ICR1 - pwmInInit;
     pwmInInit = ICR1;
     tsPwmIn = micros();
@@ -15,13 +17,17 @@ ISR(TIMER1_CAPT_vect) {
 
 Esc::Esc(Stream &serial) : _serial(serial) {}
 
-bool Esc::readHWV3() {
+bool Esc::readHWV3()
+{
   static uint16_t tsEsc = 0;
-  while (_serial.available() >= 10) {
-    if (_serial.read() == 0x9B) {
+  while (_serial.available() >= 10)
+  {
+    if (_serial.read() == 0x9B)
+    {
       uint8_t data[9];
       uint8_t cont = _serial.readBytes(data, 9);
-      if (cont == 9 && data[3] == 0 && data[5] == 0) {
+      if (cont == 9 && data[3] == 0 && data[5] == 0)
+      {
         uint16_t rpmCycle = (uint16_t)data[7] << 8 | data[8];
         rpm = (float)60000000UL / rpmCycle;
         tsEsc = millis();
@@ -41,7 +47,8 @@ bool Esc::readHWV3() {
   if (rpm == 0)
     return false;
 
-  if ((uint16_t)millis() - tsEsc > 150) {
+  if ((uint16_t)millis() - tsEsc > 150)
+  {
     rpm = 0;
     return true;
   }
@@ -49,16 +56,20 @@ bool Esc::readHWV3() {
   return false;
 }
 
-bool Esc::readHWV4() {
-  while (_serial.available() >= 19) {
+bool Esc::readHWV4()
+{
+  while (_serial.available() >= 19)
+  {
 
     uint8_t header = _serial.read();
 
     // short packet
-    if (header == 0x9B) {
+    if (header == 0x9B)
+    {
       uint8_t data[18];
       uint8_t cont = _serial.readBytes(data, 18);
-      if (cont == 18 && data[0] != 0x9B) {
+      if (cont == 18 && data[0] != 0x9B)
+      {
         rpm = (uint32_t)data[7] << 16 | (uint16_t)data[8] << 8 | data[9];
         voltage = (float)((uint16_t)data[10] << 8 | data[11]) / 113;
         current = (float)((uint16_t)data[12] << 8 | data[13]) / 100;
@@ -94,10 +105,12 @@ bool Esc::readHWV4() {
     }
 
     // long packet
-    if (header == 0xB9) {
+    if (header == 0xB9)
+    {
       uint8_t data[32];
       uint8_t cont = _serial.readBytes(data, 32);
-      if (cont == 32 && data[0] == 0x9B) {
+      if (cont == 32 && data[0] == 0x9B)
+      {
         rpm = (uint32_t)data[21] << 16 | (uint16_t)data[22] << 8 | data[23];
         voltage = (float)((uint16_t)data[24] << 8 | data[25]) / 113;
         current = (float)((uint16_t)data[26] << 8 | data[27]) / 100;
@@ -134,28 +147,36 @@ bool Esc::readHWV4() {
   return false;
 }
 
-void Esc::readPWM() {
+void Esc::readPWM()
+{
   static uint8_t cont = 0;
   if (pwmInLenght > 0 &&
       pwmInLenght * COMP_TO_MICROS < PWM_IN_TRIGGER_MICROS &&
-      micros() - tsPwmIn < PWM_IN_TRIGGER_MICROS) {
-    if (cont > PWM_IN_TRIGGER_PULSES) {
+      micros() - tsPwmIn < PWM_IN_TRIGGER_MICROS)
+  {
+    if (cont > PWM_IN_TRIGGER_PULSES)
+    {
       rpm = 60000000UL / pwmInLenght * COMP_TO_MICROS;
     }
-    if (cont <= PWM_IN_TRIGGER_PULSES) cont++;
+    if (cont <= PWM_IN_TRIGGER_PULSES)
+      cont++;
 #ifdef DEBUG_ESC
     Serial.print("RPM: ");
     Serial.println(rpm);
 #endif
-  } else {
+  }
+  else
+  {
     rpm = 0;
     cont = 0;
   }
 }
 
-bool Esc::read() {
+bool Esc::read()
+{
   bool statusChange = false;
-  switch (_protocol) {
+  switch (_protocol)
+  {
   case PROTOCOL_HW_V3:
     statusChange = readHWV3();
     break;
@@ -170,9 +191,11 @@ bool Esc::read() {
   return statusChange;
 }
 
-void Esc::setProtocol(uint8_t protocol) {
+void Esc::setProtocol(uint8_t protocol)
+{
   _protocol = protocol;
-  switch (_protocol) {
+  switch (_protocol)
+  {
   case PROTOCOL_PWM:
     // TIMER1,capture ext int, scaler 8. PIN 8
     TCCR1A = 0;
@@ -194,38 +217,44 @@ float Esc::getTemp2() { return temp2; }
 
 float Esc::getCurrent() { return current; }
 
-float Esc::calcTempHW(uint16_t tempRaw) {
+float Esc::calcTempHW(uint16_t tempRaw)
+{
   uint16_t tempFunc[26][2] =
- {{ 0,  1},
-  {14,  2},
-  {28,  3},
-  {58,  5},
-  {106, 8},
-  {158, 11},
-  {234, 15},
-  {296, 18},
-  {362, 21},
-  {408, 23},
-  {505, 27},
-  {583, 30},
-  {664, 33},
-  {720, 35},
-  {807, 38},
-  {897, 41},
-  {1021,  45},
-  {1150,  49},
-  {1315,  54},
-  {1855,  70},
-  {1978,  74},
-  {2239,  82},
-  {2387,  87},
-  {2472,  90},
-  {2656,  97},
-  {2705,  99}};
-  if (tempRaw > 3828) return 0;
-  if (tempRaw < 1123) return 100;
+      {{0, 1},
+       {14, 2},
+       {28, 3},
+       {58, 5},
+       {106, 8},
+       {158, 11},
+       {234, 15},
+       {296, 18},
+       {362, 21},
+       {408, 23},
+       {505, 27},
+       {583, 30},
+       {664, 33},
+       {720, 35},
+       {807, 38},
+       {897, 41},
+       {1021, 45},
+       {1150, 49},
+       {1315, 54},
+       {1855, 70},
+       {1978, 74},
+       {2239, 82},
+       {2387, 87},
+       {2472, 90},
+       {2656, 97},
+       {2705, 99}};
+  if (tempRaw > 3828)
+    return 0;
+  if (tempRaw < 1123)
+    return 100;
   tempRaw = 3828 - tempRaw;
-  uint8_t i = 0; 
-  while (i < 26 && tempRaw >= tempFunc[i][0]) { i++; }
-  return tempFunc[i-1][1] + (tempFunc[i][1] - tempFunc[i-1][1]) * (float)(tempRaw - tempFunc[i-1][0]) / (tempFunc[i][0] - tempFunc[i-1][0]);
+  uint8_t i = 0;
+  while (i < 26 && tempRaw >= tempFunc[i][0])
+  {
+    i++;
+  }
+  return tempFunc[i - 1][1] + (tempFunc[i][1] - tempFunc[i - 1][1]) * (float)(tempRaw - tempFunc[i - 1][0]) / (tempFunc[i][0] - tempFunc[i - 1][0]);
 }
