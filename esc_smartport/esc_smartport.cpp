@@ -153,7 +153,7 @@ void initConfig() {
 }
 
 float calcAlpha(uint8_t elements) {
-    return 2 / (elements + 1);
+  return (float)2 / (elements + 1);
 }
 
 void setPwmOut() {
@@ -241,8 +241,9 @@ void loop() {
 
   case PROTOCOL_HW_V3:
     if (statusChange || esc.getRpm() == 0) {
-      telemetry.rpm += telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
+      telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
       *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);
+      
     }
     break;
 
@@ -250,34 +251,34 @@ void loop() {
     if (statusChange) {
       if (telemetry.cellCount == 0 && millis() > 2000) telemetry.cellCount = setCellCount(telemetry.voltage);
 
-      telemetry.rpm += telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
+      telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
       *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);
 
-      telemetry.voltage += telemetry.voltage + config.alphaVolt * (esc.getVolt() - telemetry.voltage);
+      telemetry.voltage = telemetry.voltage + config.alphaVolt * (esc.getVolt() - telemetry.voltage);
       *telemetry.cellP = smartport.formatData(VFAS_FIRST_ID, telemetry.voltage / telemetry.cellCount);
 
-      telemetry.current += telemetry.current + config.alphaCurr * (esc.getCurrent() - telemetry.current);
+      telemetry.current = telemetry.current + config.alphaCurr * (esc.getCurrent() - telemetry.current);
       *telemetry.escPowerP = smartport.formatEscPower(telemetry.voltage, telemetry.current);
 
-      telemetry.temp1 += telemetry.temp1 + config.alphaTemp * (esc.getTemp1() - telemetry.temp1);
+      telemetry.temp1 = telemetry.temp1 + config.alphaTemp * (esc.getTemp1() - telemetry.temp1);
       *telemetry.temp1P =
           smartport.formatData(ESC_TEMPERATURE_FIRST_ID, telemetry.temp1);
 
-      telemetry.temp2 += telemetry.temp2 + config.alphaTemp * (esc.getTemp2() - telemetry.temp2);
+      telemetry.temp2 = telemetry.temp2 + config.alphaTemp * (esc.getTemp2() - telemetry.temp2);
       *telemetry.temp2P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID + 1,
                                                telemetry.temp2);
     }
     break;
 
   case PROTOCOL_PWM:
-    telemetry.rpm += telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
+    telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
     *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);
     break;
   }
 
   if (config.pwmOut == true && config.protocol != PROTOCOL_PWM &&
       statusChange) {
-    telemetry.pwm += telemetry.pwm + config.alphaPwm * (esc.getRpm() - telemetry.pwm);
+    telemetry.pwm = telemetry.pwm + config.alphaPwm * (esc.getRpm() - telemetry.pwm);
     noInterrupts();
     if (esc.getRpm() >= 2000) {
 #if MODE_PWM_OUT == ICR
@@ -298,26 +299,26 @@ void loop() {
   }
 
   if (config.voltage1 == true) {
-    telemetry.voltageAnalog1 += telemetry.voltageAnalog1 + config.alphaVolt * (readVoltageAnalog(PIN_VOLTAGE1) - telemetry.voltageAnalog1);
+    telemetry.voltageAnalog1 = telemetry.voltageAnalog1 + config.alphaVolt * (readVoltageAnalog(PIN_VOLTAGE1) - telemetry.voltageAnalog1);
     *telemetry.voltageAnalog1P =
         smartport.formatData(A3_FIRST_ID, telemetry.voltageAnalog1);
   }
   if (config.voltage2 == true) {
-    telemetry.voltageAnalog2 += telemetry.voltageAnalog2 + config.alphaVolt * (readVoltageAnalog(PIN_VOLTAGE2) - telemetry.voltageAnalog2);
+    telemetry.voltageAnalog2 = telemetry.voltageAnalog2 + config.alphaVolt * (readVoltageAnalog(PIN_VOLTAGE2) - telemetry.voltageAnalog2);
     *telemetry.voltageAnalog2P =
         smartport.formatData(A4_FIRST_ID, telemetry.voltageAnalog2);
   }
   if (config.current == true) {
-    telemetry.currentAnalog += telemetry.currentAnalog + config.alphaCurr * (readVoltageAnalog(PIN_CURRENT) - telemetry.currentAnalog);
+    telemetry.currentAnalog = telemetry.currentAnalog + config.alphaCurr * (readVoltageAnalog(PIN_CURRENT) - telemetry.currentAnalog);
     *telemetry.currentAnalogP =
         smartport.formatData(CURR_FIRST_ID, telemetry.currentAnalog);
   }
   if (config.ntc1 == true) {
-    telemetry.ntc1 += telemetry.ntc1 + config.alphaTemp * (readNtc(PIN_NTC1) - telemetry.ntc1);
+    telemetry.ntc1 = telemetry.ntc1 + config.alphaTemp * (readNtc(PIN_NTC1) - telemetry.ntc1);
     *telemetry.ntc1P = smartport.formatData(T1_FIRST_ID, telemetry.ntc1);
   }
   if (config.ntc2 == true) {
-    telemetry.ntc2 += telemetry.ntc2 + config.alphaTemp * (readNtc(PIN_NTC2) - telemetry.ntc2);
+    telemetry.ntc2 = telemetry.ntc2 + config.alphaTemp * (readNtc(PIN_NTC2) - telemetry.ntc2);
     *telemetry.ntc2P = smartport.formatData(T2_FIRST_ID, telemetry.ntc2);
   }
 

@@ -156,11 +156,11 @@ struct Config {
   uint8_t refreshCurr = 10;           // telemetry current refresh rate (ms / 100)
   uint8_t refreshTemp = 10;           // telemetry temperature refresh rate (ms / 100)
   // max queue size 16
-  float alphaRpm = 1 / 3;               // rpm averaging elements
-  float alphaVolt = 1 / 3;              // voltage averaging elements
-  float alphaCurr = 1 / 3;              // current averaging elements
-  float alphaTemp = 1 / 3;              // temperature averaging elements
-  float alphaPwm = 1 / 3;               // pwm out averaging elements (governor)
+  float alphaRpm = 0.3;               // rpm averaging elements
+  float alphaVolt = 0.3;              // voltage averaging elements
+  float alphaCurr = 0.3;              // current averaging elements
+  float alphaTemp = 0.3;              // temperature averaging elements
+  float alphaPwm = 0.3;               // pwm out averaging elements (governor)
 };
 
 struct Telemetry {
