@@ -47,5 +47,5 @@ public:
   float getCurrent();
   float calcTempHW(uint16_t tempRaw);
 };
- 
+
 #endif
