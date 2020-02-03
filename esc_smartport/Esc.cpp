@@ -225,7 +225,7 @@ float Esc::calcTempHW(uint16_t tempRaw) {
   if (tempRaw > 3828) return 0;
   if (tempRaw < 1123) return 100;
   tempRaw = 3828 - tempRaw;
-  uint8_t i; 
+  uint8_t i = 0; 
   while (i < 26 && tempRaw >= tempFunc[i][0]) { i++; }
-  return tempFunc[i-1][1] + (tempFunc[i][1] - tempFunc[i-1][1]) * (tempRaw - tempFunc[i-1][0]) / (tempFunc[i][0] - tempFunc[i-1][0]);
+  return tempFunc[i-1][1] + (tempFunc[i][1] - tempFunc[i-1][1]) * (float)(tempRaw - tempFunc[i-1][0]) / (tempFunc[i][0] - tempFunc[i-1][0]);
 }
