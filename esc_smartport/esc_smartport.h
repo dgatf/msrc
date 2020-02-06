@@ -143,7 +143,7 @@
 // Default config
 
 struct Config {
-  uint8_t protocol = PROTOCOL_HW_V3;  // protocol (PROTOCOL_HW_V3, PROTOCOL_HW_V4, PWM)
+  uint8_t protocol = PROTOCOL_HW_V3;  // protocol (PROTOCOL_HW_V3=0, PROTOCOL_HW_V4=1, PWM=2, NONE=3)
   bool voltage1 = false;              // enable/disable voltage1 analog reading
   bool voltage2 = false;              // enable/disable voltage2 analog reading
   bool current = false;               // enable/disable current analog reading

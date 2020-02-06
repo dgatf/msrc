@@ -235,66 +235,69 @@ void setup() {
 
 void loop() {
 
-  bool statusChange = esc.read();
+  if (config.protocol != PROTOCOL_NONE) {
 
-  switch (config.protocol) {
+    bool statusChange = esc.read();
 
-  case PROTOCOL_HW_V3:
-    if (statusChange || esc.getRpm() == 0) {
-      telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
-      *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);      
-    }
-    break;
+    switch (config.protocol) {
 
-  case PROTOCOL_HW_V4:
-    if (statusChange) {
-      if (telemetry.cellCount == 0 && millis() > 2000) telemetry.cellCount = setCellCount(telemetry.voltage);
+    case PROTOCOL_HW_V3:
+      if (statusChange || esc.getRpm() == 0) {
+        telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
+        *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);      
+      }
+      break;
 
+    case PROTOCOL_HW_V4:
+      if (statusChange) {
+        if (telemetry.cellCount == 0 && millis() > 2000) telemetry.cellCount = setCellCount(telemetry.voltage);
+
+        telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
+        *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);
+
+        telemetry.voltage = telemetry.voltage + config.alphaVolt * (esc.getVolt() - telemetry.voltage);
+        *telemetry.cellP = smartport.formatData(VFAS_FIRST_ID, telemetry.voltage / telemetry.cellCount);
+
+        telemetry.current = telemetry.current + config.alphaCurr * (esc.getCurrent() - telemetry.current);
+        *telemetry.escPowerP = smartport.formatEscPower(telemetry.voltage, telemetry.current);
+
+        telemetry.temp1 = telemetry.temp1 + config.alphaTemp * (esc.getTemp1() - telemetry.temp1);
+        *telemetry.temp1P =
+            smartport.formatData(ESC_TEMPERATURE_FIRST_ID, telemetry.temp1);
+
+        telemetry.temp2 = telemetry.temp2 + config.alphaTemp * (esc.getTemp2() - telemetry.temp2);
+        *telemetry.temp2P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID + 1,
+                                                telemetry.temp2);
+      }
+      break;
+
+    case PROTOCOL_PWM:
       telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
       *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);
-
-      telemetry.voltage = telemetry.voltage + config.alphaVolt * (esc.getVolt() - telemetry.voltage);
-      *telemetry.cellP = smartport.formatData(VFAS_FIRST_ID, telemetry.voltage / telemetry.cellCount);
-
-      telemetry.current = telemetry.current + config.alphaCurr * (esc.getCurrent() - telemetry.current);
-      *telemetry.escPowerP = smartport.formatEscPower(telemetry.voltage, telemetry.current);
-
-      telemetry.temp1 = telemetry.temp1 + config.alphaTemp * (esc.getTemp1() - telemetry.temp1);
-      *telemetry.temp1P =
-          smartport.formatData(ESC_TEMPERATURE_FIRST_ID, telemetry.temp1);
-
-      telemetry.temp2 = telemetry.temp2 + config.alphaTemp * (esc.getTemp2() - telemetry.temp2);
-      *telemetry.temp2P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID + 1,
-                                               telemetry.temp2);
+      break;
     }
-    break;
 
-  case PROTOCOL_PWM:
-    telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
-    *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);
-    break;
-  }
-
-  if (config.pwmOut == true && config.protocol != PROTOCOL_PWM &&
-      statusChange) {
-    telemetry.pwm = telemetry.pwm + config.alphaPwm * (esc.getRpm() - telemetry.pwm);
-    noInterrupts();
-    if (esc.getRpm() >= 2000) {
-#if MODE_PWM_OUT == ICR
-      // ICR
-      TCCR1A |= _BV(COM1A1);
-      ICR1 = (7.5 * (uint32_t)F_CPU / telemetry.pwm) - 1;
-      OCR1A = DUTY * ICR1;
-#else
-      // OCR
-      TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
-      OCR1A = (7.5 * (uint32_t)F_CPU / telemetry.pwm) - 1;
-      OCR1B = DUTY * OCR1A;
-#endif
-    } else {
-      TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
+    if (config.pwmOut == true && config.protocol != PROTOCOL_PWM &&
+        statusChange) {
+      telemetry.pwm = telemetry.pwm + config.alphaPwm * (esc.getRpm() - telemetry.pwm);
+      noInterrupts();
+      if (esc.getRpm() >= 2000) {
+  #if MODE_PWM_OUT == ICR
+        // ICR
+        TCCR1A |= _BV(COM1A1);
+        ICR1 = (7.5 * (uint32_t)F_CPU / telemetry.pwm) - 1;
+        OCR1A = DUTY * ICR1;
+  #else
+        // OCR
+        TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
+        OCR1A = (7.5 * (uint32_t)F_CPU / telemetry.pwm) - 1;
+        OCR1B = DUTY * OCR1A;
+  #endif
+      } else {
+        TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
+      }
+      interrupts();
     }
-    interrupts();
   }
 
   if (config.voltage1 == true) {

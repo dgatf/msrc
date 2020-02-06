@@ -8,7 +8,7 @@ local lcdChange = true
 local scroll = 0
 local config =
    {firmwareVersion = '',
-    protocol = {selected = 4, list = {'HW V3', 'HW V4/V5', 'PWM', ''}, elements = 3},
+    protocol = {selected = 4, list = {'HW V3', 'HW V4/V5', 'PWM', 'NONE', ''}, elements = 4},
     voltage1 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
     voltage2 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
     ntc1 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},

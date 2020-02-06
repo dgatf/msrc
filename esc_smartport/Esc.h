@@ -6,6 +6,7 @@
 #define PROTOCOL_HW_V3 0
 #define PROTOCOL_HW_V4 1
 #define PROTOCOL_PWM 2
+#define PROTOCOL_NONE 3
 
 #define COMP_TO_MICROS ((float)8000000UL/F_CPU)
 
