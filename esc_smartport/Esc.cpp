@@ -72,9 +72,8 @@ bool Esc::readHWV4()
       {
         rpm = (uint32_t)data[7] << 16 | (uint16_t)data[8] << 8 | data[9];
         voltage = (float)((uint16_t)data[10] << 8 | data[11]) / 113;
-        current = (float)((uint16_t)data[12] << 8 | data[13]) / 100;
-        //currentRaw = (float)((uint16_t)data[12] << 8 | data[13]);
-        //current = ((currentRaw - 27.8) * 16.4 - 5290) * 100 / 1968;
+        uint16_t currentRaw = ((uint16_t)data[12] << 8 | data[13]);
+        current = (currentRaw - 27.8) / 610;
         temp1 = calcTempHW((uint16_t)data[14] << 8 | data[15]);
         temp2 = calcTempHW(((uint16_t)data[16] << 8 | data[17]));
 
@@ -113,9 +112,8 @@ bool Esc::readHWV4()
       {
         rpm = (uint32_t)data[21] << 16 | (uint16_t)data[22] << 8 | data[23];
         voltage = (float)((uint16_t)data[24] << 8 | data[25]) / 113;
-        current = (float)((uint16_t)data[26] << 8 | data[27]) / 100;
-        //currentRaw = (float)((uint16_t)data[12] << 8 | data[13]);
-        //current = ((currentRaw - 27.8) * 16.4 - 5290) * 100 / 1968;
+        uint16_t currentRaw = ((uint16_t)data[26] << 8 | data[27]);
+        current = (currentRaw - 27.8) / 610;
         temp1 = calcTempHW((uint16_t)data[28] << 8 | data[29]);
         temp2 = calcTempHW(((uint16_t)data[30] << 8 | data[31]));
 #ifdef DEBUG_ESC
