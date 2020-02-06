@@ -1,4 +1,4 @@
-local scriptVersion = '0.3'
+local scriptVersion = '0.3.1'
 local tsReadConfig = 0
 local tsSendConfig = 0
 local readConfigState = 0 -- 0-9 stop sensors, 10-15 request config, 16-19 read config, 20-29 restart sensors, 30 ok
