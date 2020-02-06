@@ -34,7 +34,7 @@ PWM signal properties: logic level 3.3V and default duty cycle 50%
 
 ## Minimum circuit
 
-The arduino has to be connected at least to the ESC serial port or a PWM signal (from the ESC or RPM sensor)
+Usually the minimum circuit is the arduino connected to esc or rpm sensor and smartport. Altough it is not mandatory to connect to the esc or rpm sensor 
 
  - SmartPort Vcc to Arduino RAW
  - SmartPort Gnd to Arduino Gnd
@@ -51,9 +51,10 @@ The arduino has to be connected at least to the ESC serial port or a PWM signal 
 
 Optionally you can add any of the following analog sensors:
 
-- 2 x voltage divider can be added to read the battery voltage
-- Current sensor
-- 2 x temperature sensors (thermistors)
+- 2 x voltage divider can be added to read the battery voltage (A2, A3)
+- 2 x temperature sensors (thermistors) (A0, A1)
+- Current sensor (A4)
+
 
 <p align="center"><img src="./images/esc_smartport_full.png" width="600"><br>
   <i>Full circuit</i><br><br></p>
@@ -209,6 +210,7 @@ v0.3.1
 - Added cell voltage average (HW V4/V5, VFAS sensor)
 - Fixed esc current sensor bug (HW V4/V5)
 - Applied correct transformation for esc voltage, current and temperature (HW V4/V5)
+- Added esc protocol NONE
 
 v0.3
 
