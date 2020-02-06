@@ -20,7 +20,7 @@ Optionally you can add the following analog sensors:
 - Current sensor
 - 2 x temperature sensors (thermistors)
 
-New protocols request : if you wish to add suport for a new ESC protocol you can use the sniffer [sketch](./sniffer/sniffer.ino), connect to your ESC and post or pm me the output at:
+For questions or new protocol request (use [sketch](./sniffer/sniffer.ino)) please post in the forums:
 
 [Helifreak](https://www.helifreak.com/showthread.php?t=835243)
 
