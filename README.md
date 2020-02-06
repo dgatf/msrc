@@ -67,7 +67,7 @@ Using Arduino IDE copy folder *esc_smartport* and open *esc_smartport.ino*. Sele
 
 The configuration is modified with a lua script (X7, X9, X-lite and Horus with openTx 2.2 or higher)
 
-<p align="center"><img src="./images/lua_x7.png" width="300">   <img src="./images/lua_x9.png" width="300">   <img src="./images/lua_x10.png" width="300"></p>
+<p align="center"><img src="./images/lua_x7.png" height="128">   <img src="./images/lua_x9.png" height="128">   <img src="./images/lua_x10.png" height="128"></p>
 
 Copy the file escSp.lua to the SCRIPTS folder in the sdcard of the Tx and execute as one-time script from SD-HD-CARD screen (long press and Execute). It can be executed also as telemetry script if copied to TELEMETRY folder and assigned to a model telemetry screen
 
