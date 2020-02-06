@@ -96,7 +96,7 @@ Depending on your configuration you may have some or all of the following sensor
 - ESC cell average: VFAS (0x0210)
 - ESC current: EscA (0x0b50)
 - ESC temp FET: EscT (0x0b70)
-- ESC temp: EscT (0x0b71)
+- ESC temp BEC: EscT (0x0b71)
 - Voltage 1: A3 (0x0900)
 - Voltage 2: A4 (0x0910)
 - Thermistor 1: Tmp1 (0x0400)
