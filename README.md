@@ -99,7 +99,7 @@ Depending on your configuration you may have some or all of the following sensor
 - Voltage 1: A3 (0x0900)
 - Voltage 2: A4 (0x0910)
 - Thermistor 1: Tmp1 (0x0400)
-- Thermistor 2 : Tmp2 (0x0410)
+- Thermistor 2: Tmp2 (0x0410)
 - Current: Curr (0x020f)
 
 Some of them needs to be adusted
@@ -111,7 +111,7 @@ Some of them needs to be adusted
 
 ### Adjust voltage sensors (A3, A4)
 
-Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3 sensor
+Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4 sensor
 
 ### Adjust current sensor (Curr)
 
@@ -208,7 +208,7 @@ v0.3.1
 
 - Added cell voltage average (HW V4/V5, VFAS sensor)
 - Fixed esc current sensor bug (HW V4/V5)
-- Applied correct transformation for esc voltage and temperature (HW V4/V5)
+- Applied correct transformation for esc voltage, current and temperature (HW V4/V5)
 
 v0.3
 
