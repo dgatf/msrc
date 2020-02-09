@@ -244,36 +244,58 @@ void loop() {
     case PROTOCOL_HW_V3:
       if (statusChange || esc.getRpm() == 0) {
         telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
-        *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);      
+        *telemetry.escRpmConsP = smartport.formatEscRpmCons(0, telemetry.rpm);      
       }
       break;
 
     case PROTOCOL_HW_V4:
       if (statusChange) {
-        if (telemetry.cellCount == 0 && millis() > 2000) telemetry.cellCount = setCellCount(telemetry.voltage);
-
+        if (telemetry.cellCount == 255 && millis() > 2000) {
+          telemetry.cellCount = setCellCount(telemetry.voltage);
+#ifdef DEBUG
+          escSerial.print("Cell count: ");
+          escSerial.println(telemetry.cellCount);     
+#endif
+        }
         telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
-        *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);
+        *telemetry.escRpmConsP = smartport.formatEscRpmCons(0, telemetry.rpm);
 
         telemetry.voltage = telemetry.voltage + config.alphaVolt * (esc.getVolt() - telemetry.voltage);
         *telemetry.cellP = smartport.formatData(VFAS_FIRST_ID, telemetry.voltage / telemetry.cellCount);
-
+        
         telemetry.current = telemetry.current + config.alphaCurr * (esc.getCurrent() - telemetry.current);
-        *telemetry.escPowerP = smartport.formatEscPower(telemetry.voltage, telemetry.current);
-
+        *telemetry.escPowerP = smartport.formatEscPower(telemetry.current, telemetry.voltage);
+        
         telemetry.temp1 = telemetry.temp1 + config.alphaTemp * (esc.getTemp1() - telemetry.temp1);
         *telemetry.temp1P =
             smartport.formatData(ESC_TEMPERATURE_FIRST_ID, telemetry.temp1);
-
+        
         telemetry.temp2 = telemetry.temp2 + config.alphaTemp * (esc.getTemp2() - telemetry.temp2);
         *telemetry.temp2P = smartport.formatData(ESC_TEMPERATURE_FIRST_ID + 1,
                                                 telemetry.temp2);
+#ifdef DEBUG
+        escSerial.print("RpmCons: ");
+        escSerial.print(*telemetry.escRpmConsP);
+        escSerial.print(" Power: ");
+        escSerial.print(*telemetry.escPowerP);
+        escSerial.print(" (curr ");
+        escSerial.print(*telemetry.escPowerP >> 16);
+        escSerial.print("  volt ");
+        escSerial.print(*telemetry.escPowerP & 0x0000FFFF);
+        escSerial.print(") CellV: ");
+        escSerial.print(*telemetry.cellP);
+        escSerial.print(" Temp1: ");
+        escSerial.print(*telemetry.temp1P);
+        escSerial.print(" Temp2: ");
+        escSerial.print(*telemetry.temp2P);
+        escSerial.println();
+#endif
       }
       break;
 
     case PROTOCOL_PWM:
       telemetry.rpm = telemetry.rpm + config.alphaRpm * (esc.getRpm() - telemetry.rpm);
-      *telemetry.escRpmConsP = smartport.formatEscRpmCons(telemetry.rpm, 0);
+      *telemetry.escRpmConsP = smartport.formatEscRpmCons(0, telemetry.rpm);
       break;
     }
 
@@ -330,7 +352,7 @@ void loop() {
   uint8_t type = smartport.processSmartport(frameId, dataId, value);
 
   if (type == PACKET_RECEIVED) {
-#ifdef DEBUG
+#ifdef DEBUG_TELEMETRY
     Serial.print("Type: ");
     Serial.print(type, HEX);
     Serial.print(" FrameId: ");
@@ -358,7 +380,7 @@ void loop() {
           smartport.processSmartport();
         }
         smartport.addPacket(0x5001, value);
-#ifdef DEBUG
+#ifdef DEBUG_TELEMETRY
         Serial.print("Sent 0x5001: ");
         Serial.println(value);
 #endif
@@ -379,7 +401,7 @@ void loop() {
           smartport.processSmartport();
         }
         smartport.addPacket(0x5002, value);
-#ifdef DEBUG
+#ifdef DEBUG_TELEMETRY
         Serial.print("Sent 0x5002: ");
         Serial.println(value);
 #endif
@@ -394,7 +416,7 @@ void loop() {
           smartport.processSmartport();
         }
         smartport.addPacket(0x5003, value);
-#ifdef DEBUG
+#ifdef DEBUG_TELEMETRY
         Serial.print("Sent 0x5003: ");
         Serial.println(value);
 #endif
