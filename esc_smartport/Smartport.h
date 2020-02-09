@@ -146,7 +146,7 @@ class Smartport {
 private:
   struct Element {
     uint16_t dataId;
-    float value;
+    uint32_t value;
     uint8_t refresh;
     uint16_t ts;
     Element *nextP;
@@ -154,7 +154,7 @@ private:
 
   struct Packet {
     uint16_t dataId;
-    float value;
+    uint32_t value;
   };
 
   bool _maintenanceMode = false;
@@ -171,11 +171,11 @@ public:
   uint8_t readPacket(uint8_t data[]);
   uint8_t available();
   uint32_t formatData(uint16_t dataId, float value);
-  uint32_t formatEscPower(float volt, float curr);
-  uint32_t formatEscRpmCons(float rpm, float cons);
-  uint32_t formatBecPower(float volt, float curr);
-  uint32_t formatCell(uint8_t cellId, float val);
-  float *addElement(uint16_t dataId, uint16_t refresh);
+  uint32_t formatEscPower(float curr, float volt);
+  uint32_t formatEscRpmCons(float cons, float rpm);
+  uint32_t formatBecPower(float curr, float volt);
+  uint32_t formatCell(float val, uint8_t cellId);
+  uint32_t *addElement(uint16_t dataId, uint16_t refresh);
   bool addPacket(uint16_t dataId, uint32_t value);
   void deleteElements();
   uint8_t processSmartport(uint8_t &frameId, uint16_t &dataId, uint32_t &value);

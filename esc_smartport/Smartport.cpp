@@ -88,41 +88,41 @@ uint32_t Smartport::formatData(uint16_t dataId, float value) {
 
   if ((dataId >= GPS_SPEED_FIRST_ID && dataId <= GPS_SPEED_LAST_ID) ||
       (dataId >= RBOX_BATT1_FIRST_ID && dataId <= RBOX_BATT2_FIRST_ID))
-    return value * 1000;
+    return round(value * 1000);
 
   if ((dataId >= ALT_FIRST_ID && dataId <= VARIO_LAST_ID) ||
       (dataId >= VFAS_FIRST_ID && dataId <= VFAS_LAST_ID) ||
       (dataId >= ACCX_FIRST_ID && dataId <= GPS_ALT_LAST_ID) ||
       (dataId >= GPS_COURS_FIRST_ID && dataId <= GPS_COURS_LAST_ID) ||
       (dataId >= A3_FIRST_ID && dataId <= A4_LAST_ID))
-    return value * 100;
+    return round(value * 100);
 
   if ((dataId >= CURR_FIRST_ID && dataId <= CURR_LAST_ID) ||
       (dataId >= AIR_SPEED_FIRST_ID && dataId <= AIR_SPEED_LAST_ID) ||
       dataId == A1_ID || dataId == A2_ID || dataId == RXBT_ID)
-    return value * 10;
+    return round(value * 10);
 
-  return value;
+  return round(value);
 }
 
-uint32_t Smartport::formatEscPower(float volt, float curr) {
-  return (uint32_t)(curr * 100) << 16 | (uint16_t)(volt * 100);
+uint32_t Smartport::formatEscPower(float curr, float volt) {
+  return (uint32_t)round(curr * 100) << 16 | (uint16_t)round(volt * 100);
 }
 
-uint32_t Smartport::formatBecPower(float volt, float curr) {
-  return (uint32_t)(curr * 1000) << 16 | (uint16_t)(volt * 1000);
+uint32_t Smartport::formatBecPower(float curr, float volt) {
+  return (uint32_t)round(curr * 1000) << 16 | (uint16_t)round((volt) * 1000);
 }
 
-uint32_t Smartport::formatEscRpmCons(float rpm, float cons) {
-  return (uint32_t)cons << 16 | (uint16_t)(rpm / 100);
+uint32_t Smartport::formatEscRpmCons(float cons, float rpm) {
+  return (uint32_t)round(cons) << 16 | (uint16_t)round((rpm) / 100);
 }
 
-uint32_t Smartport::formatCell(uint8_t cellId, float val) {
+uint32_t Smartport::formatCell(float val, uint8_t cellId) {
   val *= 500;
-  return (uint16_t)val << 8 | cellId;
+  return (uint16_t)round(val) << 8 | cellId;
 }
 
-float *Smartport::addElement(uint16_t dataId, uint16_t refresh) {
+uint32_t *Smartport::addElement(uint16_t dataId, uint16_t refresh) {
   Element *newElementP = (Element *)malloc(sizeof(Element));
   static Element *prevElementP;
 
