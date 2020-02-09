@@ -259,7 +259,7 @@ float Esc::calcTempHW(uint16_t tempRaw)
 float Esc::calcCurrHW(uint16_t currentRaw)
 {
   if (currentRaw > 28)  {
-    return (currentRaw - 28) / 610;
+    return (float)(currentRaw - 28) / 610;
   }
   else
     return 0;
