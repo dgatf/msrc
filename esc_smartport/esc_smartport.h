@@ -164,16 +164,16 @@ struct Config {
 };
 
 struct Telemetry {
-  float *escRpmConsP = NULL;
-  float *escPowerP = NULL;
-  float *cellP = NULL;
-  float *temp1P = NULL;
-  float *temp2P = NULL;
-  float *voltageAnalog1P = NULL;
-  float *voltageAnalog2P = NULL;
-  float *currentAnalogP = NULL;
-  float *ntc1P = NULL;
-  float *ntc2P = NULL;
+  uint32_t *escRpmConsP = NULL;
+  uint32_t *escPowerP = NULL;
+  uint32_t *cellP = NULL;
+  uint32_t *temp1P = NULL;
+  uint32_t *temp2P = NULL;
+  uint32_t *voltageAnalog1P = NULL;
+  uint32_t *voltageAnalog2P = NULL;
+  uint32_t *currentAnalogP = NULL;
+  uint32_t *ntc1P = NULL;
+  uint32_t *ntc2P = NULL;
   float rpm = 0;
   float voltage = 0;
   float current = 0;
@@ -185,7 +185,7 @@ struct Telemetry {
   float ntc1 = 0;
   float ntc2 = 0;
   float pwm = 0;
-  uint8_t cellCount = 0;
+  uint8_t cellCount = 255;
 };
 
 void readConfig();
