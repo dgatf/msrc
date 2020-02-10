@@ -26,6 +26,8 @@ For questions or new protocol request (use [sketch](./sniffer/sniffer.ino)) plea
 
 [Openrcforums](https://www.openrcforums.com/forum/viewtopic.php?f=84&t=11911)
 
+Or open an [Issue](https://github.com/dgatf/esc_smartport/issues) in Github
+
 ## PWM output
 
 PWM signal generation from ESC serial (some HW V5 don't have RPM PWM output) 
@@ -209,7 +211,7 @@ v0.3.1
 
 - Added cell voltage average (HW V4/V5, VFAS sensor)
 - Applied correct transformation for esc voltage, current and temperature (HW V4/V5)
-- Changed values averaging from SMA to EMA
+- Changed averaging type from SMA to EMA
 - Added esc protocol NONE
 - Smartport protocol. Minor improvements 
 
