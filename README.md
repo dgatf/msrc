@@ -205,7 +205,7 @@ More accurate formula (Steinhart and Hart Equation) if data available:
 
 ## Change log
 
-v0.3.1
+v0.3.1 
 
 - Added cell voltage average (HW V4/V5, VFAS sensor)
 - Applied correct transformation for esc voltage, current and temperature (HW V4/V5)
