@@ -3,7 +3,7 @@
  *
  * License https://www.gnu.org/licenses/gpl-3.0.en.html
  *
- * Arduino sketch to send to Frsky SmartPort ESC telemetry:
+ * Arduino sketch to send to Frsky SmartPort ESC telemetry and other sensors:
  *
  * - Hobywing V3
  * - Hobywing V4/V5
