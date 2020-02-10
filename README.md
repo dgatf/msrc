@@ -208,8 +208,8 @@ More accurate formula (Steinhart and Hart Equation) if data available:
 v0.3.1
 
 - Added cell voltage average (HW V4/V5, VFAS sensor)
-- Fixed esc current sensor bug (HW V4/V5)
 - Applied correct transformation for esc voltage, current and temperature (HW V4/V5)
+- Changed values averaging from SMA to EMA
 - Added esc protocol NONE
 
 v0.3
