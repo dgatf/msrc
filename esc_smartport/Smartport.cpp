@@ -22,7 +22,7 @@ void Smartport::sendByte(uint8_t c, uint16_t *crcp) {
   _serial.write(c);
 }
 
-void Smartport::sendData(uint16_t dataId, int32_t val) {
+void Smartport::sendData(uint16_t dataId, uint32_t val) {
   digitalWrite(LED_SMARTPORT, HIGH);
   uint16_t crc = 0;
   uint8_t *u8p;
