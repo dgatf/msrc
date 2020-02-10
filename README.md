@@ -20,7 +20,7 @@ Optionally you can add the following analog sensors:
 - Current sensor
 - 2 x temperature sensors (thermistors)
 
-For questions or new protocol request (use [sketch](./sniffer/sniffer.ino)) please post in the forums:
+For questions, issues or new protocol request (use [sketch](./sniffer/sniffer.ino)) please post in the forums:
 
 [Helifreak](https://www.helifreak.com/showthread.php?t=835243)
 
