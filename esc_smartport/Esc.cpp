@@ -111,7 +111,6 @@ bool Esc::readHWV4()
       {
         rpm = (uint32_t)data[21] << 16 | (uint16_t)data[22] << 8 | data[23];
         voltage = (float)((uint16_t)data[24] << 8 | data[25]) / 113;
-        uint16_t currentRaw = (uint16_t)data[26] << 8 | data[27];
         current = calcCurrHW((uint16_t)data[26] << 8 | data[27]);
         temp1 = calcTempHW((uint16_t)data[28] << 8 | data[29]);
         temp2 = calcTempHW((uint16_t)data[30] << 8 | data[31]);
