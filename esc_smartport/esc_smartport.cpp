@@ -250,7 +250,7 @@ void loop() {
 
     case PROTOCOL_HW_V4:
       if (statusChange) {
-        if (telemetry.cellCount == 255 && millis() > 2000) {
+        if (telemetry.cellCount == 255 && millis() > 10000) {
           telemetry.cellCount = setCellCount(telemetry.voltage);
 #ifdef DEBUG
           escSerial.print("Cell count: ");
