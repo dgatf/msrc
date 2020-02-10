@@ -211,7 +211,7 @@ v0.3.1
 - Applied correct transformation for esc voltage, current and temperature (HW V4/V5)
 - Changed values averaging from SMA to EMA
 - Added esc protocol NONE
-- Smartport protocol. Changed values from truncated to rounded (accuracy increased)
+- Smartport protocol. Changed values from truncated to rounded (accuracy increased) 
 
 v0.3
 
