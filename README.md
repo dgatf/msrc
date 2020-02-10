@@ -12,7 +12,7 @@ ESC protocols implemented:
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature, voltage and current
 - PWM signal: RPM
 
-Average cell voltage for HW V4/V5 is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. Two seconds after power on cell count is autodetected and fixed (average cell voltage to be >3.8v for proper cell count)
+Average cell voltage for HW V4/V5 is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on cell count is autodetected and fixed (average cell voltage to be >3.8v for proper cell count)
 
 Optionally you can add the following analog sensors:
 
