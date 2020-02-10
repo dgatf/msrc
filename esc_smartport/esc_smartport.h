@@ -8,16 +8,11 @@
  * - Hobywing V3
  * - Hobywing V4/V5
  * - RPM PWM signal supported
- * - Battery voltage with voltage divider
+ * - Additional analog sensors
  * - PWM output (for HW V5 Flyfun)
  *
- * Adjust RPM sensor in OpenTx:
- *
- * - Blades/pair pof poles: number of pair of poles * main gear teeth
- * - Multiplies: pinion gear teeth
- *
- * Wiring
- * ------
+ * Wiring (minimum)
+ * ----------------
  *
  * - SmartPort Vcc to Arduino RAW
  * - SmartPort Gnd to Arduino Gnd
@@ -28,8 +23,6 @@
  * - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (8)
  * - If PWM output is required (for HobbyWing Flyfun V5): Flybarless PWM signal
  * input to Arduino PIN_PWM_OUT (9)
- * - Voltage divider + to PIN_BATT (A1)
- * - Voltage divider - to Gnd
  *
  */
 
@@ -126,19 +119,20 @@
 
 // Debug. Uncommnent for debugging
 // Disconnect Vcc from the RC model to the Arduino
-// Do not connect at the same time Vcc from the model and usb (FTDI)
+// Do not connect at the same time Vcc from the model and usb (TTL)
 // Telemetry may not work properly in debug mode
-// Connect arduino Rx to FTDI Tx for flashing, then connect arduino Rx to esc
+// Connect arduino Rx to TTL Tx for flashing, then connect arduino Rx to esc
 
 //#define DEBUG
 //#define DEBUG_PLOTTER rpm/60
 //#define DEBUG_TELEMETRY
 
-#include "Esc.h"
-#include "Smartport.h"
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
+#include "Esc.h"
+#include "Smartport.h"
+
 
 // Default config
 
@@ -155,7 +149,7 @@ struct Config {
   uint8_t refreshVolt = 10;           // telemetry voltage refresh rate (ms / 100)
   uint8_t refreshCurr = 10;           // telemetry current refresh rate (ms / 100)
   uint8_t refreshTemp = 10;           // telemetry temperature refresh rate (ms / 100)
-  // max queue size 16
+  // max queue size (N) 16 (alpha=2/(N+1))
   float alphaRpm = 0.3;               // rpm averaging elements
   float alphaVolt = 0.3;              // voltage averaging elements
   float alphaCurr = 0.3;              // current averaging elements
