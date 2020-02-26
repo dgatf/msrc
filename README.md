@@ -1,8 +1,19 @@
-# ESC telemetry to FrSky Smartport
+# MSRC - Multi Sensor for RC - FrSky Smartport
 
-This is a DIY project to send ESC telemetry and optionally other sensors to Frsky Smartport using an Arduino Pro Mini 168 or 328P (3.3v or 5v)
+This is a DIY project to send multiple sensor telemetry to Frsky Smartport using an Arduino Pro Mini 168 or 328P (3.3v or 5v)
+
+This project is the evolution of [esc_smartport](https://github.com/dgatf/esc_smartport)
+
+New features:
+
+- Support for [change_id_frsky](https://github.com/dgatf/change_id_frsky) to change the sensor id
+- Support for I2C sensors 
+- Improved code qualility and performance
+- [Smartport_library](https://github.com/dgatf/smartport) improved performance and abstract from the smartport protocol
 
 ## Telemetry
+
+### ESC
 
 The ESC telemetry can be ESC serial data or PWM signal (from the ESC or RPM sensor)
 
@@ -14,19 +25,21 @@ ESC protocols implemented:
 
 Average cell voltage for HW V4/V5 is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on cell count is autodetected and fixed (average cell voltage to be >3.8v for proper cell count)
 
-Optionally you can add the following analog sensors:
+### Analog sensors
+
+The following analog sensors are available:
 
 - 2 x voltage divider can be added to read the battery voltage
-- Current sensor
 - 2 x temperature sensors (thermistors)
+- Current sensor
 
-For questions, issues or new protocol request (use [sketch](./sniffer/sniffer.ino)) please post in the forums:
+### I2C sensors
 
-[Helifreak](https://www.helifreak.com/showthread.php?t=835243)
+Multiple I2C sensors can be added
 
-[Openrcforums](https://www.openrcforums.com/forum/viewtopic.php?f=84&t=11911)
+Currently suported:
 
-Or open an [Issue](https://github.com/dgatf/esc_smartport/issues) in Github
+- Barometer: BMP180, BMP280
 
 ## PWM output
 
@@ -49,16 +62,16 @@ Usually the minimum circuit is the arduino connected to esc or rpm sensor and sm
 <p align="center"><img src="./images/esc_smartport_min.png" width="600"><br>
   <i>Minimum circuit</i><br><br></p>
 
-## Additional analog sensors
+## Additional analog and I2C sensors
 
 Optionally you can add any of the following analog sensors:
 
 - 2 x voltage divider can be added to read the battery voltage (A2, A3)
 - 2 x temperature sensors (thermistors) (A0, A1)
-- Current sensor (A4)
+- Current sensor (A6)
 
 
-<p align="center"><img src="./images/esc_smartport_full.png" width="600"><br>
+<p align="center"><img src="./images/msrc_full.png" width="600"><br>
   <i>Full circuit</i><br><br></p>
 
 ## Flash to Arduino
@@ -71,9 +84,9 @@ The configuration is modified with a lua script (X7, X9, X-lite and Horus with o
 
 <p align="center"><img src="./images/lua_x7.png" height="128">   <img src="./images/lua_x9.png" height="128">   <img src="./images/lua_x10.png" height="200"></p>
 
-Copy the file escSp.lua to the SCRIPTS folder in the sdcard of the Tx and execute as one-time script from SD-HD-CARD screen (long press and Execute). It can be executed also as telemetry script if copied to TELEMETRY folder and assigned to a model telemetry screen
+Copy the file escSp.lua to the SCRIPTS folder in the sdcard of the Tx and execute as one-time script from SD-HD-CARD screen (long press and Execute). Since opentx 2.3 copy to SCRIPTS/TOOLS for easier access. It can be executed also as telemetry script if copied to TELEMETRY folder and assigned to a model telemetry screen
 
-If not using lua script comment *#define CONFIG_LUA* and assign values, lines 219-237, in esc_smartport.h
+If not using lua script comment *#define CONFIG_LUA* and assign config values in esc_smartport.h
 
 Options:
 
@@ -89,7 +102,7 @@ Options:
 
 ## OpenTx sensors
 
-The arduino default sensor id is 10
+The arduino default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
 
 Depending on your configuration you may have some or all of the following sensors in Opentx:
  
@@ -155,6 +168,7 @@ Value | Package Head (0x9B) | Package Number 1 | Package Number 2 | Package Numb
 
 *RPM = 60000000 / RPM Cycle*
 
+rpm, pwm: 0-255
 
 #### Hobbywing V4/V5
 
@@ -162,9 +176,11 @@ Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
 Value | Package Head (0x9B) | Package Number 1 |	Package Number 2 | Package Number 3	| Rx Throttle 1	| Rx Throttle  2 | Output PWM 1 | Output PWM 2	| RPM 1 | RPM 2	| RPM 3	| Voltage 1 |	Voltage 2	| Current 1	| Current 2	| TempFET 1	| TempFET 2	| Temp 1 |	Temp 2
 
-Remark:
+Voltage, current and temperature are raw sensor data. Actual values requires transformation
 
-Before throttle is raised from 0, programming packets are sent between telemetry packets:
+rpm, pwm: 0-1024
+
+Remark: Before throttle is raised from 0, programming packets are sent between telemetry packets:
 
 Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
@@ -207,19 +223,13 @@ More accurate formula (Steinhart and Hart Equation) if data available:
 
 ## Change log
 
-[v0.3.1](https://github.com/dgatf/esc_smartport/tree/v0.3.1)
 
-- Added cell voltage average (HW V4/V5, VFAS sensor)
-- Applied correct transformation for esc voltage, current and temperature (HW V4/V5)
-- Changed averaging type from SMA to EMA
-- Added esc protocol NONE
-- Smartport protocol. Minor improvements 
+## Support
 
-[v0.3](https://github.com/dgatf/esc_smartport/tree/v0.3)
+For questions, issues or new protocol request (use this [sketch](./sniffer/sniffer.ino)) please post in the forums:
 
-- Esc current sensor (EscA) added (HW V4/V5, 80A or higher)
-- Averaging telemetry added
-- Voltage2 sensor changed from A3 to A4
-- Ntc2 sensor changed from Tmp1 to Tmp2
-- Averaging governor added
-- Refresh rate and averaging added to lua config script
+[Helifreak](https://www.helifreak.com/showthread.php?t=835243)
+
+[Openrcforums](https://www.openrcforums.com/forum/viewtopic.php?f=84&t=11911)
+
+Or open an [Issue](https://github.com/dgatf/msrc/issues) in Github

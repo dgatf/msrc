@@ -1,10 +1,21 @@
+/*
+ *
+ * License https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * Arduino library to communicate with the Frsky Smartport protocol
+ * 
+ * 
+ */
+
 #ifndef SMARTPORT_H
 #define SMARTPORT_H
 
 #define LED_SMARTPORT LED_BUILTIN
 #define SMARTPORT_TIMEOUT 2
-#define SMARTPORT_SENSOR SENSOR_ID_10
-#define SMARTPORT_SENSOR_TX SENSOR_ID_11
+
+//#define DEBUG
+//#define SIM_POLL
+//#define SIM_SENSORS
 
 #define SENSOR_ID_1 0x00 // VARIO 0x100 (0 in opentx lua: id - 1)
 #define SENSOR_ID_2 0xA1 // FLVSS 0x300
@@ -129,60 +140,100 @@
 #define FUEL_QTY_FIRST_ID 0x0a10 // 100 ml
 #define FUEL_QTY_LAST_ID 0x0a1f
 
-#define PACKET_TYPE_POLL 0
-#define PACKET_TYPE_PACKET 1
-#define PACKET_TYPE_NONE 2
+#define RECEIVED_NONE 0
+#define RECEIVED_POLL 1
+#define RECEIVED_PACKET 2
+#define SENT_TELEMETRY 3
+#define SENT_VOID 4
+#define SENT_PACKET 5
+#define SENT_NONE 6
+#define MAINTENANCE_ON 7
+#define MAINTENANCE_OFF 8
+#define SENT_SENSOR_ID 9
+#define CHANGED_SENSOR_ID 10
 
-#define PACKET_SENT_TELEMETRY 0
-#define PACKET_SENT_VOID 1
-#define PACKET_RECEIVED 2
-#define PACKET_SENT 3
-#define PACKET_NONE 4
 
 #include <Arduino.h>
 
-class Smartport {
-
+class AbstractDevice {
 private:
-  struct Element {
-    uint16_t dataId;
-    uint32_t value;
-    uint8_t refresh;
-    uint16_t ts;
-    Element *nextP;
-  };
-
-  struct Packet {
-    uint16_t dataId;
-    uint32_t value;
-  };
-
-  bool _maintenanceMode = false;
-
-  void sendByte(uint8_t c, uint16_t *crcp);
-  Stream &_serial;
-  Element *elementP = NULL;
-  Packet *packetP = NULL;
-
+protected:
+    float calcAverage(float alpha, float value, float newValue);
 public:
-  Smartport(Stream &serial);
-  void sendData(uint16_t dataId, uint32_t val);
-  void sendVoid();
-  uint8_t readPacket(uint8_t data[]);
-  uint8_t available();
-  uint32_t formatData(uint16_t dataId, float value);
-  uint32_t formatEscPower(float curr, float volt);
-  uint32_t formatEscRpmCons(float cons, float rpm);
-  uint32_t formatBecPower(float curr, float volt);
-  uint32_t formatCell(float val, uint8_t cellId);
-  uint32_t *addElement(uint16_t dataId, uint16_t refresh);
-  bool addPacket(uint16_t dataId, uint32_t value);
-  void deleteElements();
-  uint8_t processSmartport(uint8_t &frameId, uint16_t &dataId, uint32_t &value);
-  uint8_t processSmartport();
-  bool packetReady();
-  void maintenanceMode(bool maintenanceMode);
-  bool maintenanceMode();
+    AbstractDevice();
+    virtual float read(uint8_t index) = 0;
+};
+
+class Sensor
+{
+protected:
+    uint16_t timestamp_ = 0, dataId_, frameId_ = 0x10;
+    float valueL_ = 0, valueM_ = 0;
+    uint8_t indexL_ = 0, indexM_ = 255;
+    uint8_t refresh_;
+    AbstractDevice *device_;
+public:
+    Sensor(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t refresh, AbstractDevice *device);
+    Sensor(uint16_t dataId, uint8_t indexL, uint8_t refresh, AbstractDevice *device);
+    Sensor(uint16_t dataId, uint8_t refresh, AbstractDevice *device);
+    Sensor *nextP = NULL;
+    uint16_t timestamp();
+    void setTimestamp(uint16_t dataId);
+    uint16_t dataId();
+    uint16_t frameId();
+    uint8_t refresh();
+    uint8_t indexL();
+    uint8_t indexM();
+    float valueL();
+    void setValueL(float valueM);
+    float valueM();
+    void setValueM(float valueM);
+    float read(uint8_t index);
+};
+
+class Smartport
+{
+private:
+    struct Packet
+    {
+        uint8_t frameId;
+        uint16_t dataId;
+        uint32_t value;
+    };
+    Stream &serial_;
+    Sensor *sensorP = NULL;
+    Packet *packetP = NULL;
+    uint8_t sensorId_, sensorIdTx_;
+    uint16_t dataId_;
+    bool maintenanceMode_ = false;
+    void sendByte(uint8_t c, uint16_t *crcp);
+public:
+    //Smartport(Stream &serial, uint8_t dataId, uint8_t sensorId, uint8_t sensorIdTx);
+    Smartport(Stream &serial);
+    ~Smartport();
+    uint8_t idToCrc(uint8_t sensorId);
+    uint8_t crcToId(uint8_t sensorIdCrc);
+    uint8_t available();
+    uint8_t read(uint8_t *data);
+    void sendData(uint16_t dataId, uint32_t val);
+    void sendData(uint8_t frameId, uint16_t dataId, uint32_t val);
+    void sendVoid();
+    uint32_t formatData(uint16_t dataId, float valueM, float valueL);
+    uint32_t formatData(uint16_t dataId, float valueL);
+
+    void setDataId(uint16_t dataId);
+    uint8_t sensorId();
+    void setSensorId(uint8_t sensorId);
+    void setSensorIdTx(uint8_t sensorIdTx);
+    uint8_t maintenanceMode();
+    void setmaintenanceMode(uint8_t maintenanceMode);
+    void addSensor(Sensor *newSensorP);
+    bool addPacket(uint16_t dataId, uint32_t value);
+    bool addPacket(uint8_t frameId, uint16_t dataId, uint32_t value);
+    void deleteSensors();
+    uint8_t update(uint8_t &frameId, uint16_t &dataId, uint32_t &value);
+    uint8_t update();
+    bool sendPacketReady();
 };
 
 #endif
