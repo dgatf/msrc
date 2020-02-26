@@ -18,7 +18,7 @@ SoftwareSerial snifferSerial(PIN_SNIFFER, PIN_SNIFFER);  // Rx Tx
 uint8_t data[64];
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(19200);
   Serial.println("INIT");
   snifferSerial.begin(BAUD_RATE_SNIFFER);
   snifferSerial.setTimeout(TIMEOUT_SNIFFER);
