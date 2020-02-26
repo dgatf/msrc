@@ -220,7 +220,7 @@ local function run_func(event)
       readConfigState = 16
     end
     if physicalId == 9 and dataId == 0x5002 and readConfigState == 16 then
-      if bit32.extract(value,0,2) + 1 >= 1 and bit32.extract(value,0,2) + 1 <= 3 then
+      if bit32.extract(value,0,2) + 1 >= 1 and bit32.extract(value,0,2) + 1 <= 4 then
         config.protocol.selected = bit32.extract(value,0,2) + 1                             -- bits 1,2
       end
       if bit32.extract(value,2) + 1 >= 1 and bit32.extract(value,2) + 1 <= 2 then
