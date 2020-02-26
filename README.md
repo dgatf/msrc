@@ -221,7 +221,7 @@ v0.4
 
 - Support for [change_id_frsky](https://github.com/dgatf/change_id_frsky) to change the sensor id
 - Support for I2C sensors 
-- Improved code qualility and performance
+- Improved code quality and performance
 - [Smartport_library](https://github.com/dgatf/smartport) improved performance and abstract from the smartport protocol
 
 [v0.3.1](https://github.com/dgatf/msrc/tree/v0.3.1)
