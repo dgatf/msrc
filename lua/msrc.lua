@@ -1,4 +1,4 @@
-local scriptVersion = '0.3.1'
+local scriptVersion = '1'
 local tsReadConfig = 0
 local tsSendConfig = 0
 local readConfigState = 0 -- 0-9 stop sensors, 10-15 request config, 16-19 read config, 20-29 restart sensors, 30 ok
@@ -6,9 +6,10 @@ local sendConfigState = 60 -- 0-9 stop sensors, 10 send config 1, 20 received co
 local refresh = 0
 local lcdChange = true
 local scroll = 0
+local sensorIdTx = 17 -- sensorId 18
 local config =
    {firmwareVersion = '',
-    protocol = {selected = 4, list = {'HW V3', 'HW V4/V5', 'PWM', 'NONE', ''}, elements = 4},
+    protocol = {selected = 5, list = {'HW V3', 'HW V4/V5', 'PWM', 'NONE', ''}, elements = 4},
     voltage1 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
     voltage2 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
     ntc1 = {selected = 3, list = {'Off', 'On', ''}, elements = 2},
@@ -23,9 +24,12 @@ local config =
     queueVolt = {selected = 1, elements = 16},
     queueCurr = {selected = 1, elements = 16},
     queueTemp = {selected = 1, elements = 16},
-    queuePwm = {selected = 1, elements = 16},
+    i2c1 = {selected = 4, list = {'NONE', 'BMP180', 'BMP280', ''}, elements = 3},
+    i2c1Address = {selected = 1, elements = 128},
+    i2c2 = {selected = 4, list = {'NONE', 'BMP180', 'BMP280', ''}, elements = 3},
+    i2c2Address = {selected = 1, elements = 128},
    }
-local selection = {selected = 1, state = false, list = {'protocol', 'voltage1', 'voltage2', 'ntc1', 'ntc2', 'current', 'pwm', 'refreshRpm', 'refreshVolt', 'refreshCurr', 'refreshTemp', 'queueRpm', 'queueVolt', 'queueCurr', 'queueTemp', 'queuePwm', 'btnUpdate'}, elements = 17}
+local selection = {selected = 1, elements = 20, state = false, list = {'protocol', 'voltage1', 'voltage2', 'ntc1', 'ntc2', 'current', 'pwm', 'refreshRpm', 'refreshVolt', 'refreshCurr', 'refreshTemp', 'queueRpm', 'queueVolt', 'queueCurr', 'queueTemp', 'i2c1', 'i2c1Address', 'i2c2', 'i2c2Address', 'btnUpdate'}}
 
 local function getFlags(element)
   if string.find(selection.list[element], 'btn') == 1 and selection.selected == element then return INVERS + BLINK end
@@ -49,13 +53,13 @@ end
 local function readConfig()
   if readConfigState == 0 then tsReadConfig = getTime() end
   if readConfigState < 10 then
-    sportTelemetryPush(10, 0x21, 0xFFFF, 0x80)
+    sportTelemetryPush(sensorIdTx, 0x21, 0xFFFF, 0x80)
     readConfigState = readConfigState + 10
   elseif readConfigState == 10 then
-    sportTelemetryPush(10, 0x10, 0x5000, 0)
+    sportTelemetryPush(sensorIdTx, 0x30, 0x5000, 0)
     readConfigState = 15
   elseif readConfigState >= 20 then
-    sportTelemetryPush(10, 0x20, 0xFFFF, 0x80)
+    sportTelemetryPush(sensorIdTx, 0x20, 0xFFFF, 0x80)
     readConfigState = readConfigState + 10
     lcdChange = true
   end
@@ -64,7 +68,7 @@ end
 local function sendConfig()
   if sendConfigState == 0 then tsSendConfig = getTime() end
   if sendConfigState < 10 then
-    sportTelemetryPush(10, 0x21, 0xFFFF, 0x80)
+    sportTelemetryPush(sensorIdTx, 0x21, 0xFFFF, 0x80)
     sendConfigState = sendConfigState + 10
   elseif sendConfigState == 10 then
     local value = 0
@@ -79,24 +83,30 @@ local function sendConfig()
     value = bit32.bor(value, bit32.lshift(config.refreshVolt.selected - 1, 12)) -- bits 13-16
     value = bit32.bor(value, bit32.lshift(config.refreshCurr.selected - 1, 16)) -- bits 17-20
     value = bit32.bor(value, bit32.lshift(config.refreshTemp.selected - 1, 20)) -- bits 21-24
-    sportTelemetryPush(10, 0x10, 0x5011, value)
+    sportTelemetryPush(sensorIdTx, 0x30, 0x5011, value)
   elseif sendConfigState == 20 then
     local value = 0
     value = bit32.bor(value, config.queueRpm.selected)                          -- bits 1-4
     value = bit32.bor(value, bit32.lshift(config.queueVolt.selected, 4))        -- bits 5-8
     value = bit32.bor(value, bit32.lshift(config.queueCurr.selected, 8))        -- bits 9-12
     value = bit32.bor(value, bit32.lshift(config.queueTemp.selected, 12))       -- bits 13-16
-    value = bit32.bor(value, bit32.lshift(config.queuePwm.selected, 16))        -- bits 17-20
-    sportTelemetryPush(10, 0x10, 0x5012, value)
+    sportTelemetryPush(sensorIdTx, 0x30, 0x5012, value)
+  elseif sendConfigState == 25 then
+    local value = 0
+    value = bit32.bor(value, config.i2c1.selected - 1)                          -- bits 1-4
+    value = bit32.bor(value, bit32.lshift(config.i2c2.selected -1, 4))          -- bits 5-8
+    value = bit32.bor(value, bit32.lshift(config.i2c1Address.selected - 1, 8))  -- bits 9-16
+    value = bit32.bor(value, bit32.lshift(config.i2c2Address.selected - 1, 16)) -- bits 17-24
+    sportTelemetryPush(sensorIdTx, 0x30, 0x5013, value)
   elseif sendConfigState >= 30 then
-    sportTelemetryPush(10, 0x20, 0xFFFF, 0x80)
+    sportTelemetryPush(sensorIdTx, 0x20, 0xFFFF, 0x80)
     sendConfigState = sendConfigState + 10
   end
 end
 
 local function refreshHorus()
   lcd.drawRectangle(40, 30, 400, 217)
-  lcd.drawText(150, 5, 'ESC SmartPort v' .. scriptVersion, INVERS)
+  lcd.drawText(150, 5, 'MSRC v' .. scriptVersion, INVERS)
   lcd.drawText(50, 40, 'Firmware', 0)
   lcd.drawText(170, 40, config.firmwareVersion, 0)
   lcd.drawText(50, 60, 'Protocol', 0)
@@ -134,12 +144,19 @@ local function refreshHorus()
   lcd.drawText(290, 200, 'Avg Temp', 0)
   lcd.drawText(410, 200, config.queueTemp.selected, getFlags(15))
 
-  lcd.drawText(50, 220, 'Avg PWM', 0)
-  lcd.drawText(170, 220, config.queuePwm.selected, getFlags(16))
+  lcd.drawText(50, 220, 'I2C 1', 0)
+  lcd.drawText(170, 220, config.i2c1.list[config.i2c1.selected], getFlags(16))
+  lcd.drawText(290, 220, 'Address', 0)
+  lcd.drawText(410, 220, config.i2c1Address, getFlags(17))
+
+  lcd.drawText(50, 240, 'I2C 2', 0)
+  lcd.drawText(170, 240, config.i2c2.list[config.i2c2.selected], getFlags(18))
+  lcd.drawText(290, 240, 'Address', 0)
+  lcd.drawText(410, 240, config.i2c2Address, getFlags(19))
 
   if readConfigState < 30 then lcd.drawText(180, 155, 'Connecting...', INVERS) end
-  if sendConfigState < 40 then lcd.drawText(200, 250, 'UPDATING', SMLSIZE + getFlags(17))
-  else lcd.drawText(200, 250, 'UPDATE', SMLSIZE + getFlags(17)) end
+  if sendConfigState < 40 then lcd.drawText(200, 250, 'UPDATING', SMLSIZE + getFlags(20))
+  else lcd.drawText(200, 250, 'UPDATE', SMLSIZE + getFlags(20)) end
   if sendConfigState == 40 then lcd.drawText(250, 250, 'OK', 0)
   elseif sendConfigState == 50 then lcd.drawText(250, 250, 'ERROR', 0) end
 end
@@ -182,16 +199,23 @@ local function refreshTaranis()
   lcd.drawText(64, 73 - scroll * 8, 'Avg Temp', SMLSIZE)
   lcd.drawText(108, 73 - scroll * 8, config.queueTemp.selected, SMLSIZE + getFlags(15))
 
-  lcd.drawText(1, 81 - scroll * 8, 'Avg PWM', SMLSIZE)
-  lcd.drawText(44, 81 - scroll * 8, config.queuePwm.selected, SMLSIZE + getFlags(16))
+  lcd.drawText(1, 81 - scroll * 8, 'I2C 1', SMLSIZE)
+  lcd.drawText(30, 81 - scroll * 8, config.i2c1.list[config.i2c1.selected], SMLSIZE + getFlags(16))
+  lcd.drawText(64, 81 - scroll * 8, 'Address', SMLSIZE)
+  lcd.drawText(108, 81 - scroll * 8, config.i2c1Address.selected - 1, SMLSIZE + getFlags(17))
+
+  lcd.drawText(1, 89 - scroll * 8, 'I2C 2', SMLSIZE)
+  lcd.drawText(30, 89 - scroll * 8, config.i2c2.list[config.i2c2.selected], SMLSIZE + getFlags(18))
+  lcd.drawText(64, 89 - scroll * 8, 'Address', SMLSIZE)
+  lcd.drawText(108, 89 - scroll * 8, config.i2c2Address.selected - 1, SMLSIZE + getFlags(19))
 
   if readConfigState < 30 then lcd.drawText(35, 28, 'Connecting...', INVERS) end
 
-  if sendConfigState < 40 then lcd.drawText(1, 89 - scroll * 8, 'UPDATING', SMLSIZE + getFlags(17))
-  else lcd.drawText(1, 89 - scroll * 8, 'UPDATE', SMLSIZE + getFlags(17)) end
-  if sendConfigState == 40 then lcd.drawText(35, 89 - scroll * 8, 'OK', SMLSIZE)
-  elseif sendConfigState == 50 then lcd.drawText(35, 89 - scroll * 8, 'ERROR', SMLSIZE) end
-  lcd.drawScreenTitle('ESC SmartPort v' .. scriptVersion, 1, 1)
+  if sendConfigState < 40 then lcd.drawText(1, 97 - scroll * 8, 'UPDATING', SMLSIZE + getFlags(20))
+  else lcd.drawText(1, 97 - scroll * 8, 'UPDATE', SMLSIZE + getFlags(20)) end
+  if sendConfigState == 40 then lcd.drawText(35, 97 - scroll * 8, 'OK', SMLSIZE)
+  elseif sendConfigState == 50 then lcd.drawText(35, 97 - scroll * 8, 'ERROR', SMLSIZE) end
+  lcd.drawScreenTitle('MSRC v' .. scriptVersion, 1, 1)
 end
 
 local function init_func()
@@ -211,15 +235,15 @@ local function run_func(event)
   end
 
   -- check incoming packets
-  if readConfigState == 15 or readConfigState == 16 or readConfigState == 17 or sendConfigState == 10 or sendConfigState == 20 then
+  if readConfigState == 15 or readConfigState == 16 or readConfigState == 17 or readConfigState == 18 or sendConfigState == 10 or sendConfigState == 20 or sendConfigState == 25 then
     local physicalId, primId, dataId, value = sportTelemetryPop()
 
     -- read config
-    if physicalId == 9 and dataId == 0x5001 then
+    if primId == 0x32 and dataId == 0x5001 then
       config.firmwareVersion = bit32.extract(value,16,8) .. '.' .. bit32.extract(value,8,8) .. '.' .. bit32.extract(value,0,8)
       readConfigState = 16
     end
-    if physicalId == 9 and dataId == 0x5002 and readConfigState == 16 then
+    if primId == 0x32 and dataId == 0x5002 and readConfigState == 16 then
       if bit32.extract(value,0,2) + 1 >= 1 and bit32.extract(value,0,2) + 1 <= 4 then
         config.protocol.selected = bit32.extract(value,0,2) + 1                             -- bits 1,2
       end
@@ -255,7 +279,7 @@ local function run_func(event)
       end
       readConfigState = 17
     end
-    if physicalId == 9 and dataId == 0x5003 and readConfigState == 17 then
+    if primId == 0x32 and dataId == 0x5003 and readConfigState == 17 then
       if bit32.extract(value,0,4) >= 1 and bit32.extract(value,0,4) <= 16 then
         config.queueRpm.selected = bit32.extract(value,0,4)                                -- bits 1-4
       end
@@ -266,28 +290,44 @@ local function run_func(event)
         config.queueCurr.selected = bit32.extract(value,8,4)                               -- bits 9-12
       end
       if bit32.extract(value,12,4) >= 1 and bit32.extract(value,12,4) <= 16 then
-        config.queueTemp.selected = bit32.extract(value,12,4)                               -- bits 13-16
+        config.queueTemp.selected = bit32.extract(value,12,4)                              -- bits 13-16
       end
-      if bit32.extract(value,16,4) >= 1 and bit32.extract(value,16,4) <= 16 then
-        config.queuePwm.selected = bit32.extract(value,16,4)                                 -- bits 17-20
+      lcdChange = true
+      readConfigState = 18
+    end
+    if primId == 0x32 and dataId == 0x5004 and readConfigState == 18 then
+      if bit32.extract(value,0,4) >= 0 and bit32.extract(value,0,4) <= 3 then
+        config.i2c1.selected = bit32.extract(value,0,4) + 1                               -- bits 1-4
+      end
+      if bit32.extract(value,4,4) >= 0 and bit32.extract(value,4,4) <= 3 then
+        config.i2c2.selected = bit32.extract(value,4,4) + 1                              -- bits 5-8
+      end
+      if bit32.extract(value,8,8) >= 0 and bit32.extract(value,8,8) <= 127 then
+        config.i2c1Address.selected = bit32.extract(value,8,8) + 1                        -- bits 9-12
+      end
+      if bit32.extract(value,16,8) >= 0 and bit32.extract(value,16,8) <= 127 then
+        config.i2c2Address.selected = bit32.extract(value,16,8) + 1                      -- bits 13-16
       end
       lcdChange = true
       readConfigState = 20
     end
 
     -- send config status
-    if physicalId == 9 and dataId == 0x5020 and sendConfigState == 10 then
+    if primId == 0x32 and dataId == 0x5020 and sendConfigState == 10 then
       sendConfigState = 20
     end
-    if physicalId == 9 and dataId == 0x5021 and sendConfigState == 20 then
+    if primId == 0x32 and dataId == 0x5021 and sendConfigState == 20 then
+      sendConfigState = 25
+    end
+    if primId == 0x32 and dataId == 0x5022 and sendConfigState == 25 then
       sendConfigState = 30
     end
   end
-  -- check send
+  -- send timeout
   if (sendConfigState > 0 and sendConfigState < 30) and getTime() - tsSendConfig > 200 then
     sendConfigState = 50
   end
-  -- check read
+  -- read timeout
   if (readConfigState > 0 and readConfigState < 20) and getTime() - tsReadConfig > 200 then
     readConfigState = 0
   end
@@ -341,10 +381,11 @@ local function run_func(event)
 
   --lcd scrolling
   scroll = 0
-  if selection.selected > 7 then scroll = 1 end
-  if selection.selected > 9 then scroll = 2 end
-  if selection.selected > 11 then scroll = 3 end
-  if selection.selected > 13 then scroll = 4 end
+  if selection.selected > 11 then scroll = 1 end
+  if selection.selected > 13 then scroll = 2 end
+  if selection.selected > 15 then scroll = 3 end
+  if selection.selected > 17 then scroll = 4 end
+  if selection.selected > 19 then scroll = 5 end
 
   refresh = 0
 
