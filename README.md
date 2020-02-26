@@ -1,15 +1,6 @@
 # MSRC - Multi Sensor for RC - FrSky Smartport
 
-This is a DIY project to send multiple sensor telemetry to Frsky Smartport using an Arduino Pro Mini 168 or 328P (3.3v or 5v)
-
-This project is the evolution of [esc_smartport](https://github.com/dgatf/esc_smartport)
-
-New features:
-
-- Support for [change_id_frsky](https://github.com/dgatf/change_id_frsky) to change the sensor id
-- Support for I2C sensors 
-- Improved code qualility and performance
-- [Smartport_library](https://github.com/dgatf/smartport) improved performance and abstract from the smartport protocol
+This is a DIY project to send multiple sensor telemetry to Frsky Smartport using an Arduino Pro Mini 328P (3.3v or 5v)
 
 ## Telemetry
 
@@ -223,6 +214,29 @@ More accurate formula (Steinhart and Hart Equation) if data available:
 
 ## Change log
 
+V0.4
+
+- Support for [change_id_frsky](https://github.com/dgatf/change_id_frsky) to change the sensor id
+- Support for I2C sensors 
+- Improved code qualility and performance
+- [Smartport_library](https://github.com/dgatf/smartport) improved performance and abstract from the smartport protocol
+
+v0.3.1
+
+- Added cell voltage average (HW V4/V5, VFAS sensor)
+- Applied correct transformation for esc voltage, current and temperature (HW V4/V5)
+- Changed averaging type from SMA to EMA
+- Added esc protocol NONE
+- Smartport protocol. Minor improvements
+
+v0.3
+
+- Esc current sensor (EscA) added (HW V4/V5, 80A or higher)
+- Averaging telemetry added
+- Voltage2 sensor changed from A3 to A4
+- Ntc2 sensor changed from Tmp1 to Tmp2
+- Averaging governor added
+- Refresh rate and averaging added to lua config script
 
 ## Support
 
