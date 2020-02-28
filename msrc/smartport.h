@@ -226,7 +226,7 @@ public:
     void setSensorId(uint8_t sensorId);
     void setSensorIdTx(uint8_t sensorIdTx);
     uint8_t maintenanceMode();
-    void setmaintenanceMode(uint8_t maintenanceMode);
+    void setMaintenanceMode(uint8_t maintenanceMode);
     void addSensor(Sensor *newSensorP);
     bool addPacket(uint16_t dataId, uint32_t value);
     bool addPacket(uint8_t frameId, uint16_t dataId, uint32_t value);

@@ -101,6 +101,11 @@ uint8_t Smartport::maintenanceMode()
     return maintenanceMode_;
 }
 
+void Smartport::setMaintenanceMode(uint8_t maintenanceMode)
+{
+    maintenanceMode_ = maintenanceMode;
+}
+
 uint8_t Smartport::available()
 {
     return serial_.available();
