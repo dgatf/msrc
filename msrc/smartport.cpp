@@ -334,8 +334,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
         packetType = read(data);
 #endif
         if (packetType == RECEIVED_POLL && data[1] == sensorId_)
-        {        
-        
+        {                
             if (packetP != NULL && maintenanceMode_) // if maintenance send packet
             {
                 sendData(packetP->frameId, packetP->dataId, packetP->value);
