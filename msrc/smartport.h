@@ -15,7 +15,7 @@
 
 //#define DEBUG
 //#define SIM_POLL
-//#define SIM_SENSORS
+#define SIM_SENSORS
 
 #define SENSOR_ID_1 0x00 // VARIO 0x100 (0 in opentx lua: id - 1)
 #define SENSOR_ID_2 0xA1 // FLVSS 0x300

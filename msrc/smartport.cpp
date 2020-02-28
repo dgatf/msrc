@@ -96,11 +96,6 @@ void Smartport::setDataId(uint16_t dataId)
     dataId_ = dataId;
 }
 
-void Smartport::setSensorIdTx(uint8_t sensorIdTx)
-{
-    sensorIdTx_ = sensorIdTx;
-}
-
 uint8_t Smartport::maintenanceMode()
 {
     return maintenanceMode_;
@@ -324,7 +319,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
     if (true)
     {
         static uint16_t ts = 0;
-        uint8_t data[10];
+        uint8_t data[10] = {0};
         uint8_t packetType = RECEIVED_NONE;
         if (millis() - ts > 12) {
             packetType = RECEIVED_POLL;
@@ -339,7 +334,8 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
         packetType = read(data);
 #endif
         if (packetType == RECEIVED_POLL && data[1] == sensorId_)
-        {
+        {        
+        
             if (packetP != NULL && maintenanceMode_) // if maintenance send packet
             {
                 sendData(packetP->frameId, packetP->dataId, packetP->value);
@@ -464,9 +460,11 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
         }
     }
     // update sensor
-    sensorP->setValueL(sensorP->read(sensorP->indexL()));
-    sensorP->setValueM(sensorP->read(sensorP->indexM()));
-    sensorP = sensorP->nextP;
+    if (sensorP != NULL) {
+      sensorP->setValueL(sensorP->read(sensorP->indexL()));
+      sensorP->setValueM(sensorP->read(sensorP->indexM()));
+      sensorP = sensorP->nextP;
+    }
     return SENT_NONE;
 
 }
