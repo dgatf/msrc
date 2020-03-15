@@ -14,7 +14,7 @@ float NtcInterface::read(uint8_t index)
 #ifdef SIM_SENSORS
     return 56;
 #endif
-    value_ = calcAverage(alpha_, value_, temperature);
+    value_ = calcAverage(alpha_ / 100.0F, value_, temperature);
     return value_;
 }
 

@@ -14,7 +14,7 @@ class VoltageInterface : public AbstractDevice
 {
 protected:
     uint8_t pin_;
-    float value_;
+    float value_ = 0;
     uint8_t alpha_;
     float readVoltage();
 public:

@@ -114,7 +114,7 @@ uint8_t Smartport::available()
 uint8_t Smartport::idToCrc(uint8_t sensorId)
 {
     const uint8_t sensorIdMatrix[28] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x45, 0xC6, 0x67, 0x48, 0xE9, 0x6A, 0xCB, 0xAC, 0xD, 0x8E, 0x2F, 0xD0, 0x71, 0xF2, 0x53, 0x34, 0x95, 0x16, 0xB7, 0x98, 0x39, 0xBA, 0x1B};
-    if (sensorId > 28)
+    if (sensorId < 1 || sensorId > 28)
     {
         return 0;
     }
@@ -339,9 +339,11 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
         packetType = read(data);
 #endif
         if (packetType == RECEIVED_POLL && data[1] == sensorId_)
-        {                
+        {
+            //Serial.println("POLL");       
             if (packetP != NULL && maintenanceMode_) // if maintenance send packet
             {
+                Serial.println("okkkkkkkkkkkkkkkkkkkkkkkkkkkk");
                 sendData(packetP->frameId, packetP->dataId, packetP->value);
                 dataId = packetP->dataId;
                 value = packetP->value;
@@ -436,9 +438,11 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             {
 #ifdef DEBUG
                 Serial.print("Sent Sensor Id: ");
-                Serial.println(crcToId(sensorId_));
-                Serial.println(sensorId_);
+                Serial.print(crcToId(sensorId_));
+                Serial.print(" ");
+                Serial.println(sensorId_, HEX);
 #endif
+                //delay(100);
                 addPacket(0x32, dataId_, 256 * (crcToId(sensorId_) - 1) + 1);
                 return SENT_SENSOR_ID;
             }

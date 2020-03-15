@@ -21,14 +21,14 @@ Config readConfig()
             config.refresh.curr = 10;
         if (config.refresh.temp > 16)
             config.refresh.temp = 10;
-        if (config.alpha.rpm > 16)
-            config.alpha.rpm = calcAlpha(5);
-        if (config.alpha.volt > 16)
-            config.alpha.volt = calcAlpha(5);
-        if (config.alpha.curr > 16)
-            config.alpha.curr = calcAlpha(5);
-        if (config.alpha.temp > 16)
-            config.alpha.temp = calcAlpha(5);
+        if (config.alpha.rpm > 100)
+            config.alpha.rpm = 100;
+        if (config.alpha.volt > 100)
+            config.alpha.volt = 100;
+        if (config.alpha.curr > 100)
+            config.alpha.curr = 100;
+        if (config.alpha.temp > 100)
+            config.alpha.temp = 100;
     }
     else
     {
@@ -147,6 +147,8 @@ void setPwmOut(bool pwmOut)
 void initConfig(Config &config)
 {
     smartport.setSensorId(smartport.idToCrc(config.sensorId));
+    Serial.println(config.sensorId);
+    Serial.println(smartport.sensorId(), HEX);
     if (config.pwmOut && config.protocol != PROTOCOL_PWM)
     {
         pwmOut = true;
