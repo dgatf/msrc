@@ -249,7 +249,7 @@ bool Smartport::addPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
 {
     if (packetP == NULL)
     {
-        packetP = (Packet *)malloc(sizeof(Packet));
+        packetP = new Packet;
         packetP->frameId = frameId;
         packetP->dataId = dataId;
         packetP->value = value;
@@ -267,7 +267,7 @@ void Smartport::deleteSensors()
         do
         {
             nextSensorP = sensorP->nextP;
-            free(sensorP);
+            delete sensorP;
             sensorP = nextSensorP;
         } while (sensorP != firstSensorP);
         sensorP = NULL;
@@ -343,19 +343,19 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
         {
             if (packetP != NULL && maintenanceMode_) // if maintenance send packet
             {
-                sendData(packetP->frameId, packetP->dataId, packetP->value);
-                dataId = packetP->dataId;
-                value = packetP->value;
-                free(packetP);
-                packetP = NULL;
 #ifdef DEBUG
                 Serial.print("Sent frameId: ");
-                Serial.print(packetP->frameId);
+                Serial.print(packetP->frameId, HEX);
                 Serial.print(" dataId: ");
-                Serial.print(packetP->dataId);
+                Serial.print(packetP->dataId, HEX);
                 Serial.print(" value: ");
                 Serial.println(packetP->value);
 #endif
+                sendData(packetP->frameId, packetP->dataId, packetP->value);
+                dataId = packetP->dataId;
+                value = packetP->value;
+                delete packetP;
+                packetP = NULL;
                 return SENT_PACKET;
             }
             if (sensorP != NULL && !maintenanceMode_) // else send telemetry
@@ -368,7 +368,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 }
                 if ((uint16_t)millis() - spSensorP->timestamp() >= (uint16_t)spSensorP->refresh() * 100)
                 {
-#ifdef DEBUG
+#ifdef DEBUG2
                     Serial.print("id: ");
                     Serial.print(spSensorP->dataId(), HEX);
                     Serial.print(" iL: ");
