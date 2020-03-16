@@ -35,6 +35,9 @@ Config readConfig()
         writeConfig(config);
     }
 #ifdef DEBUG
+    Serial.println("READ CONFIG");
+#endif
+#ifdef DEBUG2
     escSerial.println("Read cfg");
     escSerial.print("Prot ");
     escSerial.println(config.protocol);
@@ -83,6 +86,9 @@ void writeConfig(Config &config)
     EEPROM.put(0, (uint32_t)0x64616E69);
     EEPROM.put(4, config);
 #ifdef DEBUG
+    Serial.println("WRITE CONFIG");
+#endif
+#ifdef DEBUG2
     escSerial.println("Write cfg");
     escSerial.print("Prot ");
     escSerial.println(config.protocol);
@@ -147,8 +153,6 @@ void setPwmOut(bool pwmOut)
 void initConfig(Config &config)
 {
     smartport.setSensorId(smartport.idToCrc(config.sensorId));
-    Serial.println(config.sensorId);
-    Serial.println(smartport.sensorId(), HEX);
     if (config.pwmOut && config.protocol != PROTOCOL_PWM)
     {
         pwmOut = true;
