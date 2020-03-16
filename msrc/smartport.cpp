@@ -208,8 +208,9 @@ uint32_t Smartport::formatData(uint16_t dataId, float valueM, float valueL)
     if (dataId >= ESC_POWER_FIRST_ID && dataId <= ESC_POWER_LAST_ID)
         return (uint32_t)round(valueM * 100) << 16 | (uint16_t)round(valueL * 100);
 
-    if (dataId >= ESC_RPM_CONS_FIRST_ID && dataId <= ESC_RPM_CONS_LAST_ID)
+    if (dataId >= ESC_RPM_CONS_FIRST_ID && dataId <= ESC_RPM_CONS_LAST_ID) {
         return (uint32_t)round(valueM) << 16 | (uint16_t)round((valueL) / 100);
+    }
 
     if (dataId >= SBEC_POWER_FIRST_ID && dataId <= SBEC_POWER_LAST_ID)
         return (uint32_t)round(valueM * 1000) << 16 | (uint16_t)round((valueL)*1000);
@@ -340,10 +341,8 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
 #endif
         if (packetType == RECEIVED_POLL && data[1] == sensorId_)
         {
-            //Serial.println("POLL");       
             if (packetP != NULL && maintenanceMode_) // if maintenance send packet
             {
-                Serial.println("okkkkkkkkkkkkkkkkkkkkkkkkkkkk");
                 sendData(packetP->frameId, packetP->dataId, packetP->value);
                 dataId = packetP->dataId;
                 value = packetP->value;
@@ -442,7 +441,6 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 Serial.print(" ");
                 Serial.println(sensorId_, HEX);
 #endif
-                //delay(100);
                 addPacket(0x32, dataId_, 256 * (crcToId(sensorId_) - 1) + 1);
                 return SENT_SENSOR_ID;
             }
@@ -469,8 +467,10 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
     }
     // update sensor
     if (sensorP != NULL) {
-      sensorP->setValueL(sensorP->read(sensorP->indexL()));
-      sensorP->setValueM(sensorP->read(sensorP->indexM()));
+      if (sensorP->indexL() != 255)
+        sensorP->setValueL(sensorP->read(sensorP->indexL()));
+      if (sensorP->indexM() != 255)
+        sensorP->setValueM(sensorP->read(sensorP->indexM()));
       sensorP = sensorP->nextP;
     }
     return SENT_NONE;
