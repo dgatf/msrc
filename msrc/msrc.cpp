@@ -152,6 +152,7 @@ void setPwmOut(bool pwmOut)
 
 void initConfig(Config &config)
 {
+    smartport.deleteSensors();
     smartport.setSensorId(smartport.idToCrc(config.sensorId));
     if (config.pwmOut && config.protocol != PROTOCOL_PWM)
     {
@@ -348,7 +349,6 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
                 smartport.update();
             }
             smartport.addPacket(0x32, 0x5020, 0);
-            //Serial.println("Received packet 1");
             
         }
         if (frameId == 0x30 && dataId == 0x5012)
@@ -364,7 +364,6 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
                 smartport.update();
             }
             smartport.addPacket(0x32, 0x5021, 0);
-            //Serial.println("Received packet 2");
         }
         if (frameId == 0x30 && dataId == 0x5013)
         {
@@ -380,7 +379,6 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
                 smartport.update();
             }
             smartport.addPacket(0x32, 0x5022, 0);
-            //Serial.println("Received packet 3");
         }
     }
 }
