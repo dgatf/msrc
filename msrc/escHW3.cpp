@@ -16,6 +16,8 @@ bool EscHW3Interface::update()
                 thr_ = data[4]; // 0-255
                 pwm_ = data[6]; // 0-255
                 uint16_t rpmCycle = (uint16_t)data[7] << 8 | data[8];
+                if (rpmCycle <= 0)
+                    rpmCycle = 1;
                 float rpm = (float)60000000UL / rpmCycle;
                 rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
                 tsEsc_ = millis();
@@ -49,8 +51,12 @@ bool EscHW3Interface::update()
 float EscHW3Interface::read(uint8_t index)
 {
 #ifdef SIM_SENSORS
-    return 10000;
+    if (index == 0)
+        return 10000;
+    return 0;
 #endif
-    update();
-    return rpm_;
+    if (index == 0)
+        update();
+        return rpm_;
+    return 0;
 }

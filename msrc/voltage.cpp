@@ -9,14 +9,16 @@ float VoltageInterface::readVoltage()
     return value * analogToVolt;
 }
 
-float VoltageInterface::read(uint8_t pin)
+float VoltageInterface::read(uint8_t index)
 {
 #ifdef SIM_SENSORS
-    return 34;
+    if (index == 0)
+        return 34;
+    return 0;
 #endif
-    value_ = calcAverage(alpha_ / 100.0F, value_, readVoltage());
-    //Serial.print(alpha_);
-    //Serial.print(value_);
-    //Serial.println(readVoltage());
-    return value_;
+    if (index == 0) {
+        value_ = calcAverage(alpha_ / 100.0F, value_, readVoltage());
+        return value_;
+    }
+    return 0;
 }

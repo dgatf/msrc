@@ -79,13 +79,16 @@ float Bmp280Interface::read(uint8_t index)
         readTemperature();
         return temperature_;
     }
+    if (index == BMP_ALTITUDE) {
 #ifdef SIM_SENSORS
-    return 500;
+        return 500;
 #endif
-    if (readPressure())
-    {
-        altitude_ = calcAltitude();
-        if (altitude_ < 0 ) altitude_ = 0;
+        if (readPressure())
+        {
+            altitude_ = calcAltitude();
+            if (altitude_ < 0 ) altitude_ = 0;
+        }
+        return altitude_;
     }
-    return altitude_;
+    return 0;
 }

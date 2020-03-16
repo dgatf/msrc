@@ -26,31 +26,34 @@ void EscPWMInterface::begin() {
 
 float EscPWMInterface::read(uint8_t index)
 {
-    static uint8_t cont = 0;
-    float rpm;
-    if (pwmInLenght > 0 &&
-        pwmInLenght * COMP_TO_MICROS < PWM_IN_TRIGGER_MICROS &&
-        micros() - tsPwmIn < PWM_IN_TRIGGER_MICROS)
-    {
-        if (cont > PWM_IN_TRIGGER_PULSES)
+    if (index == 0) {
+        static uint8_t cont = 0;
+        float rpm;
+        if (pwmInLenght > 0 &&
+            pwmInLenght * COMP_TO_MICROS < PWM_IN_TRIGGER_MICROS &&
+            micros() - tsPwmIn < PWM_IN_TRIGGER_MICROS)
         {
-            rpm = 60000000UL / pwmInLenght * COMP_TO_MICROS;
+            if (cont > PWM_IN_TRIGGER_PULSES)
+            {
+                rpm = 60000000UL / pwmInLenght * COMP_TO_MICROS;
+            }
+            if (cont <= PWM_IN_TRIGGER_PULSES)
+                cont++;
+    #ifdef DEBUG_ESC
+            Serial.print("RPM: ");
+            Serial.println(rpm_);
+    #endif
         }
-        if (cont <= PWM_IN_TRIGGER_PULSES)
-            cont++;
-#ifdef DEBUG_ESC
-        Serial.print("RPM: ");
-        Serial.println(rpm_);
-#endif
+        else
+        {
+            rpm_ = 0;
+            cont = 0;
+        }
+        rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+    #ifdef SIM_SENSORS
+        return 10000;
+    #endif
+        return rpm_;
     }
-    else
-    {
-        rpm_ = 0;
-        cont = 0;
-    }
-    rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
-#ifdef SIM_SENSORS
-    return 10000;
-#endif
-    return rpm_;
+    return 0;
 }

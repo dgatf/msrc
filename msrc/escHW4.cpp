@@ -141,8 +141,13 @@ float EscHW4Interface::read(uint8_t index)
     value_[ESCHW4_CURRENT] = 2;
     value_[ESCHW4_TEMPFET] = 50;
     value_[ESCHW4_TEMPBEC] = 30;
-#else
-    update();
+    if (index >= 0 && index < 5)
+        update();
+        return value_[index];
+    return 0;
 #endif
-    return value_[index];
+    if (index >= 0 && index < 5)
+        update();
+        return value_[index];
+    return 0;
 }
