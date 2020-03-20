@@ -358,7 +358,6 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             Serial.print("PACKET 2 RECEIVED: ");
             Serial.println(value);
 #endif
-            
             config.alpha.rpm = calcAlpha(BM_AVG_ELEM_RPM(value));
             config.alpha.volt = calcAlpha(BM_AVG_ELEM_VOLT(value));
             config.alpha.curr = calcAlpha(BM_AVG_ELEM_CURR(value));

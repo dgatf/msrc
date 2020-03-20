@@ -11,7 +11,7 @@
 #define SMARTPORT_H
 
 #define LED_SMARTPORT LED_BUILTIN
-#define SMARTPORT_TIMEOUT 2
+#define SMARTPORT_TIMEOUT 3
 
 //#define DEBUG
 //#define SIM_POLL
@@ -217,7 +217,7 @@ public:
     uint8_t idToCrc(uint8_t sensorId);
     uint8_t crcToId(uint8_t sensorIdCrc);
     uint8_t available();
-    uint8_t read(uint8_t *data);
+    uint8_t read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, uint32_t &value);
     void sendData(uint16_t dataId, uint32_t val);
     void sendData(uint8_t frameId, uint16_t dataId, uint32_t val);
     void sendVoid();

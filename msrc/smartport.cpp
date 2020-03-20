@@ -277,47 +277,61 @@ void Smartport::deleteSensors()
     }
 }
 
-uint8_t Smartport::read(uint8_t *data)
+uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, uint32_t &value)
 {
-    uint8_t cont = 0;
     if (serial_.available())
     {
+        uint8_t data[9];
+        boolean header = false;
+        uint8_t cont = 0;
         uint16_t tsRead = millis();
-        uint16_t crc = 0;
-        while ((uint16_t)millis() - tsRead < SMARTPORT_TIMEOUT || cont == 11)
+        while ((uint16_t)millis() - tsRead < SMARTPORT_TIMEOUT)
         {
             if (serial_.available())
             {
-                data[cont] = serial_.read();
-                if (data[cont] == 0x7D)
+                tsRead = millis();
+                if (serial_.peek() == 0x7E)
                 {
-                    data[cont] = serial_.read() ^ 0x20;
+                    header = true;
+                    cont = 0;
+                    serial_.read();
                 }
-                cont++;
+                else {
+                    data[cont] = serial_.read();
+                    if (header) {
+                        if (data[cont] == 0x7D)
+                            data[cont] = serial_.read() ^ 0x20;
+                        cont++;
+                    }
+                }
+                if (cont == 9)
+                {
+                    uint16_t crc = 0;
+                    for (uint8_t i = 1; i < 8; i++)
+                    {
+                        crc += data[i];
+                        crc += crc >> 8;
+                        crc &= 0x00FF;
+                    }
+                    crc = 0xFF - (uint8_t)crc;
+                    if (crc == data[8])
+                    {
+                        sensorId = data[0];
+                        frameId = data[1];
+                        dataId = (uint16_t)data[3] << 8 | data[2];
+                        value = (uint32_t)data[7] << 24 | (uint32_t)data[6] << 16 |
+                                (uint16_t)data[5] << 8 | data[4];
+                        return RECEIVED_PACKET;
+                    }
+                    cont = 0;
+                }
             }
         }
-        if (data[0] != 0x7E)
-            return RECEIVED_NONE;
-        if (cont == 10)
+        if (cont == 1)
         {
-            for (uint8_t i = 2; i < 9; i++)
-            {
-                crc += data[i];
-                crc += crc >> 8;
-                crc &= 0x00FF;
-            }
-            crc = 0xFF - (uint8_t)crc;
-            if (crc != data[9])
-            {
-                return RECEIVED_NONE;
-            }
-            else
-            {
-                return RECEIVED_PACKET;
-            }
-        }
-        if (cont == 2)
+            sensorId = data[0];
             return RECEIVED_POLL;
+        }
     }
     return RECEIVED_NONE;
 }
@@ -328,22 +342,21 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
     if (true)
     {
         static uint16_t ts = 0;
-        uint8_t data[10] = {0};
+        uint8_t data[9] = {0};
         uint8_t packetType = RECEIVED_NONE;
         if (millis() - ts > 12)
         {
             packetType = RECEIVED_POLL;
-            data[1] = sensorId_;
+            data[0] = sensorId_;
             ts = millis();
         }
 #else
     if (available())
     {
-        uint8_t data[10];
-        uint8_t packetType;
-        packetType = read(data);
+        uint8_t sensorId;
+        uint8_t packetType = read(sensorId, frameId, dataId, value);
 #endif
-        if (packetType == RECEIVED_POLL && data[1] == sensorId_)
+        if (packetType == RECEIVED_POLL && sensorId == sensorId_)
         {
             if (packetP != NULL && maintenanceMode_) // if maintenance send packet
             {
@@ -412,12 +425,8 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 }
             }
         }
-        else if (packetType == RECEIVED_PACKET && data[2] != 0x10)
+        else if (packetType == RECEIVED_PACKET && frameId != 0x10)
         {
-            frameId = data[2];
-            dataId = (uint16_t)data[4] << 8 | data[3];
-            value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 |
-                    (uint16_t)data[6] << 8 | data[5];
             // maintenance mode on
             if (frameId == 0x21 && dataId == 0xFFFF && value == 0x80)
             {
