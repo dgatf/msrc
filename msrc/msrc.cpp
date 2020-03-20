@@ -334,7 +334,8 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         if (frameId == 0x30 && dataId == 0x5011)
         {
 #ifdef DEBUG
-            Serial.println("PACKET 1 RECEIVED");
+            Serial.print("PACKET 1 RECEIVED: ");
+            Serial.println(value);
 #endif
             uint16_t timestamp = millis();
             Config config;
@@ -349,23 +350,26 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             config.refresh.volt = BM_REFRESH_VOLT(value);
             config.refresh.curr = BM_REFRESH_CURR(value);
             config.refresh.temp = BM_REFRESH_TEMP(value);
-            while (frameId != 0x30 && dataId != 0x5012)
+            while (frameId != 0x30 || dataId != 0x5012)
             {
                 smartport.update(frameId, dataId, value);
             }
 #ifdef DEBUG
-            Serial.println("PACKET 2 RECEIVED");
+            Serial.print("PACKET 2 RECEIVED: ");
+            Serial.println(value);
 #endif
+            
             config.alpha.rpm = calcAlpha(BM_AVG_ELEM_RPM(value));
             config.alpha.volt = calcAlpha(BM_AVG_ELEM_VOLT(value));
             config.alpha.curr = calcAlpha(BM_AVG_ELEM_CURR(value));
             config.alpha.temp = calcAlpha(BM_AVG_ELEM_TEMP(value));
-            while (frameId != 0x30 && dataId != 0x5013)
+            while (frameId != 0x30 || dataId != 0x5013)
             {
                 smartport.update(frameId, dataId, value);
             }
 #ifdef DEBUG
-            Serial.println("PACKET 3 RECEIVED");
+            Serial.print("PACKET 3 RECEIVED: ");
+            Serial.println(value);
 #endif
             config.deviceI2C[0].type = BM_I2C1(value);
             config.deviceI2C[1].type = BM_I2C2(value);
