@@ -342,12 +342,11 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
     if (true)
     {
         static uint16_t ts = 0;
-        uint8_t data[9] = {0};
+        uint8_t sensorId = sensorId_;
         uint8_t packetType = RECEIVED_NONE;
         if (millis() - ts > 12)
         {
             packetType = RECEIVED_POLL;
-            data[0] = sensorId_;
             ts = millis();
         }
 #else
