@@ -2,7 +2,7 @@
 
 Bmp180Interface::Bmp180Interface(uint8_t device, uint8_t alphaTemp, uint8_t alphaDef) : Bmp(device, alphaTemp, alphaDef) {}
 
-bool Bmp180Interface::begin()
+void Bmp180Interface::begin()
 {
     float c3, c4, b1;
     AC1_ = readInt(address_, 0xAA, BIG_ENDIAN);

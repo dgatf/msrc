@@ -75,7 +75,7 @@ public:
         SAMPLING_X16 = 0x05
     };
     Bmp280Interface(uint8_t device, uint8_t alphaTemp, uint8_t alphaDef);
-    bool begin();
+    void begin();
     float read(uint8_t index);
 };
 

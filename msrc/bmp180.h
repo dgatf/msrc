@@ -39,7 +39,7 @@ private:
 
 public:
     Bmp180Interface(uint8_t alphaTemp, uint8_t alphaDef, uint8_t address);
-    bool begin();
+    void begin();
     float read(uint8_t index);
 };
 
