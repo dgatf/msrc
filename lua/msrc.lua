@@ -110,7 +110,7 @@ local function readConfig()
             elseif readConfigState == state["MAINTENANCE_ON"] then
                 sportTelemetryPush(sensorIdTx, 0x30, 0x5000, 0)
                 readConfigState = state["CONFIG_REQUESTED"]
-            elseif readConfigState >= state["PACKET_4"] then
+            elseif readConfigState == state["PACKET_4"] then
                 sportTelemetryPush(sensorIdTx, 0x20, 0xFFFF, 0x80)
                 readConfigState = state["MAINTENANCE_OFF"]
                 lcdChange = true

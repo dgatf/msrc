@@ -279,6 +279,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         // send config
         if (frameId == 0x30 && dataId == 0x5000)
         {
+            uint16_t timestamp = millis();
             uint32_t value = 0;
             Config config = readConfig();
             // packet 1
@@ -327,11 +328,16 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
                 smartport.update();
             }
             smartport.addPacket(0x32, 0x5004, value);
+            return;
         }
         // receive config
         if (frameId == 0x30 && dataId == 0x5011)
         {
-            Config config = readConfig();
+#ifdef DEBUG
+            Serial.println("PACKET 1 RECEIVED");
+#endif
+            uint16_t timestamp = millis();
+            Config config;
             config.protocol = BM_PROTOCOL(value);
             config.voltage1 = BM_VOLTAGE1(value);
             config.voltage2 = BM_VOLTAGE2(value);
@@ -343,42 +349,36 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             config.refresh.volt = BM_REFRESH_VOLT(value);
             config.refresh.curr = BM_REFRESH_CURR(value);
             config.refresh.temp = BM_REFRESH_TEMP(value);
-            writeConfig(config);
-            while (!smartport.sendPacketReady())
+            while (frameId != 0x30 && dataId != 0x5012)
             {
-                smartport.update();
+                smartport.update(frameId, dataId, value);
             }
-            //smartport.addPacket(0x32, 0x5020, 0);
-        }
-        if (frameId == 0x30 && dataId == 0x5012)
-        {
-            Config config = readConfig();
+#ifdef DEBUG
+            Serial.println("PACKET 2 RECEIVED");
+#endif
             config.alpha.rpm = calcAlpha(BM_AVG_ELEM_RPM(value));
             config.alpha.volt = calcAlpha(BM_AVG_ELEM_VOLT(value));
             config.alpha.curr = calcAlpha(BM_AVG_ELEM_CURR(value));
             config.alpha.temp = calcAlpha(BM_AVG_ELEM_TEMP(value));
-            writeConfig(config);
-            while (!smartport.sendPacketReady())
+            while (frameId != 0x30 && dataId != 0x5013)
             {
-                smartport.update();
+                smartport.update(frameId, dataId, value);
             }
-            //smartport.addPacket(0x32, 0x5021, 0);
-        }
-        if (frameId == 0x30 && dataId == 0x5013)
-        {
-            Config config = readConfig();
+#ifdef DEBUG
+            Serial.println("PACKET 3 RECEIVED");
+#endif
             config.deviceI2C[0].type = BM_I2C1(value);
             config.deviceI2C[1].type = BM_I2C2(value);
             config.deviceI2C[0].address = BM_I2C1_ADDRESS(value);
             config.deviceI2C[1].address = BM_I2C2_ADDRESS(value);
-            writeConfig(config);
-            initConfig(config);
             while (!smartport.sendPacketReady())
             {
                 smartport.update();
             }
-            smartport.addPacket(0x32, 0x5022, 0);
-        }
+            smartport.addPacket(0x32, 0x5020, 0);
+            writeConfig(config);
+            initConfig(config);
+        }   
     }
 }
 
