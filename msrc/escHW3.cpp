@@ -56,7 +56,9 @@ float EscHW3Interface::read(uint8_t index)
     return 0;
 #endif
     if (index == 0)
+    {
         update();
         return rpm_;
+    }
     return 0;
 }

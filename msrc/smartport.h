@@ -152,13 +152,14 @@
 #define SENT_SENSOR_ID 9
 #define CHANGED_SENSOR_ID 10
 
-
 #include <Arduino.h>
 
-class AbstractDevice {
+class AbstractDevice
+{
 private:
 protected:
     float calcAverage(float alpha, float value, float newValue);
+
 public:
     AbstractDevice();
     virtual float read(uint8_t index) = 0;
@@ -172,6 +173,7 @@ protected:
     uint8_t indexL_ = 0, indexM_ = 255;
     uint8_t refresh_;
     AbstractDevice *device_;
+
 public:
     Sensor(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t refresh, AbstractDevice *device);
     Sensor(uint16_t dataId, uint8_t indexL, uint8_t refresh, AbstractDevice *device);
@@ -207,6 +209,7 @@ private:
     uint16_t dataId_;
     bool maintenanceMode_ = false;
     void sendByte(uint8_t c, uint16_t *crcp);
+
 public:
     //Smartport(Stream &serial, uint8_t dataId, uint8_t sensorId, uint8_t sensorIdTx);
     Smartport(Stream &serial);

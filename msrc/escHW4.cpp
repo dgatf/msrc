@@ -1,6 +1,6 @@
 #include "escHW4.h"
 
-EscHW4Interface::EscHW4Interface(Stream &serial, uint8_t alphaRpm,uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
+EscHW4Interface::EscHW4Interface(Stream &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
 bool EscHW4Interface::update()
 {
@@ -143,11 +143,13 @@ float EscHW4Interface::read(uint8_t index)
     value_[ESCHW4_TEMPBEC] = 30;
     if (index >= 0 && index < 5)
         update();
-        return value_[index];
+    return value_[index];
     return 0;
 #endif
     if (index >= 0 && index < 5)
+    {
         update();
         return value_[index];
+    }
     return 0;
 }

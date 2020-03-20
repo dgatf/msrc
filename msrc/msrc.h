@@ -42,8 +42,8 @@
 
 // opentx
 #define SENSOR_ID_TX SENSOR_ID_18 // sensorIdTx
-#define DATA_ID 0x5100  // DataId (sensor type)
-#define CONFIG_LUA     // Uncomment if using lua script for configuration
+#define DATA_ID 0x5100            // DataId (sensor type)
+#define CONFIG_LUA                // Uncomment if using lua script for configuration
 
 #define PROTOCOL_HW_V3 0
 #define PROTOCOL_HW_V4 1
@@ -52,7 +52,7 @@
 
 // pwm out
 #define PIN_PWM_OUT_OCR 10
-#define DUTY 0.5  // 0.5 = 50%
+#define DUTY 0.5 // 0.5 = 50%
 
 // i2c
 #define I2C_NONE 0
@@ -127,25 +127,28 @@
 
 // Default config
 
-struct Refresh {
+struct Refresh
+{
     // max refresh rate 15 (1.5s)
     uint8_t rpm = 2;   // telemetry rpm refresh rate (ms / 100)
     uint8_t volt = 10; // telemetry voltage refresh rate (ms / 100)
     uint8_t curr = 10; // telemetry current refresh rate (ms / 100)
     uint8_t temp = 10; // telemetry temperature refresh rate (ms / 100)
-    uint8_t def = 10; // telemetry default refresh rate (ms / 100)
+    uint8_t def = 10;  // telemetry default refresh rate (ms / 100)
 };
 
-struct Alpha {
-// equivalent EMA to SMA elements (alpha=2/(N+1))
+struct Alpha
+{
+    // equivalent EMA to SMA elements (alpha=2/(N+1))
     uint8_t rpm = 33;  // rpm averaging elements (alpha * 100)
     uint8_t volt = 33; // voltage averaging elements (alpha * 100)
     uint8_t curr = 33; // current averaging elements (alpha * 100)
     uint8_t temp = 33; // temperature averaging elements (alpha * 100)
-    uint8_t def = 33; // (alpha * 100)
+    uint8_t def = 33;  // (alpha * 100)
 };
 
-struct DeviceI2C {
+struct DeviceI2C
+{
     uint8_t type = 0;
     uint8_t address = 0;
 };

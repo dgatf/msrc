@@ -4,12 +4,12 @@ MS4525DOInterface::MS4525DOInterface() {}
 
 bool MS4525DOInterface::begin()
 {
-    return true;
+  return true;
 }
 
 bool MS4525DOInterface::read()
 {
-    /*
+  /*
 uint8_t data[4];
 data[0] = xx;
 readBytes(_address, data, 4);
@@ -68,5 +68,5 @@ Serial.println(PR);
  
  
   }*/
-    return 0;
+  return 0;
 }

@@ -23,12 +23,12 @@
 #define BMP280_REGISTER_PRESSUREDATA 0xF7
 #define BMP280_REGISTER_TEMPDATA 0xFA
 
-#define	BMP280_OVERSAMPLING_X0 0
-#define	BMP280_OVERSAMPLING_X1 1
-#define	BMP280_OVERSAMPLING_X2 2
-#define	BMP280_OVERSAMPLING_X4 3
-#define	BMP280_OVERSAMPLING_X8 4
-#define	BMP280_OVERSAMPLING_X16 5
+#define BMP280_OVERSAMPLING_X0 0
+#define BMP280_OVERSAMPLING_X1 1
+#define BMP280_OVERSAMPLING_X2 2
+#define BMP280_OVERSAMPLING_X4 3
+#define BMP280_OVERSAMPLING_X8 4
+#define BMP280_OVERSAMPLING_X16 5
 
 #define BMP280_SLEEP 0
 #define BMP280_FORCED 1
@@ -62,7 +62,8 @@ private:
     int16_t T2_, T3_, P2_, P3_, P4_, P5_, P6_, P7_, P8_, P9_;
     uint32_t t_fine_;
     float readTemperature();
-    float readPressure(); 
+    float readPressure();
+
 public:
     enum sensor_sampling
     {

@@ -17,6 +17,7 @@ protected:
     float value_ = 0;
     uint8_t alpha_;
     float readVoltage();
+
 public:
     VoltageInterface(uint8_t pin, uint8_t alpha);
     virtual float read(uint8_t index);

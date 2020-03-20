@@ -125,10 +125,12 @@ uint8_t Smartport::crcToId(uint8_t sensorIdCrc)
 {
     const uint8_t sensorIdMatrix[29] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x45, 0xC6, 0x67, 0x48, 0xE9, 0x6A, 0xCB, 0xAC, 0xD, 0x8E, 0x2F, 0xD0, 0x71, 0xF2, 0x53, 0x34, 0x95, 0x16, 0xB7, 0x98, 0x39, 0xBA, 0x1B, 0x0};
     uint8_t cont = 0;
-    while (sensorIdCrc != sensorIdMatrix[cont] && cont < 28) {
-        cont++;    
+    while (sensorIdCrc != sensorIdMatrix[cont] && cont < 28)
+    {
+        cont++;
     }
-    if (cont == 28) return 0;
+    if (cont == 28)
+        return 0;
     return cont + 1;
 }
 
@@ -208,7 +210,8 @@ uint32_t Smartport::formatData(uint16_t dataId, float valueM, float valueL)
     if (dataId >= ESC_POWER_FIRST_ID && dataId <= ESC_POWER_LAST_ID)
         return (uint32_t)round(valueM * 100) << 16 | (uint16_t)round(valueL * 100);
 
-    if (dataId >= ESC_RPM_CONS_FIRST_ID && dataId <= ESC_RPM_CONS_LAST_ID) {
+    if (dataId >= ESC_RPM_CONS_FIRST_ID && dataId <= ESC_RPM_CONS_LAST_ID)
+    {
         return (uint32_t)round(valueM) << 16 | (uint16_t)round((valueL) / 100);
     }
 
@@ -327,7 +330,8 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
         static uint16_t ts = 0;
         uint8_t data[10] = {0};
         uint8_t packetType = RECEIVED_NONE;
-        if (millis() - ts > 12) {
+        if (millis() - ts > 12)
+        {
             packetType = RECEIVED_POLL;
             data[1] = sensorId_;
             ts = millis();
@@ -455,26 +459,26 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 return CHANGED_SENSOR_ID;
             }
 #ifdef DEBUG
-                Serial.print("Received frameId: ");
-                Serial.print(frameId, HEX);
-                Serial.print(" dataId: ");
-                Serial.print(dataId, HEX);
-                Serial.print(" value: ");
-                Serial.println(value);
+            Serial.print("Received frameId: ");
+            Serial.print(frameId, HEX);
+            Serial.print(" dataId: ");
+            Serial.print(dataId, HEX);
+            Serial.print(" value: ");
+            Serial.println(value);
 #endif
             return RECEIVED_PACKET;
         }
     }
     // update sensor
-    if (sensorP != NULL) {
-      if (sensorP->indexL() != 255)
-        sensorP->setValueL(sensorP->read(sensorP->indexL()));
-      if (sensorP->indexM() != 255)
-        sensorP->setValueM(sensorP->read(sensorP->indexM()));
-      sensorP = sensorP->nextP;
+    if (sensorP != NULL)
+    {
+        if (sensorP->indexL() != 255)
+            sensorP->setValueL(sensorP->read(sensorP->indexL()));
+        if (sensorP->indexM() != 255)
+            sensorP->setValueM(sensorP->read(sensorP->indexM()));
+        sensorP = sensorP->nextP;
     }
     return SENT_NONE;
-
 }
 
 uint8_t Smartport::update()

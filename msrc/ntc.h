@@ -15,10 +15,10 @@
 
 class NtcInterface : public VoltageInterface
 {
-    private:
-	public:
-        NtcInterface(uint8_t pin, uint8_t alpha);
-        float read(uint8_t index);			
+private:
+public:
+    NtcInterface(uint8_t pin, uint8_t alpha);
+    float read(uint8_t index);
 };
 
 #endif

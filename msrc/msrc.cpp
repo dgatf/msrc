@@ -241,7 +241,7 @@ void initConfig(Config &config)
             Bmp180Interface *bmp;
             bmp = new Bmp180Interface(config.deviceI2C[i].address, config.alpha.temp, config.alpha.def);
             bmp->begin();
-            
+
             sensorP = new Sensor(T1_FIRST_ID, BMP_TEMPERATURE, config.refresh.temp, bmp);
             smartport.addSensor(sensorP);
             sensorP = new Sensor(ALT_FIRST_ID, BMP_ALTITUDE, config.refresh.def, bmp);
@@ -348,8 +348,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             {
                 smartport.update();
             }
-            smartport.addPacket(0x32, 0x5020, 0);
-            
+            //smartport.addPacket(0x32, 0x5020, 0);
         }
         if (frameId == 0x30 && dataId == 0x5012)
         {
@@ -363,7 +362,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             {
                 smartport.update();
             }
-            smartport.addPacket(0x32, 0x5021, 0);
+            //smartport.addPacket(0x32, 0x5021, 0);
         }
         if (frameId == 0x30 && dataId == 0x5013)
         {

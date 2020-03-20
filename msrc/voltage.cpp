@@ -16,7 +16,8 @@ float VoltageInterface::read(uint8_t index)
         return 34;
     return 0;
 #endif
-    if (index == 0) {
+    if (index == 0)
+    {
         value_ = calcAverage(alpha_ / 100.0F, value_, readVoltage());
         return value_;
     }

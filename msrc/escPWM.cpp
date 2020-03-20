@@ -17,7 +17,8 @@ ISR(TIMER1_CAPT_vect)
 
 EscPWMInterface::EscPWMInterface(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
 
-void EscPWMInterface::begin() {
+void EscPWMInterface::begin()
+{
     // TIMER1,capture ext int, scaler 8. PIN 8
     TCCR1A = 0;
     TCCR1B = _BV(CS11);
@@ -26,7 +27,8 @@ void EscPWMInterface::begin() {
 
 float EscPWMInterface::read(uint8_t index)
 {
-    if (index == 0) {
+    if (index == 0)
+    {
         static uint8_t cont = 0;
         float rpm;
         if (pwmInLenght > 0 &&
@@ -39,10 +41,10 @@ float EscPWMInterface::read(uint8_t index)
             }
             if (cont <= PWM_IN_TRIGGER_PULSES)
                 cont++;
-    #ifdef DEBUG_ESC
+#ifdef DEBUG_ESC
             Serial.print("RPM: ");
             Serial.println(rpm_);
-    #endif
+#endif
         }
         else
         {
@@ -50,9 +52,9 @@ float EscPWMInterface::read(uint8_t index)
             cont = 0;
         }
         rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
-    #ifdef SIM_SENSORS
+#ifdef SIM_SENSORS
         return 10000;
-    #endif
+#endif
         return rpm_;
     }
     return 0;

@@ -149,7 +149,8 @@ float Bmp180Interface::read(uint8_t index)
         readTemperature();
         return temperature_;
     }
-    if (index == BMP_ALTITUDE) {
+    if (index == BMP_ALTITUDE)
+    {
 #ifdef SIM_SENSORS
         return 126;
 #endif
