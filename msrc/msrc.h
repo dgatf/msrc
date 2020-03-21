@@ -75,6 +75,8 @@
 
 // Config bitmask
 
+#define BM_PACKET(VALUE) VALUE >> 24
+
 // packet 1: byte 1 version patch, byte 2 version minor, byte 3 version major
 
 // packet 2

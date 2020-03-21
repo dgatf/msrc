@@ -286,11 +286,12 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             value = VERSION_PATCH;
             value |= (uint32_t)VERSION_MINOR << 8;
             value |= (uint32_t)VERSION_MAJOR << 16;
+            value |= (uint32_t)1 << 24;
             while (!smartport.sendPacketReady())
             {
                 smartport.update();
             }
-            smartport.addPacket(0x32, 0x5001, value);
+            smartport.addPacket(0x32, 0x5000, value);
             // packet 2
             value = config.protocol;
             value |= config.voltage1 << 2;
@@ -303,38 +304,42 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             value |= (uint32_t)config.refresh.volt << 12;
             value |= (uint32_t)config.refresh.curr << 16;
             value |= (uint32_t)config.refresh.temp << 20;
+            value |= (uint32_t)2 << 24;
             while (!smartport.sendPacketReady())
             {
                 smartport.update();
             }
-            smartport.addPacket(0x32, 0x5002, value);
+            smartport.addPacket(0x32, 0x5000, value);
             // packet 3
             value = (uint32_t)(200 / config.alpha.rpm - 1);
             value |= (uint32_t)(200 / config.alpha.volt - 1) << 4;
             value |= (uint32_t)(200 / config.alpha.curr - 1) << 8;
             value |= (uint32_t)(200 / config.alpha.temp - 1) << 12;
+            value |= (uint32_t)3 << 24;
             while (!smartport.sendPacketReady())
             {
                 smartport.update();
             }
-            smartport.addPacket(0x32, 0x5003, value);
+            smartport.addPacket(0x32, 0x5000, value);
             // packet 4
             value = (uint32_t)config.deviceI2C[0].type;
             value |= (uint32_t)config.deviceI2C[1].type << 4;
             value |= (uint32_t)config.deviceI2C[0].address << 8;
             value |= (uint32_t)config.deviceI2C[1].address << 16;
+            value |= (uint32_t)4 << 24;
             while (!smartport.sendPacketReady())
             {
                 smartport.update();
             }
-            smartport.addPacket(0x32, 0x5004, value);
+            smartport.addPacket(0x32, 0x5000, value);
             return;
         }
+
         // receive config
-        if (frameId == 0x30 && dataId == 0x5011)
+        if (frameId == 0x31 && dataId == 0x5000 && BM_PACKET(value) == 1)
         {
 #ifdef DEBUG
-            Serial.print("PACKET 1 RECEIVED: ");
+            Serial.print("PACKET 1: ");
             Serial.println(value);
 #endif
             uint16_t timestamp = millis();
@@ -350,24 +355,24 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             config.refresh.volt = BM_REFRESH_VOLT(value);
             config.refresh.curr = BM_REFRESH_CURR(value);
             config.refresh.temp = BM_REFRESH_TEMP(value);
-            while (frameId != 0x30 || dataId != 0x5012)
+            while (frameId != 0x31 || dataId != 0x5000 || BM_PACKET(value) != 2)
             {
                 smartport.update(frameId, dataId, value);
             }
 #ifdef DEBUG
-            Serial.print("PACKET 2 RECEIVED: ");
+            Serial.print("PACKET 2: ");
             Serial.println(value);
 #endif
             config.alpha.rpm = calcAlpha(BM_AVG_ELEM_RPM(value));
             config.alpha.volt = calcAlpha(BM_AVG_ELEM_VOLT(value));
             config.alpha.curr = calcAlpha(BM_AVG_ELEM_CURR(value));
             config.alpha.temp = calcAlpha(BM_AVG_ELEM_TEMP(value));
-            while (frameId != 0x30 || dataId != 0x5013)
+            while (frameId != 0x31 || dataId != 0x5000 || BM_PACKET(value) != 3)
             {
                 smartport.update(frameId, dataId, value);
             }
 #ifdef DEBUG
-            Serial.print("PACKET 3 RECEIVED: ");
+            Serial.print("PACKET 3: ");
             Serial.println(value);
 #endif
             config.deviceI2C[0].type = BM_I2C1(value);
@@ -378,7 +383,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             {
                 smartport.update();
             }
-            smartport.addPacket(0x32, 0x5020, 0);
+            smartport.addPacket(0x32, 0x5000, 0);
             writeConfig(config);
             initConfig(config);
         }   

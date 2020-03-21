@@ -359,6 +359,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
         {
             if (packetP != NULL && maintenanceMode_) // if maintenance send packet
             {
+                sendData(packetP->frameId, packetP->dataId, packetP->value);
 #ifdef DEBUG
                 Serial.print("Sent frameId: ");
                 Serial.print(packetP->frameId, HEX);
@@ -367,7 +368,6 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 Serial.print(" value: ");
                 Serial.println(packetP->value);
 #endif
-                sendData(packetP->frameId, packetP->dataId, packetP->value);
                 dataId = packetP->dataId;
                 value = packetP->value;
                 delete packetP;
@@ -384,6 +384,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 }
                 if ((uint16_t)millis() - spSensorP->timestamp() >= (uint16_t)spSensorP->refresh() * 100)
                 {
+                    sendData(spSensorP->frameId(), spSensorP->dataId(), formatData(spSensorP->dataId(), spSensorP->valueM(), spSensorP->valueL()));
 #ifdef DEBUG2
                     Serial.print("id: ");
                     Serial.print(spSensorP->dataId(), HEX);
@@ -407,7 +408,6 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                         Serial.println(spSensorP->timestamp());
                     }
 #endif
-                    sendData(spSensorP->frameId(), spSensorP->dataId(), formatData(spSensorP->dataId(), spSensorP->valueM(), spSensorP->valueL()));
                     spSensorP->setTimestamp(millis());
                     dataId = spSensorP->dataId();
                     frameId = 0;
