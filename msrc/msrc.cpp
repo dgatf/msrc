@@ -270,7 +270,6 @@ void initConfig(Config &config)
             }
             */
     }
-    Serial.println("INIT DONE");
 }
 
 void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
