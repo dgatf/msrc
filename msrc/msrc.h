@@ -75,42 +75,42 @@
 
 // Config bitmask
 
-#define BM_PACKET(VALUE) VALUE >> 24
+// byte 1: command
 
-// packet 1: byte 1 version patch, byte 2 version minor, byte 3 version major
+// packet 1: byte 2 version patch, byte 3 version minor, byte 4 version major
 
 // packet 2
-// byte 1
-#define BM_PROTOCOL(VALUE) VALUE & 0B00000011
-#define BM_VOLTAGE1(VALUE) VALUE >> 2 & 0B00000001
-#define BM_VOLTAGE2(VALUE) VALUE >> 3 & 0B00000001
-#define BM_CURRENT(VALUE) VALUE >> 4 & 0B00000001
-#define BM_NTC1(VALUE) VALUE >> 5 & 0B00000001
-#define BM_NTC2(VALUE) VALUE >> 6 & 0B00000001
-#define BM_PWM(VALUE) VALUE >> 7 & 0B00000001
 // byte 2
-#define BM_REFRESH_RPM(VALUE) VALUE >> 8 & 0B00001111
-#define BM_REFRESH_VOLT(VALUE) VALUE >> 12 & 0B00001111
+#define BM_PROTOCOL(VALUE) VALUE >> 8 & 0B00000011
+#define BM_VOLTAGE1(VALUE) VALUE >> 10 & 0B00000001
+#define BM_VOLTAGE2(VALUE) VALUE >> 11 & 0B00000001
+#define BM_CURRENT(VALUE) VALUE >> 12 & 0B00000001
+#define BM_NTC1(VALUE) VALUE >> 13 & 0B00000001
+#define BM_NTC2(VALUE) VALUE >> 14 & 0B00000001
+#define BM_PWM(VALUE) VALUE >> 15 & 0B00000001
 // byte 3
-#define BM_REFRESH_CURR(VALUE) VALUE >> 16 & 0B00001111
-#define BM_REFRESH_TEMP(VALUE) VALUE >> 20 & 0B00001111
+#define BM_REFRESH_RPM(VALUE) VALUE >> 16 & 0B00001111
+#define BM_REFRESH_VOLT(VALUE) VALUE >> 20 & 0B00001111
+// byte 4
+#define BM_REFRESH_CURR(VALUE) VALUE >> 24 & 0B00001111
+#define BM_REFRESH_TEMP(VALUE) VALUE >> 28 & 0B00001111
 
 // packet 3
-// byte 1
-#define BM_AVG_ELEM_RPM(VALUE) VALUE & 0B00001111
-#define BM_AVG_ELEM_VOLT(VALUE) VALUE >> 4 & 0B00001111
 // byte 2
-#define BM_AVG_ELEM_CURR(VALUE) VALUE >> 8 & 0B00001111
-#define BM_AVG_ELEM_TEMP(VALUE) VALUE >> 12 & 0B00001111
+#define BM_AVG_ELEM_RPM(VALUE) VALUE >> 8& 0B00001111
+#define BM_AVG_ELEM_VOLT(VALUE) VALUE >> 12 & 0B00001111
 // byte 3
+#define BM_AVG_ELEM_CURR(VALUE) VALUE >> 16 & 0B00001111
+#define BM_AVG_ELEM_TEMP(VALUE) VALUE >> 20 & 0B00001111
+// byte 4
 
 // packet 4
-// byte 1
-#define BM_I2C1(VALUE) VALUE & 0B00001111
-#define BM_I2C2(VALUE) VALUE >> 4 & 0B11110000
 // byte 2
-#define BM_I2C1_ADDRESS(VALUE) VALUE >> 8
-#define BM_I2C2_ADDRESS(VALUE) VALUE >> 16
+#define BM_I2C1(VALUE) VALUE >> 8 & 0B00001111
+#define BM_I2C2(VALUE) VALUE >> 12 & 0B11110000
+// byte 3
+#define BM_I2C1_ADDRESS(VALUE) VALUE >> 16
+#define BM_I2C2_ADDRESS(VALUE) VALUE >> 24
 
 #include <Arduino.h>
 #include <EEPROM.h>
@@ -185,3 +185,5 @@ void loop();
 
 SoftwareSerial smartportSerial(PIN_SMARTPORT_RX, PIN_SMARTPORT_TX, true);
 Smartport smartport(smartportSerial);
+
+uint8_t chk = 0;

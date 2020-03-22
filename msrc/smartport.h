@@ -178,6 +178,7 @@ public:
     Sensor(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t refresh, AbstractDevice *device);
     Sensor(uint16_t dataId, uint8_t indexL, uint8_t refresh, AbstractDevice *device);
     Sensor(uint16_t dataId, uint8_t refresh, AbstractDevice *device);
+    ~Sensor();
     Sensor *nextP = NULL;
     uint16_t timestamp();
     void setTimestamp(uint16_t dataId);

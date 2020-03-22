@@ -270,6 +270,7 @@ void initConfig(Config &config)
             }
             */
     }
+    Serial.println("INIT DONE");
 }
 
 void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
@@ -277,56 +278,56 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
     if (smartport.maintenanceMode())
     {
         // send config
-        if (frameId == 0x30 && dataId == 0x5000)
+        if (frameId == 0x30 && dataId == 0x5000 && value == 0)
         {
             uint16_t timestamp = millis();
             uint32_t value = 0;
             Config config = readConfig();
             // packet 1
-            value = VERSION_PATCH;
-            value |= (uint32_t)VERSION_MINOR << 8;
-            value |= (uint32_t)VERSION_MAJOR << 16;
-            value |= (uint32_t)1 << 24;
+            value = 0xF1;
+            value |= (uint32_t)VERSION_PATCH << 8;
+            value |= (uint32_t)VERSION_MINOR << 16;
+            value |= (uint32_t)VERSION_MAJOR << 24;
             while (!smartport.sendPacketReady())
             {
                 smartport.update();
             }
             smartport.addPacket(0x32, 0x5000, value);
             // packet 2
-            value = config.protocol;
-            value |= config.voltage1 << 2;
-            value |= config.voltage2 << 3;
-            value |= config.current << 4;
-            value |= config.ntc1 << 5;
-            value |= config.ntc2 << 6;
-            value |= config.pwmOut << 7;
-            value |= (uint32_t)config.refresh.rpm << 8;
-            value |= (uint32_t)config.refresh.volt << 12;
-            value |= (uint32_t)config.refresh.curr << 16;
-            value |= (uint32_t)config.refresh.temp << 20;
-            value |= (uint32_t)2 << 24;
+            value = 0xF2;
+            value |= config.protocol << 8;
+            value |= config.voltage1 << 10;
+            value |= config.voltage2 << 11;
+            value |= config.current << 12;
+            value |= config.ntc1 << 13;
+            value |= config.ntc2 << 14;
+            value |= config.pwmOut << 15;
+            value |= (uint32_t)config.refresh.rpm << 16;
+            value |= (uint32_t)config.refresh.volt << 20;
+            value |= (uint32_t)config.refresh.curr << 24;
+            value |= (uint32_t)config.refresh.temp << 28;
             while (!smartport.sendPacketReady())
             {
                 smartport.update();
             }
             smartport.addPacket(0x32, 0x5000, value);
             // packet 3
-            value = (uint32_t)(200 / config.alpha.rpm - 1);
-            value |= (uint32_t)(200 / config.alpha.volt - 1) << 4;
-            value |= (uint32_t)(200 / config.alpha.curr - 1) << 8;
-            value |= (uint32_t)(200 / config.alpha.temp - 1) << 12;
-            value |= (uint32_t)3 << 24;
+            value = 0xF3;
+            value |= (uint32_t)(200 / config.alpha.rpm - 1) << 8;
+            value |= (uint32_t)(200 / config.alpha.volt - 1) << 12;
+            value |= (uint32_t)(200 / config.alpha.curr - 1) << 16;
+            value |= (uint32_t)(200 / config.alpha.temp - 1) << 20;
             while (!smartport.sendPacketReady())
             {
                 smartport.update();
             }
             smartport.addPacket(0x32, 0x5000, value);
             // packet 4
-            value = (uint32_t)config.deviceI2C[0].type;
-            value |= (uint32_t)config.deviceI2C[1].type << 4;
-            value |= (uint32_t)config.deviceI2C[0].address << 8;
-            value |= (uint32_t)config.deviceI2C[1].address << 16;
-            value |= (uint32_t)4 << 24;
+            value = 0xF4;
+            value |= (uint32_t)config.deviceI2C[0].type << 8;
+            value |= (uint32_t)config.deviceI2C[1].type << 12;
+            value |= (uint32_t)config.deviceI2C[0].address << 16;
+            value |= (uint32_t)config.deviceI2C[1].address << 20;
             while (!smartport.sendPacketReady())
             {
                 smartport.update();
@@ -336,7 +337,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         }
 
         // receive config
-        if (frameId == 0x31 && dataId == 0x5000 && BM_PACKET(value) == 1)
+        if (frameId == 0x31 && dataId == 0x5000 && (uint8_t)(value) == 0xF1)
         {
 #ifdef DEBUG
             Serial.print("PACKET 1: ");
@@ -355,7 +356,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             config.refresh.volt = BM_REFRESH_VOLT(value);
             config.refresh.curr = BM_REFRESH_CURR(value);
             config.refresh.temp = BM_REFRESH_TEMP(value);
-            while (frameId != 0x31 || dataId != 0x5000 || BM_PACKET(value) != 2)
+            while (frameId != 0x31 || dataId != 0x5000 || (uint8_t)(value) != 0xF2)
             {
                 smartport.update(frameId, dataId, value);
             }
@@ -367,7 +368,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             config.alpha.volt = calcAlpha(BM_AVG_ELEM_VOLT(value));
             config.alpha.curr = calcAlpha(BM_AVG_ELEM_CURR(value));
             config.alpha.temp = calcAlpha(BM_AVG_ELEM_TEMP(value));
-            while (frameId != 0x31 || dataId != 0x5000 || BM_PACKET(value) != 3)
+            while (frameId != 0x31 || dataId != 0x5000 || (uint8_t)(value) != 0xF3)
             {
                 smartport.update(frameId, dataId, value);
             }
@@ -383,7 +384,11 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             {
                 smartport.update();
             }
-            smartport.addPacket(0x32, 0x5000, 0);
+            smartport.addPacket(0x32, 0x5000, 0xFF);
+            while (!smartport.sendPacketReady())
+            {
+                smartport.update();
+            }
             writeConfig(config);
             initConfig(config);
         }   
@@ -442,11 +447,12 @@ void loop()
     uint8_t frameId;
     uint16_t dataId;
     uint32_t value;
-    if (smartport.update(frameId, dataId, value) == RECEIVED_PACKET)
+    uint8_t result = smartport.update(frameId, dataId, value);
+    if (result == RECEIVED_PACKET)
     {
         processPacket(frameId, dataId, value);
     }
-    else if (smartport.update() == CHANGED_SENSOR_ID)
+    else if (result == CHANGED_SENSOR_ID)
     {
         Config config = readConfig();
         config.sensorId = smartport.crcToId(smartport.sensorId());

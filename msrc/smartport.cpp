@@ -11,6 +11,11 @@ Sensor::Sensor(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t refresh,
 Sensor::Sensor(uint16_t dataId, uint8_t indexL, uint8_t refresh, AbstractDevice *device) : dataId_(dataId), indexL_(indexL), refresh_(refresh), device_(device) {}
 Sensor::Sensor(uint16_t dataId, uint8_t refresh, AbstractDevice *device) : dataId_(dataId), refresh_(refresh), device_(device) {}
 
+Sensor::~Sensor()
+{
+    delete device_;
+}
+
 float Sensor::read(uint8_t index)
 {
     return device_->read(index);
@@ -265,7 +270,8 @@ void Smartport::deleteSensors()
 {
     if (sensorP != NULL)
     {
-        Sensor *firstSensorP = sensorP;
+        Sensor *firstSensorP;
+        firstSensorP = sensorP;
         Sensor *nextSensorP;
         do
         {
@@ -274,6 +280,11 @@ void Smartport::deleteSensors()
             sensorP = nextSensorP;
         } while (sensorP != firstSensorP);
         sensorP = NULL;
+    }
+    if (packetP != NULL)
+    {
+        delete packetP;
+        packetP = NULL;
     }
 }
 
@@ -445,7 +456,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 return MAINTENANCE_OFF;
             }
             // send sensorId
-            if (maintenanceMode_ && frameId == 0x30 && dataId == dataId_ && value == 1)
+            if (maintenanceMode_ && frameId == 0x30 && dataId == dataId_ && value == 0x01)
             {
 #ifdef DEBUG
                 Serial.print("Sent Sensor Id: ");
@@ -453,13 +464,13 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 Serial.print(" ");
                 Serial.println(sensorId_, HEX);
 #endif
-                addPacket(0x32, dataId_, 256 * (crcToId(sensorId_) - 1) + 1);
+                addPacket(0x32, dataId_, (crcToId(sensorId_) - 1) << 8 | 0x01);
                 return SENT_SENSOR_ID;
             }
             // change sensorId
-            if (maintenanceMode_ && frameId == 0x31 && dataId == dataId_)
+            if (maintenanceMode_ && frameId == 0x31 && dataId == dataId_ && (uint8_t)value == 0x01)
             {
-                setSensorId(idToCrc(((value - 1) / 256) + 1));
+                setSensorId(idToCrc((value >> 8) + 1));
 #ifdef DEBUG
                 Serial.print("Changed Sensor Id: ");
                 Serial.println(crcToId(sensorId_));

@@ -119,76 +119,75 @@ local function readConfig()
         end
         local physicalId, primId, dataId, value = sportTelemetryPop()
         if primId == 0x32 and dataId == 0x5000 then
-            if bit32.extract(value, 24, 8) == 1 and readConfigState == state["CONFIG_REQUESTED"] then
+            if bit32.extract(value, 0, 8) == 0xF1 and readConfigState == state["CONFIG_REQUESTED"] then
                 config.firmwareVersion =
-                    bit32.extract(value, 16, 8) .. "." .. bit32.extract(value, 8, 8) .. "." .. bit32.extract(value, 0, 8)
+                    bit32.extract(value, 24, 8) .. "." .. bit32.extract(value, 16, 8) .. "." .. bit32.extract(value, 8, 8)
                 readConfigState = state["PACKET_1"]
             end
-            if bit32.extract(value, 24, 8) == 2 and readConfigState == state["PACKET_1"] then
-                if bit32.extract(value, 0, 2) + 1 >= 1 and bit32.extract(value, 0, 2) + 1 <= 4 then
-                    config.protocol.selected = bit32.extract(value, 0, 2) + 1 -- bits 1,2
+            if bit32.extract(value, 0, 8) == 0xF2 and readConfigState == state["PACKET_1"] then
+                if bit32.extract(value, 8, 2) + 1 >= 1 and bit32.extract(value, 8, 2) + 1 <= 4 then
+                    config.protocol.selected = bit32.extract(value, 8, 2) + 1 -- bits 9,10
                 end
-                if bit32.extract(value, 2) + 1 >= 1 and bit32.extract(value, 2) + 1 <= 2 then
-                    config.voltage1.selected = bit32.extract(value, 2) + 1 -- bit 3
+                if bit32.extract(value, 10) + 1 >= 1 and bit32.extract(value, 10) + 1 <= 2 then
+                    config.voltage1.selected = bit32.extract(value, 10) + 1 -- bit 11
                 end
-                if bit32.extract(value, 3) + 1 >= 1 and bit32.extract(value, 3) + 1 <= 2 then
-                    config.voltage2.selected = bit32.extract(value, 3) + 1 -- bit 4
+                if bit32.extract(value, 11) + 1 >= 1 and bit32.extract(value, 11) + 1 <= 2 then
+                    config.voltage2.selected = bit32.extract(value, 11) + 1 -- bit 12
                 end
-                if bit32.extract(value, 4) + 1 >= 1 and bit32.extract(value, 4) + 1 <= 2 then
-                    config.current.selected = bit32.extract(value, 4) + 1 -- bit 5
+                if bit32.extract(value, 12) + 1 >= 1 and bit32.extract(value, 12) + 1 <= 2 then
+                    config.current.selected = bit32.extract(value, 12) + 1 -- bit 13
                 end
-                if bit32.extract(value, 5) + 1 >= 1 and bit32.extract(value, 5) + 1 <= 2 then
-                    config.ntc1.selected = bit32.extract(value, 5) + 1 -- bit 6
+                if bit32.extract(value, 13) + 1 >= 1 and bit32.extract(value, 13) + 1 <= 2 then
+                    config.ntc1.selected = bit32.extract(value, 13) + 1 -- bit 14
                 end
-                if bit32.extract(value, 6) + 1 >= 1 and bit32.extract(value, 6) + 1 <= 2 then
-                    config.ntc2.selected = bit32.extract(value, 6) + 1 -- bit 7
+                if bit32.extract(value, 14) + 1 >= 1 and bit32.extract(value, 14) + 1 <= 2 then
+                    config.ntc2.selected = bit32.extract(value, 14) + 1 -- bit 15
                 end
-                if bit32.extract(value, 7) + 1 >= 1 and bit32.extract(value, 7) + 1 <= 2 then
-                    config.pwm.selected = bit32.extract(value, 7) + 1 -- bit 8
-                end
-                if bit32.extract(value, 8, 4) + 1 >= 1 and bit32.extract(value, 8, 4) + 1 <= 16 then
-                    config.refreshRpm.selected = bit32.extract(value, 8, 4) + 1 -- bits 9-12
-                end
-                if bit32.extract(value, 12, 4) + 1 >= 1 and bit32.extract(value, 12, 4) + 1 <= 16 then
-                    config.refreshVolt.selected = bit32.extract(value, 12, 4) + 1 -- bits 13-16
+                if bit32.extract(value, 15) + 1 >= 1 and bit32.extract(value, 15) + 1 <= 2 then
+                    config.pwm.selected = bit32.extract(value, 15) + 1 -- bit 16
                 end
                 if bit32.extract(value, 16, 4) + 1 >= 1 and bit32.extract(value, 16, 4) + 1 <= 16 then
-                    config.refreshCurr.selected = bit32.extract(value, 12, 4) + 1 -- bits 17-20
+                    config.refreshRpm.selected = bit32.extract(value, 16, 4) + 1 -- bits 17-20
                 end
-                if bit32.extract(value, 20, 4) >= 1 and bit32.extract(value, 20, 4) <= 16 then
-                    config.refreshTemp.selected = bit32.extract(value, 20, 4) + 1 -- bits 21-24
+                if bit32.extract(value, 20, 4) + 1 >= 1 and bit32.extract(value, 20, 4) + 1 <= 16 then
+                    config.refreshVolt.selected = bit32.extract(value, 20, 4) + 1 -- bits 21-24
+                end
+                if bit32.extract(value, 24, 4) + 1 >= 1 and bit32.extract(value, 24, 4) + 1 <= 16 then
+                    config.refreshCurr.selected = bit32.extract(value, 24, 4) + 1 -- bits 25-28
+                end
+                if bit32.extract(value, 28, 4) >= 1 and bit32.extract(value, 28, 4) <= 16 then
+                    config.refreshTemp.selected = bit32.extract(value, 28, 4) + 1 -- bits 29-32
                 end
                 readConfigState = state["PACKET_2"]
             end
-            if bit32.extract(value, 24, 8) == 3 and readConfigState == state["PACKET_2"] then
-                if bit32.extract(value, 0, 4) >= 1 and bit32.extract(value, 0, 4) <= 16 then
-                    config.queueRpm.selected = bit32.extract(value, 0, 4) -- bits 1-4
-                end
-                if bit32.extract(value, 4, 4) >= 1 and bit32.extract(value, 4, 4) <= 16 then
-                    config.queueVolt.selected = bit32.extract(value, 4, 4) -- bits 5-8
-                end
+            if bit32.extract(value, 0, 8) == 0xF3 and readConfigState == state["PACKET_2"] then
                 if bit32.extract(value, 8, 4) >= 1 and bit32.extract(value, 8, 4) <= 16 then
-                    config.queueCurr.selected = bit32.extract(value, 8, 4) -- bits 9-12
+                    config.queueRpm.selected = bit32.extract(value, 8, 4) -- bits 9-12
                 end
                 if bit32.extract(value, 12, 4) >= 1 and bit32.extract(value, 12, 4) <= 16 then
-                    config.queueTemp.selected = bit32.extract(value, 12, 4) -- bits 13-16
+                    config.queueVolt.selected = bit32.extract(value, 12, 4) -- bits 13-16
+                end
+                if bit32.extract(value, 16, 4) >= 1 and bit32.extract(value, 16, 4) <= 16 then
+                    config.queueCurr.selected = bit32.extract(value, 16, 4) -- bits 17-20
+                end
+                if bit32.extract(value, 20, 4) >= 1 and bit32.extract(value, 20, 4) <= 16 then
+                    config.queueTemp.selected = bit32.extract(value, 20, 4) -- bits 21-24
                 end
                 readConfigState = state["PACKET_3"]
             end
-            if bit32.extract(value, 24, 8) == 4 and readConfigState == state["PACKET_3"] then
-                if bit32.extract(value, 0, 4) >= 0 and bit32.extract(value, 0, 4) <= 3 then
-                    config.i2c1.selected = bit32.extract(value, 0, 4) + 1 -- bits 1-4
+            if bit32.extract(value, 0, 8) == 0xF4 and readConfigState == state["PACKET_3"] then
+                if bit32.extract(value, 8, 4) >= 0 and bit32.extract(value, 8, 4) <= 3 then
+                    config.i2c1.selected = bit32.extract(value, 8, 4) + 1 -- bits 9-12
                 end
-                if bit32.extract(value, 4, 4) >= 0 and bit32.extract(value, 4, 4) <= 3 then
-                    config.i2c2.selected = bit32.extract(value, 4, 4) + 1 -- bits 5-8
-                end
-                if bit32.extract(value, 8, 8) >= 0 and bit32.extract(value, 8, 8) <= 127 then
-                    config.i2c1Address.selected = bit32.extract(value, 8, 8) + 1 -- bits 9-12
+                if bit32.extract(value, 12, 4) >= 0 and bit32.extract(value, 12, 4) <= 3 then
+                    config.i2c2.selected = bit32.extract(value, 12, 4) + 1 -- bits 13-16
                 end
                 if bit32.extract(value, 16, 8) >= 0 and bit32.extract(value, 16, 8) <= 127 then
-                    config.i2c2Address.selected = bit32.extract(value, 16, 8) + 1 -- bits 13-16
+                    config.i2c1Address.selected = bit32.extract(value, 16, 8) + 1 -- bits 17-24
                 end
-                lcdChange = true
+                if bit32.extract(value, 24, 8) >= 0 and bit32.extract(value, 24, 8) <= 127 then
+                    config.i2c2Address.selected = bit32.extract(value, 24, 8) + 1 -- bits 25-32
+                end
                 readConfigState = state["PACKET_4"]
             end
         end
@@ -207,47 +206,45 @@ local function sendConfig()
                 sendConfigState = state["MAINTENANCE_ON"]
             end
         elseif sendConfigState == state["MAINTENANCE_ON"] then
-            local value = 0
-            value = bit32.bor(value, config.protocol.selected - 1) -- bits 1-2
-            value = bit32.bor(value, bit32.lshift(config.voltage1.selected - 1, 2)) -- bit 3
-            value = bit32.bor(value, bit32.lshift(config.voltage2.selected - 1, 3)) -- bit 4
-            value = bit32.bor(value, bit32.lshift(config.current.selected - 1, 4)) -- bit 5
-            value = bit32.bor(value, bit32.lshift(config.ntc1.selected - 1, 5)) -- bit 6
-            value = bit32.bor(value, bit32.lshift(config.ntc2.selected - 1, 6)) -- bit 7
-            value = bit32.bor(value, bit32.lshift(config.pwm.selected - 1, 7)) -- bit 8
-            value = bit32.bor(value, bit32.lshift(config.refreshRpm.selected - 1, 8)) -- bits 9-12
-            value = bit32.bor(value, bit32.lshift(config.refreshVolt.selected - 1, 12)) -- bits 13-16
-            value = bit32.bor(value, bit32.lshift(config.refreshCurr.selected - 1, 16)) -- bits 17-20
-            value = bit32.bor(value, bit32.lshift(config.refreshTemp.selected - 1, 20)) -- bits 21-24
-            value = bit32.bor(value, bit32.lshift(1, 24)) -- bits 25-32
+            local value = 0xF1 -- bits 1-8
+            value = bit32.bor(value, bit32.lshift(config.protocol.selected - 1, 8)) -- bits 9-10
+            value = bit32.bor(value, bit32.lshift(config.voltage1.selected - 1, 10)) -- bit 11
+            value = bit32.bor(value, bit32.lshift(config.voltage2.selected - 1, 11)) -- bit 12
+            value = bit32.bor(value, bit32.lshift(config.current.selected - 1, 12)) -- bit 13
+            value = bit32.bor(value, bit32.lshift(config.ntc1.selected - 1, 13)) -- bit 14
+            value = bit32.bor(value, bit32.lshift(config.ntc2.selected - 1, 14)) -- bit 15
+            value = bit32.bor(value, bit32.lshift(config.pwm.selected - 1, 15)) -- bit 16
+            value = bit32.bor(value, bit32.lshift(config.refreshRpm.selected - 1, 16)) -- bits 17-20
+            value = bit32.bor(value, bit32.lshift(config.refreshVolt.selected - 1, 20)) -- bits 21-24
+            value = bit32.bor(value, bit32.lshift(config.refreshCurr.selected - 1, 24)) -- bits 25-28
+            value = bit32.bor(value, bit32.lshift(config.refreshTemp.selected - 1, 28)) -- bits 29-32
             if sportTelemetryPush(sensorIdTx, 0x31, 0x5000, value) then
                 sendConfigState = state["PACKET_1"]
             end
         elseif sendConfigState == state["PACKET_1"] then
-            local value = 0
-            value = bit32.bor(value, config.queueRpm.selected) -- bits 1-4
-            value = bit32.bor(value, bit32.lshift(config.queueVolt.selected, 4)) -- bits 5-8
-            value = bit32.bor(value, bit32.lshift(config.queueCurr.selected, 8)) -- bits 9-12
-            value = bit32.bor(value, bit32.lshift(config.queueTemp.selected, 12)) -- bits 13-16
-            value = bit32.bor(value, bit32.lshift(2, 24)) -- bits 25-32
+            local value = 0xF2 -- bits 1-8
+            value = bit32.bor(value, bit32.lshift(config.queueRpm.selected, 8)) -- bits 9-12
+            value = bit32.bor(value, bit32.lshift(config.queueVolt.selected, 12)) -- bits 13-16
+            value = bit32.bor(value, bit32.lshift(config.queueCurr.selected, 16)) -- bits 17-20
+            value = bit32.bor(value, bit32.lshift(config.queueTemp.selected, 20)) -- bits 21-24
             if sportTelemetryPush(sensorIdTx, 0x31, 0x5000, value) then
                 sendConfigState = state["PACKET_2"]
             end
         elseif sendConfigState == state["PACKET_2"] then
-            local value = 0
-            value = bit32.bor(value, config.i2c1.selected - 1) -- bits 1-4
-            value = bit32.bor(value, bit32.lshift(config.i2c2.selected - 1, 4)) -- bits 5-8
-            value = bit32.bor(value, bit32.lshift(config.i2c1Address.selected - 1, 8)) -- bits 9-16
-            value = bit32.bor(value, bit32.lshift(config.i2c2Address.selected - 1, 16)) -- bits 17-24
-            value = bit32.bor(value, bit32.lshift(3, 24)) -- bits 25-32
+            local value = 0xF3 -- bits 1-8
+            value = bit32.bor(value, bit32.lshift(config.i2c1.selected - 1, 8)) -- bits 9-12
+            value = bit32.bor(value, bit32.lshift(config.i2c2.selected - 1, 12)) -- bits 13-16
+            value = bit32.bor(value, bit32.lshift(config.i2c1Address.selected - 1, 16)) -- bits 17-24
+            value = bit32.bor(value, bit32.lshift(config.i2c2Address.selected - 1, 24)) -- bits 25-32
             if sportTelemetryPush(sensorIdTx, 0x31, 0x5000, value) then
                 sendConfigState = state["PACKET_3"]
             end
         elseif sendConfigState == state["PACKET_3"] then
             local physicalId, primId, dataId, value = sportTelemetryPop()
-            if primId == 0x32 and dataId == 0x5000 and value == 0 and sendConfigState == state["PACKET_3"] then
+            if primId == 0x32 and dataId == 0x5000 and value == 0xFF then
                 if sportTelemetryPush(sensorIdTx, 0x20, 0xFFFF, 0x80) then
                     sendConfigState = state["MAINTENANCE_OFF"]
+                    lcdChange = true
                 end
             end
         end
