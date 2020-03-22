@@ -135,8 +135,13 @@ To get battery consumption add a new sensor:
 
 ## Images
 
-<p align="center"><img src="./images/top.jpg" width="400"><br>
-<img src="./images/bottom.jpg" width="400"></p>
+<p align="center"><img src="./images/top.jpg" width="300">  <img src="./images/bottom.jpg" width="300"></p>
+
+<p align="center"><img src="./images/450_1.jpg" width="300">  <img src="./images/450_2.jpg" width="300"></p>
+
+<p align="center"><img src="./images/450_3.jpg" width="300">  <img src="./images/450_x7.bmp" width="300"><br><i>MSRC on Align 450 connected to Hobbywing V3 Platinum and two thermistors for ESC and motor</i><br></p>
+
+
 
 ## Video
 
