@@ -1,3 +1,9 @@
+--
+-- Multi Sensor RC - MSRC
+--
+-- License https://www.gnu.org/licenses/gpl-3.0.en.html
+--
+
 local scriptVersion = "0.4"
 local tsReadConfig = 0
 local tsSendConfig = 0
@@ -374,8 +380,6 @@ local function refreshTaranis()
     else
         lcd.drawText(1, 97 - scroll * 8, "UPDATE", SMLSIZE + getFlags(20))
     end
-    --if sendConfigState == 40 then lcd.drawText(35, 97 - scroll * 8, 'OK', SMLSIZE)
-    --elseif sendConfigState == 50 then lcd.drawText(35, 97 - scroll * 8, 'ERROR', SMLSIZE) end
     lcd.drawScreenTitle("MSRC v" .. scriptVersion, 1, 1)
 end
 

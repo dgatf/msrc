@@ -53,7 +53,7 @@ Usually the minimum circuit is the arduino connected to esc or rpm sensor and sm
  - If using ESC serial: ESC serial signal to Arduino Rx
  - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (8)
 
-<p align="center"><img src="./images/esc_smartport_min.png" width="600"><br>
+<p align="center"><img src="./images/msrc_min.png" width="600"><br>
   <i>Minimum circuit</i><br><br></p>
 
 ## Additional analog and I2C sensors

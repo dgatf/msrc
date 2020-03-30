@@ -1,5 +1,5 @@
 /*
- * esc_smartport
+ * Multi Sensor RC - MSRC
  *
  * License https://www.gnu.org/licenses/gpl-3.0.en.html
  *
@@ -18,7 +18,7 @@
  * - SmartPort Gnd to Arduino Gnd
  * - Smartport Signal to Arduino PIN_SMARTPORT_RX (7)
  * - Smartport Signal to R3 (4.7k)
- * - R3 (4.7k) to Arduino PIN_SMARTPORT_TX (12)
+ * - R3 (3.3k) to Arduino PIN_SMARTPORT_TX (12)
  * - If using ESC serial: ESC serial signal to Arduino Rx
  * - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (8)
  * - If PWM output is required (for HobbyWing Flyfun V5): Flybarless PWM signal input to Arduino PIN_PWM_OUT (9)
