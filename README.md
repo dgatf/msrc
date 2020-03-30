@@ -49,7 +49,7 @@ Usually the minimum circuit is the arduino connected to esc or rpm sensor and sm
  - SmartPort Gnd to Arduino Gnd
  - Smartport Signal to Arduino PIN_SMARTPORT_RX (7)
  - Smartport Signal to R3 (4.7k)
- - R3 (4.7k) to Arduino PIN_SMARTPORT_TX (12)
+ - R3 (3.3k) to Arduino PIN_SMARTPORT_TX (12)
  - If using ESC serial: ESC serial signal to Arduino Rx
  - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (8)
 
@@ -224,6 +224,7 @@ More accurate formula (Steinhart and Hart Equation) if data available:
 
 v0.4
 
+- Change R3 resistor to 3.3k
 - Support for [change_id_frsky](https://github.com/dgatf/change_id_frsky) to change the sensor id
 - Support for I2C sensors 
 - Improved code quality and performance
