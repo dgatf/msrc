@@ -325,7 +325,7 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
                         crc &= 0x00FF;
                     }
                     crc = 0xFF - (uint8_t)crc;
-                    if (crc == data[8])
+                    if (crc == data[8] && data[1] != 0x00 && data[1] != 0x10)
                     {
                         sensorId = data[0];
                         frameId = data[1];
@@ -396,7 +396,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 if ((uint16_t)millis() - spSensorP->timestamp() >= (uint16_t)spSensorP->refresh() * 100)
                 {
                     sendData(spSensorP->frameId(), spSensorP->dataId(), formatData(spSensorP->dataId(), spSensorP->valueM(), spSensorP->valueL()));
-#ifdef DEBUG2
+#ifdef DEBUG
                     Serial.print("id: ");
                     Serial.print(spSensorP->dataId(), HEX);
                     Serial.print(" iL: ");
@@ -435,7 +435,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 }
             }
         }
-        else if (packetType == RECEIVED_PACKET && frameId != 0x10)
+        else if (packetType == RECEIVED_PACKET)
         {
             // maintenance mode on
             if (frameId == 0x21 && dataId == 0xFFFF && value == 0x80)
