@@ -17,7 +17,7 @@
  * - SmartPort Vcc to Arduino RAW
  * - SmartPort Gnd to Arduino Gnd
  * - Smartport Signal to Arduino PIN_SMARTPORT_RX (7)
- * - Smartport Signal to R3 (4.7k)
+ * - Smartport Signal to R3 (3.3k)
  * - R3 (3.3k) to Arduino PIN_SMARTPORT_TX (12)
  * - If using ESC serial: ESC serial signal to Arduino Rx
  * - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (8)
