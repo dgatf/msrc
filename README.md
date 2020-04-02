@@ -23,13 +23,13 @@ Average cell voltage for HW V4/V5 is calculated for 3S,4S,5S,6S,7S,8S,10S and 12
 
 The following analog sensors are available:
 
-- 2 x voltage divider can be added to read the battery voltage
-- 2 x temperature sensors (thermistors)
-- Current sensor
+- 2 x voltage divider can be added to read the battery voltage (A2, A3)
+- 2 x temperature sensors (thermistors) (A0, A1)
+- Current sensor (A6)
 
 ### I2C sensors
 
-Multiple I2C sensors can be added
+Multiple I2C sensors can be added (A4, A5)
 
 Currently suported:
 
@@ -41,9 +41,9 @@ PWM signal generation from ESC serial (some HW V5 don't have RPM PWM output)
 
 PWM signal properties: logic level 3.3V and default duty cycle 50%
 
-## Minimum circuit
+## Circuit
 
-Usually the minimum circuit is the arduino connected to esc or rpm sensor and smartport. Altough it is not mandatory to connect to the esc or rpm sensor 
+Minimum circuit is the arduino connected to esc or rpm sensor and smartport. Altough it is not mandatory to connect to the esc or rpm sensor 
 
  - SmartPort Vcc to Arduino RAW
  - SmartPort Gnd to Arduino Gnd
@@ -56,21 +56,12 @@ Usually the minimum circuit is the arduino connected to esc or rpm sensor and sm
 <p align="center"><img src="./images/msrc_min.png" width="600"><br>
   <i>Minimum circuit</i><br><br></p>
 
-## Additional analog and I2C sensors
-
-Optionally you can add any of the following analog sensors:
-
-- 2 x voltage divider can be added to read the battery voltage (A2, A3)
-- 2 x temperature sensors (thermistors) (A0, A1)
-- Current sensor (A6)
-
-
 <p align="center"><img src="./images/msrc_full.png" width="600"><br>
   <i>Full circuit</i><br><br></p>
 
 ## Flash to Arduino
 
-Using Arduino IDE copy folder *esc_smartport* and open *esc_smartport.ino*. Select board *Arduino Pro or Pro Mini*, processor *ATMega168 or ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
+Using Arduino IDE copy folder *esc_smartport* and open *esc_smartport.ino*. Select board *Arduino Pro or Pro Mini*, processor *ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
 
 ## Configuration
 
