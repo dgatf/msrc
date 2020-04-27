@@ -1,57 +1,53 @@
 #include "escPWM.h"
 
-// Pwm in: TIMER 1 CAPT, PIN 8
-volatile uint16_t pwmInLenght = 60000;
-volatile uint32_t tsPwmIn = 0;
+volatile uint16_t escPwmDuration = 0;
+volatile bool escPwmRunning = false;
+volatile bool escPwmUpdate = false;
 
 ISR(TIMER1_CAPT_vect)
 {
-    volatile static uint16_t pwmInInit = 0;
-    if (ICR1 - pwmInInit > 0)
-    {
-        pwmInLenght = ICR1 - pwmInInit;
-        pwmInInit = ICR1;
-        tsPwmIn = micros();
-    }
+    escPwmDuration = ICR1;
+    TCNT1 = 0;              // reset timer
+    escPwmRunning = true;
+    escPwmUpdate = true;
+}
+
+ISR(TIMER1_OVF_vect)
+{
+    escPwmRunning = false;
 }
 
 EscPWMInterface::EscPWMInterface(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
 
 void EscPWMInterface::begin()
 {
-    // TIMER1,capture ext int, scaler 8. PIN 8
-    TCCR1A = 0;
-    TCCR1B = _BV(CS11);
-    TIMSK1 = _BV(ICIE1);
+    // TIMER1 setup
+    TCCR1A = 0;                                     // normal mode
+    TCCR1B = _BV(CS11) | _BV(ICES1) | _BV(ICNC1);   // scaler 8 | capture rising | filter
+    TIMSK1 = _BV(ICIE1) | _BV(TOIE1);               // capture interrupt (ICP1 = PIN 8) | overflow interrupt
+
 }
 
 float EscPWMInterface::read(uint8_t index)
 {
     if (index == 0)
     {
-        static uint8_t cont = 0;
-        float rpm;
-        if (pwmInLenght > 0 &&
-            pwmInLenght * COMP_TO_MICROS < PWM_IN_TRIGGER_MICROS &&
-            micros() - tsPwmIn < PWM_IN_TRIGGER_MICROS)
-        {
-            if (cont > PWM_IN_TRIGGER_PULSES)
-            {
-                rpm = 60000000UL / pwmInLenght * COMP_TO_MICROS;
+        noInterrupts();
+        if (escPwmRunning) { 
+            if (escPwmUpdate) {
+                float rpm = 60000000UL / (escPwmDuration * COMP_TO_MICROS);
+                rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+                escPwmUpdate = false;
             }
-            if (cont <= PWM_IN_TRIGGER_PULSES)
-                cont++;
-#ifdef DEBUG_ESC
-            Serial.print("RPM: ");
-            Serial.println(rpm_);
-#endif
         }
-        else
-        {
+        else {
             rpm_ = 0;
-            cont = 0;
         }
-        rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+        interrupts();
+#ifdef DEBUG_ESC
+        Serial.print("RPM: ");
+        Serial.println(rpm_);
+#endif
 #ifdef SIM_SENSORS
         return 10000;
 #endif

@@ -2,8 +2,6 @@
 #define ESCPWM_H
 
 #define COMP_TO_MICROS ((float)8000000UL / F_CPU)
-#define PWM_IN_TRIGGER_MICROS 30000
-#define PWM_IN_TRIGGER_PULSES 10
 
 #include <Arduino.h>
 #include "smartport.h"
