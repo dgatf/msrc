@@ -29,6 +29,7 @@ bool EscHW4Interface::update()
                 value_[ESCHW4_CURRENT] = calcAverage(alphaCurr_ / 100.0F, current, value_[ESCHW4_CURRENT]);
                 value_[ESCHW4_TEMPFET] = calcAverage(alphaTemp_ / 100.0F, tempFET, value_[ESCHW4_TEMPFET]);
                 value_[ESCHW4_TEMPBEC] = calcAverage(alphaTemp_ / 100.0F, tempBEC, value_[ESCHW4_TEMPBEC]);
+                value_[ESCHW4_CELL_VOLTAGE] = value_[ESCHW4_VOLTAGE] / cellCount_;
 #ifdef DEBUG
                 uint32_t pn =
                     (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
@@ -110,29 +111,6 @@ float EscHW4Interface::calcCurrHW(uint16_t currentRaw)
         return 0;
 }
 
-uint8_t EscHW4Interface::setCellCount(float voltage)
-{
-    if (voltage > 42)
-        return 12;
-    if (voltage > 33.6)
-        return 10;
-    if (voltage > 29.4)
-        return 8;
-    if (voltage > 25.2)
-        return 7;
-    if (voltage > 21)
-        return 6;
-    if (voltage > 16.8)
-        return 5;
-    if (voltage > 12.6)
-        return 4;
-    if (voltage > 8.4)
-        return 3;
-    if (voltage > 4.2)
-        return 2;
-    return 1;
-}
-
 float EscHW4Interface::read(uint8_t index)
 {
 #ifdef SIM_SENSORS
@@ -141,9 +119,18 @@ float EscHW4Interface::read(uint8_t index)
     value_[ESCHW4_CURRENT] = 2;
     value_[ESCHW4_TEMPFET] = 50;
     value_[ESCHW4_TEMPBEC] = 30;
-    if (index >= 0 && index < 5)
+    value_[ESCHW4_CELL_VOLTAGE] = value_[ESCHW4_VOLTAGE] / cellCount_;
+    if (index >= 0 && index < 6)
+    {
         update();
-    return value_[index];
+        if (index == ESCHW4_CELL_VOLTAGE && cellCount_ == 0xFF) {
+            if (millis() > 10000)
+            {
+                cellCount_ = setCellCount(value_[ESCHW4_VOLTAGE]);
+            }  
+        }
+        return value_[index];
+    }
     return 0;
 #endif
     if (index >= 0 && index < 5)

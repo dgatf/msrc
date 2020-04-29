@@ -136,10 +136,8 @@ void setPwmOut(bool pwmOut)
     noInterrupts();
     if (pwmOut)
     {
-        // Init pin
-        pinMode(PIN_PWM_OUT_OCR, OUTPUT);
-        digitalWrite(PIN_PWM_OUT_OCR, LOW);
-        // Set timer1: WGM mode 15 (OCR), scaler 8 (OC1B, PB2, pin 10)
+        // TIMER1 setup: mode 15 (OCR), scaler 8 (OC1B, PB2, pin 10)
+        DDRB |= _BV(DDB2);
         TCCR1A = _BV(WGM11) | _BV(WGM10);
         TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);
     }
@@ -148,6 +146,27 @@ void setPwmOut(bool pwmOut)
         TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
     }
     interrupts();
+}
+
+void updatePwmOut()
+{
+    static float rpm = 0;
+    if (rpmSensor->valueL() != rpm)
+    {
+        rpm = rpmSensor->valueL();
+        noInterrupts();
+        if (rpm >= 2000)
+        {
+            TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
+            OCR1A = (7.5 * (uint32_t)F_CPU / rpm) - 1;
+            OCR1B = DUTY * OCR1A;
+        }
+        else
+        {
+            TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
+        }
+        interrupts();
+    }
 }
 
 void initConfig(Config &config)
@@ -191,6 +210,8 @@ void initConfig(Config &config)
         sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, ESCHW4_TEMPFET, config.refresh.temp, esc);
         smartport.addSensor(sensorP);
         sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID + 1, ESCHW4_TEMPBEC, config.refresh.temp, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(VFAS_FIRST_ID, ESCHW4_CELL_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);
     }
     if (config.voltage1 == true)
@@ -391,27 +412,6 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             writeConfig(config);
             initConfig(config);
         }   
-    }
-}
-
-void updatePwmOut()
-{
-    static float rpm = 0;
-    if (rpmSensor->valueL() != rpm)
-    {
-        rpm = rpmSensor->valueL();
-        noInterrupts();
-        if (rpm >= 2000)
-        {
-            TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
-            OCR1A = (7.5 * (uint32_t)F_CPU / rpm) - 1;
-            OCR1B = DUTY * OCR1A;
-        }
-        else
-        {
-            TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
-        }
-        interrupts();
     }
 }
 

@@ -6,11 +6,13 @@
 #define ESCHW4_CURRENT 2
 #define ESCHW4_TEMPFET 3
 #define ESCHW4_TEMPBEC 4
+#define ESCHW4_CELL_VOLTAGE 5
 
 #include <Arduino.h>
 #include "smartport.h"
+#include "escCell.h"
 
-class EscHW4Interface : public AbstractDevice
+class EscHW4Interface : public AbstractDevice, public EscCell
 {
 private:
     Stream &serial_;
@@ -18,8 +20,6 @@ private:
     float value_[5] = {0};
     float calcTempHW(uint16_t tempRaw);
     float calcCurrHW(uint16_t currentRaw);
-    uint8_t setCellCount(float voltage);
-    uint8_t cellCount_ = 255;
 
 protected:
 public:
