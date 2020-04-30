@@ -228,9 +228,12 @@ More accurate formula (Steinhart and Hart Equation) if data available:
 
 ## Change log
 
-v0.4
+v0.4.1
 
 - Add Castle Link Live protocol
+
+[v0.4](https://github.com/dgatf/msrc/tree/v0.4)
+
 - Change R3 resistor to 3.3k
 - Support for [change_id_frsky](https://github.com/dgatf/change_id_frsky) to change the sensor id
 - Support for I2C sensors 
