@@ -47,7 +47,8 @@ EscCastleInterface::EscCastleInterface(uint8_t alphaRpm, uint8_t alphaVolt, uint
 
 void EscCastleInterface::begin()
 {
-    // rx pin 2 (PD2, INT 0): input, esc pin 3 (PD3, INT 1): input/output
+    // rx pin 2 (PD2, INT 0): input
+    // esc pin 3 (PD3, INT 1): input/output
     EICRA = _BV(ISC00);  // INT0 rising/falling
     EICRA |= _BV(ISC11); // INT1 falling
     EIMSK = _BV(INT0);   // enable INT0 (PIN 2)
@@ -65,7 +66,8 @@ float EscCastleInterface::read(uint8_t index)
         {
             cellCount_ = setCellCount(((float)castleTelemetry[CASTLE_VOLTAGE] / compToMilli - 0.5) * scaler[CASTLE_VOLTAGE]);
         }
-        value = ((float)castleTelemetry[index] / compToMilli - 0.5) * scaler[index] / cellCount_;
+        value = ((float)castleTelemetry[CASTLE_VOLTAGE] / compToMilli - 0.5) * scaler[CASTLE_VOLTAGE] / cellCount_;
+        break;
     case 0 ... 8:
         value = ((float)castleTelemetry[index] / compToMilli - 0.5) * scaler[index];
         break;
@@ -95,7 +97,9 @@ float EscCastleInterface::read(uint8_t index)
         break;
     }
 #ifdef DEBUG_ESC
-    Serial.print("Value: ");
+    Serial.print("Value[");
+    Serial.print(index);
+    Serial.print("]: ");
     Serial.println(value);
 #endif
     return value;
