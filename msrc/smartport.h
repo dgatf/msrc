@@ -15,7 +15,7 @@
 
 //#define DEBUG
 //#define SIM_POLL
-//#define SIM_SENSORS
+#define SIM_SENSORS
 
 #define SENSOR_ID_1 0x00 // VARIO 0x100 (0 in opentx lua: id - 1)
 #define SENSOR_ID_2 0xA1 // FLVSS 0x300
@@ -122,7 +122,7 @@
 #define GASSUIT_MAX_FLOW_LAST_ID 0x0d6f
 #define GASSUIT_AVG_FLOW_FIRST_ID 0x0d70 // 1 ml
 #define GASSUIT_AVG_FLOW_LAST_ID 0x0d7f
-#define SBEC_POWER_FIRST_ID 0x0e50 // bug opentx
+#define SBEC_POWER_FIRST_ID 0x0e50 // bytes 1,2: 1000 V,  bytes 3,4: 1000 A
 #define SBEC_POWER_LAST_ID 0x0e5f
 #define DIY_FIRST_ID 0x5100
 #define DIY_LAST_ID 0x52ff

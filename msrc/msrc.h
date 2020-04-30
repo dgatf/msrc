@@ -1,35 +1,16 @@
 /*
- * Multi Sensor RC - MSRC
+ *            Multi Sensor RC - MSRC
  *
  * License https://www.gnu.org/licenses/gpl-3.0.en.html
  *
- * Arduino sketch to send to Frsky SmartPort ESC telemetry and other sensors:
- *
- * - Hobywing V3
- * - Hobywing V4/V5
- * - RPM PWM signal supported
- * - Additional analog sensors
- * - PWM output (for HW V5 Flyfun)
- *
- * Wiring (minimum)
- * ----------------
- *
- * - SmartPort Vcc to Arduino RAW
- * - SmartPort Gnd to Arduino Gnd
- * - Smartport Signal to Arduino PIN_SMARTPORT_RX (7)
- * - Smartport Signal to R3 (3.3k)
- * - R3 (3.3k) to Arduino PIN_SMARTPORT_TX (12)
- * - If using ESC serial: ESC serial signal to Arduino Rx
- * - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (8)
- * - If PWM output is required (for HobbyWing Flyfun V5): Flybarless PWM signal input to Arduino PIN_PWM_OUT (9)
- * 
+ *           Daniel.GeA.1000@gmail.com
  *
  */
 
 // Version
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 4
-#define VERSION_PATCH 0
+#define VERSION_PATCH 1
 
 // pins
 #define PIN_SMARTPORT_RX 7
@@ -41,14 +22,15 @@
 #define PIN_CURRENT A6
 
 // opentx
-#define SENSOR_ID_TX SENSOR_ID_18 // sensorIdTx
 #define DATA_ID 0x5100            // DataId (sensor type)
 #define CONFIG_LUA                // Uncomment if using lua script for configuration
 
-#define PROTOCOL_HW_V3 0
-#define PROTOCOL_HW_V4 1
-#define PROTOCOL_PWM 2
-#define PROTOCOL_NONE 3
+// esc protocol
+#define PROTOCOL_NONE 0
+#define PROTOCOL_HW_V3 1
+#define PROTOCOL_HW_V4 2
+#define PROTOCOL_PWM 3
+#define PROTOCOL_CASTLE 4
 
 // pwm out
 #define PIN_PWM_OUT_OCR 10
@@ -81,7 +63,6 @@
 
 // packet 2
 // byte 2
-#define BM_PROTOCOL(VALUE) VALUE >> 8 & 0B00000011
 #define BM_VOLTAGE1(VALUE) VALUE >> 10 & 0B00000001
 #define BM_VOLTAGE2(VALUE) VALUE >> 11 & 0B00000001
 #define BM_CURRENT(VALUE) VALUE >> 12 & 0B00000001
@@ -103,6 +84,7 @@
 #define BM_AVG_ELEM_CURR(VALUE) VALUE >> 16 & 0B00001111
 #define BM_AVG_ELEM_TEMP(VALUE) VALUE >> 20 & 0B00001111
 // byte 4
+#define BM_PROTOCOL(VALUE) VALUE >> 24
 
 // packet 4
 // byte 2
@@ -121,6 +103,7 @@
 #include "escHW3.h"
 #include "escHW4.h"
 #include "escPWM.h"
+#include "escCastle.h"
 #include "voltage.h"
 #include "ntc.h"
 #include "bmp180.h"
@@ -158,7 +141,7 @@ struct DeviceI2C
 struct Config
 {
     uint8_t sensorId = 10;
-    uint8_t protocol = PROTOCOL_HW_V3; // protocol (PROTOCOL_HW_V3=0, PROTOCOL_HW_V4=1, PWM=2, NONE=3)
+    uint8_t protocol = PROTOCOL_HW_V3; // protocol
     bool voltage1 = false;             // enable/disable voltage1 analog reading
     bool voltage2 = false;             // enable/disable voltage2 analog reading
     bool current = false;              // enable/disable current analog reading
@@ -178,7 +161,6 @@ void initConfig(Config &config);
 uint8_t calcAlpha(uint8_t elements);
 void setPwmOut(bool pwmOut);
 void updatePwmOut(bool pwmOut);
-uint8_t setCellCount();
 void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value);
 void setup();
 void loop();

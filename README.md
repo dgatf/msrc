@@ -16,6 +16,7 @@ ESC protocols implemented:
 - Hobbywing Platinum V3: RPM
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature, voltage and current
 - PWM signal: RPM
+- Castle Link Live: RPM , voltage, ripple voltage, current, bec voltage, bec current, temperature, temperature NTC
 
 Average cell voltage for HW V4/V5 is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on cell count is autodetected and fixed (average cell voltage to be >3.8v for proper cell count)
 
@@ -31,7 +32,7 @@ The following analog sensors are available:
 
 Multiple I2C sensors can be added (A4, A5)
 
-Currently suported:
+Currently supported:
 
 - Barometer: BMP180, BMP280
 
@@ -43,21 +44,19 @@ PWM signal properties: logic level 3.3V and default duty cycle 50%
 
 ## Circuit
 
-Minimum circuit is the arduino connected to esc or rpm sensor and smartport. Altough it is not mandatory to connect to the esc or rpm sensor 
+Minimum circuit is the arduino connected to esc or rpm sensor and smartport. Although it is not mandatory to connect to the esc or rpm sensor 
 
- - SmartPort Vcc to Arduino RAW
- - SmartPort Gnd to Arduino Gnd
- - Smartport Signal to Arduino PIN_SMARTPORT_RX (7)
- - Smartport Signal to R3 (3.3k)
- - R3 (3.3k) to Arduino PIN_SMARTPORT_TX (12)
- - If using ESC serial: ESC serial signal to Arduino Rx
- - If using ESC PWM: ESC PWM signal to Arduino PIN_PWM_ESC (8)
+<p align="center"><img src="./images/msrc_serial.png" width="600"><br>
+  <i>Minimum circuit ESC serial</i><br><br></p>
 
-<p align="center"><img src="./images/msrc_min.png" width="600"><br>
-  <i>Minimum circuit</i><br><br></p>
+<p align="center"><img src="./images/msrc_pwm.png" width="600"><br>
+  <i>Minimum circuit PWM signal</i><br><br></p>
+
+<p align="center"><img src="./images/msrc_castle.png" width="600"><br>
+  <i>Minimum circuit Castle Link</i><br><br></p>
 
 <p align="center"><img src="./images/msrc_full.png" width="600"><br>
-  <i>Full circuit</i><br><br></p>
+  <i>Additional sensors</i><br><br></p>
 
 ## Flash to Arduino
 
@@ -91,18 +90,31 @@ The arduino default sensor id is 10. This can be changed with [change_id_frsky](
 
 Depending on your configuration you may have some or all of the following sensors in Opentx:
  
-- RPM: EscR (0x0b60)
+ESC telemetry:
+
+- ESC RPM: EscR (0x0b60)
 - ESC voltage: EscV (0x0b50)
 - ESC cell average: VFAS (0x0210)
 - ESC current: EscA (0x0b50)
-- ESC temp FET: EscT (0x0b70)
-- ESC temp BEC: EscT (0x0b71)
+- ESC temp FET (HW) or ESC temp linear (Castle): EscT (0x0b70)
+- ESC temp BEC (HW) or ESC temp NTC (Castle): EscT (0x0b71)
+- ESC ripple voltage: EscV (0x0b51)
+- ESC BEC voltage: EscV (0x0e50)
+- ESC BEC current: EscC (0x0e50)
+
+Analog telemetry:
+
 - Voltage 1: A3 (0x0900)
 - Voltage 2: A4 (0x0910)
 - Thermistor 1: Tmp1 (0x0400)
 - Thermistor 2: Tmp2 (0x0410)
 - Current: Curr (0x020f)
 
+I2C telemetry:
+
+ - Alt
+ - Temp
+ 
 Some of them needs to be adusted
 
 ### Adjust RPM sensor (EscR)
@@ -141,7 +153,7 @@ To get battery consumption add a new sensor:
 
 ## Annex
 
-### ESC protocol specifications
+### ESC protocol specifications Hobbywing
 
 Serial parameters:
 
@@ -176,6 +188,9 @@ Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
 Value | 0x9B | 0x9B	| 0x3	| 0xE8	| 0x1	| 0xB	| 0x41	| 0x21	| 0x44	| 0xB9	| 0x21	| 0x21	| 0xB9
 
+### ESC protocol specifications Castle Link
+
+See [Castle Link Live](https://dzf8vqv24eqhg.cloudfront.net/userfiles/4671/6540/ckfinder/files/Product%20Manuals/Accessories%20and%20replacement%20parts/castle_link_live_2_0.pdf?dc=201606221536-537)
 
 ### Analog voltage sensors. Voltage divider circuit
 
@@ -215,6 +230,7 @@ More accurate formula (Steinhart and Hart Equation) if data available:
 
 v0.4
 
+- Add Castle Link Live protocol
 - Change R3 resistor to 3.3k
 - Support for [change_id_frsky](https://github.com/dgatf/change_id_frsky) to change the sensor id
 - Support for I2C sensors 

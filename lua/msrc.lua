@@ -25,7 +25,7 @@ local scroll = 0
 local sensorIdTx = 17 -- sensorId 18
 local config = {
     firmwareVersion = "",
-    protocol = {selected = 5, list = {"HW V3", "HW V4/V5", "PWM", "NONE", ""}, elements = 4},
+    protocol = {selected = 6, list = {"NONE", "HW V3", "HW V4/V5", "PWM", "CASTLE", ""}, elements = 5},
     voltage1 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     voltage2 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     ntc1 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
@@ -131,9 +131,6 @@ local function readConfig()
                 readConfigState = state["PACKET_1"]
             end
             if bit32.extract(value, 0, 8) == 0xF2 and readConfigState == state["PACKET_1"] then
-                if bit32.extract(value, 8, 2) + 1 >= 1 and bit32.extract(value, 8, 2) + 1 <= 4 then
-                    config.protocol.selected = bit32.extract(value, 8, 2) + 1 -- bits 9,10
-                end
                 if bit32.extract(value, 10) + 1 >= 1 and bit32.extract(value, 10) + 1 <= 2 then
                     config.voltage1.selected = bit32.extract(value, 10) + 1 -- bit 11
                 end
@@ -179,6 +176,9 @@ local function readConfig()
                 if bit32.extract(value, 20, 4) >= 1 and bit32.extract(value, 20, 4) <= 16 then
                     config.queueTemp.selected = bit32.extract(value, 20, 4) -- bits 21-24
                 end
+                if bit32.extract(value, 24, 8) >= 0 and bit32.extract(value, 24, 8) <= 4 then
+                    config.protocol.selected = bit32.extract(value, 24, 8) + 1 -- bits 25-32
+                end
                 readConfigState = state["PACKET_3"]
             end
             if bit32.extract(value, 0, 8) == 0xF4 and readConfigState == state["PACKET_3"] then
@@ -213,7 +213,6 @@ local function sendConfig()
             end
         elseif sendConfigState == state["MAINTENANCE_ON"] then
             local value = 0xF1 -- bits 1-8
-            value = bit32.bor(value, bit32.lshift(config.protocol.selected - 1, 8)) -- bits 9-10
             value = bit32.bor(value, bit32.lshift(config.voltage1.selected - 1, 10)) -- bit 11
             value = bit32.bor(value, bit32.lshift(config.voltage2.selected - 1, 11)) -- bit 12
             value = bit32.bor(value, bit32.lshift(config.current.selected - 1, 12)) -- bit 13
@@ -233,6 +232,7 @@ local function sendConfig()
             value = bit32.bor(value, bit32.lshift(config.queueVolt.selected, 12)) -- bits 13-16
             value = bit32.bor(value, bit32.lshift(config.queueCurr.selected, 16)) -- bits 17-20
             value = bit32.bor(value, bit32.lshift(config.queueTemp.selected, 20)) -- bits 21-24
+            value = bit32.bor(value, bit32.lshift(config.protocol.selected - 1, 24)) -- bits 25-32
             if sportTelemetryPush(sensorIdTx, 0x31, 0x5000, value) then
                 sendConfigState = state["PACKET_2"]
             end
