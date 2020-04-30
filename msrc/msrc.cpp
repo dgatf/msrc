@@ -214,6 +214,28 @@ void initConfig(Config &config)
         sensorP = new Sensor(VFAS_FIRST_ID, ESCHW4_CELL_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);
     }
+    if (config.protocol == PROTOCOL_CASTLE)
+    {
+        Sensor *sensorP;
+        EscCastleInterface *esc;
+        esc = new EscCastleInterface(config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp);
+        esc->begin();
+        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, CASTLE_RPM, config.refresh.rpm, esc);
+        rpmSensor = sensorP;
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(ESC_POWER_FIRST_ID, CASTLE_CURRENT, CASTLE_VOLTAGE, config.refresh.volt, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(SBEC_POWER_FIRST_ID, CASTLE_BEC_CURRENT, CASTLE_BEC_VOLTAGE, config.refresh.volt, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(ESC_POWER_FIRST_ID + 1, 0xFF, CASTLE_RIPPLE_VOLTAGE, config.refresh.volt, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, CASTLE_TEMP, config.refresh.temp, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID + 1, CASTLE_TEMP_NTC, config.refresh.temp, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(VFAS_FIRST_ID, CASTLE_CELL_VOLTAGE, config.refresh.volt, esc);
+        smartport.addSensor(sensorP);
+    }
     if (config.voltage1 == true)
     {
         Sensor *sensorP;
@@ -263,9 +285,9 @@ void initConfig(Config &config)
             bmp = new Bmp180Interface(config.deviceI2C[i].address, config.alpha.temp, config.alpha.def);
             bmp->begin();
 
-            sensorP = new Sensor(T1_FIRST_ID, BMP_TEMPERATURE, config.refresh.temp, bmp);
+            sensorP = new Sensor(T1_FIRST_ID + 1, BMP_TEMPERATURE, config.refresh.temp, bmp);
             smartport.addSensor(sensorP);
-            sensorP = new Sensor(ALT_FIRST_ID, BMP_ALTITUDE, config.refresh.def, bmp);
+            sensorP = new Sensor(ALT_FIRST_ID + 1, BMP_ALTITUDE, config.refresh.def, bmp);
             smartport.addSensor(sensorP);
         }
         if (config.deviceI2C[i].type == I2C_BMP280)
@@ -274,9 +296,9 @@ void initConfig(Config &config)
             Bmp280Interface *bmp;
             bmp = new Bmp280Interface(config.deviceI2C[i].address, config.alpha.temp, config.alpha.def);
             bmp->begin();
-            sensorP = new Sensor(T1_FIRST_ID + 1, BMP_TEMPERATURE, config.refresh.temp, bmp);
+            sensorP = new Sensor(T1_FIRST_ID + 2, BMP_TEMPERATURE, config.refresh.temp, bmp);
             smartport.addSensor(sensorP);
-            sensorP = new Sensor(ALT_FIRST_ID + 1, BMP_ALTITUDE, config.refresh.def, bmp);
+            sensorP = new Sensor(ALT_FIRST_ID + 2, BMP_ALTITUDE, config.refresh.def, bmp);
             smartport.addSensor(sensorP);
         }
         /*if (config.deviceI2C[i].type == I2C_MS5611)

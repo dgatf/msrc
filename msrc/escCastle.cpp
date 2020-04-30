@@ -2,12 +2,13 @@
 
 volatile bool castleReceived = false;
 #ifdef SIM_SENSORS
-volatile uint16_t castleTelemetry[12] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+volatile uint16_t castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 500};
+volatile uint16_t compToMilli = 1000;
 #else
 volatile uint16_t castleTelemetry[12] = {0};
+volatile uint16_t compToMilli = 0;
 #endif
 volatile int castleCont = 0;
-volatile uint16_t compToMilli = 0;
 
 ISR(INT0_vect)
 {
@@ -97,7 +98,7 @@ float EscCastleInterface::read(uint8_t index)
         break;
     }
 #ifdef DEBUG_ESC
-    Serial.print("Value[");
+    Serial.print("Value [");
     Serial.print(index);
     Serial.print("]: ");
     Serial.println(value);

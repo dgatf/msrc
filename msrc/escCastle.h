@@ -16,6 +16,8 @@
     10      temp ntc (C) or calib 2 (500us)  63.8125
 */
 
+//#define DEBUG_ESC
+
 #define CASTLE_VOLTAGE 1
 #define CASTLE_RIPPLE_VOLTAGE 2
 #define CASTLE_CURRENT 3

@@ -89,7 +89,7 @@ Depending on your configuration you may have some or all of the following sensor
  
 ESC telemetry:
 
-- ESC RPM: EscR (0x0b60)
+- ESC RPM: Erpm (0x0b60)
 - ESC voltage: EscV (0x0b50)
 - ESC cell average: VFAS (0x0210)
 - ESC current: EscA (0x0b50)
@@ -109,9 +109,9 @@ Analog telemetry:
 
 I2C telemetry:
 
- - Alt
- - Temp
- 
+ - Altitude: Alt (0x0820)
+ - Temperature: T1 (0x0401, 0x0402)
+
 Some of them needs to be adusted
 
 ### Adjust RPM sensor (EscR)
