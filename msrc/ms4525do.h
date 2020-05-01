@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include "smartport.h"
+#include "device.h"
 #include "i2c.h"
 
 class MS4525DOInterface : public AbstractDevice, public I2C

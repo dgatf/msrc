@@ -9,7 +9,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <math.h>
-#include "smartport.h"
+#include "device.h"
 #include "i2c.h"
 
 class Bmp : public AbstractDevice, public I2C

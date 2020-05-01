@@ -9,7 +9,7 @@
 #define ESCHW4_CELL_VOLTAGE 5
 
 #include <Arduino.h>
-#include "smartport.h"
+#include "device.h"
 #include "escCell.h"
 
 class EscHW4Interface : public AbstractDevice, public EscCell

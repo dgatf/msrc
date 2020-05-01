@@ -51,7 +51,6 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include "smartport.h"
 #include "i2c.h"
 #include "bmp.h"
 

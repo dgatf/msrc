@@ -8,7 +8,7 @@
 #endif
 
 #include <Arduino.h>
-#include "smartport.h"
+#include "device.h"
 
 class VoltageInterface : public AbstractDevice
 {

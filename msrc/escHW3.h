@@ -2,7 +2,7 @@
 #define ESCHW3_H
 
 #include <Arduino.h>
-#include "smartport.h"
+#include "device.h"
 
 class EscHW3Interface : public AbstractDevice
 {

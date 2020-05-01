@@ -2,7 +2,6 @@
 #define ESCCELL_H
 
 #include <Arduino.h>
-#include "smartport.h"
 
 class EscCell
 {
