@@ -1,79 +1,26 @@
 #include "smartport.h"
 
-AbstractDevice::AbstractDevice() {}
+// ISR handlers
 
-float AbstractDevice::calcAverage(float alpha, float value, float newValue)
-{
-    return value + alpha * (newValue - value);
+void (*TIMER1_CAPT_handlerP)() = NULL;
+ISR(TIMER1_CAPT_vect) {
+    if (TIMER1_CAPT_handlerP) TIMER1_CAPT_handlerP();
 }
-
-Sensor::Sensor(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t refresh, AbstractDevice *device) : dataId_(dataId), indexL_(indexL), indexM_(indexM), refresh_(refresh), device_(device) {}
-Sensor::Sensor(uint16_t dataId, uint8_t indexL, uint8_t refresh, AbstractDevice *device) : dataId_(dataId), indexL_(indexL), refresh_(refresh), device_(device) {}
-Sensor::Sensor(uint16_t dataId, uint8_t refresh, AbstractDevice *device) : dataId_(dataId), refresh_(refresh), device_(device) {}
-
-Sensor::~Sensor()
-{
-    delete device_;
+void (*TIMER1_COMPB_handlerP)() = NULL;
+ISR(TIMER1_COMPB_vect) {
+    if (TIMER1_COMPB_handlerP) TIMER1_COMPB_handlerP();
 }
-
-float Sensor::read(uint8_t index)
-{
-    return device_->read(index);
+void (*TIMER1_OVF_handlerP)() = NULL;
+ISR(TIMER1_OVF_vect) {
+    if (TIMER1_OVF_handlerP) TIMER1_OVF_handlerP();
 }
-
-uint8_t Sensor::indexL()
-{
-    return indexL_;
+void (*INT0_handlerP)() = NULL;
+ISR(INT0_vect) {
+    if (INT0_handlerP) INT0_handlerP();
 }
-
-uint8_t Sensor::indexM()
-{
-    return indexM_;
-}
-
-uint16_t Sensor::timestamp()
-{
-    return timestamp_;
-}
-
-void Sensor::setTimestamp(uint16_t timestamp)
-{
-    timestamp_ = timestamp;
-}
-
-uint16_t Sensor::dataId()
-{
-    return dataId_;
-}
-
-uint16_t Sensor::frameId()
-{
-    return frameId_;
-}
-
-uint8_t Sensor::refresh()
-{
-    return refresh_;
-}
-
-float Sensor::valueM()
-{
-    return valueM_;
-}
-
-void Sensor::setValueM(float value)
-{
-    valueM_ = value;
-}
-
-float Sensor::valueL()
-{
-    return valueL_;
-}
-
-void Sensor::setValueL(float value)
-{
-    valueL_ = value;
+void (*TIMER2_COMPA_handlerP)() = NULL;
+ISR(TIMER2_COMPA_vect) {
+    if (TIMER2_COMPA_handlerP) TIMER2_COMPA_handlerP();
 }
 
 Smartport::Smartport(Stream &serial) : serial_(serial)
@@ -307,9 +254,11 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
                     cont = 0;
                     serial_.read();
                 }
-                else {
+                else
+                {
                     data[cont] = serial_.read();
-                    if (header) {
+                    if (header)
+                    {
                         if (data[cont] == 0x7D)
                             data[cont] = serial_.read() ^ 0x20;
                         cont++;

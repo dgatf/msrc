@@ -4,7 +4,9 @@ volatile uint16_t escPwmDuration = 0;
 volatile bool escPwmRunning = false;
 volatile bool escPwmUpdate = false;
 
-ISR(TIMER1_CAPT_vect)
+EscPWMInterface::EscPWMInterface(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
+
+void EscPWMInterface::TIMER1_CAPT_handler()
 {
     escPwmDuration = ICR1;
     TCNT1 = 0;              // reset timer
@@ -12,15 +14,15 @@ ISR(TIMER1_CAPT_vect)
     escPwmUpdate = true;
 }
 
-ISR(TIMER1_OVF_vect)
+void EscPWMInterface::TIMER1_OVF_handler()
 {
     escPwmRunning = false;
 }
 
-EscPWMInterface::EscPWMInterface(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
-
 void EscPWMInterface::begin()
 {
+    TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
+    TIMER1_OVF_handlerP = TIMER1_OVF_handler;
     // TIMER1 setup
     TCCR1A = 0;                                     // normal mode
     TCCR1B = _BV(CS11) | _BV(ICES1) | _BV(ICNC1);   // scaler 8 | capture rising | filter
