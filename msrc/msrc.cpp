@@ -322,7 +322,6 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         // send config
         if (frameId == 0x30 && dataId == 0x5000 && value == 0)
         {
-            uint16_t timestamp = millis();
             uint32_t value = 0;
             Config config = readConfig();
             // packet 1
@@ -385,7 +384,6 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             Serial.print("PACKET 1: ");
             Serial.println(value);
 #endif
-            uint16_t timestamp = millis();
             Config config;
             config.protocol = BM_PROTOCOL(value);
             config.voltage1 = BM_VOLTAGE1(value);
