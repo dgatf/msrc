@@ -63,9 +63,9 @@ void EscCastleInterface::begin()
     INT0_handlerP = INT0_handler;
     TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
 
-    // RX: 2 (PD2, INT 0): input
-    // ESC: PIN 10 (PB2): input/output
-    // ESC: PIN 3 (PD3) INT0: input
+    // ICP1 (PB0 PIN8) -> RX THR, INPUT
+    // INT0 (PD2, PIN2)-> TELEMETRY, INPUT
+    // PWM OUT OC1B (PB2, PIN10) -> OUTPUT/INPUT PULL UP
 
     // TIMER 1, ICP1
     DDRB = _BV(DDB2);                                               // PWM OUT PIN 10
