@@ -10,51 +10,79 @@ volatile uint16_t compToMilli = 0;
 #endif
 volatile int castleCont = 0;
 
-ISR(INT0_vect)
-{
-    if (PIND & _BV(PD2))
-    {                       // PD2 high
-        DDRD |= _BV(DDD3);  // PD3 output
-        PORTD &= ~_BV(PD3); // PD3 low
-    }
-    else
-    {                        // PD2 low
-        DDRD &= ~_BV(DDD3);  // PD3 input
-        PORTD |= _BV(PD3);   // PD3 pullup
-        TCNT1 = 0;           // reset TIMER1
-        EIFR &= ~_BV(INTF1); // remove INT1 flags
-        EIMSK |= _BV(INT1);  // enable INT1 (PD3)
-        if (!castleReceived)
-        {
-            castleCont = 0;
-            compToMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10]) ? castleTelemetry[9] : castleTelemetry[10];
-        }
-        castleReceived = false;
-    }
-}
-
-ISR(INT1_vect)
-{
-    if (~PIND & _BV(PD2)) // remove?
-    {
-        castleTelemetry[castleCont] = TCNT1;
-        castleReceived = true;
-        castleCont++;
-        Serial.println(castleTelemetry[castleCont]);
-    }
-}
-
 EscCastleInterface::EscCastleInterface(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
+
+void EscCastleInterface::TIMER1_CAPT_handler()          // RX INPUT
+{
+    static uint16_t ts = 0;
+    if (TCCR1B & _BV(ICES1)) {                          // RX RISING
+        ts = ICR1;
+    }
+    else {                                              // RX FALLING
+        uint16_t value;
+        if (ts < ICR1) {
+            value = ICR1 - ts;
+        } else {
+            value = ICR1 + OCR1A - ts;
+        }
+        OCR1B = value;                                  // SET THR DUTY
+    }
+    TCCR1B ^= _BV(ICES1);                               // TOGGLE ICP1 DIRECTION
+}
+
+void EscCastleInterface::TIMER1_COMPB_handler()         // START INPUT STATE
+{
+    DDRB &= ~_BV(DDB2);       // PWM OUT (PB2, PIN10) INPUT
+    EIFR |= _BV(INTF0);       // CLEAR INT0 FLAG
+    EIMSK =  _BV(INT0);       // ENABLE INT0 (PD2, PIN2)
+    TIFR2 |= _BV(OCF2A);      // CLEAR TIMER2 COMPA FLAG
+    TIMSK2 = _BV(OCIE2A);     // ENABLE TIMER2 COMPA
+}
+
+void EscCastleInterface::INT0_handler()                // READ TELEMETRY
+{
+    castleTelemetry[castleCont] = TCNT1 - OCR1B;
+    castleCont++;
+    castleReceived = true;
+}
+
+void EscCastleInterface::TIMER2_COMPA_handler()        // START OUTPUT STATE
+{
+    if (!castleReceived) {
+        castleCont = 0;
+    }
+    castleReceived = false;
+    EIMSK =  0;               // DISABLE INT0 (PD2, PIN2)
+    TIMSK2 = 0;               // DISABLE TIMER2 INTS
+}
 
 void EscCastleInterface::begin()
 {
-    // rx pin 2 (PD2, INT 0): input
-    // esc pin 3 (PD3, INT 1): input/output
-    EICRA = _BV(ISC00);  // INT0 rising/falling
-    EICRA |= _BV(ISC11); // INT1 falling
-    EIMSK = _BV(INT0);   // enable INT0 (PIN 2)
-    TCCR1A = 0;          // normal mode
-    TCCR1B = _BV(CS11);  // scaler 8
+    TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
+    TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
+    INT0_handlerP = INT0_handler;
+    TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
+
+    // RX: 2 (PD2, INT 0): input
+    // ESC: PIN 10 (PB2): input/output
+    // ESC: PIN 3 (PD3) INT0: input
+
+    // TIMER 1, ICP1
+    DDRB = _BV(DDB2);                                               // PWM OUT PIN 10
+    TCCR1A = _BV(WGM11) | _BV(WGM10) | _BV(COM1B1) | _BV(COM1B0);   // TOGGLE OC1A ON OCR1B
+    TCCR1B = _BV(WGM13) | _BV(WGM12);                               // MODE 15
+    TCCR1B |= _BV(ICES1);                                           // RISING
+    TCCR1B |= _BV(CS11);                                            // SCALER 8
+    TIMSK1 = _BV(OCIE1B) | _BV(ICIE1);                              // INTS: CAPT, COMPB
+    OCR1A = 40000;
+
+    // INT0
+    EICRA = _BV(ISC01);                                             // INT0 FALLING
+    
+    // TIMER 2
+    TCCR2A = 0;                                       // NORMAL MODE
+    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS21);       // SCALER 1024
+    OCR2A = 62 * F_CPU / 8000000UL;                   // 8ms
 }
 
 float EscCastleInterface::read(uint8_t index)

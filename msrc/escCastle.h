@@ -33,8 +33,13 @@
 #define B 3455
 
 #include <Arduino.h>
-#include "smartport.h"
+#include "device.h"
 #include "escCell.h"
+
+extern void (*TIMER1_CAPT_handlerP)();
+extern void (*TIMER1_COMPB_handlerP)();
+extern void (*INT0_handlerP)();
+extern void (*TIMER2_COMPA_handlerP)();
 
 class EscCastleInterface : public AbstractDevice, public EscCell
 {
@@ -42,6 +47,10 @@ private:
     const float scaler[11] = {0, 20, 4, 50, 1, 0.2502, 20416.7, 4, 4, 30, 63.8125};
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
     float rpm_;
+    static void TIMER1_CAPT_handler();
+    static void TIMER1_COMPB_handler();
+    static void INT0_handler();
+    static void TIMER2_COMPA_handler();
 
 protected:
 public:
