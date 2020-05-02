@@ -187,7 +187,7 @@ Value | 0x9B | 0x9B	| 0x3	| 0xE8	| 0x1	| 0xB	| 0x41	| 0x21	| 0x44	| 0xB9	| 0x21	
 
 ### ESC protocol specifications Castle Link
 
-For best accuracy RX pulse input is captured with a timer interrupt and ESC pulse output is produced by harware PWM. Maximum latency is 20ms
+For best accuracy RX pulse input is captured with a timer interrupt and ESC pulse output is produced by hardware PWM. Maximum latency is 20ms
 
 See [Castle Link Live](https://dzf8vqv24eqhg.cloudfront.net/userfiles/4671/6540/ckfinder/files/Product%20Manuals/Accessories%20and%20replacement%20parts/castle_link_live_2_0.pdf?dc=201606221536-537)
 
@@ -231,7 +231,7 @@ More accurate formula (Steinhart and Hart Equation) if data available:
 
 ## Change log
 
-v0.4.1
+v0.5
 
 - Add Castle Link Live protocol
 

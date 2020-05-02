@@ -4,7 +4,7 @@
 -- License https://www.gnu.org/licenses/gpl-3.0.en.html
 --
 
-local scriptVersion = "0.4"
+local scriptVersion = "0.5"
 local tsReadConfig = 0
 local tsSendConfig = 0
 local state = {
