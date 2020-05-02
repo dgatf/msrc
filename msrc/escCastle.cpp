@@ -19,13 +19,11 @@ void EscCastleInterface::TIMER1_CAPT_handler()          // RX INPUT
         ts = ICR1;
     }
     else {                                              // RX FALLING
-        uint16_t value;
         if (ts < ICR1) {
-            value = ICR1 - ts;
+            OCR1B = ICR1 - ts;
         } else {
-            value = ICR1 + OCR1A - ts;
+            OCR1B = ICR1 + OCR1A - ts;
         }
-        OCR1B = value;                                  // SET THR DUTY
     }
     TCCR1B ^= _BV(ICES1);                               // TOGGLE ICP1 DIRECTION
 }
