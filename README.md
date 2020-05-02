@@ -6,7 +6,7 @@ This is a DIY project to send multiple sensor telemetry to Frsky Smartport using
 
 ### ESC
 
-The ESC telemetry can be ESC serial data or PWM signal (from the ESC or RPM sensor)
+The ESC telemetry can be ESC serial data, PWM signal or Castle Link
 
 ESC protocols implemented:
 
@@ -57,7 +57,7 @@ Minimum circuit is the arduino connected to esc or rpm sensor and smartport. Alt
 
 ## Flash to Arduino
 
-Using Arduino IDE copy folder *esc_smartport* and open *esc_smartport.ino*. Select board *Arduino Pro or Pro Mini*, processor *ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
+Using Arduino IDE copy folder *msrc* and open *msrc.ino*. Select board *Arduino Pro or Pro Mini*, processor *ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
 
 ## Configuration
 
@@ -67,7 +67,7 @@ The configuration is modified with a lua script (X7, X9, X-lite and Horus with o
 
 Copy the file escSp.lua to the SCRIPTS folder in the sdcard of the Tx and execute as one-time script from SD-HD-CARD screen (long press and Execute). Since opentx 2.3 copy to SCRIPTS/TOOLS for easier access. It can be executed also as telemetry script if copied to TELEMETRY folder and assigned to a model telemetry screen
 
-If not using lua script comment *#define CONFIG_LUA* and assign config values in esc_smartport.h
+If not using lua script comment *#define CONFIG_LUA* and assign config values in msrc.h
 
 Options:
 
@@ -187,13 +187,13 @@ Value | 0x9B | 0x9B	| 0x3	| 0xE8	| 0x1	| 0xB	| 0x41	| 0x21	| 0x44	| 0xB9	| 0x21	
 
 ### ESC protocol specifications Castle Link
 
-To improve accuracy RX pulse input is captured with a timer interrupt and ESC pulse output is produced by timer PWM. Maximum latency is 20ms
+To improve accuracy RX pulse input is captured with a timer interrupt and ESC pulse output is produced by harware PWM. Maximum latency is 20ms
 
 See [Castle Link Live](https://dzf8vqv24eqhg.cloudfront.net/userfiles/4671/6540/ckfinder/files/Product%20Manuals/Accessories%20and%20replacement%20parts/castle_link_live_2_0.pdf?dc=201606221536-537)
 
 ### Output PWM signal for FBL
 
-To improve accuracy PWM signal output for FBL is produced by timer PWM from serial RPM values. Maximum latency is 30ms
+To improve accuracy PWM signal output for FBL is produced by hardware PWM from serial RPM values. Maximum latency is 40ms
 
 ### Analog voltage sensors. Voltage divider circuit
 
@@ -219,7 +219,7 @@ If more than 6S change R values or you may burn the Arduino!
 ### Temperature sensors. Thermistors
 
 Two temperature sensors can be installed through the analog pins A0 and A1
-Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in esc_smartport.h if needed (NTC_BETA, default is 4190). Sensor output in Celsius
+Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in ntc.h if needed (NTC_BETA, default is 4190). Sensor output in Celsius
 
 Using Beta formula:
 
