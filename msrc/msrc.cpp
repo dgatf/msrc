@@ -336,7 +336,6 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             smartport.addPacket(0x32, 0x5000, value);
             // packet 2
             value = 0xF2;
-            value |= config.protocol << 8;
             value |= config.voltage1 << 10;
             value |= config.voltage2 << 11;
             value |= config.current << 12;
@@ -358,6 +357,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             value |= (uint32_t)(200 / config.alpha.volt - 1) << 12;
             value |= (uint32_t)(200 / config.alpha.curr - 1) << 16;
             value |= (uint32_t)(200 / config.alpha.temp - 1) << 20;
+            value |= (uint32_t)config.protocol << 24;
             while (!smartport.sendPacketReady())
             {
                 smartport.update();
@@ -385,7 +385,6 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             Serial.println(value);
 #endif
             Config config;
-            config.protocol = BM_PROTOCOL(value);
             config.voltage1 = BM_VOLTAGE1(value);
             config.voltage2 = BM_VOLTAGE2(value);
             config.current = BM_CURRENT(value);
@@ -408,6 +407,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             config.alpha.volt = calcAlpha(BM_AVG_ELEM_VOLT(value));
             config.alpha.curr = calcAlpha(BM_AVG_ELEM_CURR(value));
             config.alpha.temp = calcAlpha(BM_AVG_ELEM_TEMP(value));
+            config.protocol = BM_PROTOCOL(value);
             while (frameId != 0x31 || dataId != 0x5000 || (uint8_t)(value) != 0xF3)
             {
                 smartport.update(frameId, dataId, value);
