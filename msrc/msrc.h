@@ -14,7 +14,7 @@
 
 // pins
 #define PIN_SMARTPORT_RX 7
-#define PIN_SMARTPORT_TX 12 //7
+#define PIN_SMARTPORT_TX 7 //12
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
@@ -23,7 +23,7 @@
 
 // opentx
 #define DATA_ID 0x5100            // DataId (sensor type)
-#define CONFIG_LUA                // Uncomment if using lua script for configuration
+//#define CONFIG_LUA                // Uncomment if using lua script for configuration
 
 // esc protocol
 #define PROTOCOL_NONE 0
@@ -52,7 +52,7 @@
    Telemetry may not work properly in debug mode
    Connect arduino Rx to TTL Tx for flashing, then connect arduino Rx to esc
 */
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_PLOTTER rpm/60
 
 // Config bitmask
@@ -141,7 +141,7 @@ struct DeviceI2C
 struct Config
 {
     uint8_t sensorId = 10;
-    uint8_t protocol = PROTOCOL_HW_V3; // protocol
+    uint8_t protocol = PROTOCOL_CASTLE; // protocol
     bool voltage1 = false;             // enable/disable voltage1 analog reading
     bool voltage2 = false;             // enable/disable voltage2 analog reading
     bool current = false;              // enable/disable current analog reading
