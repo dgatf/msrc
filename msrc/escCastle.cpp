@@ -31,10 +31,12 @@ void EscCastleInterface::TIMER1_CAPT_handler()          // RX INPUT
 void EscCastleInterface::TIMER1_COMPB_handler()         // START INPUT STATE
 {
     DDRB &= ~_BV(DDB2);       // PWM OUT (PB2, PIN10) INPUT
+    PORTB |= _BV(PB2);        // PB2 PULLUP
     EIFR |= _BV(INTF0);       // CLEAR INT0 FLAG
     EIMSK =  _BV(INT0);       // ENABLE INT0 (PD2, PIN2)
     TIFR2 |= _BV(OCF2A);      // CLEAR TIMER2 COMPA FLAG
     TIMSK2 = _BV(OCIE2A);     // ENABLE TIMER2 COMPA
+    TCNT2 = 0;                // RESET TIMER2
 }
 
 void EscCastleInterface::INT0_handler()                // READ TELEMETRY
@@ -47,11 +49,15 @@ void EscCastleInterface::INT0_handler()                // READ TELEMETRY
 void EscCastleInterface::TIMER2_COMPA_handler()        // START OUTPUT STATE
 {
     if (!castleReceived) {
+        compToMilli = castleTelemetry[0]; // / 2 + castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]; 
+        //SerialSerial.println(castleCont);
+        //Serial.println(compToMilli);
         castleCont = 0;
     }
     castleReceived = false;
     EIMSK =  0;               // DISABLE INT0 (PD2, PIN2)
     TIMSK2 = 0;               // DISABLE TIMER2 INTS
+    DDRB = _BV(DDB2);         // PWM OUT PIN 10 OUTPUT
 }
 
 void EscCastleInterface::begin()
@@ -72,7 +78,8 @@ void EscCastleInterface::begin()
     TCCR1B |= _BV(ICES1);                                           // RISING
     TCCR1B |= _BV(CS11);                                            // SCALER 8
     TIMSK1 = _BV(OCIE1B) | _BV(ICIE1);                              // INTS: CAPT, COMPB
-    OCR1A = 40000;
+    OCR1A = 20 * MS_TO_COMP(8);                                     // 50Hz = 20ms
+    OCR1B = 1 * MS_TO_COMP(8);                                      // 1ms
 
     // INT0
     EICRA = _BV(ISC01);                                             // INT0 FALLING
@@ -80,21 +87,19 @@ void EscCastleInterface::begin()
     // TIMER 2
     TCCR2A = 0;                                       // NORMAL MODE
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS21);       // SCALER 1024
-    OCR2A = 62 * F_CPU / 8000000UL;                   // 8ms
+    OCR2A = 8 * MS_TO_COMP(1024);                     // 8ms
 }
 
 float EscCastleInterface::read(uint8_t index)
 {
     float value;
+    if (cellCount_ == 255) {
+        if (millis() > 10000) {
+                cellCount_ = setCellCount(((float)castleTelemetry[CASTLE_VOLTAGE] / compToMilli - 0.5) * scaler[CASTLE_VOLTAGE]);
+            }
+    }
     switch (index)
     {
-    case 11:
-        if (cellCount_ == 255 && millis() > 10000)
-        {
-            cellCount_ = setCellCount(((float)castleTelemetry[CASTLE_VOLTAGE] / compToMilli - 0.5) * scaler[CASTLE_VOLTAGE]);
-        }
-        value = ((float)castleTelemetry[CASTLE_VOLTAGE] / compToMilli - 0.5) * scaler[CASTLE_VOLTAGE] / cellCount_;
-        break;
     case 0 ... 8:
         value = ((float)castleTelemetry[index] / compToMilli - 0.5) * scaler[index];
         break;
@@ -129,5 +134,7 @@ float EscCastleInterface::read(uint8_t index)
     Serial.print("]: ");
     Serial.println(value);
 #endif
+    if (value < 0)
+        return 0;
     return value;
 }
