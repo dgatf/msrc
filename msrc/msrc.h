@@ -23,7 +23,7 @@
 
 // opentx
 #define DATA_ID 0x5100            // DataId (sensor type)
-//#define CONFIG_LUA                // Uncomment if using lua script for configuration
+#define CONFIG_LUA                // Uncomment if using lua script for configuration
 
 // esc protocol
 #define PROTOCOL_NONE 0
@@ -52,7 +52,7 @@
    Telemetry may not work properly in debug mode
    Connect arduino Rx to TTL Tx for flashing, then connect arduino Rx to esc
 */
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_PLOTTER rpm/60
 
 // Config bitmask
