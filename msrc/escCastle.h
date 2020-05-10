@@ -18,7 +18,7 @@
 
 //#define DEBUG_ESC
 
-#define MS_TO_COMP(SCALER) F_CPU/(SCALER*1000UL)
+#define MS_TO_COMP(SCALER) F_CPU / (SCALER * 1000UL)
 
 #define CASTLE_VOLTAGE 1
 #define CASTLE_RIPPLE_VOLTAGE 2
@@ -48,7 +48,6 @@ class EscCastleInterface : public AbstractDevice, public EscCell
 private:
     const float scaler[11] = {0, 20, 4, 50, 1, 0.2502, 20416.7, 4, 4, 30, 63.8125};
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
-    float rpm_;
     static void TIMER1_CAPT_handler();
     static void TIMER1_COMPB_handler();
     static void INT0_handler();
