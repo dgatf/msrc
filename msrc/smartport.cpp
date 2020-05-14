@@ -3,24 +3,34 @@
 // ISR handlers
 
 void (*TIMER1_CAPT_handlerP)() = NULL;
-ISR(TIMER1_CAPT_vect) {
-    if (TIMER1_CAPT_handlerP) TIMER1_CAPT_handlerP();
+ISR(TIMER1_CAPT_vect)
+{
+    if (TIMER1_CAPT_handlerP)
+        TIMER1_CAPT_handlerP();
 }
 void (*TIMER1_COMPB_handlerP)() = NULL;
-ISR(TIMER1_COMPB_vect) {
-    if (TIMER1_COMPB_handlerP) TIMER1_COMPB_handlerP();
+ISR(TIMER1_COMPB_vect)
+{
+    if (TIMER1_COMPB_handlerP)
+        TIMER1_COMPB_handlerP();
 }
 void (*TIMER1_OVF_handlerP)() = NULL;
-ISR(TIMER1_OVF_vect) {
-    if (TIMER1_OVF_handlerP) TIMER1_OVF_handlerP();
+ISR(TIMER1_OVF_vect)
+{
+    if (TIMER1_OVF_handlerP)
+        TIMER1_OVF_handlerP();
 }
 void (*INT0_handlerP)() = NULL;
-ISR(INT0_vect) {
-    if (INT0_handlerP) INT0_handlerP();
+ISR(INT0_vect)
+{
+    if (INT0_handlerP)
+        INT0_handlerP();
 }
 void (*TIMER2_COMPA_handlerP)() = NULL;
-ISR(TIMER2_COMPA_vect) {
-    if (TIMER2_COMPA_handlerP) TIMER2_COMPA_handlerP();
+ISR(TIMER2_COMPA_vect)
+{
+    if (TIMER2_COMPA_handlerP)
+        TIMER2_COMPA_handlerP();
 }
 
 Smartport::Smartport(Stream &serial) : serial_(serial)
@@ -464,9 +474,8 @@ bool Smartport::sendPacketReady()
     return true;
 }
 
-/*void Smartport::begin(uint32_t baudRate, uint8_t sensorId, uint8_t sensorIdTx)
+/*void Smartport::begin(uint32_t baudRate, uint8_t sensorId)
 {
     sensorId = getSensorIdMatrix(sensorId);
-    sensorIdTx = getSensorIdMatrix(sensorIdTx);
     //serial_.begin(baudRate);
 }*/
