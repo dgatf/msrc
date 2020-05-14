@@ -1,14 +1,14 @@
 #include "escCastle.h"
 
-volatile bool castleReceived = false;
+volatile bool castleTelemetryReceived = false;
 #ifdef SIM_SENSORS
 volatile uint16_t castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 500};
-volatile uint16_t compToMilli = 1000;
 #else
 volatile uint16_t castleTelemetry[12] = {0};
-volatile uint16_t compToMilli = 0;
+volatile uint16_t castleCompsPerMilli = 1 * MS_TO_COMP(8);
 #endif
-volatile int castleCont = 0;
+volatile uint8_t castleCont = 0;
+volatile uint8_t castleRxLastReceived = 0;
 
 EscCastleInterface::EscCastleInterface(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
@@ -29,6 +29,7 @@ void EscCastleInterface::TIMER1_CAPT_handler() // RX INPUT
         {
             OCR1B = ICR1 + OCR1A - ts;
         }
+        castleRxLastReceived = 0;
     }
     TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 DIRECTION
 }
@@ -48,19 +49,27 @@ void EscCastleInterface::INT0_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT1 - OCR1B;
     castleCont++;
-    castleReceived = true;
+    castleTelemetryReceived = true;
 }
 
 void EscCastleInterface::TIMER2_COMPA_handler() // START OUTPUT STATE
 {
-    if (!castleReceived)
+    if (!castleTelemetryReceived)
     {
-        compToMilli = castleTelemetry[0]; // / 2 + castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10];
+        castleCompsPerMilli = castleTelemetry[0]; // / 2 + castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10];
         //SerialSerial.println(castleCont);
-        //Serial.println(compToMilli);
+        //Serial.println(castleCompsPerMilli);
         castleCont = 0;
     }
-    castleReceived = false;
+    castleTelemetryReceived = false;
+    if (castleRxLastReceived > RX_MAX_CYCLES)
+    {
+        OCR1B = 0;
+    }
+    else
+    {
+        castleRxLastReceived++;
+    }
     EIMSK = 0;        // DISABLE INT0 (PD2, PIN2)
     TIMSK2 = 0;       // DISABLE TIMER2 INTS
     DDRB = _BV(DDB2); // PWM OUT PIN 10 OUTPUT
@@ -85,7 +94,7 @@ void EscCastleInterface::begin()
     TCCR1B |= _BV(CS11);                                          // SCALER 8
     TIMSK1 = _BV(OCIE1B) | _BV(ICIE1);                            // INTS: CAPT, COMPB
     OCR1A = 20 * MS_TO_COMP(8);                                   // 50Hz = 20ms
-    OCR1B = 1 * MS_TO_COMP(8);                                    // 1ms
+    //OCR1B = 1 * MS_TO_COMP(8);                                    // 1ms
 
     // INT0
     EICRA = _BV(ISC01); // INT0 FALLING
@@ -93,7 +102,7 @@ void EscCastleInterface::begin()
     // TIMER 2
     TCCR2A = 0;                                 // NORMAL MODE
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS21); // SCALER 1024
-    OCR2A = 8 * MS_TO_COMP(1024);               // 8ms
+    OCR2A = 12 * MS_TO_COMP(1024);              // 12ms
 }
 
 float EscCastleInterface::read(uint8_t index)
@@ -103,18 +112,18 @@ float EscCastleInterface::read(uint8_t index)
     {
         if (millis() > 10000)
         {
-            cellCount_ = setCellCount(((float)castleTelemetry[CASTLE_VOLTAGE] / compToMilli - 0.5) * scaler[CASTLE_VOLTAGE]);
+            cellCount_ = setCellCount(((float)castleTelemetry[CASTLE_VOLTAGE] / castleCompsPerMilli - 0.5) * scaler[CASTLE_VOLTAGE]);
         }
     }
     switch (index)
     {
     case 0 ... 8:
-        value = ((float)castleTelemetry[index] / compToMilli - 0.5) * scaler[index];
+        value = ((float)castleTelemetry[index] / castleCompsPerMilli - 0.5) * scaler[index];
         break;
     case 9:
         if (castleTelemetry[9] > castleTelemetry[10])
         {
-            value = ((float)castleTelemetry[index] / compToMilli - 0.5) * scaler[index];
+            value = ((float)castleTelemetry[index] / castleCompsPerMilli - 0.5) * scaler[index];
         }
         else
         {
@@ -124,7 +133,7 @@ float EscCastleInterface::read(uint8_t index)
     case 10:
         if (castleTelemetry[10] > castleTelemetry[9])
         {
-            float ntc_value = ((float)castleTelemetry[index] / compToMilli - 0.5) * scaler[index];
+            float ntc_value = ((float)castleTelemetry[index] / castleCompsPerMilli - 0.5) * scaler[index];
             value = 1 / (log(ntc_value * R2 / (255 - ntc_value) / R0) / B + 1 / 298) - 273;
         }
         else
@@ -133,7 +142,7 @@ float EscCastleInterface::read(uint8_t index)
         }
         break;
     case 11:
-        value = (((float)castleTelemetry[1] / compToMilli - 0.5) * scaler[1]) / cellCount_;
+        value = (((float)castleTelemetry[1] / castleCompsPerMilli - 0.5) * scaler[1]) / cellCount_;
         break;
     default:
         value = 0;
