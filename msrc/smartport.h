@@ -167,13 +167,13 @@ private:
     Stream &serial_;
     Sensor *sensorP = NULL;
     Packet *packetP = NULL;
-    uint8_t sensorId_, sensorIdTx_;
-    uint16_t dataId_;
+    uint8_t sensorId_ = 0;
+    uint16_t dataId_ = 0;
     bool maintenanceMode_ = false;
     void sendByte(uint8_t c, uint16_t *crcp);
 
 public:
-    //Smartport(Stream &serial, uint8_t dataId, uint8_t sensorId, uint8_t sensorIdTx);
+    //Smartport(Stream &serial, uint8_t dataId, uint8_t sensorId);
     Smartport(Stream &serial);
     ~Smartport();
     uint8_t idToCrc(uint8_t sensorId);
