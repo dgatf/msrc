@@ -56,9 +56,7 @@ void EscCastleInterface::TIMER2_COMPA_handler() // START OUTPUT STATE
 {
     if (!castleTelemetryReceived)
     {
-        castleCompsPerMilli = castleTelemetry[0]; // / 2 + castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10];
-        //SerialSerial.println(castleCont);
-        //Serial.println(castleCompsPerMilli);
+        castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
     }
     castleTelemetryReceived = false;
@@ -94,7 +92,6 @@ void EscCastleInterface::begin()
     TCCR1B |= _BV(CS11);                                          // SCALER 8
     TIMSK1 = _BV(OCIE1B) | _BV(ICIE1);                            // INTS: CAPT, COMPB
     OCR1A = 20 * MS_TO_COMP(8);                                   // 50Hz = 20ms
-    //OCR1B = 1 * MS_TO_COMP(8);                                    // 1ms
 
     // INT0
     EICRA = _BV(ISC01); // INT0 FALLING
@@ -134,7 +131,7 @@ float EscCastleInterface::read(uint8_t index)
         if (castleTelemetry[10] > castleTelemetry[9])
         {
             float ntc_value = ((float)castleTelemetry[index] / castleCompsPerMilli - 0.5) * scaler[index];
-            value = 1 / (log(ntc_value * R2 / (255 - ntc_value) / R0) / B + 1 / 298) - 273;
+            value = 1 / (log(ntc_value * R2 / (255.0F - ntc_value) / R0) / B + 1 / 298.0F) - 273.0F;
         }
         else
         {

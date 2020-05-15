@@ -141,7 +141,7 @@ struct DeviceI2C
 struct Config
 {
     uint8_t sensorId = 10;
-    uint8_t protocol = PROTOCOL_CASTLE; // protocol
+    uint8_t protocol = PROTOCOL_NONE;  // esc protocol
     bool voltage1 = false;             // enable/disable voltage1 analog reading
     bool voltage2 = false;             // enable/disable voltage2 analog reading
     bool current = false;              // enable/disable current analog reading

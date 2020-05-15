@@ -31,9 +31,9 @@
 #define CASTLE_TEMP_NTC 10
 #define CASTLE_CELL_VOLTAGE 11
 
-#define R0 10000
-#define R2 10200
-#define B 3455
+#define R0 10000.0F
+#define R2 10200.0F
+#define B 3455.0F
 
 #include <Arduino.h>
 #include "device.h"
