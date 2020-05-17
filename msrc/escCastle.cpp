@@ -5,8 +5,8 @@ volatile bool castleTelemetryReceived = false;
 volatile uint16_t castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 500};
 #else
 volatile uint16_t castleTelemetry[12] = {0};
-volatile uint16_t castleCompsPerMilli = 1 * MS_TO_COMP(8);
 #endif
+volatile uint16_t castleCompsPerMilli = 1 * MS_TO_COMP(8);
 volatile uint8_t castleCont = 0;
 volatile uint8_t castleRxLastReceived = 0;
 

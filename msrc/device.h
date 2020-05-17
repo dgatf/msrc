@@ -1,6 +1,8 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
+//#define SIM_SENSORS
+
 #include <Arduino.h>
 
 class AbstractDevice
