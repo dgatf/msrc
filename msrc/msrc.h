@@ -43,8 +43,9 @@
 #define I2C_MS5611 3
 #define WIRE_TIMEOUT 3
 
-#define ESCSERIAL_TIMEOUT 3
 #define escSerial Serial
+#define gpsSerial Serial
+#define debugSerial Serial
 
 /* Debug
    Disconnect Vcc from the RC model to the Arduino
@@ -78,7 +79,7 @@
 
 // packet 3
 // byte 2
-#define BM_AVG_ELEM_RPM(VALUE) VALUE >> 8& 0B00001111
+#define BM_AVG_ELEM_RPM(VALUE) VALUE >> 8 & 0B00001111
 #define BM_AVG_ELEM_VOLT(VALUE) VALUE >> 12 & 0B00001111
 // byte 3
 #define BM_AVG_ELEM_CURR(VALUE) VALUE >> 16 & 0B00001111
@@ -108,7 +109,6 @@
 #include "ntc.h"
 #include "bmp180.h"
 #include "bmp280.h"
-#include "ms5611.h"
 
 // Default config
 
