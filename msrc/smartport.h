@@ -15,7 +15,6 @@
 
 //#define DEBUG
 //#define SIM_POLL
-//#define SIM_SENSORS
 
 #define SENSOR_ID_1 0x00 // VARIO 0x100 (0 in opentx lua: id - 1)
 #define SENSOR_ID_2 0xA1 // FLVSS 0x300
@@ -70,7 +69,7 @@
 #define ACCY_LAST_ID 0x071f
 #define ACCZ_FIRST_ID 0x0720 // 100 g
 #define ACCZ_LAST_ID 0x072f
-#define GPS_LONG_LATI_FIRST_ID 0x0800 // 100
+#define GPS_LONG_LATI_FIRST_ID 0x0800 // bit32(1<<31)=1=LON:=0=LAT, bit31(1<<30)=1=-:=0=+, escaler: 5/3? 60000?
 #define GPS_LONG_LATI_LAST_ID 0x080f
 #define GPS_ALT_FIRST_ID 0x0820 // 100 m
 #define GPS_ALT_LAST_ID 0x082f
@@ -78,7 +77,7 @@
 #define GPS_SPEED_LAST_ID 0x083f
 #define GPS_COURS_FIRST_ID 0x0840 // 100 º
 #define GPS_COURS_LAST_ID 0x084f
-#define GPS_TIME_DATE_FIRST_ID 0x0850 // ?
+#define GPS_TIME_DATE_FIRST_ID 0x0850 // Date: Y M D 0xFF or Time: H M S 0x00
 #define GPS_TIME_DATE_LAST_ID 0x085f
 #define A3_FIRST_ID 0x0900 // 100 v
 #define A3_LAST_ID 0x090f
