@@ -29,6 +29,13 @@ uint8_t I2C::readBytes(uint8_t device, uint8_t reg, uint8_t *data, uint8_t lengh
     return Wire.readBytes(data, lenght);
 }
 
+uint8_t I2C::writeBytes(uint8_t device, uint8_t reg)
+{
+    Wire.beginTransmission(device);
+    Wire.write(reg);
+    return Wire.endTransmission();
+}
+
 uint8_t I2C::writeBytes(uint8_t device, uint8_t reg, uint8_t *data, uint8_t lenght)
 {
     Wire.beginTransmission(device);
