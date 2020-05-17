@@ -1,6 +1,12 @@
 #include "escHW3.h"
 
-EscHW3Interface::EscHW3Interface(Stream &serial, uint8_t alphaRpm) : alphaRpm_(alphaRpm), serial_(serial) {}
+EscHW3Interface::EscHW3Interface(HardwareSerial &serial, uint8_t alphaRpm) : alphaRpm_(alphaRpm), serial_(serial) {}
+
+void EscHW3Interface::begin()
+{
+    serial_.begin(19200);
+    serial_.setTimeout(ESCSERIAL_TIMEOUT);
+}
 
 bool EscHW3Interface::update()
 {

@@ -8,6 +8,8 @@
 #define ESCHW4_TEMPBEC 4
 #define ESCHW4_CELL_VOLTAGE 5
 
+#define ESCSERIAL_TIMEOUT 3
+
 #include <Arduino.h>
 #include "device.h"
 #include "escCell.h"
@@ -15,7 +17,7 @@
 class EscHW4Interface : public AbstractDevice, public EscCell
 {
 private:
-    Stream &serial_;
+    HardwareSerial &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
     float value_[5] = {0};
     float calcTempHW(uint16_t tempRaw);
@@ -23,7 +25,8 @@ private:
 
 protected:
 public:
-    EscHW4Interface(Stream &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp);
+    EscHW4Interface(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp);
+    void begin();
     bool update();
     float read(uint8_t index);
 };

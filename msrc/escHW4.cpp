@@ -1,6 +1,12 @@
 #include "escHW4.h"
 
-EscHW4Interface::EscHW4Interface(Stream &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
+EscHW4Interface::EscHW4Interface(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
+
+void EscHW4Interface::begin()
+{
+    serial_.begin(19200);
+    serial_.setTimeout(ESCSERIAL_TIMEOUT);
+}
 
 bool EscHW4Interface::update()
 {
@@ -123,11 +129,12 @@ float EscHW4Interface::read(uint8_t index)
     if (index >= 0 && index < 6)
     {
         update();
-        if (index == ESCHW4_CELL_VOLTAGE && cellCount_ == 0xFF) {
+        if (index == ESCHW4_CELL_VOLTAGE && cellCount_ == 0xFF)
+        {
             if (millis() > 10000)
             {
                 cellCount_ = setCellCount(value_[ESCHW4_VOLTAGE]);
-            }  
+            }
         }
         return value_[index];
     }
