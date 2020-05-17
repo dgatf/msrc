@@ -238,6 +238,23 @@ void initConfig(Config &config)
         sensorP = new Sensor(VFAS_FIRST_ID, CASTLE_CELL_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);
     }
+    if (config.gps == true)
+    {
+        Sensor *sensorP;
+        Bn220Interface *gps;
+        gps = new Bn220Interface(gpsSerial);
+        gps->begin();
+        sensorP = new Sensor(GPS_LONG_LATI_FIRST_ID, config.refresh.def, gps);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(GPS_ALT_FIRST_ID, config.refresh.def, gps);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(GPS_SPEED_FIRST_ID, config.refresh.def, gps);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(GPS_COURS_FIRST_ID, config.refresh.def, gps);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(GPS_TIME_DATE_FIRST_ID, config.refresh.def, gps);
+        smartport.addSensor(sensorP);
+    }
     if (config.voltage1 == true)
     {
         Sensor *sensorP;
@@ -327,7 +344,8 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             smartport.addPacket(0x32, 0x5000, value);
             // packet 2
             value = 0xF2;
-            //value |= 2BIT_SPARE << 8;
+            //value |= 1BIT_SPARE << 8;
+            value |= config.gps << 9;
             value |= config.voltage1 << 10;
             value |= config.voltage2 << 11;
             value |= config.current << 12;
@@ -444,6 +462,7 @@ void setup()
     Wire.setTimeout(WIRE_TIMEOUT);
     smartport.setDataId(DATA_ID);
     TIMSK1 = 0;
+
 #ifdef CONFIG_LUA
     Config config = readConfig();
 #else
