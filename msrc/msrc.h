@@ -9,7 +9,7 @@
 
 // Version
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 5
+#define VERSION_MINOR 6
 #define VERSION_PATCH 0
 
 // pins
@@ -23,7 +23,7 @@
 
 // opentx
 #define DATA_ID 0x5100            // DataId (sensor type)
-#define CONFIG_LUA                // Uncomment if using lua script for configuration
+#define CONFIG_LUA                // Comment if not using lua script for configuration
 
 // esc protocol
 #define PROTOCOL_NONE 0
@@ -64,6 +64,7 @@
 
 // packet 2
 // byte 2
+#define BM_GPS(VALUE) VALUE >> 9 & 0B00000001
 #define BM_VOLTAGE1(VALUE) VALUE >> 10 & 0B00000001
 #define BM_VOLTAGE2(VALUE) VALUE >> 11 & 0B00000001
 #define BM_CURRENT(VALUE) VALUE >> 12 & 0B00000001
@@ -156,7 +157,7 @@ struct Config
 };
 
 bool pwmOut = false;
-Sensor *rpmSensor;
+Sensor *rpmSensorP;
 Config readConfig();
 void writeConfig(Config &config);
 void initConfig(Config &config);

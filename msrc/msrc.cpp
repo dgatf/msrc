@@ -151,9 +151,9 @@ void setPwmOut(bool pwmOut)
 void updatePwmOut()
 {
     static float rpm = 0;
-    if (rpmSensor->valueL() != rpm)
+    if (rpmSensorP->valueL() != rpm)
     {
-        rpm = rpmSensor->valueL();
+        rpm = rpmSensorP->valueL();
         noInterrupts();
         if (rpm >= 2000)
         {
@@ -185,7 +185,7 @@ void initConfig(Config &config)
         esc = new EscPWMInterface(config.alpha.rpm);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
-        rpmSensor = sensorP;
+        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
     }
     if (config.protocol == PROTOCOL_HW_V3)
@@ -195,7 +195,7 @@ void initConfig(Config &config)
         esc = new EscHW3Interface(escSerial, config.alpha.rpm);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
-        rpmSensor = sensorP;
+        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
     }
     if (config.protocol == PROTOCOL_HW_V4)
@@ -205,9 +205,9 @@ void initConfig(Config &config)
         esc = new EscHW4Interface(escSerial, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, ESCHW4_RPM, config.refresh.rpm, esc);
-        rpmSensor = sensorP;
+        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(ESC_POWER_FIRST_ID, ESCHW4_CURRENT, ESCHW4_VOLTAGE, config.refresh.volt, esc);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, ESCHW4_CURRENT, ESCHW4_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);
         sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, ESCHW4_TEMPFET, config.refresh.temp, esc);
         smartport.addSensor(sensorP);
@@ -223,13 +223,13 @@ void initConfig(Config &config)
         esc = new EscCastleInterface(config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, CASTLE_RPM, config.refresh.rpm, esc);
-        rpmSensor = sensorP;
+        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(ESC_POWER_FIRST_ID, CASTLE_CURRENT, CASTLE_VOLTAGE, config.refresh.volt, esc);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, CASTLE_CURRENT, CASTLE_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(SBEC_POWER_FIRST_ID, CASTLE_BEC_CURRENT, CASTLE_BEC_VOLTAGE, config.refresh.volt, esc);
+        sensorP = new SensorDouble(SBEC_POWER_FIRST_ID, CASTLE_BEC_CURRENT, CASTLE_BEC_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(ESC_POWER_FIRST_ID + 1, 0xFF, CASTLE_RIPPLE_VOLTAGE, config.refresh.volt, esc);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID + 1, 0xFF, CASTLE_RIPPLE_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);
         sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, CASTLE_TEMP, config.refresh.temp, esc);
         smartport.addSensor(sensorP);
@@ -244,15 +244,15 @@ void initConfig(Config &config)
         Bn220Interface *gps;
         gps = new Bn220Interface(gpsSerial);
         gps->begin();
-        sensorP = new Sensor(GPS_LONG_LATI_FIRST_ID, config.refresh.def, gps);
+        sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, BN220_LAT, BN220_LON, config.refresh.def, gps);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(GPS_ALT_FIRST_ID, config.refresh.def, gps);
+        sensorP = new Sensor(GPS_ALT_FIRST_ID, BN220_ALT, config.refresh.def, gps);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(GPS_SPEED_FIRST_ID, config.refresh.def, gps);
+        sensorP = new Sensor(GPS_SPEED_FIRST_ID, BN220_SPD, config.refresh.def, gps);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(GPS_COURS_FIRST_ID, config.refresh.def, gps);
+        sensorP = new Sensor(GPS_COURS_FIRST_ID, BN220_COG, config.refresh.def, gps);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(GPS_TIME_DATE_FIRST_ID, config.refresh.def, gps);
+        sensorP = new SensorDateTime(GPS_TIME_DATE_FIRST_ID, BN220_DATE, BN220_TIME, config.refresh.def, gps);
         smartport.addSensor(sensorP);
     }
     if (config.voltage1 == true)
@@ -395,6 +395,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             debugSerial.println(value);
 #endif
             Config config;
+            config.gps = BM_GPS(value);
             config.voltage1 = BM_VOLTAGE1(value);
             config.voltage2 = BM_VOLTAGE2(value);
             config.current = BM_CURRENT(value);

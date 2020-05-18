@@ -118,4 +118,8 @@ void Bn220Interface::parser(uint8_t type, char *data)
 
 float Bn220Interface::read(uint8_t index)
 {
+    if (index < 9) {
+        return value_[index];
+    }
+    return 0;
 }

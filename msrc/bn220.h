@@ -6,15 +6,15 @@
 #define BN220_RMC 2
 #define BN220_VTG 3
 
-#define BN220_TIME 0
-#define BN220_LAT 1
-#define BN220_LON 2
-#define BN220_ALT 3
-#define BN220_SPD 4
-#define BN220_COG 5
-#define BN220_DATE 6
-#define BN220_KPH 7
-#define BN220_SAT 8
+#define BN220_LAT 0
+#define BN220_LON 1
+#define BN220_ALT 2
+#define BN220_SPD 3
+#define BN220_COG 4
+#define BN220_KPH 5
+#define BN220_SAT 6
+#define BN220_DATE 7
+#define BN220_TIME 8
 
 #define BN220_TIMEOUT 4
 
@@ -29,6 +29,7 @@ private:
                                        {{1, BN220_TIME}, {3, BN220_LAT}, {5, BN220_LON}, {7, BN220_SPD}, {8, BN220_COG}, {9, BN220_DATE}, {0, 0}}, // GPGMC
                                        {{1, BN220_COG}, {7, BN220_KPH}, {0, 0}}};                                                                  // GPVTG
     float lat_, lon_, alt_, spd_, cog_, kph_;
+    float value_[9];
     uint32_t time_, date_;
     uint8_t contIndex_ = 0, contBuff_ = 0, sat_, nmeaCmd_ = 255;
     char buffer_[20] = {};
