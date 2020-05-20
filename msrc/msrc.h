@@ -22,8 +22,8 @@
 #define PIN_CURRENT A6
 
 // opentx
-#define DATA_ID 0x5100            // DataId (sensor type)
-#define CONFIG_LUA                // Uncomment if using lua script for configuration
+#define DATA_ID 0x5100 // DataId (sensor type)
+#define CONFIG_LUA     // Uncomment if using lua script for configuration
 
 // esc protocol
 #define PROTOCOL_NONE 0
@@ -144,13 +144,13 @@ struct DeviceI2C
 struct Config
 {
     uint8_t sensorId = 10;
-    uint8_t protocol = PROTOCOL_NONE;  // esc protocol
-    bool voltage1 = false;             // enable/disable voltage1 analog reading
-    bool voltage2 = false;             // enable/disable voltage2 analog reading
-    bool current = false;              // enable/disable current analog reading
-    bool ntc1 = false;                 // enable/disable ntc1 analog reading
-    bool ntc2 = false;                 // enable/disable ntc2 analog reading
-    bool pwmOut = false;               // enable/disable pwm out generation (governor)
+    uint8_t protocol = PROTOCOL_NONE; // esc protocol
+    bool voltage1 = false;            // enable/disable voltage1 analog reading
+    bool voltage2 = false;            // enable/disable voltage2 analog reading
+    bool current = false;             // enable/disable current analog reading
+    bool ntc1 = false;                // enable/disable ntc1 analog reading
+    bool ntc2 = false;                // enable/disable ntc2 analog reading
+    bool pwmOut = false;              // enable/disable pwm out generation (governor)
     Refresh refresh;
     Alpha alpha;
     DeviceI2C deviceI2C[2];
