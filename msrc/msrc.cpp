@@ -198,11 +198,11 @@ void initConfig(Config &config)
         rpmSensor = sensorP;
         smartport.addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_HW_V4)
+    if (config.protocol >= PROTOCOL_HW_V4_LH && config.protocol <= PROTOCOL_HW_V5_HV)
     {
         Sensor *sensorP;
         EscHW4Interface *esc;
-        esc = new EscHW4Interface(escSerial, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp);
+        esc = new EscHW4Interface(escSerial, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp, config.protocol - PROTOCOL_HW_V4_LH);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, ESCHW4_RPM, config.refresh.rpm, esc);
         rpmSensor = sensorP;
