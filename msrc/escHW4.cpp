@@ -1,6 +1,6 @@
 #include "escHW4.h"
 
-EscHW4Interface::EscHW4Interface(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp), type_(type) {}
+EscHW4Interface::EscHW4Interface(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
 void EscHW4Interface::begin()
 {
@@ -13,15 +13,40 @@ bool EscHW4Interface::update()
     while (serial_.available() >= 13)
     {
         uint8_t header = serial_.read();
+        uint8_t cont;
         if (header == 0x9B)
         {
-            if (serial_.peek() == 0x9B)
+            uint8_t data[18];
+            if (serial_.peek() == 0x9B) // esc signature
             {
+                cont = serial_.readBytes(data, 12);
+                if (type_ == 0xFF)
+                {
+                    uint8_t i = 0;
+                    while (memcmp(data, signature_[i], 12) != 0 || i < 4)
+                    {
+                        i++;
+                    }
+                    if (memcmp(data, signature_[i], 12) == 0)
+                    {
+                        type_ = i;
+                    }
+#ifdef DEBUG_SIGNATURE
+                    debugSerial.print("ESC TYPE [");
+                    debugSerial.print(type_);
+                    debugSerial.print("]: ");
+                    for (int i = 0; i < 12; i++)
+                    {
+                        debugSerial.print(data[i]);
+                        debugSerial.print(" ");
+                    }
+                    debugSerial.println();
+#endif
+                }
                 return false;
             }
-            uint8_t data[18];
-            uint8_t cont = serial_.readBytes(data, 18);
-            if (cont == 18 && data[0] != 0x9B)
+            cont = serial_.readBytes(data, 18);
+            if (cont == 18)
             {
                 value_[ESCHW4_THR] = (uint16_t)data[3] << 8 | data[4]; // 0-1024
                 value_[ESCHW4_PWM] = (uint16_t)data[5] << 8 | data[6]; // 0-1024
@@ -75,13 +100,15 @@ float EscHW4Interface::calcTemp(uint16_t tempRaw)
     float voltage = tempRaw * ESCHW4_V_REF / ESCHW4_ADC_RES;
     float ntcR_Rref = (voltage * ESCHW4_NTC_R1 / (ESCHW4_V_REF - voltage)) / ESCHW4_NTC_R_REF;
     float temperature = 1 / (log(ntcR_Rref) / ESCHW4_NTC_BETA + 1 / 298.15) - 273.15;
-    if (temperature < 0) return 0;
+    if (temperature < 0)
+        return 0;
     return temperature;
 }
 
 float EscHW4Interface::calcCurr(uint16_t currentRaw)
 {
-    if (value_[ESCHW4_THR] < 128 || currentRaw - rawCurrentOffset_[type_] < 0) return 0;
+    if (value_[ESCHW4_THR] < 128 || currentRaw - rawCurrentOffset_[type_] < 0)
+        return 0;
     return (currentRaw - rawCurrentOffset_[type_]) * ESCHW4_V_REF / (ESCHW4_DIFFAMP_GAIN * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
 }
 
