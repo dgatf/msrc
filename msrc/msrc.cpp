@@ -198,7 +198,7 @@ void initConfig(Config &config)
         rpmSensor = sensorP;
         smartport.addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_HW_V4)
+    if (config.protocol == PROTOCOL_HW_V4_V5)
     {
         Sensor *sensorP;
         EscHW4Interface *esc;
@@ -448,6 +448,9 @@ void setup()
     Config config = readConfig();
 #else
     Config config;
+#endif
+#ifdef DEBUG
+    delay(50);
 #endif
     initConfig(config);
 }

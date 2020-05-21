@@ -14,7 +14,7 @@
 
 // pins
 #define PIN_SMARTPORT_RX 7
-#define PIN_SMARTPORT_TX 12 //12
+#define PIN_SMARTPORT_TX 12 //7
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
@@ -22,13 +22,13 @@
 #define PIN_CURRENT A6
 
 // opentx
-#define DATA_ID 0x5100            // DataId (sensor type)
-#define CONFIG_LUA                // Uncomment if using lua script for configuration
+#define DATA_ID 0x5100 // DataId (sensor type)
+#define CONFIG_LUA     // Uncomment if using lua script for configuration
 
 // esc protocol
 #define PROTOCOL_NONE 0
 #define PROTOCOL_HW_V3 1
-#define PROTOCOL_HW_V4 2
+#define PROTOCOL_HW_V4_V5 2
 #define PROTOCOL_PWM 3
 #define PROTOCOL_CASTLE 4
 
@@ -141,13 +141,13 @@ struct DeviceI2C
 struct Config
 {
     uint8_t sensorId = 10;
-    uint8_t protocol = PROTOCOL_NONE;  // esc protocol
-    bool voltage1 = false;             // enable/disable voltage1 analog reading
-    bool voltage2 = false;             // enable/disable voltage2 analog reading
-    bool current = false;              // enable/disable current analog reading
-    bool ntc1 = false;                 // enable/disable ntc1 analog reading
-    bool ntc2 = false;                 // enable/disable ntc2 analog reading
-    bool pwmOut = false;               // enable/disable pwm out generation (governor)
+    uint8_t protocol = PROTOCOL_NONE; // esc protocol
+    bool voltage1 = false;            // enable/disable voltage1 analog reading
+    bool voltage2 = false;            // enable/disable voltage2 analog reading
+    bool current = false;             // enable/disable current analog reading
+    bool ntc1 = false;                // enable/disable ntc1 analog reading
+    bool ntc2 = false;                // enable/disable ntc2 analog reading
+    bool pwmOut = false;              // enable/disable pwm out generation (governor)
     Refresh refresh;
     Alpha alpha;
     DeviceI2C deviceI2C[2];
