@@ -20,10 +20,10 @@ bool EscHW4Interface::update()
             if (serial_.peek() == 0x9B) // esc signature
             {
                 cont = serial_.readBytes(data, 12);
-                if (type_ == 0xFF)
+                if (type_ == ESCHW4_TYPE_V5_HV + 1)
                 {
                     uint8_t i = 0;
-                    while (memcmp(data, signature_[i], 12) != 0 || i < 4)
+                    while (memcmp(data, signature_[i], 12) != 0 && i < 4)
                     {
                         i++;
                     }
@@ -32,15 +32,15 @@ bool EscHW4Interface::update()
                         type_ = i;
                     }
 #ifdef DEBUG_SIGNATURE
-                    debugSerial.print("ESC TYPE [");
-                    debugSerial.print(type_);
-                    debugSerial.print("]: ");
+                    Serial.print("ESC TYPE [");
+                    Serial.print(type_);
+                    Serial.print("]: ");
                     for (int i = 0; i < 12; i++)
                     {
-                        debugSerial.print(data[i]);
-                        debugSerial.print(" ");
+                        Serial.print(data[i], HEX);
+                        Serial.print(" ");
                     }
-                    debugSerial.println();
+                    Serial.println();
 #endif
                 }
                 return false;

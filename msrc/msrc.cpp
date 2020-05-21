@@ -449,6 +449,9 @@ void setup()
 #else
     Config config;
 #endif
+#ifdef DEBUG
+    delay(50);
+#endif
     initConfig(config);
 }
 
