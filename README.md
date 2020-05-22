@@ -1,25 +1,58 @@
 # MSRC - Multi Sensor for RC - FrSky Smartport
 
-This is a DIY project to send multiple sensor telemetry to Frsky Smartport using an Arduino Pro Mini 328P (3.3v or 5v)
+This is a DIY project to send multiple sensors telemetry to Frsky Smartport using an Arduino Pro Mini 328P (3.3v or 5v)
 
 ## Telemetry
 
+The following types of sensors can be connected:
+
+- ESC
+  - ESCs with serial telemetry (Hobbywing V3/V4/V5)
+  - ESC with PWM signal or phase sensor
+  - ESC Castle Link
+- I2C sensors
+- Analog sensors
+
 ### ESC
 
-The ESC telemetry can be ESC serial data, PWM signal or Castle Link
-
-ESC protocols implemented:
+Some ESC have a serial port for telemetry output. This can be decoded connecting the ESC to the UART available in the Pro Mini. The following ESC serial protocols are implemented:
 
 - Hobbywing Platinum V3: RPM
-- Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature, voltage and current
-- PWM signal: RPM
-- Castle Link Live: RPM , voltage, ripple voltage, current, bec voltage, bec current, temperature, temperature NTC
+- Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature (Mosfet and BEC), voltage and current
 
-Average cell voltage for HW V4/V5 is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on cell count is autodetected and fixed (average cell voltage to be >3.8v for proper cell count)
+Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPMs in serial telemetry
+
+<p align="center"><img src="./images/msrc_serial.png" width="600"><br>
+  <i>Minimum circuit ESC serial</i><br><br></p>
+
+Some ESC have a PWM signal for motor RPMs, which is equivalent to a phase sensor. Some ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWN signal is not needed for telemetry. Circuit is as follows:
+
+<p align="center"><img src="./images/msrc_pwm.png" width="600"><br>
+  <i>Minimum circuit PWM signal</i><br><br></p>
+
+ESC Castle Link protocol goes into the input signal of the ESC. Circuit is as follows:
+
+<p align="center"><img src="./images/msrc_castle.png" width="600"><br>
+  <i>Minimum circuit Castle Link</i><br><br></p>
+
+Telemetry available by ESC model:
+
+| Model              | RPM         | Throttle    | Motor PWM   | Voltage     | Current   | Voltage BEC | Current BEC | Temperature 1 | Temperature 2 | Ripple Volt |
+| ------------------ | ----------- | ----------- | ----------- | ----------- | --------- | ----------- | ----------- | ------------- | ------------- | ----------- |
+| Hobbywing V3       | :x:         | :x:(1)      | :x:(1)      |             |           |             |             |               |               |             |
+| Hobbywing V4/V5(4) | :x:         | :x:(1)      | :x:(1)      | :x:         | :x:(2)    |             |             | :x: FET       | :x: BEC       |             |
+| Castle Link        | :x:         | :x:(1)      | :x:(1)      | :x:         | :x:       | :x:(3)      | :x:(3)      | :x:           |               | :x:         |
+
+(1) Available in telemetry but not forwarded to smartport
+(2) For 80A models and higher
+(3) Not available in all models
+(4) There are different types of sensors depending on the model. This is defined by the ESC signature. See annex
+
+If voltage is available the  cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for valid a cell count
 
 ### Analog sensors
 
-The following analog sensors are available:
+Can be connected the following analog sensors:
 
 - 2 x voltage divider can be added to read the battery voltage (A2, A3)
 - 2 x temperature sensors (thermistors) (A0, A1)
@@ -32,25 +65,6 @@ Multiple I2C sensors can be added (A4, A5)
 Currently supported:
 
 - Barometer: BMP180, BMP280
-
-## PWM output
-
-PWM signal generation from ESC serial (some HW V5 don't have RPM PWM output) 
-
-PWM signal properties: logic level 3.3V and default duty cycle 50%
-
-## Circuit
-
-Minimum circuit is the arduino connected to esc or rpm sensor and smartport. Although it is not mandatory to connect to the esc or rpm sensor 
-
-<p align="center"><img src="./images/msrc_serial.png" width="600"><br>
-  <i>Minimum circuit ESC serial</i><br><br></p>
-
-<p align="center"><img src="./images/msrc_pwm.png" width="600"><br>
-  <i>Minimum circuit PWM signal</i><br><br></p>
-
-<p align="center"><img src="./images/msrc_castle.png" width="600"><br>
-  <i>Minimum circuit Castle Link</i><br><br></p>
 
 <p align="center"><img src="./images/msrc_full.png" width="600"><br>
   <i>Additional sensors</i><br><br></p>
@@ -65,7 +79,7 @@ The configuration is modified with a lua script (X7, X9, X-lite and Horus with o
 
 <p align="center"><img src="./images/lua_x7.png" height="128">   <img src="./images/lua_x9.png" height="128">   <img src="./images/lua_x10.png" height="200"></p>
 
-Copy the file escSp.lua to the SCRIPTS folder in the sdcard of the Tx and execute as one-time script from SD-HD-CARD screen (long press and Execute). Since opentx 2.3 copy to SCRIPTS/TOOLS for easier access. It can be executed also as telemetry script if copied to TELEMETRY folder and assigned to a model telemetry screen
+Copy the file msrc.lua to the SCRIPTS/TOOLS folder. (if using older openTx 2.2 copy to SCRIPTS folder and execute by long press)
 
 If not using lua script comment *#define CONFIG_LUA* and assign config values in msrc.h
 
@@ -77,15 +91,16 @@ Options:
 - Ntc1. Thermistor 1
 - Ntc2. Thermistor 2
 - Current
-- PWM out. To generate PWM output from ESC serial  (for obbywing Flyfun V5)
+- PWM out. Generate a PWM signal from RPM is ESC serial (for Hobbywing Flyfun V5)
 - Averaging queue size: 1 to 16
 - Refresh rate (ms): 0 to 1600
+- I2C (x2). Type and I2C address
 
 ## OpenTx sensors
 
 The arduino default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
 
-Depending on your configuration you may have some or all of the following sensors in Opentx:
+Depending on your configuration some the following sensors will be available in Opentx. After configuration go to sensors screen and update with *Search new sensors*
  
 ESC telemetry:
 
@@ -195,19 +210,26 @@ See [Castle Link Live](https://dzf8vqv24eqhg.cloudfront.net/userfiles/4671/6540/
 
 For best accuracy PWM signal output for FBL is produced by hardware PWM from serial RPM values. Maximum latency is 40ms
 
+### ADC voltage
+
+To obtain the voltage at the analog pin it is required the ADC bits (b) and the Vref:
+
+<img src="https://latex.codecogs.com/svg.latex?Vo = Vref * \frac{Raw}{2^b}" title="Vo = Vref * Raw / 2^bits" /><br>
+
 ### Analog voltage sensors. Voltage divider circuit
 
 Two battery voltages can be measured through the analog pins A2 and A3
 Metal resistors are recommended as gives more accurate readings (0.1W or higher)
 Arduino can read up to 3.3V/5V and is optimized for signal inputs with 10K impedance
 
+<p align="center"><img src="./images/Resistive_divider.png" width="200"></p>
+
 To select R values apply formulas:
 
-*Vo = Vi\*R2/(R1+R2) < 3.3V or 5V*
+<img src="https://latex.codecogs.com/svg.latex?Vo = Vin\frac{R_2}{R_1+R_2} < 3.3V or 5V" title="Vo = Vi\*R2/(R1+R2) < 3.3V or 5V" /><br>
 
-*Z = 1/((1/R1)+(1/R2)) < 10K*
+<img src="https://latex.codecogs.com/svg.latex?Z = \frac{1}{\frac{1}{R_1}+\frac{1}{R_2}} < 10K" title="Z = 1/((1/R1)+(1/R2)) < 10K" />
 
-<p align="center"><img src="./images/Resistive_divider.png" width="200"></p>
 
 For 6S battery (or lower) and Pro Mini 3.3v:
 
@@ -221,23 +243,30 @@ If more than 6S change R values or you may burn the Arduino!
 Two temperature sensors can be installed through the analog pins A0 and A1
 Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in ntc.h if needed (NTC_BETA, default is 4190). Sensor output in Celsius
 
-Using Beta formula:
+<p align="center"><img src="./images/ntc.gif" width="200"></p>
 
-*T = 1/[ln(R/Ro)/B+1/To]*
+To obtain the thermistor resistance:
 
-More accurate formula (Steinhart and Hart Equation) if data available:
+<img src="https://latex.codecogs.com/svg.latex?Rt = \frac{Vo * Rs}{(Vin - Vo)}" title="Rt = Vo * Rs / (Vin - voltage))}" />
 
-*T = 1/[A+Bln(R/Ro)+Cln(R/Ro)²+Dln(R/Ro)³]*
+And temperature with Beta formula:
+
+<img src="https://latex.codecogs.com/svg.latex?T = \frac{1}{\frac{ln\frac{Rt}{Rref}}{\beta}+\frac{1}{Tref}}" title="T = 1/[ln(Rt/Rref)/B+1/Tref]" />
+
+Or with Steinhart and Hart Equation if data is available:
+
+<img src="https://latex.codecogs.com/svg.latex?T = \frac{1}{A+B*ln\frac{Rt}{Rref}+C*ln(\frac{Rt}{Rref})^2+D*ln(\frac{Rt}{Rref})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
 
 ## Change log
 
 v0.5
 
-- Add Castle Link Live protocol
+- Added Castle Link Live protocol
+- Hobbywing V4/V5. Improved transformations for voltage and current (thanks to Comodore8888). Added ESC signatures
 
 [v0.4](https://github.com/dgatf/msrc/tree/v0.4)
 
-- Change R3 resistor to 3.3k
+- Changed R3 resistor to 3.3k
 - Support for [change_id_frsky](https://github.com/dgatf/change_id_frsky) to change the sensor id
 - Support for I2C sensors 
 - Improved code quality and performance
@@ -269,3 +298,11 @@ For questions, issues or new protocol request (use this [sketch](./sniffer/sniff
 [Openrcforums](https://www.openrcforums.com/forum/viewtopic.php?f=84&t=11911)
 
 Or open an [Issue](https://github.com/dgatf/msrc/issues) in Github
+
+
+## Acknowledgements
+
+- Commodore8888 (Helifreak)
+- MikeJ (Helifreak)
+- Atomic Skull (Helifreak)
+- McGiverek (Helifreak)
