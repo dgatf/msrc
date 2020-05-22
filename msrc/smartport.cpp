@@ -317,25 +317,10 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
 #ifdef DEBUG
                     Serial.print("id: ");
                     Serial.print(spSensorP->dataId(), HEX);
-                    Serial.print(" iL: ");
-                    Serial.print(spSensorP->indexL());
-                    Serial.print(" vL: ");
-                    Serial.print(spSensorP->valueL());
-                    Serial.print(" f: ");
-                    Serial.print(formatData(spSensorP->dataId(), spSensorP->valueM(), spSensorP->valueL()));
+                    Serial.print(" v: ");
+                    Serial.print(spSensorP->value());
                     Serial.print(" ts: ");
                     Serial.println(spSensorP->timestamp());
-                    if (spSensorP->indexM() != 255)
-                    {
-                        Serial.print("id: ");
-                        Serial.print(spSensorP->dataId(), HEX);
-                        Serial.print(" iM: ");
-                        Serial.print(spSensorP->indexM());
-                        Serial.print(" vM: ");
-                        Serial.print(spSensorP->valueM());
-                        Serial.print(" ts: ");
-                        Serial.println(spSensorP->timestamp());
-                    }
 #endif
                     spSensorP->setTimestamp(millis());
                     dataId = spSensorP->dataId();

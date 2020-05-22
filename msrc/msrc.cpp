@@ -252,7 +252,7 @@ void initConfig(Config &config)
         smartport.addSensor(sensorP);
         sensorP = new Sensor(GPS_COURS_FIRST_ID, BN220_COG, config.refresh.def, gps);
         smartport.addSensor(sensorP);
-        sensorP = new SensorDateTime(GPS_TIME_DATE_FIRST_ID, BN220_DATE, BN220_TIME, config.refresh.def, gps);
+        sensorP = new SensorDateTime(GPS_TIME_DATE_FIRST_ID, BN220_TIME, BN220_DATE, config.refresh.def, gps);
         smartport.addSensor(sensorP);
     }
     if (config.voltage1 == true)
@@ -449,7 +449,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
 void setup()
 {
 #ifdef DEBUG
-    debugSerial.begin(19200);
+    debugSerial.begin(9600);
     debugSerial.println("\nDEBUG");
     debugSerial.print("V");
     debugSerial.print(VERSION_MAJOR);
@@ -470,7 +470,7 @@ void setup()
     Config config;
 #endif
 #ifdef DEBUG
-    delay(50);
+    delay(100);
 #endif
     initConfig(config);
 }

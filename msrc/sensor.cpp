@@ -59,7 +59,7 @@ void SensorDouble::update()
 
 uint32_t SensorDouble::value()
 {
-    value_ = formatData(dataId_, device_->read(indexM_), device_->read(indexL_)); 
+    value_ = formatData(dataId_, valueM_, valueL_);
     return value_;
 }
 
@@ -72,13 +72,13 @@ SensorLatLon::SensorLatLon(uint16_t dataId, uint8_t indexLon, uint8_t indexLat, 
 
 uint32_t SensorLatLon::value()
 {
-    if (type_) 
+    if (type_)
     {
-        value_ = formatLatLon(TYPE_LAT, device_->read(indexL_));   // lat
+        value_ = formatLatLon(TYPE_LAT, valueL_);
     }
     else
     {
-        value_ = formatLatLon(TYPE_LON, device_->read(indexM_));  // lon
+        value_ = formatLatLon(TYPE_LON, valueM_);
     }
     type_ = !type_;
     return value_;
@@ -88,24 +88,25 @@ SensorDateTime::SensorDateTime(uint16_t dataId, uint8_t indexTime, uint8_t index
 
 void SensorDateTime::update()
 {
-    value_ = formatDateTime(type_, device_->read(indexL_)); // device->read, is an int!
+    valueL_ = device_->read(indexL_);
+    valueM_ = device_->read(indexM_);
 }
 
 uint32_t SensorDateTime::value()
 {
-    if (type_) 
+    if (type_)
     {
-        value_ = formatDateTime(TYPE_DATE, device_->read(indexL_));   // date
+        value_ = formatDateTime(TYPE_DATE, valueL_);
     }
     else
     {
-        value_ = formatDateTime(TYPE_TIME, device_->read(indexM_));  // time
+        value_ = formatDateTime(TYPE_TIME, valueM_);
     }
     type_ = !type_;
     return value_;
 }
 
-SensorCell::SensorCell(uint16_t dataId, uint8_t indexM , uint8_t indexL, uint8_t cellIndex, uint8_t refresh, AbstractDevice *device) : SensorDouble(dataId, indexM, indexL, refresh, device), cellIndex_(cellIndex) {}
+SensorCell::SensorCell(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t cellIndex, uint8_t refresh, AbstractDevice *device) : SensorDouble(dataId, indexM, indexL, refresh, device), cellIndex_(cellIndex) {}
 
 void SensorCell::update()
 {
@@ -115,6 +116,6 @@ void SensorCell::update()
 
 uint32_t SensorCell::value()
 {
-    value_ = formatCell(cellIndex_, device_->read(indexM_), device_->read(indexL_));
+    value_ = formatCell(cellIndex_, valueM_, valueL_);
     return value_;
 }
