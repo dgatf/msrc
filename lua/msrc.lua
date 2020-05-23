@@ -25,7 +25,7 @@ local scroll = 0
 local sensorIdTx = 17 -- sensorId 18
 local config = {
     firmwareVersion = "",
-    protocol = {selected = 6, list = {"NONE", "HW V3", "HW V4/V5", "PWM", "CASTLE", ""}, elements = 5},
+    protocol = {selected = 9, list = {"NONE", "HW V3", "HW V4 LV", "HW V4 HV", "HW V5 LV", "HW V5 HV", "PWM", "CASTLE", ""}, elements = 8},
     voltage1 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     voltage2 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     ntc1 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
