@@ -35,17 +35,15 @@ ESC Castle Link protocol goes into the input signal of the ESC. Circuit is as fo
 <p align="center"><img src="./images/msrc_castle.png" width="600"><br>
   <i>Minimum circuit Castle Link</i><br><br></p>
 
-Telemetry available by ESC model:
-
 | Model              | RPM         | Throttle    | Motor PWM   | Voltage     | Current   | Voltage BEC | Current BEC | Temperature 1 | Temperature 2 | Ripple Volt |
 | ------------------ | :---------: | :---------: | :---------: | :---------: | :-------: | :---------: | :---------: | :-----------: | :-----------: | :---------: |
 | Hobbywing V3       | :white_check_mark:         | :white_check_mark:(1)      | :white_check_mark:(1)      |             |           |             |             |               |               |             |
 | Hobbywing V4/V5(4) | :white_check_mark:         | :white_check_mark:(1)      | :white_check_mark:(1)      | :white_check_mark:         | :white_check_mark:(2)    |             |             | :white_check_mark: FET       | :white_check_mark: BEC       |             |
 | Castle Link        | :white_check_mark:         | :white_check_mark:(1)      | :white_check_mark:(1)      | :white_check_mark:         | :white_check_mark:       | :white_check_mark:(3)      | :white_check_mark:(3)      | :white_check_mark:           |               | :white_check_mark:         |
 
-(1) Available in telemetry but not forwarded to smartport
-(2) For 80A models and higher
-(3) Not available in all models
+(1) Available but not forwarded to smartport  
+(2) For 80A models and higher  
+(3) Not available in all models  
 (4) Sensors varies depending on the model and firmware. Update ESC to the latest firmware available. See annex
 
 If voltage is available the  cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for valid a cell count
@@ -192,20 +190,20 @@ rpm, pwm: 0-255 (8bits)
 
 rpm, pwm: 0-1024 (10bits)
 
-Voltage, current and temperature are raw sensor data. Actual values requires transformation. Depending on the model, sensors are different so is the required transformation:
+Voltage, current and temperature are raw sensor data. Actual values requires transformation. Depending on the model, sensors are different so  the transformations:
 
   - Voltage divider. Different for LV and HV models. LV divisor 11. HV divisor 21
-  - Current sensor. Different for V4 and V5. V5 seems to be shifted by Vref=0.5
-  - Temperature. NTC resistor is used. So far is the same for tested models
+  - Current sensor. Different for V4 and V5. V5 seems to be shifted by Vref=0.53V
+  - Temperature. NTC resistor is used. So far it is the same for tested models
 
 Before throttle is raised from 0, signature packets are sent between telemetry packets. This is used to identify the hardware and firmware of the ESC
 
 Examples:
 
-| Model\Byte| 1     | 2     | 3     | 4     | 5     | 6     | 7     | 8     | 9     | 10    | 11    | 12    | 13    |
-| --------- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| V4LH80A   | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x0B  | 0x41  | 0x21  | 0x44  | 0xB9  | 0x21  | 0x21  | 0xB9  |
-| V5LH130A  | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x0B  | 0x41  | 0x21  | 0x44  | 0xB9  | 0x21  | 0x21  | 0xB9  |
+| Model\Byte | 1     | 2     | 3     | 4     | 5     | 6     | 7     | 8     | 9     | 10    | 11    | 12    | 13    |
+| ---------- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| V4LH80A    | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x08  | 0x5B  | 0x00  | 0x01  | 0x00  | 0x21  | 0x21  | 0xB9  |
+| V5LH130A   | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x0B  | 0x41  | 0x21  | 0x44  | 0xB9  | 0x21  | 0x21  | 0xB9  |
 
 ### ESC protocol specifications Castle Link
 
