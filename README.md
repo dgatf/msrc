@@ -46,8 +46,6 @@ ESC Castle Link protocol goes into the input signal of the ESC. Circuit is as fo
 (3) Not available in all models  
 (4) Sensors varies depending on model and firmware. Update ESC to the latest firmware available. See [annex](#Hobbywing-V4-V5)
 
-### My Multi Word Header
-
 If voltage is available the  cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for valid a cell count
 
 ### Analog sensors
