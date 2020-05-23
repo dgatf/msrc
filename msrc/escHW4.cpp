@@ -1,6 +1,6 @@
 #include "escHW4.h"
 
-EscHW4Interface::EscHW4Interface(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
+EscHW4Interface::EscHW4Interface(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp), type_(type) {}
 
 void EscHW4Interface::begin()
 {
@@ -23,14 +23,14 @@ bool EscHW4Interface::update()
                 if (type_ == ESCHW4_TYPE_V5_HV + 1)
                 {
                     uint8_t i = 0;
-                    while (memcmp(data, signature_[i], 12) != 0 && i < 4)
+                    /*while (memcmp(data, signature_[i], 12) != 0 && i < 4)
                     {
                         i++;
                     }
                     if (memcmp(data, signature_[i], 12) == 0)
                     {
                         type_ = i;
-                    }
+                    }*/
 #ifdef DEBUG_SIGNATURE
                     Serial.print("ESC TYPE [");
                     Serial.print(type_);

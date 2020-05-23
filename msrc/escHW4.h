@@ -35,16 +35,16 @@
 class EscHW4Interface : public AbstractDevice, public EscCell
 {
 private:
-    const uint8_t signature_[4][12] = {{0x9B, 0x03, 0xE8, 0x01, 0x08, 0x5B, 0x00, 0x01, 0x00, 0x21, 0x21, 0xB9},      // ESCHW4_TYPE_V4_LV
+    /*const uint8_t signature_[4][12] = {{0x9B, 0x03, 0xE8, 0x01, 0x08, 0x5B, 0x00, 0x01, 0x00, 0x21, 0x21, 0xB9},      // ESCHW4_TYPE_V4_LV
                                        {0x9B, 0x03, 0xE8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x21, 0xB9},      // BYTES 5-9? ESCHW4_TYPE_V4_HV
                                        {0x9B, 0x03, 0xE8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x21, 0xB9},      // BYTES 5-9? ESCHW4_TYPE_V5_LV
-                                       {0x9B, 0x03, 0xE8, 0x01, 0x0B, 0x41, 0x21, 0x44, 0xB9, 0x21, 0x21, 0xB9}};     // ESCHW4_TYPE_V5_HV
-    const float voltageDivisor_[5] = {11, 21, 11, 21, 11};
-    const float rawCurrentOffset_[5] = {15, 15, 660, 660, 15};
+                                       {0x9B, 0x03, 0xE8, 0x01, 0x0B, 0x41, 0x21, 0x44, 0xB9, 0x21, 0x21, 0xB9}};     // ESCHW4_TYPE_V5_HV*/
+    const float voltageDivisor_[4] = {11, 21, 11, 21};
+    const float rawCurrentOffset_[4] = {15, 15, 660, 660};
     HardwareSerial &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
     float value_[8] = {0};
-    uint8_t type_ = ESCHW4_TYPE_V5_HV + 1;
+    uint8_t type_;
 
     float calcVolt(uint16_t voltRaw);
     float calcTemp(uint16_t tempRaw);
@@ -52,7 +52,7 @@ private:
 
 protected:
 public:
-    EscHW4Interface(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp);
+    EscHW4Interface(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type);
     void begin();
     bool update();
     float read(uint8_t index);
