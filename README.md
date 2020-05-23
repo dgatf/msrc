@@ -44,7 +44,9 @@ ESC Castle Link protocol goes into the input signal of the ESC. Circuit is as fo
 (1) Available but not forwarded to smartport  
 (2) For 80A models and higher  
 (3) Not available in all models  
-(4) Sensors varies depending on the model and firmware. Update ESC to the latest firmware available. See annex
+(4) Sensors varies depending on model and firmware. Update ESC to the latest firmware available. See [annex](#Hobbywing-V4-V5)
+
+### My Multi Word Header
 
 If voltage is available the  cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for valid a cell count
 
@@ -182,7 +184,7 @@ Serial parameters:
 
 rpm, pwm: 0-255 (8bits)
 
-#### Hobbywing V4/V5
+#### Hobbywing V4 V5
 
 | Byte  | 1     | 2     | 3     | 4     | 5     | 6     | 7     | 8     | 9     | 10    | 11    | 12    | 13    | 14    | 15    | 16    | 17    | 18    | 19    |
 | ---   | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
