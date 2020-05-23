@@ -4,7 +4,7 @@ This is a DIY project to send multiple sensors telemetry to Frsky Smartport usin
 
 ## Telemetry
 
-The following types of sensors can be connected:
+The following sensors are supported:
 
 - ESC
   - ESCs with serial telemetry (Hobbywing V3/V4/V5)
@@ -14,6 +14,8 @@ The following types of sensors can be connected:
 - Analog sensors
 
 ### ESC
+
+#### Serial telemetry
 
 Some ESC have a serial port for telemetry output. This can be decoded connecting the ESC to the UART available in the Pro Mini. The following ESC serial protocols are implemented:
 
@@ -25,10 +27,14 @@ Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPMs 
 <p align="center"><img src="./images/msrc_serial.png" width="600"><br>
   <i>Minimum circuit ESC serial</i><br><br></p>
 
+#### PWM signal
+
 Some ESC have a PWM signal for motor RPMs, which is equivalent to a phase sensor. Some ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWN signal is not needed for telemetry. Circuit is as follows:
 
 <p align="center"><img src="./images/msrc_pwm.png" width="600"><br>
   <i>Minimum circuit PWM signal</i><br><br></p>
+
+#### Castle link
 
 ESC Castle Link protocol goes into the input signal of the ESC. Circuit is as follows:
 
@@ -138,7 +144,7 @@ Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4
 
 ### Adjust current sensor (Curr)
 
-Adjust sensor ratio: *1000 / output sensitivity (mV/A)*
+If using a hall effect sensor, adjust the ratio: *1000 / output sensitivity (mV/A)*
 
 To get battery consumption add a new sensor:
 
@@ -193,8 +199,8 @@ rpm, pwm: 0-1024 (10bits)
 Voltage, current and temperature are raw sensor data. Actual values requires transformation. Depending on the model, sensors are different so  the transformations:
 
   - Voltage divider. Different for LV and HV models. LV divisor 11. HV divisor 21
-  - Current sensor. Different for V4 and V5. V5 seems to be shifted by Vref=0.53V
-  - Temperature. NTC resistor is used. So far it is the same for tested models
+  - Current sensor (shunt resistor and diff amp). Different for V4 and V5. V5 seems to be shifted by Vref=0.53V
+  - Temperature. NTC resistor. So far it is the same for tested models
 
 Before throttle is raised from 0, signature packets are sent between telemetry packets. This is used to identify the hardware and firmware of the ESC
 
@@ -261,6 +267,24 @@ And temperature with Beta formula:
 Or with Steinhart and Hart Equation if data is available:
 
 <img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{A+B*ln\frac{Rt}{Rref}+C*ln(\frac{Rt}{Rref})^2+D*ln(\frac{Rt}{Rref})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
+
+
+### Current
+
+#### Hall effect
+
+Hall effect sensors. Induced magnetic field is transformed into voltage. They are caracterized by their sensitivity
+
+<img src="https://latex.codecogs.com/svg.latex?I=\frac{Vo}{S}" title="I=Vo/S" />
+
+#### Shunt resistor
+
+The voltage drop in the shunt resistor is amplified by a differential amplifier to obtain Vo
+
+<img src="https://latex.codecogs.com/svg.latex?I=\frac{Vo}{Ad*Rs}" title="I=Vo/Ad*Rs" />
+
+<p align="center"><img src="./images/High-Side-Current-Sensing.png" width="200"></p>
+
 
 ## Change log
 
