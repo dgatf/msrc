@@ -20,9 +20,9 @@ bool EscHW4Interface::update()
             if (serial_.peek() == 0x9B) // esc signature
             {
                 cont = serial_.readBytes(data, 12);
-                if (type_ == ESCHW4_TYPE_V5_HV + 1)
-                {
-                    uint8_t i = 0;
+                //if (type_ == ESCHW4_TYPE_V5_HV + 1)
+                //{
+                //    uint8_t i = 0;
                     /*while (memcmp(data, signature_[i], 12) != 0 && i < 4)
                     {
                         i++;
@@ -42,7 +42,7 @@ bool EscHW4Interface::update()
                     }
                     Serial.println();
 #endif
-                }
+                //}
                 return false;
             }
             cont = serial_.readBytes(data, 18);
