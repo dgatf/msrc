@@ -38,15 +38,15 @@ ESC Castle Link protocol goes into the input signal of the ESC. Circuit is as fo
 Telemetry available by ESC model:
 
 | Model              | RPM         | Throttle    | Motor PWM   | Voltage     | Current   | Voltage BEC | Current BEC | Temperature 1 | Temperature 2 | Ripple Volt |
-| ------------------ | ----------- | ----------- | ----------- | ----------- | --------- | ----------- | ----------- | ------------- | ------------- | ----------- |
-| Hobbywing V3       | :x:         | :x:(1)      | :x:(1)      |             |           |             |             |               |               |             |
-| Hobbywing V4/V5(4) | :x:         | :x:(1)      | :x:(1)      | :x:         | :x:(2)    |             |             | :x: FET       | :x: BEC       |             |
-| Castle Link        | :x:         | :x:(1)      | :x:(1)      | :x:         | :x:       | :x:(3)      | :x:(3)      | :x:           |               | :x:         |
+| ------------------ | :---------: | :---------: | :---------: | :---------: | :-------: | :---------: | :---------: | :-----------: | :-----------: | :---------: |
+| Hobbywing V3       | :white_check_mark:         | :white_check_mark:(1)      | :white_check_mark:(1)      |             |           |             |             |               |               |             |
+| Hobbywing V4/V5(4) | :white_check_mark:         | :white_check_mark:(1)      | :white_check_mark:(1)      | :white_check_mark:         | :white_check_mark:(2)    |             |             | :white_check_mark: FET       | :white_check_mark: BEC       |             |
+| Castle Link        | :white_check_mark:         | :white_check_mark:(1)      | :white_check_mark:(1)      | :white_check_mark:         | :white_check_mark:       | :white_check_mark:(3)      | :white_check_mark:(3)      | :white_check_mark:           |               | :white_check_mark:         |
 
 (1) Available in telemetry but not forwarded to smartport
 (2) For 80A models and higher
 (3) Not available in all models
-(4) There are different types of sensors depending on the model. This is defined by the ESC signature. See annex
+(4) Sensors varies depending on the model and firmware. Update ESC to the latest firmware available. See annex
 
 If voltage is available the  cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for valid a cell count
 
@@ -127,7 +127,7 @@ I2C telemetry:
  - Altitude: Alt (0x0820)
  - Temperature: T1 (0x0401, 0x0402)
 
-Some of them needs to be adusted
+Some of the sensors needs to be adusted in openTx
 
 ### Adjust RPM sensor (EscR)
 
@@ -176,29 +176,36 @@ Serial parameters:
 
 #### Hobbywing V3
 
-Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
---- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
-Value | Package Head (0x9B) | Package Number 1 | Package Number 2 | Package Number 3 | Rx Throttle 1 | Rx Throttle  2 | Output PWM 1 | Output PWM 2 | RPM Cycle 1 | RPM Cycle 2
+| Byte  | 1                   | 2                | 3                | 4                | 5             | 6              | 7            | 8            | 9           | 10          |
+| ----- | :-----------------: | :--------------: | :--------------: | :--------------: | :-----------: | :------------: | :----------: | :----------: | :---------: | :---------: |
+| Value | Package Head (0x9B) | Package Number 1 | Package Number 2 | Package Number 3 | Rx Throttle 1 | Rx Throttle  2 | Output PWM 1 | Output PWM 2 | RPM Cycle 1 | RPM Cycle 2 |
 
 *RPM = 60000000 / RPM Cycle*
 
-rpm, pwm: 0-255
+rpm, pwm: 0-255 (8bits)
 
 #### Hobbywing V4/V5
 
-Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19
---- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
-Value | Package Head (0x9B) | Package Number 1 |	Package Number 2 | Package Number 3	| Rx Throttle 1	| Rx Throttle  2 | Output PWM 1 | Output PWM 2	| RPM 1 | RPM 2	| RPM 3	| Voltage 1 |	Voltage 2	| Current 1	| Current 2	| TempFET 1	| TempFET 2	| Temp 1 |	Temp 2
+| Byte  | 1     | 2     | 3     | 4     | 5     | 6     | 7     | 8     | 9     | 10    | 11    | 12    | 13    | 14    | 15    | 16    | 17    | 18    | 19    |
+| ---   | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Value | Package Head (0x9B) | Package Number 1 |	Package Number 2 | Package Number 3	| Rx Throttle 1	| Rx Throttle  2 | Output PWM 1 | Output PWM 2	| RPM 1 | RPM 2	| RPM 3	| Voltage 1 |	Voltage 2	| Current 1	| Current 2	| TempFET 1	| TempFET 2	| Temp 1 |	Temp 2
 
-Voltage, current and temperature are raw sensor data. Actual values requires transformation
+rpm, pwm: 0-1024 (10bits)
 
-rpm, pwm: 0-1024
+Voltage, current and temperature are raw sensor data. Actual values requires transformation. Depending on the model, sensors are different so is the required transformation:
 
-Remark: Before throttle is raised from 0, programming packets are sent between telemetry packets:
+  - Voltage divider. Different for LV and HV models. LV divisor 11. HV divisor 21
+  - Current sensor. Different for V4 and V5. V5 seems to be shifted by Vref=0.5
+  - Temperature. NTC resistor is used. So far is the same for tested models
 
-Byte | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13
---- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
-Value | 0x9B | 0x9B	| 0x3	| 0xE8	| 0x1	| 0xB	| 0x41	| 0x21	| 0x44	| 0xB9	| 0x21	| 0x21	| 0xB9
+Before throttle is raised from 0, signature packets are sent between telemetry packets. This is used to identify the hardware and firmware of the ESC
+
+Examples:
+
+| Model\Byte| 1     | 2     | 3     | 4     | 5     | 6     | 7     | 8     | 9     | 10    | 11    | 12    | 13    |
+| --------- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| V4LH80A   | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x0B  | 0x41  | 0x21  | 0x44  | 0xB9  | 0x21  | 0x21  | 0xB9  |
+| V5LH130A  | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x0B  | 0x41  | 0x21  | 0x44  | 0xB9  | 0x21  | 0x21  | 0xB9  |
 
 ### ESC protocol specifications Castle Link
 
@@ -214,7 +221,7 @@ For best accuracy PWM signal output for FBL is produced by hardware PWM from ser
 
 To obtain the voltage at the analog pin it is required the ADC bits (b) and the Vref:
 
-<img src="https://latex.codecogs.com/svg.latex?Vo = Vref * \frac{Raw}{2^b}" title="Vo = Vref * Raw / 2^bits" /><br>
+<img src="https://latex.codecogs.com/svg.latex?Vo=Vref*\frac{Raw}{2^b}" title="Vo = Vref * Raw / 2^bits" /><br>
 
 ### Analog voltage sensors. Voltage divider circuit
 
@@ -226,9 +233,9 @@ Arduino can read up to 3.3V/5V and is optimized for signal inputs with 10K imped
 
 To select R values apply formulas:
 
-<img src="https://latex.codecogs.com/svg.latex?Vo = Vin\frac{R_2}{R_1+R_2} < 3.3V or 5V" title="Vo = Vi\*R2/(R1+R2) < 3.3V or 5V" /><br>
+<img src="https://latex.codecogs.com/svg.latex?Vo=Vin\frac{R_2}{R_1+R_2}<3.3Vor5V" title="Vo = Vi\*R2/(R1+R2) < 3.3V or 5V" /><br>
 
-<img src="https://latex.codecogs.com/svg.latex?Z = \frac{1}{\frac{1}{R_1}+\frac{1}{R_2}} < 10K" title="Z = 1/((1/R1)+(1/R2)) < 10K" />
+<img src="https://latex.codecogs.com/svg.latex?Z=\frac{1}{\frac{1}{R_1}+\frac{1}{R_2}} < 10K" title="Z = 1/((1/R1)+(1/R2)) < 10K" />
 
 
 For 6S battery (or lower) and Pro Mini 3.3v:
@@ -247,15 +254,15 @@ Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in n
 
 To obtain the thermistor resistance:
 
-<img src="https://latex.codecogs.com/svg.latex?Rt = \frac{Vo * Rs}{(Vin - Vo)}" title="Rt = Vo * Rs / (Vin - voltage))}" />
+<img src="https://latex.codecogs.com/svg.latex?Rt=\frac{Vo*Rs}{(Vin-Vo)}" title="Rt = Vo * Rs / (Vin - voltage))}" />
 
 And temperature with Beta formula:
 
-<img src="https://latex.codecogs.com/svg.latex?T = \frac{1}{\frac{ln\frac{Rt}{Rref}}{\beta}+\frac{1}{Tref}}" title="T = 1/[ln(Rt/Rref)/B+1/Tref]" />
+<img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{\frac{ln\frac{Rt}{Rref}}{\beta}+\frac{1}{Tref}}" title="T = 1/[ln(Rt/Rref)/B+1/Tref]" />
 
 Or with Steinhart and Hart Equation if data is available:
 
-<img src="https://latex.codecogs.com/svg.latex?T = \frac{1}{A+B*ln\frac{Rt}{Rref}+C*ln(\frac{Rt}{Rref})^2+D*ln(\frac{Rt}{Rref})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
+<img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{A+B*ln\frac{Rt}{Rref}+C*ln(\frac{Rt}{Rref})^2+D*ln(\frac{Rt}{Rref})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
 
 ## Change log
 
