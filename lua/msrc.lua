@@ -176,7 +176,7 @@ local function readConfig()
                 if bit32.extract(value, 20, 4) >= 1 and bit32.extract(value, 20, 4) <= 16 then
                     config.queueTemp.selected = bit32.extract(value, 20, 4) -- bits 21-24
                 end
-                if bit32.extract(value, 24, 8) >= 0 and bit32.extract(value, 24, 8) <= 4 then
+                if bit32.extract(value, 24, 8) >= 0 and bit32.extract(value, 24, 8) <= 7 then
                     config.protocol.selected = bit32.extract(value, 24, 8) + 1 -- bits 25-32
                 end
                 readConfigState = state["PACKET_3"]
