@@ -230,7 +230,7 @@ For best accuracy PWM signal output for FBL is produced by hardware PWM from ser
 
 To obtain the voltage at the analog pin it is required the ADC bits (b) and the Vref:
 
-<img src="https://latex.codecogs.com/svg.latex?Vo=Vref*\frac{Raw}{2^b}" title="Vo = Vref * Raw / 2^bits" /><br>
+<img src="https://latex.codecogs.com/svg.latex?V_o=V_ref*\frac{Raw}{2^b}" title="Vo = Vref * Raw / 2^bits" /><br>
 
 ### 7.5. Analog voltage sensors. Voltage divider circuit
 
@@ -242,7 +242,7 @@ Arduino can read up to 3.3V/5V and is optimized for signal inputs with 10K imped
 
 To select R values apply formulas:
 
-<img src="https://latex.codecogs.com/svg.latex?Vo=Vin\frac{R_2}{R_1+R_2}<3.3Vor5V" title="Vo = Vi\*R2/(R1+R2) < 3.3V or 5V" /><br>
+<img src="https://latex.codecogs.com/svg.latex?V_o=V_in\frac{R_2}{R_1+R_2}<3.3Vor5V" title="Vo = Vi\*R2/(R1+R2) < 3.3V or 5V" /><br>
 
 <img src="https://latex.codecogs.com/svg.latex?Z=\frac{1}{\frac{1}{R_1}+\frac{1}{R_2}}<10K" title="Z = 1/((1/R1)+(1/R2)) < 10K" />
 
@@ -263,15 +263,15 @@ Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in n
 
 To obtain the thermistor resistance:
 
-<img src="https://latex.codecogs.com/svg.latex?Rt=\frac{Vo*Rs}{(Vin-Vo)}" title="Rt = Vo * Rs / (Vin - voltage))}" />
+<img src="https://latex.codecogs.com/svg.latex?Rt=\frac{V_o*R_s}{(V_in-V_o)}" title="Rt = Vo * Rs / (Vin - voltage))}" />
 
 And temperature with Beta formula:
 
-<img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{\frac{ln\frac{Rt}{Rref}}{\beta}+\frac{1}{Tref}}" title="T = 1/[ln(Rt/Rref)/B+1/Tref]" />
+<img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{\frac{ln\frac{R_t}{R_ref}}{\beta}+\frac{1}{T_ref}}" title="T = 1/[ln(Rt/Rref)/B+1/Tref]" />
 
 Or with Steinhart and Hart Equation if data is available:
 
-<img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{A+B*ln\frac{Rt}{Rref}+C*ln(\frac{Rt}{Rref})^2+D*ln(\frac{Rt}{Rref})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
+<img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{A+B*ln\frac{R_t}{R_ref}+C*ln(\frac{R_t}{R_ref})^2+D*ln(\frac{R_t}{R_ref})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
 
 ### 7.7. Current
 
@@ -279,13 +279,13 @@ Or with Steinhart and Hart Equation if data is available:
 
 Hall effect sensors. Induced magnetic field is transformed into voltage. They are caracterized by their sensitivity
 
-<img src="https://latex.codecogs.com/svg.latex?I=\frac{Vo}{S}" title="I=Vo/S" />
+<img src="https://latex.codecogs.com/svg.latex?I=\frac{V_o}{S}" title="I=Vo/S" />
 
 #### Shunt resistor
 
 The voltage drop in the shunt resistor is amplified by a differential amplifier to obtain Vo
 
-<img src="https://latex.codecogs.com/svg.latex?I=\frac{Vo}{Ad*Rs}" title="I=Vo/Ad*Rs" />
+<img src="https://latex.codecogs.com/svg.latex?I=\frac{V_o}{A_d*R_s}" title="I=Vo/Ad*Rs" />
 
 <p align="center"><img src="./images/High-Side-Current-Sensing.png" width="200"></p>
 
@@ -295,7 +295,7 @@ The voltage drop in the shunt resistor is amplified by a differential amplifier 
 v0.5
 
 - Added Castle Link Live protocol
-- Hobbywing V4/V5. Improved transformations for voltage and current (thanks to Commodore8888). Added ESC signatures
+- Hobbywing V4/V5. Improved transformations for voltage and current depending on the model (thanks to Commodore8888)
 
 [v0.4](https://github.com/dgatf/msrc/tree/v0.4)
 
