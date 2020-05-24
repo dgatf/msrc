@@ -2,6 +2,7 @@
 
 This is a DIY project to send multiple sensors telemetry to Frsky Smartport using an Arduino Pro Mini 328P (3.3v or 5v)
 
+
 ## Telemetry
 
 The following sensors are supported:
@@ -13,33 +14,37 @@ The following sensors are supported:
 - I2C sensors
 - Analog sensors
 
+All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration through the lua script
+
 ### ESC
 
 #### Serial telemetry
 
-Some ESC have a serial port for telemetry output. This can be decoded connecting the ESC to the UART available in the Pro Mini. The following ESC serial protocols are implemented:
+If the ESC have a serial port for telemetry output it can be decoded connecting the ESC to the available UART in the Pro Mini. Serial protocols implemented:
 
 - Hobbywing Platinum V3: RPM
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature (Mosfet and BEC), voltage and current
 
-Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPMs in serial telemetry
+Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry
 
 <p align="center"><img src="./images/msrc_serial.png" width="600"><br>
-  <i>Minimum circuit ESC serial</i><br><br></p>
+  <i>ESC serial circuit</i><br><br></p>
 
 #### PWM signal
 
-Some ESC have a PWM signal for motor RPMs, which is equivalent to a phase sensor. Some ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWN signal is not needed for telemetry. Circuit is as follows:
+If the ESC have a PWM signal for motor RPMs or a phase sensor is installed, the RPMs can be measured with the 16bit timer of the Pro Mini. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
 
 <p align="center"><img src="./images/msrc_pwm.png" width="600"><br>
-  <i>Minimum circuit PWM signal</i><br><br></p>
+  <i>PWM signal/phase sensor circuit</i><br><br></p>
 
 #### Castle link
 
-ESC Castle Link protocol goes into the input signal of the ESC. Circuit is as follows:
+ESC Castle Link protocol is also implemented. The telemetry values goes together with the PWM input signal to the ESC. This is an inverted PWM signal and the ESC option *Castle Link* has to be enabled
 
 <p align="center"><img src="./images/msrc_castle.png" width="600"><br>
   <i>Minimum circuit Castle Link</i><br><br></p>
+
+#### Available ESC telemetry
 
 | Model              | RPM         | Throttle    | Motor PWM   | Voltage     | Current   | Voltage BEC | Current BEC | Temperature 1 | Temperature 2 | Ripple Volt |
 | ------------------ | :---------: | :---------: | :---------: | :---------: | :-------: | :---------: | :---------: | :-----------: | :-----------: | :---------: |
@@ -52,30 +57,30 @@ ESC Castle Link protocol goes into the input signal of the ESC. Circuit is as fo
 (3) Not available in all models  
 (4) Sensors varies depending on model and firmware. Update ESC to the latest firmware available. See [annex](#Hobbywing-V4-V5)
 
-If voltage is available the  cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for valid a cell count
+If voltage is available the  cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for correct cell count
 
 ### Analog sensors
 
-Can be connected the following analog sensors:
+The following analog sensors are supported:
 
-- 2 x voltage divider can be added to read the battery voltage (A2, A3)
+- 2 x voltage divider (A2, A3)
 - 2 x temperature sensors (thermistors) (A0, A1)
-- Current sensor (A6)
+- Current sensor (Hall effect) (A6)
 
 ### I2C sensors
 
-Multiple I2C sensors can be added (A4, A5)
-
-Currently supported:
+I2C sensors are suported connecting to pins A4, A5. Currently implemented:
 
 - Barometer: BMP180, BMP280
 
 <p align="center"><img src="./images/msrc_full.png" width="600"><br>
-  <i>Additional sensors</i><br><br></p>
+  <i>I2C and analog sensors</i><br><br></p>
+
 
 ## Flash to Arduino
 
 Using Arduino IDE copy folder *msrc* and open *msrc.ino*. Select board *Arduino Pro or Pro Mini*, processor *ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
+
 
 ## Configuration
 
@@ -90,19 +95,20 @@ If not using lua script comment *#define CONFIG_LUA* and assign config values in
 Options:
 
 - ESC protocol. HobbyWing Platinum V3, HobbyWing Platinum V4/Hobbywing Flyfun V5 or PWM signal
-- Voltage1. For voltage divider 1
-- Voltage2. For voltage divider 2
-- Ntc1. Thermistor 1
-- Ntc2. Thermistor 2
-- Current
-- PWM out. Generate a PWM signal from RPM is ESC serial (for Hobbywing Flyfun V5)
+- Voltage1. Enable/disable analog voltage divider 1
+- Voltage2. Enable/disable analog voltage divider 2
+- Ntc1. Enable/disable analog thermistor 1
+- Ntc2. Enable/disable analog thermistor 2
+- Current. Enable/disable analog current
+- PWM out. Enable/disable analog a PWM signal from RPM values from ESC serial
 - Averaging queue size: 1 to 16
 - Refresh rate (ms): 0 to 1600
-- I2C (x2). Type and I2C address
+- I2C (x2). Sensor type and address
+
 
 ## OpenTx sensors
 
-The arduino default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
+The default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
 
 Depending on your configuration some the following sensors will be available in Opentx. After configuration go to sensors screen and update with *Search new sensors*
  
@@ -131,9 +137,9 @@ I2C telemetry:
  - Altitude: Alt (0x0820)
  - Temperature: T1 (0x0401, 0x0402)
 
-Some of the sensors needs to be adusted in openTx
+Some of the sensors have to be adusted in openTx
 
-### Adjust RPM sensor (EscR)
+### Adjust RPM sensor (Erpm)
 
 - Blades/poles: number of pair of poles * main gear teeth  
 - Multiplier: pinion gear teeth
@@ -146,11 +152,12 @@ Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4
 
 If using a hall effect sensor, adjust the ratio: *1000 / output sensitivity (mV/A)*
 
-To get battery consumption add a new sensor:
+To calculate the battery consumption add a new sensor:
 
 - Type: Calculated
 - Formula: Consumption
 - Sensor: Curr
+
 
 ## Images
 
@@ -159,7 +166,6 @@ To get battery consumption add a new sensor:
 <p align="center"><img src="./images/450_1.jpg" width="300">  <img src="./images/450_2.jpg" width="300"></p>
 
 <p align="center"><img src="./images/450_3.jpg" width="300">  <img src="./images/450_x7.bmp" width="300"><br><i>MSRC on Align 450 connected to Hobbywing V3 Platinum and two thermistors for ESC and motor</i><br></p>
-
 
 
 ## Video
@@ -268,7 +274,6 @@ Or with Steinhart and Hart Equation if data is available:
 
 <img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{A+B*ln\frac{Rt}{Rref}+C*ln(\frac{Rt}{Rref})^2+D*ln(\frac{Rt}{Rref})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
 
-
 ### Current
 
 #### Hall effect
@@ -291,7 +296,7 @@ The voltage drop in the shunt resistor is amplified by a differential amplifier 
 v0.5
 
 - Added Castle Link Live protocol
-- Hobbywing V4/V5. Improved transformations for voltage and current (thanks to Comodore8888). Added ESC signatures
+- Hobbywing V4/V5. Improved transformations for voltage and current (thanks to Commodore8888). Added ESC signatures
 
 [v0.4](https://github.com/dgatf/msrc/tree/v0.4)
 
@@ -318,6 +323,7 @@ v0.5
 - Averaging governor added
 - Refresh rate and averaging added to lua config script
 
+
 ## Support
 
 For questions, issues or new protocol request (use this [sketch](./sniffer/sniffer.ino)) please post in the forums:
@@ -333,5 +339,3 @@ Or open an [Issue](https://github.com/dgatf/msrc/issues) in Github
 
 - Commodore8888 (Helifreak)
 - MikeJ (Helifreak)
-- Atomic Skull (Helifreak)
-- McGiverek (Helifreak)
