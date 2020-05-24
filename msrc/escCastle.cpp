@@ -36,13 +36,15 @@ void EscCastleInterface::TIMER1_CAPT_handler() // RX INPUT
 
 void EscCastleInterface::TIMER1_COMPB_handler() // START INPUT STATE
 {
-    DDRB &= ~_BV(DDB2);   // PWM OUT (PB2, PIN10) INPUT
-    PORTB |= _BV(PB2);    // PB2 PULLUP
-    EIFR |= _BV(INTF0);   // CLEAR INT0 FLAG
-    EIMSK = _BV(INT0);    // ENABLE INT0 (PD2, PIN2)
-    TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 COMPA FLAG
-    TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 COMPA
-    TCNT2 = 0;            // RESET TIMER2
+    if (OCR1B) {
+        DDRB &= ~_BV(DDB2);   // PWM OUT (PB2, PIN10) INPUT
+        PORTB |= _BV(PB2);    // PB2 PULLUP
+        EIFR |= _BV(INTF0);   // CLEAR INT0 FLAG
+        EIMSK = _BV(INT0);    // ENABLE INT0 (PD2, PIN2)
+        TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 COMPA FLAG
+        TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 COMPA
+        TCNT2 = 0;            // RESET TIMER2
+    }
 }
 
 void EscCastleInterface::INT0_handler() // READ TELEMETRY
