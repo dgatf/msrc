@@ -123,6 +123,11 @@ ESC telemetry:
 - ESC ripple voltage: EscV (0x0b51)
 - ESC BEC voltage: EscV (0x0e50)
 - ESC BEC current: EscC (0x0e50)
+- GPS Lat/Lon: GPS (0x800)
+- GPS altitude: GAlt (0x820)
+- GPS speed: GSpd (0x820)
+- GPS compass: Hdg (0x840)
+- GPS date/time: Date (0x850)
 
 Analog telemetry:
 
