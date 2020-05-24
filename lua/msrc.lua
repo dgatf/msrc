@@ -4,7 +4,7 @@
 -- License https://www.gnu.org/licenses/gpl-3.0.en.html
 --
 
-local scriptVersion = "0.5"
+local scriptVersion = "0.6"
 local tsReadConfig = 0
 local tsSendConfig = 0
 local state = {
@@ -32,6 +32,7 @@ local config = {
     ntc2 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     current = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     pwm = {selected = 3, list = {"Off", "On", ""}, elements = 2},
+    gps = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     refreshRpm = {selected = 1, elements = 16},
     refreshVolt = {selected = 1, elements = 16},
     refreshCurr = {selected = 1, elements = 16},
@@ -57,6 +58,7 @@ local selection = {
         "ntc2",
         "current",
         "pwm",
+        "gps",
         "refreshRpm",
         "refreshVolt",
         "refreshCurr",
@@ -131,6 +133,9 @@ local function readConfig()
                 readConfigState = state["PACKET_1"]
             end
             if bit32.extract(value, 0, 8) == 0xF2 and readConfigState == state["PACKET_1"] then
+                if bit32.extract(value, 9) + 1 >= 1 and bit32.extract(value, 9) + 1 <= 2 then
+                    config.gps.selected = bit32.extract(value, 10) + 1 -- bit 10
+                end
                 if bit32.extract(value, 10) + 1 >= 1 and bit32.extract(value, 10) + 1 <= 2 then
                     config.voltage1.selected = bit32.extract(value, 10) + 1 -- bit 11
                 end
@@ -213,6 +218,7 @@ local function sendConfig()
             end
         elseif sendConfigState == state["MAINTENANCE_ON"] then
             local value = 0xF1 -- bits 1-8
+            value = bit32.bor(value, bit32.lshift(config.gps.selected - 1, 9)) -- bit 10
             value = bit32.bor(value, bit32.lshift(config.voltage1.selected - 1, 10)) -- bit 11
             value = bit32.bor(value, bit32.lshift(config.voltage2.selected - 1, 11)) -- bit 12
             value = bit32.bor(value, bit32.lshift(config.current.selected - 1, 12)) -- bit 13

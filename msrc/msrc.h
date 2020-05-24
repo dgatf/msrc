@@ -9,12 +9,12 @@
 
 // Version
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 5
+#define VERSION_MINOR 6
 #define VERSION_PATCH 0
 
 // pins
 #define PIN_SMARTPORT_RX 7
-#define PIN_SMARTPORT_TX 12 //7
+#define PIN_SMARTPORT_TX 12 //12
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
@@ -67,6 +67,7 @@
 
 // packet 2
 // byte 2
+#define BM_GPS(VALUE) VALUE >> 9 & 0B00000001
 #define BM_VOLTAGE1(VALUE) VALUE >> 10 & 0B00000001
 #define BM_VOLTAGE2(VALUE) VALUE >> 11 & 0B00000001
 #define BM_CURRENT(VALUE) VALUE >> 12 & 0B00000001
@@ -112,6 +113,7 @@
 #include "ntc.h"
 #include "bmp180.h"
 #include "bmp280.h"
+#include "bn220.h"
 
 // Default config
 
@@ -145,6 +147,7 @@ struct Config
 {
     uint8_t sensorId = 10;
     uint8_t protocol = PROTOCOL_NONE; // esc protocol
+    bool gps = false;                 // enable/disable serial gps (not feasible with esc serial)
     bool voltage1 = false;            // enable/disable voltage1 analog reading
     bool voltage2 = false;            // enable/disable voltage2 analog reading
     bool current = false;             // enable/disable current analog reading
@@ -157,7 +160,7 @@ struct Config
 };
 
 bool pwmOut = false;
-Sensor *rpmSensor;
+Sensor *rpmSensorP;
 Config readConfig();
 void writeConfig(Config &config);
 void initConfig(Config &config);

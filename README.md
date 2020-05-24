@@ -8,6 +8,7 @@ The following sensors are supported:
   - ESCs with serial telemetry (Hobbywing V3/V4/V5)
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
+- GPS serial
 - I2C sensors
 - Analog sensors
 
@@ -292,7 +293,11 @@ The voltage drop in the shunt resistor is amplified by a differential amplifier 
 
 ## 8. Change log
 
-v0.5
+v0.6
+
+- Added GPS serial (BN220, BN880, NEO-M8N,...)
+
+[v0.5](https://github.com/dgatf/msrc/tree/v0.5)
 
 - Added Castle Link Live protocol
 - Hobbywing V4/V5. Improved transformations for voltage and current depending on the model (thanks to Commodore8888)

@@ -1,6 +1,5 @@
 #include "sensor.h"
 
-Sensor::Sensor(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t refresh, AbstractDevice *device) : dataId_(dataId), indexL_(indexL), indexM_(indexM), refresh_(refresh), device_(device) {}
 Sensor::Sensor(uint16_t dataId, uint8_t indexL, uint8_t refresh, AbstractDevice *device) : dataId_(dataId), indexL_(indexL), refresh_(refresh), device_(device) {}
 Sensor::Sensor(uint16_t dataId, uint8_t refresh, AbstractDevice *device) : dataId_(dataId), refresh_(refresh), device_(device) {}
 
@@ -9,19 +8,20 @@ Sensor::~Sensor()
     delete device_;
 }
 
-float Sensor::read(uint8_t index)
+void Sensor::update()
 {
-    return device_->read(index);
+    valueL_ = device_->read(indexL_);
 }
 
-uint8_t Sensor::indexL()
+uint32_t Sensor::value()
 {
-    return indexL_;
+    value_ = formatData(dataId_, valueL_);
+    return value_;
 }
 
-uint8_t Sensor::indexM()
+float Sensor::valueL()
 {
-    return indexM_;
+    return valueL_;
 }
 
 uint16_t Sensor::timestamp()
@@ -49,22 +49,73 @@ uint8_t Sensor::refresh()
     return refresh_;
 }
 
-float Sensor::valueM()
+SensorDouble::SensorDouble(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t refresh, AbstractDevice *device) : Sensor(dataId, indexL, refresh, device), indexM_(indexM) {}
+
+void SensorDouble::update()
+{
+    valueL_ = device_->read(indexL_);
+    valueM_ = device_->read(indexM_);
+}
+
+uint32_t SensorDouble::value()
+{
+    value_ = formatData(dataId_, valueM_, valueL_);
+    return value_;
+}
+
+float SensorDouble::valueM()
 {
     return valueM_;
 }
 
-void Sensor::setValueM(float value)
+SensorLatLon::SensorLatLon(uint16_t dataId, uint8_t indexLon, uint8_t indexLat, uint8_t refresh, AbstractDevice *device) : SensorDouble(dataId, indexLon, indexLat, refresh, device) {}
+
+uint32_t SensorLatLon::value()
 {
-    valueM_ = value;
+    if (type_)
+    {
+        value_ = formatLatLon(TYPE_LAT, valueL_);
+    }
+    else
+    {
+        value_ = formatLatLon(TYPE_LON, valueM_);
+    }
+    type_ = !type_;
+    return value_;
 }
 
-float Sensor::valueL()
+SensorDateTime::SensorDateTime(uint16_t dataId, uint8_t indexTime, uint8_t indexDate, uint8_t refresh, AbstractDevice *device) : SensorDouble(dataId, indexTime, indexDate, refresh, device) {}
+
+void SensorDateTime::update()
 {
-    return valueL_;
+    valueL_ = device_->read(indexL_);
+    valueM_ = device_->read(indexM_);
 }
 
-void Sensor::setValueL(float value)
+uint32_t SensorDateTime::value()
 {
-    valueL_ = value;
+    if (type_)
+    {
+        value_ = formatDateTime(TYPE_DATE, valueL_);
+    }
+    else
+    {
+        value_ = formatDateTime(TYPE_TIME, valueM_);
+    }
+    type_ = !type_;
+    return value_;
+}
+
+SensorCell::SensorCell(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t cellIndex, uint8_t refresh, AbstractDevice *device) : SensorDouble(dataId, indexM, indexL, refresh, device), cellIndex_(cellIndex) {}
+
+void SensorCell::update()
+{
+    valueL_ = device_->read(indexL_);
+    valueM_ = device_->read(indexM_);
+}
+
+uint32_t SensorCell::value()
+{
+    value_ = formatCell(cellIndex_, valueM_, valueL_);
+    return value_;
 }

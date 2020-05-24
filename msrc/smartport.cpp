@@ -150,47 +150,6 @@ void Smartport::sendVoid()
     serial_.write(buf, 8);
 }
 
-uint32_t Smartport::formatData(uint16_t dataId, float valueM, float valueL)
-{
-
-    if ((dataId >= GPS_SPEED_FIRST_ID && dataId <= GPS_SPEED_LAST_ID) ||
-        (dataId >= RBOX_BATT1_FIRST_ID && dataId <= RBOX_BATT2_FIRST_ID))
-        return round(valueL * 1000);
-
-    if ((dataId >= ALT_FIRST_ID && dataId <= VARIO_LAST_ID) ||
-        (dataId >= VFAS_FIRST_ID && dataId <= VFAS_LAST_ID) ||
-        (dataId >= ACCX_FIRST_ID && dataId <= GPS_ALT_LAST_ID) ||
-        (dataId >= GPS_COURS_FIRST_ID && dataId <= GPS_COURS_LAST_ID) ||
-        (dataId >= A3_FIRST_ID && dataId <= A4_LAST_ID))
-        return round(valueL * 100);
-
-    if ((dataId >= CURR_FIRST_ID && dataId <= CURR_LAST_ID) ||
-        (dataId >= AIR_SPEED_FIRST_ID && dataId <= AIR_SPEED_LAST_ID) ||
-        dataId == A1_ID || dataId == A2_ID || dataId == RXBT_ID)
-        return round(valueL * 10);
-
-    if (dataId >= ESC_POWER_FIRST_ID && dataId <= ESC_POWER_LAST_ID)
-        return (uint32_t)round(valueM * 100) << 16 | (uint16_t)round(valueL * 100);
-
-    if (dataId >= ESC_RPM_CONS_FIRST_ID && dataId <= ESC_RPM_CONS_LAST_ID)
-    {
-        return (uint32_t)round(valueM) << 16 | (uint16_t)round((valueL) / 100);
-    }
-
-    if (dataId >= SBEC_POWER_FIRST_ID && dataId <= SBEC_POWER_LAST_ID)
-        return (uint32_t)round(valueM * 1000) << 16 | (uint16_t)round((valueL)*1000);
-
-    if (dataId >= CELLS_FIRST_ID && dataId <= CELLS_LAST_ID)
-        return (uint16_t)round(valueM * 500) << 8 | (uint16_t)valueL;
-
-    return round(valueL);
-}
-
-uint32_t Smartport::formatData(uint16_t dataId, float valueL)
-{
-    return formatData(dataId, 0, valueL);
-}
-
 void Smartport::addSensor(Sensor *newSensorP)
 {
     static Sensor *prevSensorP;
@@ -354,29 +313,14 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 }
                 if ((uint16_t)millis() - spSensorP->timestamp() >= (uint16_t)spSensorP->refresh() * 100)
                 {
-                    sendData(spSensorP->frameId(), spSensorP->dataId(), formatData(spSensorP->dataId(), spSensorP->valueM(), spSensorP->valueL()));
+                    sendData(spSensorP->frameId(), spSensorP->dataId(), spSensorP->value());
 #ifdef DEBUG
                     Serial.print("id: ");
                     Serial.print(spSensorP->dataId(), HEX);
-                    Serial.print(" iL: ");
-                    Serial.print(spSensorP->indexL());
-                    Serial.print(" vL: ");
-                    Serial.print(spSensorP->valueL());
-                    Serial.print(" f: ");
-                    Serial.print(formatData(spSensorP->dataId(), spSensorP->valueM(), spSensorP->valueL()));
+                    Serial.print(" v: ");
+                    Serial.print(spSensorP->value());
                     Serial.print(" ts: ");
                     Serial.println(spSensorP->timestamp());
-                    if (spSensorP->indexM() != 255)
-                    {
-                        Serial.print("id: ");
-                        Serial.print(spSensorP->dataId(), HEX);
-                        Serial.print(" iM: ");
-                        Serial.print(spSensorP->indexM());
-                        Serial.print(" vM: ");
-                        Serial.print(spSensorP->valueM());
-                        Serial.print(" ts: ");
-                        Serial.println(spSensorP->timestamp());
-                    }
 #endif
                     spSensorP->setTimestamp(millis());
                     dataId = spSensorP->dataId();
@@ -450,10 +394,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
     // update sensor
     if (sensorP != NULL)
     {
-        if (sensorP->indexL() != 255)
-            sensorP->setValueL(sensorP->read(sensorP->indexL()));
-        if (sensorP->indexM() != 255)
-            sensorP->setValueM(sensorP->read(sensorP->indexM()));
+        sensorP->update();
         sensorP = sensorP->nextP;
     }
     return SENT_NONE;
