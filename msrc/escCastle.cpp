@@ -29,6 +29,7 @@ void EscCastleInterface::TIMER1_CAPT_handler() // RX INPUT
         {
             OCR1B = ICR1 + OCR1A - ts;
         }
+        TIMSK1 |= _BV(OCIE1B);
         castleRxLastReceived = 0;
     }
     TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 DIRECTION
@@ -63,14 +64,15 @@ void EscCastleInterface::TIMER2_COMPA_handler() // START OUTPUT STATE
     if (castleRxLastReceived > RX_MAX_CYCLES)
     {
         OCR1B = 0;
+        TIMSK1 &= ~_BV(OCIE1B); // DISABLE INPUT STATE
     }
     else
     {
         castleRxLastReceived++;
     }
-    EIMSK = 0;        // DISABLE INT0 (PD2, PIN2)
-    TIMSK2 = 0;       // DISABLE TIMER2 INTS
-    DDRB = _BV(DDB2); // PWM OUT PIN 10 OUTPUT
+    EIMSK = 0;         // DISABLE INT0 (PD2, PIN2)
+    TIMSK2 = 0;        // DISABLE TIMER2 INTS
+    DDRB |= _BV(DDB2); // PWM OUT PIN 10 OUTPUT
 }
 
 void EscCastleInterface::begin()
@@ -85,13 +87,14 @@ void EscCastleInterface::begin()
     // PWM OUT OC1B (PB2, PIN10) -> OUTPUT/INPUT PULL UP
 
     // TIMER 1, ICP1
-    DDRB = _BV(DDB2);                                             // PWM OUT PIN 10
+    DDRB |= _BV(DDB2);                                            // PWM OUT PIN 10
     TCCR1A = _BV(WGM11) | _BV(WGM10) | _BV(COM1B1) | _BV(COM1B0); // TOGGLE OC1A ON OCR1B
     TCCR1B = _BV(WGM13) | _BV(WGM12);                             // MODE 15
     TCCR1B |= _BV(ICES1);                                         // RISING
     TCCR1B |= _BV(CS11);                                          // SCALER 8
-    TIMSK1 = _BV(OCIE1B) | _BV(ICIE1);                            // INTS: CAPT, COMPB
+    TIMSK1 = _BV(ICIE1);                                          // INTS: CAPT, COMPB
     OCR1A = 20 * MS_TO_COMP(8);                                   // 50Hz = 20ms
+    PORTB |= _BV(PB0);                                            // PB0 PULLUP
 
     // INT0
     EICRA = _BV(ISC01); // INT0 FALLING
