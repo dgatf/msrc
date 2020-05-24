@@ -198,7 +198,7 @@ void initConfig(Config &config)
         rpmSensor = sensorP;
         smartport.addSensor(sensorP);
     }
-    if (config.protocol >= PROTOCOL_HW_V4_LV && config.protocol >= PROTOCOL_HW_V4_LV)
+    if (config.protocol >= PROTOCOL_HW_V4_LV && config.protocol <= PROTOCOL_HW_V5_HV)
     {
         Sensor *sensorP;
         EscHW4Interface *esc;
