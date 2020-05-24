@@ -244,7 +244,7 @@ To select R values apply formulas:
 
 <img src="https://latex.codecogs.com/svg.latex?Vo=Vin\frac{R_2}{R_1+R_2}<3.3Vor5V" title="Vo = Vi\*R2/(R1+R2) < 3.3V or 5V" /><br>
 
-<img src="https://latex.codecogs.com/svg.latex?Z=\frac{1}{\frac{1}{R_1}+\frac{1}{R_2}} < 10K" title="Z = 1/((1/R1)+(1/R2)) < 10K" />
+<img src="https://latex.codecogs.com/svg.latex?Z=\frac{1}{\frac{1}{R_1}+\frac{1}{R_2}}<10K" title="Z = 1/((1/R1)+(1/R2)) < 10K" />
 
 
 For 6S battery (or lower) and Pro Mini 3.3v:
