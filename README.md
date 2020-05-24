@@ -61,7 +61,7 @@ If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7
 
 ### 1.2. Serial GPS
 
-Serial GPS is supported but is not feasible to connect at the same time with a serial ESC as there is only one UART available. The connections are the same
+Serial GPS is supported but is not feasible to connect at the same time with a serial ESC as there is only one UART available. The connections are the same as the ESC serial
 
 ### 1.3. Analog sensors
 
