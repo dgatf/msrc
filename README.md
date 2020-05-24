@@ -2,9 +2,6 @@
 
 This is a DIY project to send multiple sensors telemetry to Frsky Smartport using an Arduino Pro Mini 328P (3.3v or 5v)
 
-
-## Telemetry
-
 The following sensors are supported:
 
 - ESC
@@ -14,9 +11,11 @@ The following sensors are supported:
 - I2C sensors
 - Analog sensors
 
-All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration through the lua script
+All sensors are optional. Make the circuit with the desired sensors and enable them through the configuration through with a lua script
 
-### ESC
+## 1. Sensors
+
+### 1.1. ESC
 
 #### Serial telemetry
 
@@ -59,7 +58,7 @@ ESC Castle Link protocol is also implemented. The telemetry values goes together
 
 If voltage is available the  cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for correct cell count
 
-### Analog sensors
+### 1.2. Analog sensors
 
 The following analog sensors are supported:
 
@@ -67,7 +66,7 @@ The following analog sensors are supported:
 - 2 x temperature sensors (thermistors) (A0, A1)
 - Current sensor (Hall effect) (A6)
 
-### I2C sensors
+### 1.3. I2C sensors
 
 I2C sensors are suported connecting to pins A4, A5. Currently implemented:
 
@@ -77,12 +76,12 @@ I2C sensors are suported connecting to pins A4, A5. Currently implemented:
   <i>I2C and analog sensors</i><br><br></p>
 
 
-## Flash to Arduino
+## 2. Flash to Arduino
 
 Using Arduino IDE copy folder *msrc* and open *msrc.ino*. Select board *Arduino Pro or Pro Mini*, processor *ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
 
 
-## Configuration
+## 3. Configuration
 
 The configuration is modified with a lua script (X7, X9, X-lite and Horus with openTx 2.2 or higher)
 
@@ -106,7 +105,7 @@ Options:
 - I2C (x2). Sensor type and address
 
 
-## OpenTx sensors
+## 4. OpenTx sensors
 
 The default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
 
@@ -139,16 +138,16 @@ I2C telemetry:
 
 Some of the sensors have to be adusted in openTx
 
-### Adjust RPM sensor (Erpm)
+### 4.1. Adjust RPM sensor (Erpm)
 
 - Blades/poles: number of pair of poles * main gear teeth  
 - Multiplier: pinion gear teeth
 
-### Adjust voltage sensors (A3, A4)
+### 4.2. Adjust voltage sensors (A3, A4)
 
 Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4 sensor
 
-### Adjust current sensor (Curr)
+### 4.3. Adjust current sensor (Curr)
 
 If using a hall effect sensor, adjust the ratio: *1000 / output sensitivity (mV/A)*
 
@@ -159,7 +158,7 @@ To calculate the battery consumption add a new sensor:
 - Sensor: Curr
 
 
-## Images
+## 5. Images
 
 <p align="center"><img src="./images/top.jpg" width="300">  <img src="./images/bottom.jpg" width="300"></p>
 
@@ -168,14 +167,14 @@ To calculate the battery consumption add a new sensor:
 <p align="center"><img src="./images/450_3.jpg" width="300">  <img src="./images/450_x7.bmp" width="300"><br><i>MSRC on Align 450 connected to Hobbywing V3 Platinum and two thermistors for ESC and motor</i><br></p>
 
 
-## Video
+## 6. Video
 
 [Video](https://youtu.be/Mby2rlmAMlU)
 
 
-## Annex
+## 7. Annex
 
-### ESC protocol specifications Hobbywing
+### 7.1. ESC protocol specifications Hobbywing
 
 Serial parameters:
 
@@ -217,23 +216,23 @@ Examples:
 | V4LV80A    | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x08  | 0x5B  | 0x00  | 0x01  | 0x00  | 0x21  | 0x21  | 0xB9  |
 | V5HV130A   | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x0B  | 0x41  | 0x21  | 0x44  | 0xB9  | 0x21  | 0x21  | 0xB9  |
 
-### ESC protocol specifications Castle Link
+### 7.2. ESC protocol specifications Castle Link
 
 For best accuracy RX pulse input is captured with a timer interrupt and ESC pulse output is produced by hardware PWM. Maximum latency is 20ms
 
 See [Castle Link Live](https://dzf8vqv24eqhg.cloudfront.net/userfiles/4671/6540/ckfinder/files/Product%20Manuals/Accessories%20and%20replacement%20parts/castle_link_live_2_0.pdf?dc=201606221536-537)
 
-### Output PWM signal for FBL
+### 7.3. Output PWM signal for FBL
 
 For best accuracy PWM signal output for FBL is produced by hardware PWM from serial RPM values. Maximum latency is 40ms
 
-### ADC voltage
+### 7.4. ADC voltage
 
 To obtain the voltage at the analog pin it is required the ADC bits (b) and the Vref:
 
 <img src="https://latex.codecogs.com/svg.latex?Vo=Vref*\frac{Raw}{2^b}" title="Vo = Vref * Raw / 2^bits" /><br>
 
-### Analog voltage sensors. Voltage divider circuit
+### 7.5. Analog voltage sensors. Voltage divider circuit
 
 Two battery voltages can be measured through the analog pins A2 and A3
 Metal resistors are recommended as gives more accurate readings (0.1W or higher)
@@ -255,7 +254,7 @@ For 6S battery (or lower) and Pro Mini 3.3v:
 
 If more than 6S change R values or you may burn the Arduino!
 
-### Temperature sensors. Thermistors
+### 7.6. Temperature sensors. Thermistors
 
 Two temperature sensors can be installed through the analog pins A0 and A1
 Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in ntc.h if needed (NTC_BETA, default is 4190). Sensor output in Celsius
@@ -274,7 +273,7 @@ Or with Steinhart and Hart Equation if data is available:
 
 <img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{A+B*ln\frac{Rt}{Rref}+C*ln(\frac{Rt}{Rref})^2+D*ln(\frac{Rt}{Rref})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
 
-### Current
+### 7.7. Current
 
 #### Hall effect
 
@@ -291,7 +290,7 @@ The voltage drop in the shunt resistor is amplified by a differential amplifier 
 <p align="center"><img src="./images/High-Side-Current-Sensing.png" width="200"></p>
 
 
-## Change log
+## 8. Change log
 
 v0.5
 
@@ -324,7 +323,7 @@ v0.5
 - Refresh rate and averaging added to lua config script
 
 
-## Support
+## 9. Support
 
 For questions, issues or new protocol request (use this [sketch](./sniffer/sniffer.ino)) please post in the forums:
 
@@ -335,7 +334,7 @@ For questions, issues or new protocol request (use this [sketch](./sniffer/sniff
 Or open an [Issue](https://github.com/dgatf/msrc/issues) in Github
 
 
-## Acknowledgements
+## 10. Acknowledgements
 
 - Commodore8888 (Helifreak)
 - MikeJ (Helifreak)
