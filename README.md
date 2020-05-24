@@ -59,7 +59,11 @@ ESC Castle Link protocol is also implemented. The telemetry values goes together
 
 If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for correct cell count
 
-### 1.2. Analog sensors
+### 1.2. Serial GPS
+
+Serial GPS is supported but is not feasible to connect at the same time with a serial ESC as there is only one UART available. The connections are the same
+
+### 1.3. Analog sensors
 
 The following analog sensors are supported:
 
@@ -67,7 +71,7 @@ The following analog sensors are supported:
 - 2 x temperature sensors (thermistors) (A0, A1)
 - Current sensor (Hall effect) (A6)
 
-### 1.3. I2C sensors
+### 1.4. I2C sensors
 
 I2C sensors are suported connecting to pins A4, A5. Currently implemented:
 
