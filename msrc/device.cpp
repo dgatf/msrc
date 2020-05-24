@@ -2,7 +2,9 @@
 
 AbstractDevice::AbstractDevice() {}
 
-float AbstractDevice::calcAverage(float alpha, float value, float newValue)
+AbstractDevice::~AbstractDevice() {}
+
+float AbstractDevice::calcAverage(float alpha, float oldValue, float newValue)
 {
-    return value + alpha * (newValue - value);
+    return (1 - alpha) * oldValue + alpha * newValue;
 }

@@ -13,6 +13,7 @@ protected:
 
 public:
     AbstractDevice();
+    virtual ~AbstractDevice();
     virtual float read(uint8_t index) = 0;
 };
 
