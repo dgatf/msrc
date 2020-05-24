@@ -27,7 +27,7 @@ bool EscHW3Interface::update()
                 float rpm = (float)60000000UL / rpmCycle;
                 rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
                 tsEsc_ = millis();
-#ifdef DEBUG
+#ifdef DEBUG_ESC
                 uint32_t pn =
                     (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
                 serial_.print("PN: ");

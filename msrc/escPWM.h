@@ -3,6 +3,8 @@
 
 #define COMP_TO_MICROS ((float)8000000UL / F_CPU)
 
+//#define DEBUG_ESC
+
 #include <Arduino.h>
 #include "device.h"
 
