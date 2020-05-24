@@ -55,13 +55,13 @@ bool EscHW4Interface::update()
                 float current = calcCurr((uint16_t)data[12] << 8 | data[13]);
                 float tempFET = calcTemp((uint16_t)data[14] << 8 | data[15]);
                 float tempBEC = calcTemp((uint16_t)data[16] << 8 | data[17]);
-                value_[ESCHW4_RPM] = calcAverage(alphaRpm_, rpm, value_[ESCHW4_RPM]);
-                value_[ESCHW4_VOLTAGE] = calcAverage(alphaVolt_ / 100.0F, voltage, value_[ESCHW4_VOLTAGE]);
-                value_[ESCHW4_CURRENT] = calcAverage(alphaCurr_ / 100.0F, current, value_[ESCHW4_CURRENT]);
-                value_[ESCHW4_TEMPFET] = calcAverage(alphaTemp_ / 100.0F, tempFET, value_[ESCHW4_TEMPFET]);
-                value_[ESCHW4_TEMPBEC] = calcAverage(alphaTemp_ / 100.0F, tempBEC, value_[ESCHW4_TEMPBEC]);
+                value_[ESCHW4_RPM] = calcAverage(alphaRpm_  / 100.0F, value_[ESCHW4_RPM], rpm);
+                value_[ESCHW4_VOLTAGE] = calcAverage(alphaVolt_ / 100.0F, value_[ESCHW4_VOLTAGE], voltage);
+                value_[ESCHW4_CURRENT] = calcAverage(alphaCurr_ / 100.0F, value_[ESCHW4_CURRENT], current);
+                value_[ESCHW4_TEMPFET] = calcAverage(alphaTemp_ / 100.0F, value_[ESCHW4_TEMPFET], tempFET);
+                value_[ESCHW4_TEMPBEC] = calcAverage(alphaTemp_ / 100.0F, value_[ESCHW4_TEMPBEC], tempBEC);
                 value_[ESCHW4_CELL_VOLTAGE] = value_[ESCHW4_VOLTAGE] / cellCount_;
-#ifdef DEBUG
+#ifdef DEBUG_ESC
                 uint32_t pn =
                     (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
                 serial_.print("PN: ");
