@@ -12,7 +12,7 @@ The following sensors are supported:
 - I2C sensors
 - Analog sensors
 
-All sensors are optional. Make the circuit with the desired sensors and enable them through the configuration through with a lua script
+All sensors are optional. Make the circuit with the desired sensors and enable them through the configuration with a lua script
 
 ## 1. Sensors
 
@@ -61,7 +61,7 @@ If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7
 
 ### 1.2. Serial GPS
 
-Serial GPS is supported but is not feasible to connect at the same time with a serial ESC as there is only one UART available. The connections are the same as the ESC serial
+Serial GPS is supported altohugh is not feasible to connect at the same time with a serial ESC as there is only one UART available. The connections are the same as for the ESC serial
 
 ### 1.3. Analog sensors
 
@@ -73,7 +73,7 @@ The following analog sensors are supported:
 
 ### 1.4. I2C sensors
 
-I2C sensors are suported connecting to pins A4, A5. Currently implemented:
+The following I2C sensors are suported (pins A4, A5):
 
 - Barometer: BMP180, BMP280
 
@@ -310,6 +310,10 @@ v0.6
 
 - Added Castle Link Live protocol
 - Hobbywing V4/V5. Improved transformations for voltage and current depending on the model (thanks to Commodore8888)
+
+[v0.4.1](https://github.com/dgatf/msrc/tree/v0.4.1)
+
+- Fix Horus display
 
 [v0.4](https://github.com/dgatf/msrc/tree/v0.4)
 
