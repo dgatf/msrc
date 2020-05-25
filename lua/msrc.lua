@@ -48,7 +48,7 @@ local config = {
 }
 local selection = {
     selected = 1,
-    elements = 20,
+    elements = 21,
     state = false,
     list = {
         "protocol",
@@ -324,9 +324,9 @@ local function refreshHorus()
         lcd.drawText(180, 155, "Connecting...", INVERS)
     end
     if sendConfigState ~= state["MAINTENANCE_OFF"] then
-        lcd.drawText(200, 253, "UPDATING", getFlags(20))
+        lcd.drawText(200, 253, "UPDATING", getFlags(21))
     else
-        lcd.drawText(200, 253, "UPDATE", getFlags(20))
+        lcd.drawText(200, 253, "UPDATE", getFlags(21))
     end
 end
 
@@ -386,9 +386,9 @@ local function refreshTaranis()
     end
 
     if sendConfigState ~= state["MAINTENANCE_OFF"] then
-        lcd.drawText(1, 105 - scroll * 8, "UPDATING", SMLSIZE + getFlags(20))
+        lcd.drawText(1, 105 - scroll * 8, "UPDATING", SMLSIZE + getFlags(21))
     else
-        lcd.drawText(1, 105 - scroll * 8, "UPDATE", SMLSIZE + getFlags(20))
+        lcd.drawText(1, 105 - scroll * 8, "UPDATE", SMLSIZE + getFlags(21))
     end
     lcd.drawScreenTitle("MSRC v" .. scriptVersion, 1, 1)
 end
@@ -480,7 +480,7 @@ local function run_func(event)
     if selection.selected > 19 then
         scroll = 5
     end
-    if selection.selected > 21 then
+    if selection.selected > 20 then
         scroll = 6
     end
 
