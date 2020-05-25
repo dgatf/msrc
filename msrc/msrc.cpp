@@ -244,7 +244,7 @@ void initConfig(Config &config)
         Bn220Interface *gps;
         gps = new Bn220Interface(gpsSerial);
         gps->begin();
-        sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, BN220_LAT, BN220_LON, config.refresh.def, gps);
+        sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, BN220_LON, BN220_LAT, config.refresh.def, gps);
         smartport.addSensor(sensorP);
         sensorP = new Sensor(GPS_ALT_FIRST_ID, BN220_ALT, config.refresh.def, gps);
         smartport.addSensor(sensorP);

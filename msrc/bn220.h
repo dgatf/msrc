@@ -35,9 +35,9 @@ private:
                                        {{1, BN220_TIME}, {3, BN220_LAT}, {4, BN220_LAT_SIGN}, {5, BN220_LON}, {6, BN220_LON_SIGN}, {7, BN220_SPD}, {8, BN220_COG}, {9, BN220_DATE}, {0, 0}}, // RMC
                                        {{1, BN220_COG}, {7, BN220_KPH}, {0, 0}}};                                                                  // VTG
     float lat_, lon_, alt_, spd_, cog_, kph_;
-    uint8_t latDir_ = 1;
-    uint8_t lonDir_ = 1;
-    float value_[9];
+    int8_t latDir_ = 1;
+    int8_t lonDir_ = 1;
+    float value_[9] = {0};
     uint32_t time_, date_;
     uint8_t contIndex_ = 0, contBuff_ = 0, sat_, nmeaCmd_ = 255;
     char buffer_[20] = {};

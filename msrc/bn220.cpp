@@ -137,7 +137,7 @@ void Bn220Interface::parser(uint8_t type, char *data)
         }
         else if (type == BN220_LON_SIGN)
         {
-            (data[0] == 'E') ? lonDir_ = 1 : latDir_ = -1;
+            (data[0] == 'E') ? lonDir_ = 1 : lonDir_ = -1;
         }
 
 #ifdef DEBUG_GPS
