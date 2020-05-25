@@ -134,7 +134,7 @@ local function readConfig()
             end
             if bit32.extract(value, 0, 8) == 0xF2 and readConfigState == state["PACKET_1"] then
                 if bit32.extract(value, 9) + 1 >= 1 and bit32.extract(value, 9) + 1 <= 2 then
-                    config.gps.selected = bit32.extract(value, 10) + 1 -- bit 10
+                    config.gps.selected = bit32.extract(value, 9) + 1 -- bit 10
                 end
                 if bit32.extract(value, 10) + 1 >= 1 and bit32.extract(value, 10) + 1 <= 2 then
                     config.voltage1.selected = bit32.extract(value, 10) + 1 -- bit 11
