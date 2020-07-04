@@ -116,7 +116,7 @@ The default sensor id is 10. This can be changed with [change_id_frsky](https://
 
 Depending on your configuration some the following sensors will be available in Opentx. After configuration go to sensors screen and update with *Search new sensors*
  
-ESC telemetry:
+ESC:
 
 - ESC RPM: Erpm (0x0b60)
 - ESC voltage: EscV (0x0b50)
@@ -126,14 +126,16 @@ ESC telemetry:
 - ESC temp BEC (HW) or ESC temp NTC (Castle): EscT (0x0b71)
 - ESC ripple voltage: EscV (0x0b51)
 - ESC BEC voltage: EscV (0x0e50)
-- ESC BEC current: EscC (0x0e50)
+
+GPS:
+
 - GPS Lat/Lon: GPS (0x800)
 - GPS altitude: GAlt (0x820)
 - GPS speed: GSpd (0x820)
 - GPS compass: Hdg (0x840)
 - GPS date/time: Date (0x850)
 
-Analog telemetry:
+Analog:
 
 - Voltage 1: A3 (0x0900)
 - Voltage 2: A4 (0x0910)
@@ -141,7 +143,7 @@ Analog telemetry:
 - Thermistor 2: Tmp2 (0x0410)
 - Current: Curr (0x020f)
 
-I2C telemetry:
+I2C:
 
  - Altitude: Alt (0x0820)
  - Temperature: T1 (0x0401, 0x0402)
