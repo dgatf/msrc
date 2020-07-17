@@ -14,7 +14,7 @@
 
 // pins
 #define PIN_SMARTPORT_RX 7
-#define PIN_SMARTPORT_TX 12 //12
+#define PIN_SMARTPORT_TX 12
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2

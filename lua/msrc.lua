@@ -296,7 +296,7 @@ local function refreshHorus()
     lcd.drawText(40, 100, "Current", 0)
     lcd.drawText(170, 100, config.current.list[config.current.selected], getFlags(6))
     lcd.drawText(290, 100, "AirSpeed", 0)
-    lcd.drawText(410, 100, config.airspeed.list[config.current.selected], getFlags(7))
+    lcd.drawText(410, 100, config.airspeed.list[config.airspeed.selected], getFlags(7))
 
     lcd.drawText(40, 119, "PWM out", 0)
     lcd.drawText(170, 119, config.pwm.list[config.pwm.selected], getFlags(8))
@@ -363,7 +363,7 @@ local function refreshTaranis()
     lcd.drawText(1, 41 - scroll * 8, "Current", SMLSIZE)
     lcd.drawText(44, 41 - scroll * 8, config.current.list[config.current.selected], SMLSIZE + getFlags(6))
     lcd.drawText(64, 41 - scroll * 8, "AirSpeed", SMLSIZE)
-    lcd.drawText(108, 41 - scroll * 8, config.current.list[config.current.selected], SMLSIZE + getFlags(7))
+    lcd.drawText(108, 41 - scroll * 8, config.airspeed.list[config.airspeed.selected], SMLSIZE + getFlags(7))
 
     lcd.drawText(1, 49 - scroll * 8, "PWM out", SMLSIZE)
     lcd.drawText(44, 49 - scroll * 8, config.pwm.list[config.pwm.selected], SMLSIZE + getFlags(8))
@@ -405,9 +405,9 @@ local function refreshTaranis()
     end
 
     if sendConfigState ~= state["MAINTENANCE_OFF"] then
-        lcd.drawText(1, 113 - scroll * 8, "UPDATING", SMLSIZE + getFlags(22))
+        lcd.drawText(1, 105 - scroll * 8, "UPDATING", SMLSIZE + getFlags(22))
     else
-        lcd.drawText(1, 113 - scroll * 8, "UPDATE", SMLSIZE + getFlags(22))
+        lcd.drawText(1, 105 - scroll * 8, "UPDATE", SMLSIZE + getFlags(22))
     end
     lcd.drawScreenTitle("MSRC v" .. scriptVersion, 1, 1)
 end
@@ -501,9 +501,6 @@ local function run_func(event)
     end
     if selection.selected > 21 then
         scroll = 6
-    end
-    if selection.selected > 23 then
-        scroll = 7
     end
 
     refresh = 0
