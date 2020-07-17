@@ -9,7 +9,7 @@
 
 // Version
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 6
+#define VERSION_MINOR 7
 #define VERSION_PATCH 0
 
 // pins
@@ -20,6 +20,7 @@
 #define PIN_VOLTAGE1 A2
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
+#define PIN_PRESSURE A7
 
 // opentx
 #define DATA_ID 0x5100 // DataId (sensor type)
@@ -67,6 +68,7 @@
 
 // packet 2
 // byte 2
+#define BM_AIRSPEED(VALUE) VALUE >> 8 & 0B00000001
 #define BM_GPS(VALUE) VALUE >> 9 & 0B00000001
 #define BM_VOLTAGE1(VALUE) VALUE >> 10 & 0B00000001
 #define BM_VOLTAGE2(VALUE) VALUE >> 11 & 0B00000001
@@ -111,6 +113,7 @@
 #include "escCastle.h"
 #include "voltage.h"
 #include "ntc.h"
+#include "pressure.h"
 #include "bmp180.h"
 #include "bmp280.h"
 #include "bn220.h"
@@ -147,6 +150,7 @@ struct Config
 {
     uint8_t sensorId = 10;
     uint8_t protocol = PROTOCOL_NONE; // esc protocol
+    bool airspeed = false;            // enable/disable pressure analog reading
     bool gps = false;                 // enable/disable serial gps (not feasible with esc serial)
     bool voltage1 = false;            // enable/disable voltage1 analog reading
     bool voltage2 = false;            // enable/disable voltage2 analog reading

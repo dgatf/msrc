@@ -255,6 +255,14 @@ void initConfig(Config &config)
         sensorP = new SensorDateTime(GPS_TIME_DATE_FIRST_ID, BN220_TIME, BN220_DATE, config.refresh.def, gps);
         smartport.addSensor(sensorP);
     }
+    if (config.airspeed == true)
+    {
+        Sensor *sensorP;
+        PressureInterface *pressure;
+        pressure = new PressureInterface(PIN_PRESSURE, config.alpha.volt);
+        sensorP = new Sensor(AIR_SPEED_FIRST_ID, config.refresh.volt, pressure);
+        smartport.addSensor(sensorP);
+    }
     if (config.voltage1 == true)
     {
         Sensor *sensorP;
@@ -344,7 +352,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             smartport.addPacket(0x32, 0x5000, value);
             // packet 2
             value = 0xF2;
-            //value |= 1BIT_SPARE << 8;
+            value |= config.airspeed << 8;
             value |= config.gps << 9;
             value |= config.voltage1 << 10;
             value |= config.voltage2 << 11;
@@ -395,6 +403,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
             debugSerial.println(value);
 #endif
             Config config;
+            config.airspeed = BM_AIRSPEED(value);
             config.gps = BM_GPS(value);
             config.voltage1 = BM_VOLTAGE1(value);
             config.voltage2 = BM_VOLTAGE2(value);

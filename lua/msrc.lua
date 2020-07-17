@@ -4,7 +4,7 @@
 -- License https://www.gnu.org/licenses/gpl-3.0.en.html
 --
 
-local scriptVersion = "0.6"
+local scriptVersion = "0.7"
 local tsReadConfig = 0
 local tsSendConfig = 0
 local state = {
@@ -31,7 +31,9 @@ local config = {
     ntc1 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     ntc2 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     current = {selected = 3, list = {"Off", "On", ""}, elements = 2},
+    airspeed = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     pwm = {selected = 3, list = {"Off", "On", ""}, elements = 2},
+    gps = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     refreshRpm = {selected = 1, elements = 16},
     refreshVolt = {selected = 1, elements = 16},
     refreshCurr = {selected = 1, elements = 16},
@@ -43,12 +45,11 @@ local config = {
     i2c1 = {selected = 4, list = {"NONE", "BMP180", "BMP280", ""}, elements = 3},
     i2c1Address = {selected = 1, elements = 128},
     i2c2 = {selected = 4, list = {"NONE", "BMP180", "BMP280", ""}, elements = 3},
-    i2c2Address = {selected = 1, elements = 128},
-    gps = {selected = 3, list = {"Off", "On", ""}, elements = 2}
+    i2c2Address = {selected = 1, elements = 128}
 }
 local selection = {
     selected = 1,
-    elements = 21,
+    elements = 22,
     state = false,
     list = {
         "protocol",
@@ -57,7 +58,9 @@ local selection = {
         "ntc1",
         "ntc2",
         "current",
+        "airspeed",
         "pwm",
+        "gps",
         "refreshRpm",
         "refreshVolt",
         "refreshCurr",
@@ -70,7 +73,6 @@ local selection = {
         "i2c1Address",
         "i2c2",
         "i2c2Address",
-        "gps",
         "btnUpdate"
     }
 }
@@ -133,6 +135,9 @@ local function readConfig()
                 readConfigState = state["PACKET_1"]
             end
             if bit32.extract(value, 0, 8) == 0xF2 and readConfigState == state["PACKET_1"] then
+                if bit32.extract(value, 8) + 1 >= 1 and bit32.extract(value, 8) + 1 <= 2 then
+                    config.airspeed.selected = bit32.extract(value, 8) + 1 -- bit 9
+                end
                 if bit32.extract(value, 9) + 1 >= 1 and bit32.extract(value, 9) + 1 <= 2 then
                     config.gps.selected = bit32.extract(value, 9) + 1 -- bit 10
                 end
@@ -218,6 +223,7 @@ local function sendConfig()
             end
         elseif sendConfigState == state["MAINTENANCE_ON"] then
             local value = 0xF1 -- bits 1-8
+            value = bit32.bor(value, bit32.lshift(config.airspeed.selected - 1, 8)) -- bit 9
             value = bit32.bor(value, bit32.lshift(config.gps.selected - 1, 9)) -- bit 10
             value = bit32.bor(value, bit32.lshift(config.voltage1.selected - 1, 10)) -- bit 11
             value = bit32.bor(value, bit32.lshift(config.voltage2.selected - 1, 11)) -- bit 12
@@ -270,125 +276,138 @@ end
 local function refreshHorus()
     lcd.drawRectangle(30, 23, 410, 231)
     lcd.drawText(200, 1, "MSRC v" .. scriptVersion, INVERS)
+
     lcd.drawText(40, 24, "Firmware", 0)
     lcd.drawText(170, 24, config.firmwareVersion, 0)
+
     lcd.drawText(40, 43, "Protocol", 0)
     lcd.drawText(170, 43, config.protocol.list[config.protocol.selected], getFlags(1))
+
     lcd.drawText(40, 62, "Voltage1", 0)
     lcd.drawText(170, 62, config.voltage1.list[config.voltage1.selected], getFlags(2))
     lcd.drawText(290, 62, "Voltage2", 0)
     lcd.drawText(410, 62, config.voltage2.list[config.voltage2.selected], getFlags(3))
+
     lcd.drawText(40, 81, "Ntc1", 0)
     lcd.drawText(170, 81, config.ntc1.list[config.ntc1.selected], getFlags(4))
     lcd.drawText(290, 81, "Ntc2", 0)
     lcd.drawText(410, 81, config.ntc2.list[config.ntc2.selected], getFlags(5))
+
     lcd.drawText(40, 100, "Current", 0)
     lcd.drawText(170, 100, config.current.list[config.current.selected], getFlags(6))
-    lcd.drawText(290, 100, "PWM out", 0)
-    lcd.drawText(410, 100, config.pwm.list[config.pwm.selected], getFlags(7))
+    lcd.drawText(290, 100, "AirSpeed", 0)
+    lcd.drawText(410, 100, config.airspeed.list[config.current.selected], getFlags(7))
 
-    lcd.drawText(40, 119, "Rate RPM", 0)
-    lcd.drawText(170, 119, (config.refreshRpm.selected - 1) * 100, getFlags(8))
-    lcd.drawText(290, 119, "Rate Volt", 0)
-    lcd.drawText(410, 119, (config.refreshVolt.selected - 1) * 100, getFlags(9))
+    lcd.drawText(40, 119, "PWM out", 0)
+    lcd.drawText(170, 119, config.pwm.list[config.pwm.selected], getFlags(8))
+    lcd.drawText(290, 119, "GPS", 0)
+    lcd.drawText(410, 119, config.gps.list[config.gps.selected], getFlags(9))
 
-    lcd.drawText(40, 138, "Rate Curr", 0)
-    lcd.drawText(170, 138, (config.refreshCurr.selected - 1) * 100, getFlags(10))
-    lcd.drawText(290, 138, "Rate Temp", 0)
-    lcd.drawText(410, 138, (config.refreshTemp.selected - 1) * 100, getFlags(11))
+    lcd.drawText(40, 138, "Rate RPM", 0)
+    lcd.drawText(170, 138, (config.refreshRpm.selected - 1) * 100, getFlags(10))
+    lcd.drawText(290, 138, "Rate Volt", 0)
+    lcd.drawText(410, 138, (config.refreshVolt.selected - 1) * 100, getFlags(11))
 
-    lcd.drawText(40, 157, "Avg RPM", 0)
-    lcd.drawText(170, 157, config.queueRpm.selected, getFlags(12))
-    lcd.drawText(290, 157, "Avg Volt", 0)
-    lcd.drawText(410, 157, config.queueVolt.selected, getFlags(13))
+    lcd.drawText(40, 157, "Rate Curr", 0)
+    lcd.drawText(170, 157, (config.refreshCurr.selected - 1) * 100, getFlags(12))
+    lcd.drawText(290, 157, "Rate Temp", 0)
+    lcd.drawText(410, 157, (config.refreshTemp.selected - 1) * 100, getFlags(13))
 
-    lcd.drawText(40, 176, "Avg Curr", 0)
-    lcd.drawText(170, 176, config.queueCurr.selected, getFlags(14))
-    lcd.drawText(290, 176, "Avg Temp", 0)
-    lcd.drawText(410, 176, config.queueTemp.selected, getFlags(15))
+    lcd.drawText(40, 176, "Avg RPM", 0)
+    lcd.drawText(170, 176, config.queueRpm.selected, getFlags(14))
+    lcd.drawText(290, 176, "Avg Volt", 0)
+    lcd.drawText(410, 176, config.queueVolt.selected, getFlags(15))
 
-    lcd.drawText(40, 195, "I2C 1", 0)
-    lcd.drawText(170, 195, config.i2c1.list[config.i2c1.selected], getFlags(16))
-    lcd.drawText(290, 195, "Address", 0)
-    lcd.drawText(410, 195, config.i2c1Address.selected - 1, getFlags(17))
+    lcd.drawText(40, 195, "Avg Curr", 0)
+    lcd.drawText(170, 195, config.queueCurr.selected, getFlags(16))
+    lcd.drawText(290, 195, "Avg Temp", 0)
+    lcd.drawText(410, 195, config.queueTemp.selected, getFlags(17))
 
-    lcd.drawText(40, 214, "I2C 2", 0)
-    lcd.drawText(170, 214, config.i2c2.list[config.i2c2.selected], getFlags(18))
+    lcd.drawText(40, 214, "I2C 1", 0)
+    lcd.drawText(170, 214, config.i2c1.list[config.i2c1.selected], getFlags(18))
     lcd.drawText(290, 214, "Address", 0)
-    lcd.drawText(410, 214, config.i2c2Address.selected - 1, getFlags(19))
+    lcd.drawText(410, 214, config.i2c1Address.selected - 1, getFlags(19))
 
-    lcd.drawText(40, 233, "GPS", 0)
-    lcd.drawText(170, 233, config.gps.list[config.gps.selected], getFlags(20))
+    lcd.drawText(40, 233, "I2C 2", 0)
+    lcd.drawText(170, 233, config.i2c2.list[config.i2c2.selected], getFlags(20))
+    lcd.drawText(290, 233, "Address", 0)
+    lcd.drawText(410, 233, config.i2c2Address.selected - 1, getFlags(21))
 
     if readConfigState ~= state["MAINTENANCE_OFF"] then
         lcd.drawText(180, 155, "Connecting...", INVERS)
     end
     if sendConfigState ~= state["MAINTENANCE_OFF"] then
-        lcd.drawText(200, 253, "UPDATING", getFlags(21))
+        lcd.drawText(200, 253, "UPDATING", getFlags(22))
     else
-        lcd.drawText(200, 253, "UPDATE", getFlags(21))
+        lcd.drawText(200, 253, "UPDATE", getFlags(22))
     end
 end
 
 local function refreshTaranis()
     lcd.drawText(1, 9 - scroll * 8, "Firmware", SMLSIZE)
     lcd.drawText(44, 9 - scroll * 8, config.firmwareVersion, SMLSIZE)
+    
     lcd.drawText(1, 17 - scroll * 8, "Protocol", SMLSIZE)
     lcd.drawText(44, 17 - scroll * 8, config.protocol.list[config.protocol.selected], SMLSIZE + getFlags(1))
+
     lcd.drawText(1, 25 - scroll * 8, "Voltage1", SMLSIZE)
     lcd.drawText(44, 25 - scroll * 8, config.voltage1.list[config.voltage1.selected], SMLSIZE + getFlags(2))
     lcd.drawText(64, 25 - scroll * 8, "Voltage2", SMLSIZE)
     lcd.drawText(108, 25 - scroll * 8, config.voltage2.list[config.voltage2.selected], SMLSIZE + getFlags(3))
+
     lcd.drawText(1, 33 - scroll * 8, "Ntc1", SMLSIZE)
     lcd.drawText(44, 33 - scroll * 8, config.ntc1.list[config.ntc1.selected], SMLSIZE + getFlags(4))
     lcd.drawText(64, 33 - scroll * 8, "Ntc2", SMLSIZE)
     lcd.drawText(108, 33 - scroll * 8, config.ntc2.list[config.ntc2.selected], SMLSIZE + getFlags(5))
+
     lcd.drawText(1, 41 - scroll * 8, "Current", SMLSIZE)
     lcd.drawText(44, 41 - scroll * 8, config.current.list[config.current.selected], SMLSIZE + getFlags(6))
-    lcd.drawText(64, 41 - scroll * 8, "PWM out", SMLSIZE)
-    lcd.drawText(108, 41 - scroll * 8, config.pwm.list[config.pwm.selected], SMLSIZE + getFlags(7))
+    lcd.drawText(64, 41 - scroll * 8, "AirSpeed", SMLSIZE)
+    lcd.drawText(108, 41 - scroll * 8, config.current.list[config.current.selected], SMLSIZE + getFlags(7))
 
-    lcd.drawText(1, 49 - scroll * 8, "Rate RPM", SMLSIZE)
-    lcd.drawText(44, 49 - scroll * 8, (config.refreshRpm.selected - 1) * 100, SMLSIZE + getFlags(8))
-    lcd.drawText(64, 49 - scroll * 8, "Rate Volt", SMLSIZE)
-    lcd.drawText(108, 49 - scroll * 8, (config.refreshVolt.selected - 1) * 100, SMLSIZE + getFlags(9))
+    lcd.drawText(1, 49 - scroll * 8, "PWM out", SMLSIZE)
+    lcd.drawText(44, 49 - scroll * 8, config.pwm.list[config.pwm.selected], SMLSIZE + getFlags(8))
+    lcd.drawText(64, 49 - scroll * 8, "GPS", SMLSIZE)
+    lcd.drawText(108, 49 - scroll * 8, config.gps.list[config.gps.selected], SMLSIZE + getFlags(9))
 
-    lcd.drawText(1, 57 - scroll * 8, "Rate Curr", SMLSIZE)
-    lcd.drawText(44, 57 - scroll * 8, (config.refreshCurr.selected - 1) * 100, SMLSIZE + getFlags(10))
-    lcd.drawText(64, 57 - scroll * 8, "Rate Temp", SMLSIZE)
-    lcd.drawText(108, 57 - scroll * 8, (config.refreshTemp.selected - 1) * 100, SMLSIZE + getFlags(11))
+    lcd.drawText(1, 57 - scroll * 8, "Rate RPM", SMLSIZE)
+    lcd.drawText(44, 57 - scroll * 8, (config.refreshRpm.selected - 1) * 100, SMLSIZE + getFlags(10))
+    lcd.drawText(64, 57 - scroll * 8, "Rate Volt", SMLSIZE)
+    lcd.drawText(108, 57 - scroll * 8, (config.refreshVolt.selected - 1) * 100, SMLSIZE + getFlags(11))
 
-    lcd.drawText(1, 65 - scroll * 8, "Avg RPM", SMLSIZE)
-    lcd.drawText(44, 65 - scroll * 8, config.queueRpm.selected, SMLSIZE + getFlags(12))
-    lcd.drawText(64, 65 - scroll * 8, "Avg Volt", SMLSIZE)
-    lcd.drawText(108, 65 - scroll * 8, config.queueVolt.selected, SMLSIZE + getFlags(13))
+    lcd.drawText(1, 65 - scroll * 8, "Rate Curr", SMLSIZE)
+    lcd.drawText(44, 65 - scroll * 8, (config.refreshCurr.selected - 1) * 100, SMLSIZE + getFlags(12))
+    lcd.drawText(64, 65 - scroll * 8, "Rate Temp", SMLSIZE)
+    lcd.drawText(108, 65 - scroll * 8, (config.refreshTemp.selected - 1) * 100, SMLSIZE + getFlags(13))
 
-    lcd.drawText(1, 73 - scroll * 8, "Avg Curr", SMLSIZE)
-    lcd.drawText(44, 73 - scroll * 8, config.queueCurr.selected, SMLSIZE + getFlags(14))
-    lcd.drawText(64, 73 - scroll * 8, "Avg Temp", SMLSIZE)
-    lcd.drawText(108, 73 - scroll * 8, config.queueTemp.selected, SMLSIZE + getFlags(15))
+    lcd.drawText(1, 73 - scroll * 8, "Avg RPM", SMLSIZE)
+    lcd.drawText(44, 73 - scroll * 8, config.queueRpm.selected, SMLSIZE + getFlags(14))
+    lcd.drawText(64, 73 - scroll * 8, "Avg Volt", SMLSIZE)
+    lcd.drawText(108, 73 - scroll * 8, config.queueVolt.selected, SMLSIZE + getFlags(15))
 
-    lcd.drawText(1, 81 - scroll * 8, "I2C 1", SMLSIZE)
-    lcd.drawText(30, 81 - scroll * 8, config.i2c1.list[config.i2c1.selected], SMLSIZE + getFlags(16))
-    lcd.drawText(64, 81 - scroll * 8, "Address", SMLSIZE)
-    lcd.drawText(108, 81 - scroll * 8, config.i2c1Address.selected - 1, SMLSIZE + getFlags(17))
+    lcd.drawText(1, 81 - scroll * 8, "Avg Curr", SMLSIZE)
+    lcd.drawText(44, 81 - scroll * 8, config.queueCurr.selected, SMLSIZE + getFlags(16))
+    lcd.drawText(64, 81 - scroll * 8, "Avg Temp", SMLSIZE)
+    lcd.drawText(108, 81 - scroll * 8, config.queueTemp.selected, SMLSIZE + getFlags(17))
 
-    lcd.drawText(1, 89 - scroll * 8, "I2C 2", SMLSIZE)
-    lcd.drawText(30, 89 - scroll * 8, config.i2c2.list[config.i2c2.selected], SMLSIZE + getFlags(18))
+    lcd.drawText(1, 89 - scroll * 8, "I2C 1", SMLSIZE)
+    lcd.drawText(30, 89 - scroll * 8, config.i2c1.list[config.i2c1.selected], SMLSIZE + getFlags(18))
     lcd.drawText(64, 89 - scroll * 8, "Address", SMLSIZE)
-    lcd.drawText(108, 89 - scroll * 8, config.i2c2Address.selected - 1, SMLSIZE + getFlags(19))
+    lcd.drawText(108, 89 - scroll * 8, config.i2c1Address.selected - 1, SMLSIZE + getFlags(19))
 
-    lcd.drawText(1, 97 - scroll * 8, "GPS", SMLSIZE)
-    lcd.drawText(30, 97 - scroll * 8, config.gps.list[config.gps.selected], SMLSIZE + getFlags(20))
+    lcd.drawText(1, 97 - scroll * 8, "I2C 2", SMLSIZE)
+    lcd.drawText(30, 97 - scroll * 8, config.i2c2.list[config.i2c2.selected], SMLSIZE + getFlags(20))
+    lcd.drawText(64, 97 - scroll * 8, "Address", SMLSIZE)
+    lcd.drawText(108, 97 - scroll * 8, config.i2c2Address.selected - 1, SMLSIZE + getFlags(21))
 
     if readConfigState ~= state["MAINTENANCE_OFF"] then
         lcd.drawText(35, 28, "Connecting...", INVERS)
     end
 
     if sendConfigState ~= state["MAINTENANCE_OFF"] then
-        lcd.drawText(1, 105 - scroll * 8, "UPDATING", SMLSIZE + getFlags(21))
+        lcd.drawText(1, 113 - scroll * 8, "UPDATING", SMLSIZE + getFlags(22))
     else
-        lcd.drawText(1, 105 - scroll * 8, "UPDATE", SMLSIZE + getFlags(21))
+        lcd.drawText(1, 113 - scroll * 8, "UPDATE", SMLSIZE + getFlags(22))
     end
     lcd.drawScreenTitle("MSRC v" .. scriptVersion, 1, 1)
 end
@@ -480,8 +499,11 @@ local function run_func(event)
     if selection.selected > 19 then
         scroll = 5
     end
-    if selection.selected > 20 then
+    if selection.selected > 21 then
         scroll = 6
+    end
+    if selection.selected > 23 then
+        scroll = 7
     end
 
     refresh = 0
