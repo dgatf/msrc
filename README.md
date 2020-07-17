@@ -304,7 +304,11 @@ The voltage drop in the shunt resistor is amplified by a differential amplifier 
 
 ## 8. Change log
 
-v0.6
+v0.7
+
+- Added analog airspeed sensor (MPXV7002)
+
+[v0.6](https://github.com/dgatf/msrc/tree/v0.5)
 
 - Added GPS serial (BN220, BN880, NEO-M8N,...)
 
