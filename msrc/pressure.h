@@ -10,6 +10,7 @@
 class PressureInterface : public VoltageInterface
 {
 private:
+    float voltageOffset = 0;
 public:
     PressureInterface(uint8_t pin, uint8_t alpha);
     float read(uint8_t index);

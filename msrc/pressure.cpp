@@ -11,8 +11,20 @@ float PressureInterface::read(uint8_t index)
 #endif
     if (index == 0)
     {
-        float pressure = 1000 * BOARD_VCC * (0.2 * readVoltage() - 0.5); // MPXV7002
-        if (pressure < 0) pressure = 0;
+        if (millis() > 2000 && voltageOffset == 0)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                voltageOffset += readVoltage();
+                delay(2);
+            }
+            voltageOffset = voltageOffset / 10;
+            if (voltageOffset == 0)
+                voltageOffset = 2.5;
+        }
+        float pressure = 1000 * (readVoltage() - voltageOffset); // MPXV7002
+        if (pressure < 0)
+            pressure = 0;
         float airSpeed = sqrt(2 * pressure / AIR_DENS) / KNOT_TO_MS;
         value_ = calcAverage(alpha_ / 100.0F, value_, airSpeed);
         return value_;

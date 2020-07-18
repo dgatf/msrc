@@ -8,7 +8,7 @@ The following sensors are supported:
   - ESCs with serial telemetry (Hobbywing V3/V4/V5)
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
-- GPS serial
+- GPS serial (NMEA)
 - I2C sensors
 - Analog sensors
 
@@ -61,7 +61,7 @@ If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7
 
 ### 1.2. Serial GPS
 
-Serial GPS is supported altohugh is not feasible to connect at the same time with a serial ESC as there is only one UART available. The connections are the same as for the ESC serial
+Serial GPS (NMEA protocol) is supported although is not feasible to connect at the same time with a serial ESC as there is only one UART available. The connections are the same as for the ESC serial
 
 ### 1.3. Analog sensors
 
@@ -70,6 +70,7 @@ The following analog sensors are supported:
 - 2 x voltage divider (A2, A3)
 - 2 x temperature sensors (thermistors) (A0, A1)
 - Current sensor (Hall effect) (A6)
+- Airspeed sensor (MPXV7002) (A7)
 
 ### 1.4. I2C sensors
 
@@ -104,7 +105,9 @@ Options:
 - Ntc1. Enable/disable analog thermistor 1
 - Ntc2. Enable/disable analog thermistor 2
 - Current. Enable/disable analog current
+- Airspeed. Enable/disable analog airspeed sensor
 - PWM out. Enable/disable analog a PWM signal from RPM values from ESC serial
+- GPS.  Enable/disable serial GPS
 - Averaging queue size: 1 to 16
 - Refresh rate (ms): 0 to 1600
 - I2C (x2). Sensor type and address
@@ -142,6 +145,7 @@ Analog:
 - Thermistor 1: Tmp1 (0x0400)
 - Thermistor 2: Tmp2 (0x0410)
 - Current: Curr (0x020f)
+- AirSpeed: ASpd (0x0a00)
 
 I2C:
 
@@ -301,6 +305,12 @@ The voltage drop in the shunt resistor is amplified by a differential amplifier 
 
 <p align="center"><img src="./images/High-Side-Current-Sensing.png" width="200"></p>
 
+
+### 7.8. Air Speed
+
+The air speed is calculated with a differential pressure sensor using the Bernouilli formula:
+
+<img src="https://latex.codecogs.com/svg.latex?V=\sqrt{2*P/\rho}" title="V=(2P/d)^1/2" />
 
 ## 8. Change log
 
