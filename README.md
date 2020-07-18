@@ -246,7 +246,7 @@ For best accuracy PWM signal output for FBL is produced by hardware PWM from ser
 
 To obtain the voltage at the analog pin it is required the ADC bits (b) and the Vref:
 
-<img src="https://latex.codecogs.com/svg.latex?V_o=V_ref*\frac{Raw}{2^b}" title="Vo = Vref * Raw / 2^bits" /><br>
+<img src="https://latex.codecogs.com/svg.latex?V_o=V_{ref}*\frac{Raw}{2^b}" title="Vo = Vref * Raw / 2^bits" /><br>
 
 ### 7.5. Analog voltage sensors. Voltage divider circuit
 
