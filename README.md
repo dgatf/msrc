@@ -258,7 +258,7 @@ Arduino can read up to 3.3V/5V and is optimized for signal inputs with 10K imped
 
 To select R values apply formulas:
 
-<img src="https://latex.codecogs.com/svg.latex?V_o=V_in\frac{R_2}{R_1+R_2}<3.3Vor5V" title="Vo = Vi\*R2/(R1+R2) < 3.3V or 5V" /><br>
+<img src="https://latex.codecogs.com/svg.latex?V_o=V_{in}\frac{R_2}{R_1+R_2}<3.3Vor5V" title="Vo = Vi\*R2/(R1+R2) < 3.3V or 5V" /><br>
 
 <img src="https://latex.codecogs.com/svg.latex?Z=\frac{1}{\frac{1}{R_1}+\frac{1}{R_2}}<10K" title="Z = 1/((1/R1)+(1/R2)) < 10K" />
 
@@ -279,15 +279,15 @@ Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in n
 
 To obtain the thermistor resistance:
 
-<img src="https://latex.codecogs.com/svg.latex?Rt=\frac{V_o*R_s}{(V_in-V_o)}" title="Rt = Vo * Rs / (Vin - voltage))}" />
+<img src="https://latex.codecogs.com/svg.latex?R_t=\frac{V_o*R_s}{(V_{in}-V_o)}" title="Rt = Vo * Rs / (Vin - voltage))}" />
 
 And temperature with Beta formula:
 
-<img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{\frac{ln\frac{R_t}{R_ref}}{\beta}+\frac{1}{T_ref}}" title="T = 1/[ln(Rt/Rref)/B+1/Tref]" />
+<img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{\frac{ln\frac{R_t}{R_{ref}}}{\beta}+\frac{1}{T_{ref}}}" title="T = 1/[ln(Rt/Rref)/B+1/Tref]" />
 
 Or with Steinhart and Hart Equation if data is available:
 
-<img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{A+B*ln\frac{R_t}{R_ref}+C*ln(\frac{R_t}{R_ref})^2+D*ln(\frac{R_t}{R_ref})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
+<img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{A+B*ln\frac{R_t}{R_{ref}}+C*ln(\frac{R_t}{R_{ref}})^2+D*ln(\frac{R_t}{R_{ref}})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
 
 ### 7.7. Current
 
