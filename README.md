@@ -323,7 +323,7 @@ After 2 seconds the sensor is calibrated to zero
 
 Adjust constants in *pressure.h*:
 
-- TRANSFER_SLOPE as per sensor datasheet
+- TRANSFER_SLOPE (B) as per sensor datasheet
 - For fine tuning measure the Vcc on the sensor and adjust TRANSFER_VCC
 
 ## 8. Change log
