@@ -3,6 +3,10 @@
 
 #define AIR_DENS 1.204  // 20ºC, 1atm
 #define KNOT_TO_MS 1.94384
+// Transfer function: P(Pa) = 1000 * (Vo/(SLOPE*VCC) - voltageOffset)
+// MPXV7002
+#define TRANSFER_SLOPE 0.2
+#define TRANSFER_VCC 5
 
 #include <Arduino.h>
 #include "voltage.h"

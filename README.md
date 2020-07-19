@@ -308,9 +308,23 @@ The voltage drop in the shunt resistor is amplified by a differential amplifier 
 
 ### 7.8. Air Speed
 
-The air speed is calculated with a differential pressure sensor using the Bernouilli formula:
+Air speed is measured with a differential pressure sensor 
+
+Presssure is calculated with the sensor's transfer formula:
+
+<img src="https://latex.codecogs.com/svg.latex?V_o=V_{cc}*(B*P+A)" title="Vo=Vcc(MP+A)" />
+
+
+And the air speed using the Bernouilli formula:
 
 <img src="https://latex.codecogs.com/svg.latex?V=\sqrt{2*P/\rho}" title="V=(2P/d)^1/2" />
+
+After 2 seconds the sensor is calibrated to zero
+
+Adjust constants in *pressure.h*:
+
+- TRANSFER_SLOPE as per sensor datasheet
+- For fine tuning measure the Vcc on the sensor and adjust TRANSFER_VCC
 
 ## 8. Change log
 
