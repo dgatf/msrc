@@ -107,7 +107,7 @@ float EscHW4Interface::calcTemp(uint16_t tempRaw)
 
 float EscHW4Interface::calcCurr(uint16_t currentRaw)
 {
-    if (value_[ESCHW4_PWM] < 128 || currentRaw - rawCurrentOffset_[type_] < 0)
+    if (value_[ESCHW4_THR] < 128 || currentRaw - rawCurrentOffset_[type_] < 0)
         return 0;
     return (currentRaw - rawCurrentOffset_[type_]) * ESCHW4_V_REF / (ESCHW4_DIFFAMP_GAIN * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
 }
