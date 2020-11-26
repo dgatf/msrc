@@ -163,7 +163,7 @@ Some of the sensors have to be adusted in openTx
 
 Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4 sensor
 
-### 4.3. Adjust current sensor (Curr)
+### 4.3. Adjust analog current sensor (Curr)
 
 If using a hall effect sensor, adjust the ratio: *1000 / output sensitivity (mV/A)*
 
@@ -173,6 +173,11 @@ To calculate the battery consumption add a new sensor:
 - Formula: Consumption
 - Sensor: Curr
 
+### 4.4 Calibrate current sensor HW V4/V5 (EscA)
+
+HW V4/V5 uses few different offsets to measure the current. It have been detected two types, V4 and V5, but there seems to be more types
+
+Current value should be close to 0 A without blades and throttle at 50%. If this is not the case you can calibrate the current sensor (EscA) in opentx (sensor->edit sensor->offset) by adjusting the offset with the value at this condition (no blades and 50% throttle)
 
 ## 5. Images
 
@@ -220,7 +225,7 @@ rpm, pwm: 0-1024 (10bits)
 Voltage, current and temperature are raw sensor data. Actual values requires transformation. Depending on the model, sensors are different so  the transformations:
 
   - Voltage divider. Different for LV and HV models. LV divisor 11. HV divisor 21
-  - Current sensor (shunt resistor and diff amp). Different for V4 and V5. V5 seems to be shifted by Vref=0.53V
+  - Current sensor (shunt resistor and diff amp). Different for V4 and V5. V5 seems to be shifted by Vref=0.53V. See 4.4 Calibrate current sensor HW V4/V5
   - Temperature. NTC resistor. So far it is the same for tested models
 
 Before throttle is raised from 0, signature packets are sent between telemetry packets. This is used to identify the hardware and firmware of the ESC
@@ -231,6 +236,7 @@ Examples:
 | ---------- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | V4LV80A    | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x08  | 0x5B  | 0x00  | 0x01  | 0x00  | 0x21  | 0x21  | 0xB9  |
 | V5HV130A   | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x0B  | 0x41  | 0x21  | 0x44  | 0xB9  | 0x21  | 0x21  | 0xB9  |
+
 
 ### 7.2. ESC protocol specifications Castle Link
 
