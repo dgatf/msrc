@@ -42,9 +42,7 @@
 
 // i2c
 #define I2C_NONE 0
-#define I2C_BMP180 1
-#define I2C_BMP280 2
-#define I2C_MS5611 3
+#define I2C_BMP280 1
 #define WIRE_TIMEOUT 3
 
 #define escSerial Serial
@@ -114,7 +112,6 @@
 #include "voltage.h"
 #include "ntc.h"
 #include "pressure.h"
-#include "bmp180.h"
 #include "bmp280.h"
 #include "bn220.h"
 

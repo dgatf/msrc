@@ -305,18 +305,6 @@ void initConfig(Config &config)
     }
     for (uint8_t i = 0; i < 2; i++)
     {
-        if (config.deviceI2C[i].type == I2C_BMP180)
-        {
-            Sensor *sensorP;
-            Bmp180Interface *bmp;
-            bmp = new Bmp180Interface(config.deviceI2C[i].address, config.alpha.temp, config.alpha.def);
-            bmp->begin();
-
-            sensorP = new Sensor(T1_FIRST_ID + 1, BMP_TEMPERATURE, config.refresh.temp, bmp);
-            smartport.addSensor(sensorP);
-            sensorP = new Sensor(ALT_FIRST_ID + 1, BMP_ALTITUDE, config.refresh.def, bmp);
-            smartport.addSensor(sensorP);
-        }
         if (config.deviceI2C[i].type == I2C_BMP280)
         {
             Sensor *sensorP;

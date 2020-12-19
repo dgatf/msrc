@@ -76,7 +76,7 @@ The following analog sensors are supported:
 
 The following I2C sensors are suported (pins A4, A5):
 
-- Barometer: BMP180, BMP280
+- Barometer: BMP280
 
 <p align="center"><img src="./images/msrc_full.png" width="600"><br>
   <i>I2C and analog sensors</i><br><br></p>
