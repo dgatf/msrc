@@ -101,7 +101,7 @@ void EscCastleInterface::begin()
 
     // TIMER 2
     TCCR2A = 0;                                 // NORMAL MODE
-    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS21); // SCALER 1024
+    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
     OCR2A = 12 * MS_TO_COMP(1024);              // 12ms
 }
 

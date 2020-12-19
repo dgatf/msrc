@@ -338,6 +338,7 @@ Adjust constants in *pressure.h*:
 v0.7
 
 - Added analog airspeed sensor (MPXV7002)
+- Fix Castle Link bug
 
 [v0.6](https://github.com/dgatf/msrc/tree/v0.5)
 
