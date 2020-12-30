@@ -212,7 +212,7 @@ Serial parameters:
 
 *RPM = 60000000 / RPM Cycle*
 
-rpm, pwm: 0-255 (8bits)
+thr, pwm: 0-255 (8bits)
 
 #### Hobbywing V4 V5
 
@@ -220,7 +220,7 @@ rpm, pwm: 0-255 (8bits)
 | ---   | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | Value | Package Head (0x9B) | Package Number 1 |	Package Number 2 | Package Number 3	| Rx Throttle 1	| Rx Throttle  2 | Output PWM 1 | Output PWM 2	| RPM 1 | RPM 2	| RPM 3	| Voltage 1 |	Voltage 2	| Current 1	| Current 2	| TempFET 1	| TempFET 2	| Temp 1 |	Temp 2
 
-rpm, pwm: 0-1024 (10bits)
+thr, pwm: 0-1024 (10bits)
 
 Voltage, current and temperature are raw sensor data. Actual values requires transformation. Depending on the model, sensors are different so  the transformations:
 
@@ -338,7 +338,8 @@ Adjust constants in *pressure.h*:
 v0.7
 
 - Added analog airspeed sensor (MPXV7002)
-- Fix Castle Link bug
+- Fixed Castle Link bug
+- Removed BMP180
 
 [v0.6](https://github.com/dgatf/msrc/tree/v0.5)
 
