@@ -1,6 +1,6 @@
 # MSRC - Multi Sensor for RC - FrSky Smartport
 
-This is a DIY project to send multiple sensors telemetry to Frsky Smartport using an Arduino Pro Mini 328P (3.3v or 5v)
+This is a DIY project to send multiple sensors telemetry to Frsky Smartport using an Arduino Pro Mini 328P (3.3v or 5v) for a fraction of the weight and cost of the stock sensors
 
 The following sensors are supported:
 
@@ -9,8 +9,8 @@ The following sensors are supported:
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
-- I2C sensors
-- Analog sensors
+- I2C sensors: BMP280
+- Analog sensors: voltage, temperature, current, air speed
 
 All sensors are optional. Make the circuit with the desired sensors and enable them through the configuration with a lua script
 
