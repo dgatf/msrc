@@ -42,9 +42,9 @@ local config = {
     queueVolt = {selected = 1, elements = 16},
     queueCurr = {selected = 1, elements = 16},
     queueTemp = {selected = 1, elements = 16},
-    i2c1 = {selected = 4, list = {"NONE", "BMP280", ""}, elements = 2},
+    i2c1 = {selected = 3, list = {"NONE", "BMP280", ""}, elements = 2},
     i2c1Address = {selected = 1, elements = 128},
-    i2c2 = {selected = 4, list = {"NONE", "BMP280", ""}, elements = 2},
+    i2c2 = {selected = 3, list = {"NONE", "BMP280", ""}, elements = 2},
     i2c2Address = {selected = 1, elements = 128}
 }
 local selection = {
