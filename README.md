@@ -48,9 +48,9 @@ ESC Castle Link protocol is also implemented. The telemetry values goes together
 
 | Model              | RPM         | Throttle    | Motor PWM   | Voltage     | Current   | Voltage BEC | Current BEC | Temperature 1 | Temperature 2 | Ripple Volt |
 | ------------------ | :---------: | :---------: | :---------: | :---------: | :-------: | :---------: | :---------: | :-----------: | :-----------: | :---------: |
-| Hobbywing V3       | :white_check_mark:         | :white_check_mark:(1)      | :white_check_mark:(1)      |             |           |             |             |               |               |             |
-| Hobbywing V4/V5(4) | :white_check_mark:         | :white_check_mark:(1)      | :white_check_mark:(1)      | :white_check_mark:         | :white_check_mark:(2)    |             |             | :white_check_mark: FET       | :white_check_mark: BEC       |             |
-| Castle Link        | :white_check_mark:         | :white_check_mark:(1)      | :white_check_mark:(1)      | :white_check_mark:         | :white_check_mark:       | :white_check_mark:(3)      | :white_check_mark:(3)      | :white_check_mark:           |               | :white_check_mark:         |
+| Hobbywing V3       | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      |             |           |             |             |               |               |             |
+| Hobbywing V4/V5<sup>(4)</sup> | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:         | :white_check_mark:<sup>(2)</sup>    |             |             | :white_check_mark: FET       | :white_check_mark: BEC       |             |
+| Castle Link        | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:         | :white_check_mark:       | :white_check_mark:<sup>(3)</sup>      | :white_check_mark:<sup>(3)</sup>      | :white_check_mark:           |               | :white_check_mark:         |
 
 (1) Available but not forwarded to smartport  
 (2) For 80A models and higher  
