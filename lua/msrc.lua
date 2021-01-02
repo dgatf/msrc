@@ -19,13 +19,16 @@ local state = {
 }
 local readConfigState = state["INIT"]
 local sendConfigState = state["MAINTENANCE_OFF"]
-local refresh = 0
 local lcdChange = true
 local scroll = 0
 local sensorIdTx = 17 -- sensorId 18
 local config = {
     firmwareVersion = "",
-    protocol = {selected = 9, list = {"NONE", "HW V3", "HW V4 LV", "HW V4 HV", "HW V5 LV", "HW V5 HV", "PWM", "CASTLE", ""}, elements = 8},
+    protocol = {
+        selected = 9,
+        list = {"NONE", "HW V3", "HW V4 LV", "HW V4 HV", "HW V5 LV", "HW V5 HV", "PWM", "CASTLE", ""},
+        elements = 8
+    },
     voltage1 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     voltage2 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     ntc1 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
@@ -78,14 +81,14 @@ local selection = {
 }
 
 local function getFlags(element)
-    if string.find(selection.list[element], "btn") == 1 and selection.selected == element then
+    if selection.selected ~= element and selection.list[element] ~= "btnUpdate" then
+        return 0
+    end
+    if selection.list[element] == "btnUpdate" and selection.selected == element then
         return INVERS + BLINK
     end
-    if string.find(selection.list[element], "btn") == 1 and selection.selected ~= element then
+    if selection.list[element] == "btnUpdate" and selection.selected ~= element then
         return INVERS
-    end
-    if selection.selected ~= element then
-        return 0
     end
     if selection.selected == element and selection.state == false then
         return INVERS
@@ -131,7 +134,8 @@ local function readConfig()
         if primId == 0x32 and dataId == 0x5000 then
             if bit32.extract(value, 0, 8) == 0xF1 and readConfigState == state["CONFIG_REQUESTED"] then
                 config.firmwareVersion =
-                    bit32.extract(value, 24, 8) .. "." .. bit32.extract(value, 16, 8) .. "." .. bit32.extract(value, 8, 8)
+                    bit32.extract(value, 24, 8) ..
+                    "." .. bit32.extract(value, 16, 8) .. "." .. bit32.extract(value, 8, 8)
                 readConfigState = state["PACKET_1"]
             end
             if bit32.extract(value, 0, 8) == 0xF2 and readConfigState == state["PACKET_1"] then
@@ -274,7 +278,7 @@ local function sendConfig()
 end
 
 local function refreshHorus()
-    lcd.drawRectangle(30, 23, 410, 231)
+    lcd.drawRectangle(25, 23, 430, 231)
     lcd.drawText(200, 1, "MSRC v" .. scriptVersion, INVERS)
 
     lcd.drawText(40, 24, "Firmware", 0)
@@ -346,7 +350,7 @@ end
 local function refreshTaranis()
     lcd.drawText(1, 9 - scroll * 8, "Firmware", SMLSIZE)
     lcd.drawText(44, 9 - scroll * 8, config.firmwareVersion, SMLSIZE)
-    
+
     lcd.drawText(1, 17 - scroll * 8, "Protocol", SMLSIZE)
     lcd.drawText(44, 17 - scroll * 8, config.protocol.list[config.protocol.selected], SMLSIZE + getFlags(1))
 
@@ -412,21 +416,14 @@ local function refreshTaranis()
     lcd.drawScreenTitle("MSRC v" .. scriptVersion, 1, 1)
 end
 
-local function init_func()
-end
-
-local function bg_func(event)
-    if refresh < 5 then
-        refresh = refresh + 1
-    end
-end
-
 local function run_func(event)
+    if event == nil then
+        error("Cannot run as a model script!")
+        return 2
+    end
+
     -- update lcd
-    if
-        refresh == 5 or lcdChange == true or selection.state == true or
-            string.find(selection.list[selection.selected], "btn")
-     then
+    if lcdChange == true or selection.state == true or selection.list[selection.selected] == "btnUpdate" then
         lcd.clear()
         lcdChange = false
         if LCD_W == 480 then
@@ -445,28 +442,24 @@ local function run_func(event)
     end
 
     -- key events (left = up/decrease right = down/increase)
-    if selection.state == false then
-        if event == EVT_ROT_LEFT or event == EVT_MINUS_BREAK or event == EVT_DOWN_BREAK then
+    if event == EVT_ROT_LEFT or event == EVT_MINUS_BREAK or event == EVT_DOWN_BREAK then
+        if selection.state == false then
             decrease(selection)
             lcdChange = true
-        end
-        if event == EVT_ROT_RIGHT or event == EVT_PLUS_BREAK or event == EVT_UP_BREAK then
-            increase(selection)
-            lcdChange = true
-        end
-    end
-    if selection.state == true then
-        if event == EVT_ROT_LEFT or event == EVT_MINUS_BREAK or event == EVT_DOWN_BREAK then
+        else
             decrease(config[selection.list[selection.selected]])
             lcdChange = true
         end
-        if event == EVT_ROT_RIGHT or event == EVT_PLUS_BREAK or event == EVT_UP_BREAK then
+    elseif event == EVT_ROT_RIGHT or event == EVT_PLUS_BREAK or event == EVT_UP_BREAK then
+        if selection.state == false then
+            increase(selection)
+            lcdChange = true
+        else
             increase(config[selection.list[selection.selected]])
             lcdChange = true
         end
-    end
-    if event == EVT_ENTER_BREAK then
-        if string.find(selection.list[selection.selected], "btn") ~= 1 then
+    elseif event == EVT_ENTER_BREAK then
+        if selection.list[selection.selected] ~= "btnUpdate" then
             if readConfigState == state["MAINTENANCE_OFF"] and sendConfigState == state["MAINTENANCE_OFF"] then
                 selection.state = not selection.state
                 lcdChange = true
@@ -476,36 +469,35 @@ local function run_func(event)
                 sendConfigState = state["INIT"]
             end
         end
-    end
-    if event == EVT_EXIT_BREAK then
+    elseif event == EVT_EXIT_BREAK then
         selection.state = false
         lcdChange = true
     end
 
     --lcd scrolling
-    scroll = 0
-    if selection.selected > 11 then
-        scroll = 1
+    if LCD_W ~= 480 then
+        scroll = 0
+        if selection.selected > 11 then
+            scroll = 1
+        end
+        if selection.selected > 13 then
+            scroll = 2
+        end
+        if selection.selected > 15 then
+            scroll = 3
+        end
+        if selection.selected > 17 then
+            scroll = 4
+        end
+        if selection.selected > 19 then
+            scroll = 5
+        end
+        if selection.selected > 21 then
+            scroll = 6
+        end
     end
-    if selection.selected > 13 then
-        scroll = 2
-    end
-    if selection.selected > 15 then
-        scroll = 3
-    end
-    if selection.selected > 17 then
-        scroll = 4
-    end
-    if selection.selected > 19 then
-        scroll = 5
-    end
-    if selection.selected > 21 then
-        scroll = 6
-    end
-
-    refresh = 0
 
     return 0
 end
 
-return {run = run_func, background = bg_func, init = init_func}
+return {run = run_func}
