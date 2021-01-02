@@ -278,6 +278,7 @@ local function sendConfig()
 end
 
 local function refreshHorus()
+    lcd.clear()
     lcd.drawRectangle(25, 23, 430, 231)
     lcd.drawText(200, 1, "MSRC v" .. scriptVersion, INVERS)
 
@@ -348,6 +349,8 @@ local function refreshHorus()
 end
 
 local function refreshTaranis()
+    lcdChange = false
+    lcd.clear()
     lcd.drawText(1, 9 - scroll * 8, "Firmware", SMLSIZE)
     lcd.drawText(44, 9 - scroll * 8, config.firmwareVersion, SMLSIZE)
 
@@ -423,14 +426,10 @@ local function run_func(event)
     end
 
     -- update lcd
-    if lcdChange == true or selection.state == true or selection.list[selection.selected] == "btnUpdate" then
-        lcd.clear()
-        lcdChange = false
-        if LCD_W == 480 then
-            refreshHorus()
-        else
-            refreshTaranis()
-        end
+    if LCD_W == 480 then
+        refreshHorus()
+    elseif lcdChange == true or selection.state == true or selection.list[selection.selected] == "btnUpdate" then
+        refreshTaranis()
     end
 
     -- update state
