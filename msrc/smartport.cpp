@@ -256,13 +256,13 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             if (packetP != NULL && maintenanceMode_) // if maintenance send packet
             {
                 sendData(packetP->frameId, packetP->dataId, packetP->value);
-#ifdef DEBUG_RX
-                Serial.print("Sent frameId: ");
-                Serial.print(packetP->frameId, HEX);
-                Serial.print(" dataId: ");
-                Serial.print(packetP->dataId, HEX);
-                Serial.print(" value: ");
-                Serial.println(packetP->value);
+#ifdef DEBUG
+                DEBUG_SERIAL.print("Sent frameId: ");
+                DEBUG_SERIAL.print(packetP->frameId, HEX);
+                DEBUG_SERIAL.print(" dataId: ");
+                DEBUG_SERIAL.print(packetP->dataId, HEX);
+                DEBUG_SERIAL.print(" value: ");
+                DEBUG_SERIAL.println(packetP->value);
 #endif
                 dataId = packetP->dataId;
                 value = packetP->value;
@@ -281,13 +281,13 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 if ((uint16_t)millis() - spSensorP->timestamp() >= (uint16_t)spSensorP->refresh() * 100)
                 {
                     sendData(spSensorP->frameId(), spSensorP->dataId(), spSensorP->value());
-#ifdef DEBUG_RX
-                    Serial.print("id: ");
-                    Serial.print(spSensorP->dataId(), HEX);
-                    Serial.print(" v: ");
-                    Serial.print(spSensorP->value());
-                    Serial.print(" ts: ");
-                    Serial.println(spSensorP->timestamp());
+#ifdef DEBUG
+                    DEBUG_SERIAL.print("id: ");
+                    DEBUG_SERIAL.print(spSensorP->dataId(), HEX);
+                    DEBUG_SERIAL.print(" v: ");
+                    DEBUG_SERIAL.print(spSensorP->value());
+                    DEBUG_SERIAL.print(" ts: ");
+                    DEBUG_SERIAL.println(spSensorP->timestamp());
 #endif
                     spSensorP->setTimestamp(millis());
                     dataId = spSensorP->dataId();
@@ -310,8 +310,8 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             // maintenance mode on
             if (frameId == 0x21 && dataId == 0xFFFF && value == 0x80)
             {
-#ifdef DEBUG_RX
-                Serial.println("Maintenance mode ON");
+#ifdef DEBUG
+                DEBUG_SERIAL.println("Maintenance mode ON");
 #endif
                 maintenanceMode_ = true;
                 return MAINTENANCE_ON;
@@ -319,8 +319,8 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             // maintenance mode off
             if (frameId == 0x20 && dataId == 0xFFFF && value == 0x80)
             {
-#ifdef DEBUG_RX
-                Serial.println("Maintenance mode OFF");
+#ifdef DEBUG
+                DEBUG_SERIAL.println("Maintenance mode OFF");
 #endif
                 maintenanceMode_ = false;
                 return MAINTENANCE_OFF;
@@ -328,11 +328,11 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             // send sensorId
             if (maintenanceMode_ && frameId == 0x30 && dataId == dataId_ && value == 0x01)
             {
-#ifdef DEBUG_RX
-                Serial.print("Sent Sensor Id: ");
-                Serial.print(crcToId(sensorId_));
-                Serial.print(" ");
-                Serial.println(sensorId_, HEX);
+#ifdef DEBUG
+                DEBUG_SERIAL.print("Sent Sensor Id: ");
+                DEBUG_SERIAL.print(crcToId(sensorId_));
+                DEBUG_SERIAL.print(" ");
+                DEBUG_SERIAL.println(sensorId_, HEX);
 #endif
                 addPacket(0x32, dataId_, (crcToId(sensorId_) - 1) << 8 | 0x01);
                 return SENT_SENSOR_ID;
@@ -341,19 +341,19 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             if (maintenanceMode_ && frameId == 0x31 && dataId == dataId_ && (uint8_t)value == 0x01)
             {
                 setSensorId(idToCrc((value >> 8) + 1));
-#ifdef DEBUG_RX
-                Serial.print("Changed Sensor Id: ");
-                Serial.println(crcToId(sensorId_));
+#ifdef DEBUG
+                DEBUG_SERIAL.print("Changed Sensor Id: ");
+                DEBUG_SERIAL.println(crcToId(sensorId_));
 #endif
                 return CHANGED_SENSOR_ID;
             }
-#ifdef DEBUG_RX
-            Serial.print("Received frameId: ");
-            Serial.print(frameId, HEX);
-            Serial.print(" dataId: ");
-            Serial.print(dataId, HEX);
-            Serial.print(" value: ");
-            Serial.println(value);
+#ifdef DEBUG
+            DEBUG_SERIAL.print("Received frameId: ");
+            DEBUG_SERIAL.print(frameId, HEX);
+            DEBUG_SERIAL.print(" dataId: ");
+            DEBUG_SERIAL.print(dataId, HEX);
+            DEBUG_SERIAL.print(" value: ");
+            DEBUG_SERIAL.println(value);
 #endif
             return RECEIVED_PACKET;
         }

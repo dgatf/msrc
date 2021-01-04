@@ -149,10 +149,10 @@ float EscCastleInterface::read(uint8_t index)
         break;
     }
 #ifdef DEBUG_ESC
-    Serial.print("Value [");
-    Serial.print(index);
-    Serial.print("]: ");
-    Serial.println(value);
+    DEBUG_SERIAL.print("Value [");
+    DEBUG_SERIAL.print(index);
+    DEBUG_SERIAL.print("]: ");
+    DEBUG_SERIAL.println(value);
 #endif
     if (value < 0)
         return 0;

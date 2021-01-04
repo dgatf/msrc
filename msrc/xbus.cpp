@@ -20,38 +20,54 @@ Xbus::Xbus() {}
 
 void Xbus::i2c_request_handler()
 {
-    int address = TWDR >> 1;
+#ifdef SIM_RX
+    uint8_t list[] = {XBUS_AIRSPEED, XBUS_BATTERY, XBUS_ESC, XBUS_GPS, XBUS_RPM_VOLT_TEMP};
+    static uint8_t cont = 0;
+    uint8_t address = list[cont];
+    cont++;
+    if (cont > 4) cont = 0;
+#else
+    uint8_t address = TWDR >> 1;
+#endif
     uint8_t buffer[16] = {0};
     switch (address)
     {
 #if CONFIG_AIRSPEED
     case XBUS_AIRSPEED:
-        //Wire.write(tmpSpektrumDataAlt, 16);
+        memcpy(buffer, (byte *)&Xbus_Airspeed, sizeof(xbusEsc));
+        Wire.write(buffer, 16);
         break;
 #endif
 #if CONFIG_CURRENT
     case XBUS_BATTERY:
-        //Wire.write(tmpSpektrumDataAlt, 16);
+        memcpy(buffer, (byte *)&xbusBattery, sizeof(xbusEsc));
+        Wire.write(buffer, 16);
         break;
 #endif
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     case XBUS_ESC:
-        memcpy(buffer, (byte*)&xbusEsc, sizeof(xbusEsc));
+        memcpy(buffer, (byte *)&xbusEsc, sizeof(xbusEsc));
         Wire.write(buffer, 16);
         break;
 #endif
 #if CONFIG_GPS
     case XBUS_GPS:
-        memcpy(buffer, (byte*)&xbusGps, sizeof(xbusGps));
+        memcpy(buffer, (byte *)&xbusGps, sizeof(xbusGps));
         Wire.write(buffer, 16);
         break;
 #endif
     case XBUS_RPM_VOLT_TEMP:
-        memcpy(buffer, (byte*)&xbusRpmVoltTemp1, sizeof(xbusRpmVoltTemp1));
+        memcpy(buffer, (byte *)&xbusRpmVoltTemp1, sizeof(xbusRpmVoltTemp1));
         Wire.write(buffer, 16);
         //Wire.write((byte*)&xbusRpmVoltTemp1, 16);
         break;
     }
+#ifdef DEBUG
+    for (int i= 0;16;i++) {
+        DEBUG_SERIAL.print(buffer[i]);
+    }
+
+#endif
 }
 
 void Xbus::begin()
@@ -110,6 +126,6 @@ void Xbus::update()
     xbusRpmVoltTemp1.microseconds = escPwm.read(0);
 #endif
 #if CONFIG_AIRSPEED
-    //xbusRpmVoltTemp1.microseconds = escPwm.read(0);
+    xbusRpmVoltTemp1.microseconds = airspeed.read(0);
 #endif
 }

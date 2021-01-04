@@ -1,5 +1,5 @@
 // Select RX protocol
-#define RX_PROTOCOL RX_SRXL  // RX_SMARTPORT, RX_XBUS, RX_SRXL
+#define RX_PROTOCOL RX_XBUS  // RX_SMARTPORT, RX_XBUS, RX_SRXL
 
 // Select sensors
 #define CONFIG_ESC_PROTOCOL PROTOCOL_HW_V3 // PROTOCOL_NONE PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE
@@ -30,18 +30,22 @@
 #define CONFIG_LUA     // Comment if not using lua script for configuration (only smartport)
 
 // Pwm out
-#define DUTY 0.5 // 0.5 = 50%
+#define PWMOUT_DUTY 0.5 // 0.5 = 50%
+
+// Serial ports
+#define ESC_SERIAL Serial
+#define GPS_SERIAL Serial
+#define DEBUG_SERIAL Serial
 
 /* Debug
    Disconnect Vcc from the RC model to the Arduino
    Do not connect at the same time Vcc from the model and usb (TTL)
    Telemetry may not work properly in debug mode
-   Connect arduino Rx to TTL Tx for flashing, then connect arduino Rx to esc
+   Connect arduino Rx to TTL Tx for flashing, then if applicabe connect arduino Rx to esc or gps
 */
 
 //#define DEBUG
 //#define DEBUG_PLOTTER rpm/60
-//#define DEBUG_RX
 //#define DEBUG_ESC
 
 //#define SIM_RX

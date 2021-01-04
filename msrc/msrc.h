@@ -20,10 +20,6 @@
 #define I2C_BMP280 1
 #define WIRE_TIMEOUT 3
 
-#define escSerial Serial
-#define gpsSerial Serial
-#define debugSerial Serial
-
 // Config bitmask
 
 // byte 1: command
