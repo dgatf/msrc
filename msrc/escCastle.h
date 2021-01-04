@@ -16,10 +16,8 @@
     10      temp ntc (C) or calib 2 (500us)  63.8125
 */
 
-//#define DEBUG_ESC
-
 #define MS_TO_COMP(SCALER) F_CPU / (SCALER * 1000UL)
-#define RX_MAX_CYCLES 2  // minimum is 2
+#define RX_MAX_CYCLES 2 // minimum is 2
 
 #define CASTLE_VOLTAGE 1
 #define CASTLE_RIPPLE_VOLTAGE 2
@@ -47,6 +45,15 @@ extern void (*TIMER2_COMPA_handlerP)();
 class EscCastleInterface : public AbstractDevice, public EscCell
 {
 private:
+    static volatile bool castleTelemetryReceived;
+#ifdef SIM_SENSORS
+    static volatile uint16_t castleTelemetry[12];
+#else
+    static volatile uint16_t castleTelemetry[12];
+#endif
+    static volatile uint16_t castleCompsPerMilli;
+    static volatile uint8_t castleCont;
+    static volatile uint8_t castleRxLastReceived;
     const float scaler[11] = {0, 20, 4, 50, 1, 0.2502, 20416.7, 4, 4, 30, 63.8125};
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
     static void TIMER1_CAPT_handler();

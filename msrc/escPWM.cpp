@@ -1,8 +1,8 @@
 #include "escPWM.h"
 
-volatile uint16_t escPwmDuration = 0;
-volatile bool escPwmRunning = false;
-volatile bool escPwmUpdate = false;
+volatile uint16_t EscPWMInterface::escPwmDuration = 0;
+volatile bool EscPWMInterface::escPwmRunning = false;
+volatile bool EscPWMInterface::escPwmUpdate = false;
 
 EscPWMInterface::EscPWMInterface(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
 

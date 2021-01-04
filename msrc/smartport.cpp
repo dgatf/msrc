@@ -1,41 +1,8 @@
 #include "smartport.h"
 
-// ISR handlers
-
-void (*TIMER1_CAPT_handlerP)() = NULL;
-ISR(TIMER1_CAPT_vect)
-{
-    if (TIMER1_CAPT_handlerP)
-        TIMER1_CAPT_handlerP();
-}
-void (*TIMER1_COMPB_handlerP)() = NULL;
-ISR(TIMER1_COMPB_vect)
-{
-    if (TIMER1_COMPB_handlerP)
-        TIMER1_COMPB_handlerP();
-}
-void (*TIMER1_OVF_handlerP)() = NULL;
-ISR(TIMER1_OVF_vect)
-{
-    if (TIMER1_OVF_handlerP)
-        TIMER1_OVF_handlerP();
-}
-void (*INT0_handlerP)() = NULL;
-ISR(INT0_vect)
-{
-    if (INT0_handlerP)
-        INT0_handlerP();
-}
-void (*TIMER2_COMPA_handlerP)() = NULL;
-ISR(TIMER2_COMPA_vect)
-{
-    if (TIMER2_COMPA_handlerP)
-        TIMER2_COMPA_handlerP();
-}
-
 Smartport::Smartport(Stream &serial) : serial_(serial)
 {
-    pinMode(LED_SMARTPORT, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 Smartport::~Smartport()
@@ -267,7 +234,7 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
 
 uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
 {
-#ifdef SIM_POLL
+#ifdef SIM_RX
     if (true)
     {
         static uint16_t ts = 0;
@@ -289,7 +256,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             if (packetP != NULL && maintenanceMode_) // if maintenance send packet
             {
                 sendData(packetP->frameId, packetP->dataId, packetP->value);
-#ifdef DEBUG
+#ifdef DEBUG_RX
                 Serial.print("Sent frameId: ");
                 Serial.print(packetP->frameId, HEX);
                 Serial.print(" dataId: ");
@@ -314,7 +281,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 if ((uint16_t)millis() - spSensorP->timestamp() >= (uint16_t)spSensorP->refresh() * 100)
                 {
                     sendData(spSensorP->frameId(), spSensorP->dataId(), spSensorP->value());
-#ifdef DEBUG
+#ifdef DEBUG_RX
                     Serial.print("id: ");
                     Serial.print(spSensorP->dataId(), HEX);
                     Serial.print(" v: ");
@@ -343,7 +310,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             // maintenance mode on
             if (frameId == 0x21 && dataId == 0xFFFF && value == 0x80)
             {
-#ifdef DEBUG
+#ifdef DEBUG_RX
                 Serial.println("Maintenance mode ON");
 #endif
                 maintenanceMode_ = true;
@@ -352,7 +319,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             // maintenance mode off
             if (frameId == 0x20 && dataId == 0xFFFF && value == 0x80)
             {
-#ifdef DEBUG
+#ifdef DEBUG_RX
                 Serial.println("Maintenance mode OFF");
 #endif
                 maintenanceMode_ = false;
@@ -361,7 +328,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             // send sensorId
             if (maintenanceMode_ && frameId == 0x30 && dataId == dataId_ && value == 0x01)
             {
-#ifdef DEBUG
+#ifdef DEBUG_RX
                 Serial.print("Sent Sensor Id: ");
                 Serial.print(crcToId(sensorId_));
                 Serial.print(" ");
@@ -374,13 +341,13 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             if (maintenanceMode_ && frameId == 0x31 && dataId == dataId_ && (uint8_t)value == 0x01)
             {
                 setSensorId(idToCrc((value >> 8) + 1));
-#ifdef DEBUG
+#ifdef DEBUG_RX
                 Serial.print("Changed Sensor Id: ");
                 Serial.println(crcToId(sensorId_));
 #endif
                 return CHANGED_SENSOR_ID;
             }
-#ifdef DEBUG
+#ifdef DEBUG_RX
             Serial.print("Received frameId: ");
             Serial.print(frameId, HEX);
             Serial.print(" dataId: ");

@@ -1,6 +1,8 @@
-# MSRC - Multi Sensor for RC - FrSky Smartport
+# MSRC - Multi Sensor for RC - Smartport, XBUS, SRXL
 
-This is a DIY project to send multiple sensors telemetry to Frsky Smartport using an Arduino Pro Mini 328P (3.3v or 5v) for a fraction of the weight and cost of the stock sensors
+This is a DIY project to send multiple sensors telemetry using an Arduino Pro Mini 328P (3.3v or 5v) for a fraction of the weight and cost of the stock sensors
+
+Compatible with RX protocols: Smartport (FrSky), XBUS (JR, Spektrum), SRXL (JR, Spektrum)
 
 The following sensors are supported:
 

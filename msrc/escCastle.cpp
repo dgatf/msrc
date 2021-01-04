@@ -1,14 +1,14 @@
 #include "escCastle.h"
 
-volatile bool castleTelemetryReceived = false;
+volatile bool EscCastleInterface::castleTelemetryReceived = false;
 #ifdef SIM_SENSORS
-volatile uint16_t castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 500};
+volatile uint16_t EscCastleInterface::castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 500};
 #else
-volatile uint16_t castleTelemetry[12] = {0};
+volatile uint16_t EscCastleInterface::castleTelemetry[12] = {0};
 #endif
-volatile uint16_t castleCompsPerMilli = 1 * MS_TO_COMP(8);
-volatile uint8_t castleCont = 0;
-volatile uint8_t castleRxLastReceived = 0;
+volatile uint16_t EscCastleInterface::castleCompsPerMilli = 1 * MS_TO_COMP(8);
+volatile uint8_t EscCastleInterface::castleCont = 0;
+volatile uint8_t EscCastleInterface::castleRxLastReceived = 0;
 
 EscCastleInterface::EscCastleInterface(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
