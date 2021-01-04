@@ -2,7 +2,11 @@
 
 This is a DIY project to send multiple sensors telemetry using an Arduino Pro Mini 328P (3.3v or 5v) for a fraction of the weight and cost of the stock sensors
 
-Compatible with RX protocols: Smartport (FrSky), XBUS (JR, Spektrum), SRXL (JR, Spektrum)
+Compatible with the following RX protocols:
+
+- Smartport: FrSky
+- XBUS: JR, Spektrum
+- SRXL: JR, Jeti, Spektrum, Graupner, Multiplex, Beastx
 
 The following sensors are supported:
 
@@ -14,7 +18,7 @@ The following sensors are supported:
 - I2C sensors: BMP280
 - Analog sensors: voltage, temperature, current, air speed
 
-All sensors are optional. Make the circuit with the desired sensors and enable them through the configuration with a lua script
+All sensors are optional. Make the circuit with the desired sensors and enable them with the configuration, with a lua script id using smartport or config.h for the rest 
 
 ## 1. Sensors
 
@@ -91,6 +95,8 @@ Using Arduino IDE copy folder *msrc* and open *msrc.ino*. Select board *Arduino 
 
 ## 3. Configuration
 
+### Smartport
+
 The configuration is modified with a lua script (X7, X9, X-lite and Horus with openTx 2.2 or higher)
 
 <p align="center"><img src="./images/lua_x7.png" height="128">   <img src="./images/lua_x9.png" height="128">   <img src="./images/lua_x10.png" height="200"></p>
@@ -114,6 +120,9 @@ Options:
 - Refresh rate (ms): 0 to 1600
 - I2C (x2). Sensor type and address
 
+### Other RX protocols
+
+Configuration is done in *config.h*
 
 ## 4. OpenTx sensors
 
@@ -342,6 +351,7 @@ v0.7
 - Added analog airspeed sensor (MPXV7002)
 - Fixed Castle Link bug
 - Removed BMP180
+- Fixed flickering in color lcd displays
 
 [v0.6](https://github.com/dgatf/msrc/tree/v0.5)
 
