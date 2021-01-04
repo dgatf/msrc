@@ -93,6 +93,10 @@ void EscCastleInterface::begin()
     INT0_handlerP = INT0_handler;
     TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
 
+#ifdef DEBUG_CALIB
+    Serial.begin(115200);
+#endif
+
     // ICP1 (PB0 PIN8) -> RX THR, INPUT
     // INT0 (PD2, PIN2)-> TELEMETRY, INPUT
     // PWM OUT OC1B (PB2, PIN10) -> OUTPUT/INPUT PULL UP
