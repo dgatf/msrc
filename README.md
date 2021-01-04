@@ -340,6 +340,7 @@ v0.7
 - Added analog airspeed sensor (MPXV7002)
 - Fixed Castle Link bug
 - Removed BMP180
+- Fixed flickering in color lcd displays
 
 [v0.6](https://github.com/dgatf/msrc/tree/v0.5)
 
