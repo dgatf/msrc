@@ -18,6 +18,9 @@
 
 //#define DEBUG_ESC
 
+//#define FIXED_CALIB
+//#define DEBUG_CALIB
+
 #define MS_TO_COMP(SCALER) F_CPU / (SCALER * 1000UL)
 #define RX_MAX_CYCLES 2  // minimum is 2
 
