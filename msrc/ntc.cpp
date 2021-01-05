@@ -1,8 +1,8 @@
 #include "ntc.h"
 
-NtcInterface::NtcInterface(uint8_t pin, uint8_t alpha) : VoltageInterface(pin, alpha) {}
+Ntc::Ntc(uint8_t pin, uint8_t alpha) : Voltage(pin, alpha) {}
 
-float NtcInterface::read(uint8_t index)
+float Ntc::read(uint8_t index)
 {
 #ifdef SIM_SENSORS
     if (index == 0)

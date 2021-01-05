@@ -1,18 +1,18 @@
 #include "escCastle.h"
 
-volatile bool EscCastleInterface::castleTelemetryReceived = false;
+volatile bool EscCastle::castleTelemetryReceived = false;
 #ifdef SIM_SENSORS
-volatile uint16_t EscCastleInterface::castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 500};
+volatile uint16_t EscCastle::castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 500};
 #else
-volatile uint16_t EscCastleInterface::castleTelemetry[12] = {0};
+volatile uint16_t EscCastle::castleTelemetry[12] = {0};
 #endif
-volatile uint16_t EscCastleInterface::castleCompsPerMilli = 1 * MS_TO_COMP(8);
-volatile uint8_t EscCastleInterface::castleCont = 0;
-volatile uint8_t EscCastleInterface::castleRxLastReceived = 0;
+volatile uint16_t EscCastle::castleCompsPerMilli = 1 * MS_TO_COMP(8);
+volatile uint8_t EscCastle::castleCont = 0;
+volatile uint8_t EscCastle::castleRxLastReceived = 0;
 
-EscCastleInterface::EscCastleInterface(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
+EscCastle::EscCastle(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
-void EscCastleInterface::TIMER1_CAPT_handler() // RX INPUT
+void EscCastle::TIMER1_CAPT_handler() // RX INPUT
 {
     static uint16_t ts = 0;
     if (TCCR1B & _BV(ICES1)) // RX RISING
@@ -35,7 +35,7 @@ void EscCastleInterface::TIMER1_CAPT_handler() // RX INPUT
     TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 DIRECTION
 }
 
-void EscCastleInterface::TIMER1_COMPB_handler() // START INPUT STATE
+void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
 {
     DDRB &= ~_BV(DDB2);   // PWM OUT (PB2, PIN10) INPUT
     PORTB |= _BV(PB2);    // PB2 PULLUP
@@ -46,14 +46,14 @@ void EscCastleInterface::TIMER1_COMPB_handler() // START INPUT STATE
     TCNT2 = 0;            // RESET TIMER2
 }
 
-void EscCastleInterface::INT0_handler() // READ TELEMETRY
+void EscCastle::INT0_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT1 - OCR1B;
     castleCont++;
     castleTelemetryReceived = true;
 }
 
-void EscCastleInterface::TIMER2_COMPA_handler() // START OUTPUT STATE
+void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 {
     if (!castleTelemetryReceived)
     {
@@ -75,7 +75,7 @@ void EscCastleInterface::TIMER2_COMPA_handler() // START OUTPUT STATE
     DDRB |= _BV(DDB2); // PWM OUT PIN 10 OUTPUT
 }
 
-void EscCastleInterface::begin()
+void EscCastle::begin()
 {
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
     TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
@@ -105,7 +105,7 @@ void EscCastleInterface::begin()
     OCR2A = 12 * MS_TO_COMP(1024);              // 12ms
 }
 
-float EscCastleInterface::read(uint8_t index)
+float EscCastle::read(uint8_t index)
 {
     float value;
     if (cellCount_ == 255)

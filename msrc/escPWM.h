@@ -9,7 +9,7 @@
 extern void (*TIMER1_CAPT_handlerP)();
 extern void (*TIMER1_OVF_handlerP)();
 
-class EscPWMInterface : public AbstractDevice
+class EscPWM : public AbstractDevice
 {
 private:
     static volatile uint16_t escPwmDuration;
@@ -22,7 +22,7 @@ private:
 
 protected:
 public:
-    EscPWMInterface(uint8_t alphaRpm);
+    EscPWM(uint8_t alphaRpm);
     void begin();
     float read(uint8_t index);
 };

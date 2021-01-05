@@ -1,14 +1,14 @@
 #include "bn220.h"
 
-Bn220Interface::Bn220Interface(HardwareSerial &serial) : serial_(serial) {}
+Bn220::Bn220(HardwareSerial &serial) : serial_(serial) {}
 
-void Bn220Interface::begin()
+void Bn220::begin()
 {
     serial_.begin(9600);
     serial_.setTimeout(BN220_TIMEOUT);
 }
 
-void Bn220Interface::update()
+void Bn220::update()
 {
     if (serial_.available())
     {
@@ -83,7 +83,7 @@ void Bn220Interface::update()
     }
 }
 
-void Bn220Interface::parser(uint8_t type, char *data)
+void Bn220::parser(uint8_t type, char *data)
 {
     if (strlen(data))
     {
@@ -153,7 +153,7 @@ void Bn220Interface::parser(uint8_t type, char *data)
     }
 }
 
-float Bn220Interface::read(uint8_t index)
+float Bn220::read(uint8_t index)
 {
     if (index < 9)
     {

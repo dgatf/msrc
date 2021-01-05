@@ -42,7 +42,7 @@ extern void (*TIMER1_COMPB_handlerP)();
 extern void (*INT0_handlerP)();
 extern void (*TIMER2_COMPA_handlerP)();
 
-class EscCastleInterface : public AbstractDevice, public EscCell
+class EscCastle : public AbstractDevice, public EscCell
 {
 private:
     static volatile bool castleTelemetryReceived;
@@ -63,7 +63,7 @@ private:
 
 protected:
 public:
-    EscCastleInterface(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp);
+    EscCastle(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp);
     void begin();
     float read(uint8_t index);
 };

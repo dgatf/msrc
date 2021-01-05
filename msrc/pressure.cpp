@@ -1,8 +1,8 @@
 #include "pressure.h"
 
-PressureInterface::PressureInterface(uint8_t pin, uint8_t alpha) : VoltageInterface(pin, alpha) {}
+Pressure::Pressure(uint8_t pin, uint8_t alpha) : Voltage(pin, alpha) {}
 
-float PressureInterface::read(uint8_t index)
+float Pressure::read(uint8_t index)
 {
 #ifdef SIM_SENSORS
     if (index == 0)

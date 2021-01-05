@@ -1,15 +1,15 @@
 #include "voltage.h"
 
-VoltageInterface::VoltageInterface(uint8_t pin, uint8_t alpha) : pin_(pin), alpha_(alpha) {}
+Voltage::Voltage(uint8_t pin, uint8_t alpha) : pin_(pin), alpha_(alpha) {}
 
-float VoltageInterface::readVoltage()
+float Voltage::readVoltage()
 {
     const float analogToVolt = (float)BOARD_VCC / 1024;
     uint16_t value = analogRead(pin_);
     return value * analogToVolt;
 }
 
-float VoltageInterface::read(uint8_t index)
+float Voltage::read(uint8_t index)
 {
 #ifdef SIM_SENSORS
     if (index == 0)
