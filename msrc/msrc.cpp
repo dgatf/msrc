@@ -545,6 +545,10 @@ void loop()
 #if RX_PROTOCOL == RX_XBUS
     xbus.update();
 #endif
+#if RX_PROTOCOL == RX_SRXL
+    srxl.update();
+    srxl.checkSerial();
+#endif
 #ifdef DEBUG_PLOTTER
     DEBUG_SERIAL.println(DEBUG_PLOTTER);
 #endif
