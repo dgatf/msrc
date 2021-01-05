@@ -23,7 +23,9 @@ void Srxl::begin()
 #endif
 #if CONFIG_GPS
     cont++;
-    list[cont] = XBUS_GPS;
+    list[cont] = XBUS_GPS_LOC;
+    cont++;
+    list[cont] = XBUS_GPS_STAT;
 #endif
 #if CONFIG_CURRENT
     cont++;
@@ -32,19 +34,22 @@ void Srxl::begin()
     list[0] = cont;
 }
 
-uint16_t Srxl::byteCrc (uint16_t crc, uint8_t new_byte)
+uint16_t Srxl::byteCrc(uint16_t crc, uint8_t new_byte)
 {
     uint8_t loop;
     crc = crc ^ (uint16_t)new_byte << 8;
-    for(loop = 0; loop < 8; loop++) {
+    for (loop = 0; loop < 8; loop++)
+    {
         crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : (crc << 1);
     }
     return crc;
 }
 
-uint16_t Srxl:: getCrc(uint8_t *buffer, uint8_t lenght) {
+uint16_t Srxl::getCrc(uint8_t *buffer, uint8_t lenght)
+{
     uint16_t crc = 0;
-    for (int i = 0; i < lenght; i++ ) crc += byteCrc(crc, buffer[i]);
+    for (int i = 0; i < lenght; i++)
+        crc += byteCrc(crc, buffer[i]);
     return crc;
 }
 
@@ -59,7 +64,7 @@ void Srxl::send()
     {
 #if CONFIG_AIRSPEED
     case XBUS_AIRSPEED:
-        memcpy(buffer + 3, (byte *)&Xbus_Airspeed, sizeof(xbusEsc));
+        memcpy(buffer + 3, (byte *)&xbusAirspeed, sizeof(xbusEsc));
         buffer[20] = getCrc(buffer + 3, 16);
         srxlSerial.write(buffer, 20);
         break;
@@ -97,11 +102,32 @@ void Srxl::send()
         break;
     }
     cont++;
-    if (cont > list[0]) cont = 0;
+    if (cont > list[0])
+        cont = 0;
+#ifdef DEBUG
+    DEBUG_SERIAL.print(list[cont], HEX);
+    DEBUG_SERIAL.print(": ");
+    for (int i = 0; i < 16; i++)
+    {
+        DEBUG_SERIAL.print("[");
+        DEBUG_SERIAL.print(i);
+        DEBUG_SERIAL.print("]");
+        DEBUG_SERIAL.print(buffer[i]);
+        DEBUG_SERIAL.print(" ");
+    }
+    DEBUG_SERIAL.println();
+#endif
 }
 
 void Srxl::checkSerial()
 {
+#ifdef SIM_RX
+    static uint32_t timestamp = 0;
+    if (millis() - timestamp > 1000) {
+        send();
+        timestamp = millis();
+    }
+#else
     if (srxlSerial.available() >= 18)
     {
         uint8_t buffer[64];
@@ -121,4 +147,5 @@ void Srxl::checkSerial()
             sendPacket = false;
         }
     }
+#endif
 }

@@ -27,14 +27,7 @@
 #include "bn220.h"
 #include "config.h"
 
-class Xbus
-{
-private:
-    uint8_t addressMask = 0;
-    static void i2c_request_handler();
-
-protected:
-    struct Xbus_Esc
+struct Xbus_Esc
     {
         uint8_t identifier = 0x20; // Source device = 0x20
         uint8_t sID = 0;           // Secondary ID
@@ -99,15 +92,33 @@ protected:
         uint8_t numSats = 0;      // BCD, 0-99
         uint8_t altitudeHigh = 0; // BCD, meters, format 2.0 (High bits alt)
     };
-#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
-    static volatile Xbus_Esc xbusEsc;
+
+class Xbus
+{
+private:
+    uint8_t addressMask = 0;
+    #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
+    static Xbus_Esc xbusEsc;
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM || CONFIG_VOLTAGE1 || CONFIG_NTC1
-    static volatile Xbus_RpmVoltTemp xbusRpmVoltTemp1;
+    static Xbus_RpmVoltTemp xbusRpmVoltTemp1;
 #endif
 #if CONFIG_VOLTAGE2 || CONFIG_NTC2
-    static volatile Xbus_RpmVoltTemp xbusRpmVoltTemp2;
+    static Xbus_RpmVoltTemp xbusRpmVoltTemp2;
 #endif
+#if CONFIG_AIRSPEED
+    static Xbus_Airspeed xbusAirspeed;
+#endif
+#if CONFIG_CURRENT
+    static Xbus_Battery xbusBattery;
+#endif
+#if CONFIG_GPS
+    static Xbus_Gps_Loc xbusGpsLoc;
+    static Xbus_Gps_Stat xbusGpsStat;
+#endif
+    static void i2c_request_handler();
+
+protected:
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM
     EscPWM escPwm = EscPWM(CONFIG_ALPHA_RPM);
 #endif
@@ -124,16 +135,12 @@ protected:
     Ntc ntc2 = Ntc(PIN_NTC2, CONFIG_ALPHA_TEMP);
 #endif
 #if CONFIG_AIRSPEED
-    static volatile Xbus_Airspeed xbusAirspeed;
     Pressure airspeed = Pressure(PIN_PRESSURE, CONFIG_ALPHA_DEF);
 #endif
 #if CONFIG_CURRENT
-    static volatile Xbus_Battery xbusBattery;
     Voltage curr = Voltage(PIN_CURRENT, CONFIG_ALPHA_CURR);
 #endif
 #if CONFIG_GPS
-    static volatile Xbus_Gps_Loc xbusGpsLoc;
-    static volatile Xbus_Gps_Stat xbusGpsStat;
     Bn220 gps = Bn220(GPS_SERIAL);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3

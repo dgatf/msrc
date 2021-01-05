@@ -3,14 +3,14 @@
 
 // Select sensors
 #define CONFIG_ESC_PROTOCOL PROTOCOL_HW_V3 // PROTOCOL_NONE PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE
-#define CONFIG_AIRSPEED false
-#define CONFIG_GPS false
+#define CONFIG_AIRSPEED true
+#define CONFIG_GPS true
 #define CONFIG_VOLTAGE1 true
-#define CONFIG_VOLTAGE2 false
-#define CONFIG_CURRENT false
-#define CONFIG_NTC1 false
-#define CONFIG_NTC2 false
-#define CONFIG_PWMOUT false
+#define CONFIG_VOLTAGE2 true
+#define CONFIG_CURRENT true
+#define CONFIG_NTC1 true
+#define CONFIG_NTC2 true
+#define CONFIG_PWMOUT true
 
 // Refresh rate in 0.1s (1 = 100ms)
 #define CONFIG_REFRESH_RPM 2
@@ -44,12 +44,12 @@
    Connect arduino Rx to TTL Tx for flashing, then if applicabe connect arduino Rx to esc or gps
 */
 
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_PLOTTER rpm/60
 //#define DEBUG_ESC
 
-//#define SIM_RX
-//#define SIM_SENSORS
+#define SIM_RX
+#define SIM_SENSORS
 
 
 //-------------------------END OF CONFIG-----------------------------//

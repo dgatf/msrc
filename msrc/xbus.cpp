@@ -1,22 +1,23 @@
 #include "xbus.h"
 
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
-volatile Xbus_Esc Xbus::xbusEsc;
+Xbus_Esc Xbus::xbusEsc;
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM || CONFIG_VOLTAGE1 || CONFIG_VOLTAGE2 || CONFIG_NTC1 || CONFIG_NTC2
-volatile Xbus_RpmVoltTemp Xbus::xbusRpmVoltTemp1;
+Xbus_RpmVoltTemp Xbus::xbusRpmVoltTemp1;
 #endif
 #if CONFIG_VOLTAGE2 || CONFIG_NTC2
-volatile Xbus_RpmVoltTemp Xbus::xbusRpmVoltTemp2;
+Xbus_RpmVoltTemp Xbus::xbusRpmVoltTemp2;
 #endif
 #if CONFIG_AIRSPEED
-volatile Xbus_Airspeed Xbus::xbusAirspeed;
+Xbus_Airspeed Xbus::xbusAirspeed;
 #endif
 #if CONFIG_CURRENT
-volatile Xbus_Battery Xbus::xbusBattery;
+Xbus_Battery Xbus::xbusBattery;
 #endif
 #if CONFIG_GPS
-volatile Xbus_Gps Xbus::xbusGps;
+Xbus_Gps_Loc Xbus::xbusGpsLoc;
+Xbus_Gps_Stat Xbus::xbusGpsStat;
 #endif
 
 Xbus::Xbus()
@@ -26,7 +27,7 @@ Xbus::Xbus()
 void Xbus::i2c_request_handler()
 {
 #ifdef SIM_RX
-    uint8_t list[] = {XBUS_AIRSPEED, XBUS_BATTERY, XBUS_ESC, XBUS_GPS, XBUS_RPM_VOLT_TEMP};
+    uint8_t list[] = {XBUS_AIRSPEED, XBUS_BATTERY, XBUS_ESC, XBUS_GPS_LOC, XBUS_GPS_STAT, XBUS_RPM_VOLT_TEMP};
     static uint8_t cont = 0;
     uint8_t address = list[cont];
     cont++;
@@ -40,7 +41,7 @@ void Xbus::i2c_request_handler()
     {
 #if CONFIG_AIRSPEED
     case XBUS_AIRSPEED:
-        memcpy(buffer, (byte *)&Xbus_Airspeed, sizeof(xbusEsc));
+        memcpy(buffer, (byte *)&xbusAirspeed, sizeof(xbusEsc));
         Wire.write(buffer, 16);
         break;
 #endif
@@ -81,7 +82,6 @@ void Xbus::i2c_request_handler()
         DEBUG_SERIAL.print(" ");
     }
     DEBUG_SERIAL.println();
-
 #endif
 }
 
@@ -101,7 +101,8 @@ void Xbus::begin()
     addressMask |= XBUS_AIRSPEED;
 #endif
 #if CONFIG_GPS
-    addressMask |= XBUS_GPS;
+    addressMask |= XBUS_GPS_LOC;
+    addressMask |= XBUS_GPS_STAT;
 #endif
 #if CONFIG_CURRENT
     addressMask |= XBUS_BATTERY;
@@ -153,29 +154,29 @@ void Xbus::update()
     xbusBattery.current_A = curr.read(0) * 100;
 #endif
 #if CONFIG_GPS
-    bcd(xbusGpsLoc.latitude, gps.read(BN220_LAT) / 60 * 100 + gps.read(BN220_LAT) % 60, 4);
-    xbusGps.GPSflags = (gps.read(BN220_LAT_SIGN) ? 1 : 0) << GPS_INFO_FLAGS_IS_NORTH_BIT; // N=1->1, S=-1->0
+    bcd(&xbusGpsLoc.latitude, gps.read(BN220_LAT) / 60 * 100 + (uint8_t)gps.read(BN220_LAT) % 60, 4);
+    xbusGpsLoc.GPSflags = (gps.read(BN220_LAT_SIGN) ? 1 : 0) << GPS_INFO_FLAGS_IS_NORTH_BIT; // N=1->1, S=-1->0
     if (gps.read(BN220_LON) >= 100) {
-        xbusGps.GPSflags = 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
-        bcd(xbusGpsLoc.longitude, gps.read(BN220_LON) - 100, 4);
+        xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
+        bcd(&xbusGpsLoc.longitude, gps.read(BN220_LON) - 100, 4);
     }
     else {
-        bcd(xbusGpsLoc.longitude, gps.read(BN220_LON) / 60 * 100 + gps.read(BN220_LON) % 60, 4);
+        bcd(&xbusGpsLoc.longitude, gps.read(BN220_LON) / 60 * 100 + (uint8_t)gps.read(BN220_LON) % 60, 4);
     }
-    xbusGps.GPSflags = (gps.read(BN220_LON_SIGN) ? 1 : 0) << GPS_INFO_FLAGS_IS_EAST_BIT;  // E=1->1, W=-1->0
-    bcd(xbusGpsLoc.course, gps.read(BN220_COG), 1);
-    bcd(xbusGpsStat.speed, gps.read(BN220_SPD), 1);
-    bcd(xbusGpsStat.UTC, gps.read(BN220_TIME), 1);
+    xbusGpsLoc.GPSflags = (gps.read(BN220_LON_SIGN) ? 1 : 0) << GPS_INFO_FLAGS_IS_EAST_BIT;  // E=1->1, W=-1->0
+    bcd(&xbusGpsLoc.course, gps.read(BN220_COG), 1);
+    bcd(&xbusGpsStat.speed, gps.read(BN220_SPD), 1);
+    bcd(&xbusGpsStat.UTC, gps.read(BN220_TIME), 1);
     xbusGpsStat.numSats = gps.read(BN220_SAT);
-    xbusGpsLoc = bcd(gps.read(BN220_ALT) % 1000, 3);
+    //xbusGpsLoc = bcd(&((int)gps.read(BN220_ALT)) % 1000, 3);
     if (gps.read(BN220_ALT) < 0) {
-        xbusGps.GPSflags = 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
-        bcd(xbusGpsStat, - gps.read(BN220_ALT) / 1000);
+        xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
+        bcd(&xbusGpsStat.altitudeHigh, - gps.read(BN220_ALT) / 1000, 0);
     }
     else
-        bcd(xbusGpsStat, gps.read(BN220_ALT) / 1000);
+        bcd(&xbusGpsStat.altitudeHigh, gps.read(BN220_ALT) / 1000, 0);
 #endif
-#ifdef SIM_RX
+#if defined(SIM_RX) && RX_PROTOCOL == RX_XBUS
     static uint32_t timestamp = 0;
     if (millis() - timestamp > 1000)
     {
@@ -191,7 +192,7 @@ void Xbus::bcd(uint8_t *output, float value, uint8_t precision)
     *output = 0;
     for (int i = 0; i < precision; i++)
         value = value * 10;
-    itoa((uint8_t)value, buf, 10);
+    sprintf(buf, "%02i", (uint16_t)value);
     for (int i = 0; i < 2; i++)
         *output |= (buf[i] - 48) << ((1 - i) * 4);
 }
@@ -202,7 +203,7 @@ void Xbus::bcd(uint16_t *output, float value, uint8_t precision)
     *output = 0;
     for (int i = 0; i < precision; i++)
         value = value * 10;
-    itoa((uint16_t)value, buf, 10);
+    sprintf(buf, "%04i", (uint16_t)value);
     for (int i = 0; i < 4; i++)
         *output |= (buf[i] - 48) << ((3 - i) * 4);
 }
@@ -213,7 +214,7 @@ void Xbus::bcd(uint32_t *output, float value, uint8_t precision)
     *output = 0;
     for (int i = 0; i < precision; i++)
         value = value * 10;
-    itoa((uint32_t)value, buf, 10);
+    sprintf(buf, "%08i", (uint16_t)value);
     for (int i = 0; i < 8; i++)
         *output |= (buf[i] - 48) << ((7 - i) * 4);
 }
