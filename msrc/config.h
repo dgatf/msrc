@@ -1,16 +1,16 @@
 // Select RX protocol
-#define RX_PROTOCOL RX_XBUS  // RX_SMARTPORT, RX_XBUS, RX_SRXL
+#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL
 
 // Select sensors
 #define CONFIG_ESC_PROTOCOL PROTOCOL_NONE // PROTOCOL_NONE PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE
-#define CONFIG_AIRSPEED true
-#define CONFIG_GPS true
-#define CONFIG_VOLTAGE1 true
-#define CONFIG_VOLTAGE2 true
-#define CONFIG_CURRENT true
-#define CONFIG_NTC1 true
-#define CONFIG_NTC2 true
-#define CONFIG_PWMOUT true
+#define CONFIG_AIRSPEED false
+#define CONFIG_GPS false
+#define CONFIG_VOLTAGE1 false
+#define CONFIG_VOLTAGE2 false
+#define CONFIG_CURRENT false
+#define CONFIG_NTC1 false
+#define CONFIG_NTC2 false
+#define CONFIG_PWMOUT false
 
 // Refresh rate in 0.1s (1 = 100ms)
 #define CONFIG_REFRESH_RPM 2
@@ -26,8 +26,11 @@
 #define CONFIG_AVERAGING_ELEMENTS_TEMP 3
 #define CONFIG_AVERAGING_ELEMENTS_DEF 3
 
+// Sensor Id (smartport)
+#define SENSOR_ID 10
+
 // Lua config
-#define CONFIG_LUA     // Comment if not using lua script for configuration (only smartport)
+//#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
 
 // Pwm out
 #define PWMOUT_DUTY 0.5 // 0.5 = 50%
@@ -51,9 +54,7 @@
 //#define SIM_RX
 //#define SIM_SENSORS
 
-
 //-------------------------END OF CONFIG-----------------------------//
-
 
 #define CONFIG_ALPHA_RPM N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
 #define CONFIG_ALPHA_VOLT N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
@@ -61,7 +62,7 @@
 #define CONFIG_ALPHA_TEMP N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
 #define CONFIG_ALPHA_DEF N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
 
-#define N_TO_ALPHA(VALUE) 2/(1+VALUE)*100
+#define N_TO_ALPHA(VALUE) 2 / (1 + VALUE) * 100
 
 #define PIN_SMARTPORT_RX 7
 #define PIN_SMARTPORT_TX 12
