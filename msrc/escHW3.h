@@ -15,6 +15,7 @@ private:
 
 protected:
 public:
+    float *rpmP;
     EscHW3(HardwareSerial &serial, uint8_t alphaRpm);
     void begin();
     bool update();

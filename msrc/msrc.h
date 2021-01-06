@@ -136,9 +136,7 @@ struct Config
 };
 
 bool pwmOut = false;
-#if RX_PROTOCOL == RX_SMARTPORT
-Sensor *rpmSensorP;
-#endif
+float *rpmPwmoutP = NULL;
 Config readConfig();
 void writeConfig(Config &config);
 void initConfig(Config &config);

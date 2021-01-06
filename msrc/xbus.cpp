@@ -42,37 +42,33 @@ void Xbus::i2c_request_handler()
 #if CONFIG_AIRSPEED
     case XBUS_AIRSPEED:
         memcpy(buffer, (uint8_t *)&xbusAirspeed, sizeof(xbusAirspeed));
-        Wire.write(buffer, 16);
         break;
 #endif
 #if CONFIG_CURRENT
     case XBUS_BATTERY:
         memcpy(buffer, (uint8_t *)&xbusBattery, sizeof(xbusBattery));
-        Wire.write(buffer, 16);
         break;
 #endif
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     case XBUS_ESC:
         memcpy(buffer, (uint8_t *)&xbusEsc, sizeof(xbusEsc));
-        Wire.write(buffer, 16);
         break;
 #endif
 #if CONFIG_GPS
     case XBUS_GPS_LOC:
         memcpy(buffer, (uint8_t *)&xbusGpsLoc, sizeof(xbusGpsLoc));
-        Wire.write(buffer, 16);
         break;
     case XBUS_GPS_STAT:
         memcpy(buffer, (uint8_t *)&xbusGpsStat, sizeof(xbusGpsStat));
-        Wire.write(buffer, 16);
         break;
 #endif
     case XBUS_RPM_VOLT_TEMP:
         memcpy(buffer, (uint8_t *)&xbusRpmVoltTemp1, sizeof(xbusRpmVoltTemp1));
-        Wire.write(buffer, 16);
-        //Wire.write((uint8_t*)&xbusRpmVoltTemp1, 16);
         break;
+    default:
+        return;
     }
+    Wire.write(buffer, 16);
 #ifdef DEBUG
     for (int i = 0; i < 16; i++)
     {
@@ -86,12 +82,6 @@ void Xbus::i2c_request_handler()
 void Xbus::begin()
 {
     pinMode(LED_BUILTIN, OUTPUT);
-    Wire.begin(addressMask);
-    Wire.onRequest(i2c_request_handler);
-    TWAMR = addressMask << 1;
-#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
-    esc.begin();
-#endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM || CONFIG_VOLTAGE1 || CONFIG_VOLTAGE2 || CONFIG_NTC1 || CONFIG_NTC2
     addressMask |= XBUS_RPM_VOLT_TEMP;
 #endif
@@ -104,6 +94,12 @@ void Xbus::begin()
 #endif
 #if CONFIG_CURRENT
     addressMask |= XBUS_BATTERY;
+#endif
+    Wire.begin(addressMask);
+    Wire.onRequest(i2c_request_handler);
+    TWAMR = addressMask << 1;
+#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
+    esc.begin();
 #endif
 #if CONFIG_VOLTAGE2 || CONFIG_NTC2
     xbusRpmVoltTemp2.sID = 1;
@@ -183,7 +179,7 @@ void Xbus::update()
 #endif
 #if defined(SIM_RX) && RX_PROTOCOL == RX_XBUS
     static uint32_t timestamp = 0;
-    if (millis() - timestamp > 1000)
+    if (millis() - timestamp > 94)
     {
         i2c_request_handler();
         timestamp = millis();

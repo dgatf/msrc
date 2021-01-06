@@ -6,6 +6,7 @@ void EscHW4::begin()
 {
     serial_.begin(19200);
     serial_.setTimeout(ESCHW4_ESCSERIAL_TIMEOUT);
+    rpmP = &value_[2];
 }
 
 bool EscHW4::update()

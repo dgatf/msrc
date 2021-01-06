@@ -58,10 +58,10 @@ void setPwmOut(bool pwmOut)
 void updatePwmOut()
 {
     static float rpm = 0;
-#if RX_PROTOCOL == RX_SMARTPORT
-    if (rpmSensorP->valueL() != rpm)
+    if (rpmPwmoutP == NULL) return;
+    if (*rpmPwmoutP != rpm)
     {
-        rpm = rpmSensorP->valueL();
+        rpm = *rpmPwmoutP;
         noInterrupts();
         if (rpm >= 2000)
         {
@@ -75,7 +75,6 @@ void updatePwmOut()
         }
         interrupts();
     }
-#endif
 }
 
 #if RX_PROTOCOL == RX_SMARTPORT
@@ -95,7 +94,6 @@ void initConfig(Config &config)
         esc = new EscPWM(config.alpha.rpm);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
-        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
     }
     if (config.protocol == PROTOCOL_HW_V3)
@@ -104,8 +102,8 @@ void initConfig(Config &config)
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, config.alpha.rpm);
         esc->begin();
+        rpmPwmoutP = esc->rpmP;
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
-        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
     }
     if (config.protocol >= PROTOCOL_HW_V4_LV && config.protocol <= PROTOCOL_HW_V5_HV)
@@ -114,8 +112,8 @@ void initConfig(Config &config)
         EscHW4 *esc;
         esc = new EscHW4(ESC_SERIAL, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp, config.protocol - PROTOCOL_HW_V4_LV);
         esc->begin();
+        rpmPwmoutP = esc->rpmP;
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, ESCHW4_RPM, config.refresh.rpm, esc);
-        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
         sensorP = new SensorDouble(ESC_POWER_FIRST_ID, ESCHW4_CURRENT, ESCHW4_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);
@@ -133,7 +131,6 @@ void initConfig(Config &config)
         esc = new EscCastle(config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, CASTLE_RPM, config.refresh.rpm, esc);
-        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
         sensorP = new SensorDouble(ESC_POWER_FIRST_ID, CASTLE_CURRENT, CASTLE_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);

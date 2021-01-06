@@ -66,49 +66,38 @@ void Srxl::send()
 #if CONFIG_AIRSPEED
     case XBUS_AIRSPEED:
         memcpy(buffer + 3, (uint8_t *)&xbusAirspeed, sizeof(xbusAirspeed));
-        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
-        memcpy(buffer + 19, &crc, 2);
-        srxlSerial.write(buffer, 21);
         break;
 #endif
 #if CONFIG_CURRENT
     case XBUS_BATTERY:
         memcpy(buffer + 3, (uint8_t *)&xbusBattery, sizeof(xbusBattery));
-        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
-        memcpy(buffer + 19, &crc, 2);
-        srxlSerial.write(buffer, 21);
         break;
 #endif
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     case XBUS_ESC:
         memcpy(buffer + 3, (uint8_t *)&xbusEsc, sizeof(xbusEsc));
-        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
-        memcpy(buffer + 19, &crc, 2);
-        srxlSerial.write(buffer, 21);
         break;
 #endif
 #if CONFIG_GPS
     case XBUS_GPS_LOC:
         memcpy(buffer + 3, (uint8_t *)&xbusGpsLoc, sizeof(xbusGpsLoc));
-        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
-        memcpy(buffer + 19, &crc, 2);
-        srxlSerial.write(buffer, 21);
         break;
     case XBUS_GPS_STAT:
         memcpy(buffer + 3, (uint8_t *)&xbusGpsStat, sizeof(xbusGpsStat));
-        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
-        memcpy(buffer + 19, &crc, 2);
-        srxlSerial.write(buffer, 21);
         break;
 #endif
     case XBUS_RPM_VOLT_TEMP:
         memcpy(buffer + 3, (uint8_t *)&xbusRpmVoltTemp1, sizeof(xbusRpmVoltTemp1));
-        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
-        memcpy(buffer + 19, &crc, 2);
-        srxlSerial.write(buffer, 21);
         break;
+    default:
+        return;
     }
+    crc = __builtin_bswap16(getCrc(buffer + 3, 16));
+    memcpy(buffer + 19, &crc, 2);
+    srxlSerial.write(buffer, 21);
 #ifdef DEBUG
+    DEBUG_SERIAL.print("TM send: ");
+    DEBUG_SERIAL.println(millis());
     for (int i = 0; i < 21; i++)
     {
         DEBUG_SERIAL.print(buffer[i], HEX);
@@ -137,32 +126,34 @@ void Srxl::checkSerial()
         uint8_t buffer[20];
         static bool mute = false;
         uint8_t lenght = srxlSerial.readBytes(buffer, 20);
-        Serial.print(lenght);
-        Serial.print(" ");
-        for (int i = 0; i < lenght; i++)
-        {
-            Serial.print(buffer[i], HEX);
-            Serial.print(" ");
-        }
-        Serial.println();
         if (lenght == 20 && buffer[0] == 0xA5 && buffer[1] == 0x12)
         {
-            timestamp = millis();
-            delay(1);
-            while (Serial.available() && millis() - timestamp < 8000)
+#ifdef DEBUG
+            DEBUG_SERIAL.print("RF received: ");
+            DEBUG_SERIAL.println(millis());
+        for (int i = 0; i < lenght; i++)
+        {
+            DEBUG_SERIAL.print(buffer[i], HEX);
+            DEBUG_SERIAL.print(" ");
+        }
+        DEBUG_SERIAL.println();
+#endif
+            if (mute)
+                mute = false;
+            else
             {
-                char buf[21];
-                uint8_t lenght = Serial.readBytes(buf, 21);
-                if (lenght == 21 && !Serial.available())
-                    delay(1);
-            }
-            if (!mute)
-            {
+                timestamp = millis();
+                delay(1);
+                while (srxlSerial.available() && millis() - timestamp < 8000)
+                {
+                    char buf[21];
+                    uint8_t lenght = srxlSerial.readBytes(buf, 21);
+                    if (lenght == 21 && !srxlSerial.available())
+                        delay(1);
+                }
                 send();
                 mute = true;
             }
-            else
-                mute = false;
         }
     }
 #endif
