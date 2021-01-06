@@ -8,7 +8,7 @@ void Srxl::begin()
 {
     pinMode(LED_BUILTIN, OUTPUT);
     srxlSerial.begin(115200);
-    srxlSerial.setTimeout(1000);
+    srxlSerial.setTimeout(2);
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     esc.begin();
 #endif
@@ -55,96 +55,114 @@ uint16_t Srxl::getCrc(uint8_t *buffer, uint8_t lenght)
 
 void Srxl::send()
 {
-    static uint8_t cont = 0;
-    uint8_t buffer[20] = {0};
+    static uint8_t cont = 1;
+    uint8_t buffer[21] = {0};
     buffer[0] = 0xA5;
     buffer[1] = 0x80;
     buffer[2] = 0x15;
+    uint16_t crc;
     switch (list[cont])
     {
 #if CONFIG_AIRSPEED
     case XBUS_AIRSPEED:
-        memcpy(buffer + 3, (byte *)&xbusAirspeed, sizeof(xbusAirspeed));
-        buffer[20] = getCrc(buffer + 3, 16);
-        srxlSerial.write(buffer, 20);
+        memcpy(buffer + 3, (uint8_t *)&xbusAirspeed, sizeof(xbusAirspeed));
+        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
+        memcpy(buffer + 19, &crc, 2);
+        srxlSerial.write(buffer, 21);
         break;
 #endif
 #if CONFIG_CURRENT
     case XBUS_BATTERY:
-        memcpy(buffer + 3, (byte *)&xbusBattery, sizeof(xbusBattery));
-        buffer[20] = getCrc(buffer + 3, 16);
-        srxlSerial.write(buffer, 20);
+        memcpy(buffer + 3, (uint8_t *)&xbusBattery, sizeof(xbusBattery));
+        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
+        memcpy(buffer + 19, &crc, 2);
+        srxlSerial.write(buffer, 21);
         break;
 #endif
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     case XBUS_ESC:
-        memcpy(buffer + 3, (byte *)&xbusEsc, sizeof(xbusEsc));
-        buffer[20] = getCrc(buffer + 3, 16);
-        srxlSerial.write(buffer, 20);
+        memcpy(buffer + 3, (uint8_t *)&xbusEsc, sizeof(xbusEsc));
+        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
+        memcpy(buffer + 19, &crc, 2);
+        srxlSerial.write(buffer, 21);
         break;
 #endif
 #if CONFIG_GPS
     case XBUS_GPS_LOC:
-        memcpy(buffer + 3, (byte *)&xbusGpsLoc, sizeof(xbusGpsLoc));
-        buffer[20] = getCrc(buffer + 3, 16);
-        srxlSerial.write(buffer, 20);
+        memcpy(buffer + 3, (uint8_t *)&xbusGpsLoc, sizeof(xbusGpsLoc));
+        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
+        memcpy(buffer + 19, &crc, 2);
+        srxlSerial.write(buffer, 21);
         break;
     case XBUS_GPS_STAT:
-        memcpy(buffer + 3, (byte *)&xbusGpsStat, sizeof(xbusGpsStat));
-        buffer[20] = getCrc(buffer + 3, 16);
-        srxlSerial.write(buffer, 20);
+        memcpy(buffer + 3, (uint8_t *)&xbusGpsStat, sizeof(xbusGpsStat));
+        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
+        memcpy(buffer + 19, &crc, 2);
+        srxlSerial.write(buffer, 21);
         break;
 #endif
     case XBUS_RPM_VOLT_TEMP:
-        memcpy(buffer + 3, (byte *)&xbusRpmVoltTemp1, sizeof(xbusRpmVoltTemp1));
-        buffer[20] = getCrc(buffer + 3, 16);
-        srxlSerial.write(buffer, 20);
+        memcpy(buffer + 3, (uint8_t *)&xbusRpmVoltTemp1, sizeof(xbusRpmVoltTemp1));
+        crc = __builtin_bswap16(getCrc(buffer + 3, 16));
+        memcpy(buffer + 19, &crc, 2);
+        srxlSerial.write(buffer, 21);
         break;
     }
-    cont++;
-    if (cont > list[0])
-        cont = 0;
 #ifdef DEBUG
-    DEBUG_SERIAL.print(list[cont], HEX);
-    DEBUG_SERIAL.print(": ");
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 21; i++)
     {
-        DEBUG_SERIAL.print("[");
-        DEBUG_SERIAL.print(i);
-        DEBUG_SERIAL.print("]");
-        DEBUG_SERIAL.print(buffer[i]);
+        DEBUG_SERIAL.print(buffer[i], HEX);
         DEBUG_SERIAL.print(" ");
     }
     DEBUG_SERIAL.println();
 #endif
+    cont++;
+    if (cont > list[0])
+        cont = 1;
 }
 
 void Srxl::checkSerial()
 {
 #ifdef SIM_RX
     static uint32_t timestamp = 0;
-    if (millis() - timestamp > 1000) {
+    if (millis() - timestamp > 1000)
+    {
         send();
         timestamp = millis();
     }
 #else
-    if (srxlSerial.available() >= 18)
+    if (srxlSerial.available())
     {
-        uint8_t buffer[64];
-        static bool rfPacket = false;
-        static bool sendPacket = false;
-        srxlSerial.readBytesUntil(0xA5, buffer, 64);
-        uint8_t result = srxlSerial.readBytes(buffer, 18);
-        if (result == 18 && buffer[0] == 0xA5)
-            rfPacket = true;
-        if (sendPacket == false)
+        static uint32_t timestamp = 0;
+        uint8_t buffer[20];
+        static bool mute = false;
+        uint8_t lenght = srxlSerial.readBytes(buffer, 20);
+        Serial.print(lenght);
+        Serial.print(" ");
+        for (int i = 0; i < lenght; i++)
         {
-            sendPacket = true;
-            send();
+            Serial.print(buffer[i], HEX);
+            Serial.print(" ");
         }
-        else
+        Serial.println();
+        if (lenght == 20 && buffer[0] == 0xA5 && buffer[1] == 0x12)
         {
-            sendPacket = false;
+            timestamp = millis();
+            delay(1);
+            while (Serial.available() && millis() - timestamp < 8000)
+            {
+                char buf[21];
+                uint8_t lenght = Serial.readBytes(buf, 21);
+                if (lenght == 21 && !Serial.available())
+                    delay(1);
+            }
+            if (!mute)
+            {
+                send();
+                mute = true;
+            }
+            else
+                mute = false;
         }
     }
 #endif

@@ -41,36 +41,36 @@ void Xbus::i2c_request_handler()
     {
 #if CONFIG_AIRSPEED
     case XBUS_AIRSPEED:
-        memcpy(buffer, (byte *)&xbusAirspeed, sizeof(xbusAirspeed));
+        memcpy(buffer, (uint8_t *)&xbusAirspeed, sizeof(xbusAirspeed));
         Wire.write(buffer, 16);
         break;
 #endif
 #if CONFIG_CURRENT
     case XBUS_BATTERY:
-        memcpy(buffer, (byte *)&xbusBattery, sizeof(xbusBattery));
+        memcpy(buffer, (uint8_t *)&xbusBattery, sizeof(xbusBattery));
         Wire.write(buffer, 16);
         break;
 #endif
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     case XBUS_ESC:
-        memcpy(buffer, (byte *)&xbusEsc, sizeof(xbusEsc));
+        memcpy(buffer, (uint8_t *)&xbusEsc, sizeof(xbusEsc));
         Wire.write(buffer, 16);
         break;
 #endif
 #if CONFIG_GPS
     case XBUS_GPS_LOC:
-        memcpy(buffer, (byte *)&xbusGpsLoc, sizeof(xbusGpsLoc));
+        memcpy(buffer, (uint8_t *)&xbusGpsLoc, sizeof(xbusGpsLoc));
         Wire.write(buffer, 16);
         break;
     case XBUS_GPS_STAT:
-        memcpy(buffer, (byte *)&xbusGpsStat, sizeof(xbusGpsStat));
+        memcpy(buffer, (uint8_t *)&xbusGpsStat, sizeof(xbusGpsStat));
         Wire.write(buffer, 16);
         break;
 #endif
     case XBUS_RPM_VOLT_TEMP:
-        memcpy(buffer, (byte *)&xbusRpmVoltTemp1, sizeof(xbusRpmVoltTemp1));
+        memcpy(buffer, (uint8_t *)&xbusRpmVoltTemp1, sizeof(xbusRpmVoltTemp1));
         Wire.write(buffer, 16);
-        //Wire.write((byte*)&xbusRpmVoltTemp1, 16);
+        //Wire.write((uint8_t*)&xbusRpmVoltTemp1, 16);
         break;
     }
 #ifdef DEBUG

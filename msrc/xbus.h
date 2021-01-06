@@ -28,76 +28,79 @@
 #include "config.h"
 
 struct Xbus_Esc
-    {
-        uint8_t identifier = 0x20; // Source device = 0x20
-        uint8_t sID = 0;           // Secondary ID
-        uint16_t RPM = 0;          // RPM, 10RPM (0-655340 RPM).0xFFFF -->
-        uint16_t voltsInput = 0;   // Volts, 0.01v (0-655.34V).0xFFFF -->
-        uint16_t tempFET = 0;      // Temperature, 0.1C (0-999.8C)0xFFFF -->
-        uint16_t currentMotor = 0; // Current, 10mA (0-655.34A).0xFFFF -->
-        uint16_t tempBEC = 0;      // Temperature, 0.1C (0-999.8C)0x7FFF -->
-        uint8_t currentBEC = 0;    // BEC Current, 100mA (0-25.4A). 0xFF ---->
-        uint8_t voltsBEC = 0;      // BEC Volts, 0.05V (0-12.70V). 0xFF ---->
-        uint8_t throttle = 0;      // 0.5% (0-127%). 0xFF ---->
-        uint8_t powerOut = 0;      // Power Output, 0.5% (0-127%). 0xFF ---->
-    };
+{
+    uint8_t identifier = 0x20; // Source device = 0x20
+    uint8_t sID = 0;           // Secondary ID
+    uint16_t RPM = 0;          // RPM, 10RPM (0-655340 RPM).0xFFFF -->
+    uint16_t voltsInput = 0;   // Volts, 0.01v (0-655.34V).0xFFFF -->
+    uint16_t tempFET = 0;      // Temperature, 0.1C (0-999.8C)0xFFFF -->
+    uint16_t currentMotor = 0; // Current, 10mA (0-655.34A).0xFFFF -->
+    uint16_t tempBEC = 0;      // Temperature, 0.1C (0-999.8C)0x7FFF -->
+    uint8_t currentBEC = 0;    // BEC Current, 100mA (0-25.4A). 0xFF ---->
+    uint8_t voltsBEC = 0;      // BEC Volts, 0.05V (0-12.70V). 0xFF ---->
+    uint8_t throttle = 0;      // 0.5% (0-127%). 0xFF ---->
+    uint8_t powerOut = 0;      // Power Output, 0.5% (0-127%). 0xFF ---->
+};
 
-    struct Xbus_RpmVoltTemp
-    {
-        uint8_t identifier = 0x7E;
-        uint8_t sID = 0;
-        uint16_t microseconds = 0; // microseconds between pulse leading edges
-        uint16_t volts = 0;        // 0.01V increments
-        int16_t temperature = 0;   // degrees F
-    };
+struct Xbus_RpmVoltTemp
+{
+    uint8_t identifier = 0x7E;
+    uint8_t sID = 0;
+    uint16_t microseconds = 0; // microseconds between pulse leading edges
+    uint16_t volts = 0;        // 0.01V increments
+    int16_t temperature = 0;   // degrees F
+};
 
-    struct Xbus_Airspeed
-    {
-        uint8_t identifier = 0x11;
-        uint8_t sID = 0;          // Secondary ID
-        uint16_t airspeed = 0;    // 1 km/h increments
-        uint16_t maxAirspeed = 0; // 1 km/h increments
-    };
+struct Xbus_Airspeed
+{
+    uint8_t identifier = 0x11;
+    uint8_t sID = 0;          // Secondary ID
+    uint16_t airspeed = 0;    // 1 km/h increments
+    uint16_t maxAirspeed = 0; // 1 km/h increments
+};
 
-    struct Xbus_Battery
-    {
-        uint8_t id = 0x34;        // Source device = 0x34
-        uint8_t sID = 0;          // Secondary ID
-        int16_t current_A = 0;    // Instantaneous current, 0.1A (0-3276.8A)
-        int16_t chargeUsed_A = 0; // Integrated mAh used, 1mAh (0-32.766Ah)
-        uint16_t temp_A = 0;      // Temperature, 0.1C (0-150.0C, // 0x7FFF indicates not populated)
-        int16_t current_B = 0;    // Instantaneous current, 0.1A (0-6553.4A)
-        int16_t chargeUsed_B = 0; // Integrated mAh used, 1mAh (0-65.534Ah)
-        uint16_t temp_B = 0;      // Temperature, 0.1C (0-150.0C,// 0x7FFF indicates not populated)
-    };
+struct Xbus_Battery
+{
+    uint8_t id = 0x34;        // Source device = 0x34
+    uint8_t sID = 0;          // Secondary ID
+    int16_t current_A = 0;    // Instantaneous current, 0.1A (0-3276.8A)
+    int16_t chargeUsed_A = 0; // Integrated mAh used, 1mAh (0-32.766Ah)
+    uint16_t temp_A = 0;      // Temperature, 0.1C (0-150.0C, // 0x7FFF indicates not populated)
+    int16_t current_B = 0;    // Instantaneous current, 0.1A (0-6553.4A)
+    int16_t chargeUsed_B = 0; // Integrated mAh used, 1mAh (0-65.534Ah)
+    uint16_t temp_B = 0;      // Temperature, 0.1C (0-150.0C,// 0x7FFF indicates not populated)
+};
 
-    struct Xbus_Gps_Loc
-    {
-        uint8_t identifier = 0x16; // Source device = 0x16
-        uint8_t sID = 0;           // Secondary ID
-        uint16_t altitudeLow = 0;  // BCD, meters, format 3.1 (Low bits of alt)
-        uint32_t latitude = 0;     // BCD, format 4.4, // Degrees * 100 + minutes, < 100 degrees 1234.1234
-        uint32_t longitude = 0;    // BCD, format 4.4, // Degrees * 100 + minutes, flag --> > 99deg
-        uint16_t course = 0;       // BCD, 3.1
-        uint8_t HDOP = 0;          // BCD, format 1.1
-        uint8_t GPSflags = 0;      // see definitions below
-    };
+struct Xbus_Gps_Loc
+{
+    uint8_t identifier = 0x16; // Source device = 0x16
+    uint8_t sID = 0;           // Secondary ID
+    uint16_t altitudeLow = 0;  // BCD, meters, format 3.1 (Low bits of alt)
+    uint32_t latitude = 0;     // BCD, format 4.4, // Degrees * 100 + minutes, < 100 degrees 1234.1234
+    uint32_t longitude = 0;    // BCD, format 4.4, // Degrees * 100 + minutes, flag --> > 99deg
+    uint16_t course = 0;       // BCD, 3.1
+    uint8_t HDOP = 0;          // BCD, format 1.1
+    uint8_t GPSflags = 0;      // see definitions below
+};
 
-    struct Xbus_Gps_Stat
-    {
-        uint8_t identifier = 0x17;
-        uint8_t sID = 0;
-        uint16_t speed = 0;       // BCD, knots, format 3.1
-        uint32_t UTC = 0;         // BCD, format HH:MM:SS.S, format 6.1
-        uint8_t numSats = 0;      // BCD, 0-99
-        uint8_t altitudeHigh = 0; // BCD, meters, format 2.0 (High bits alt)
-    };
+struct Xbus_Gps_Stat
+{
+    uint8_t identifier = 0x17;
+    uint8_t sID = 0;
+    uint16_t speed = 0;       // BCD, knots, format 3.1
+    uint32_t UTC = 0;         // BCD, format HH:MM:SS.S, format 6.1
+    uint8_t numSats = 0;      // BCD, 0-99
+    uint8_t altitudeHigh = 0; // BCD, meters, format 2.0 (High bits alt)
+};
 
 class Xbus
 {
 private:
     uint8_t addressMask = 0;
-    #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
+    static void i2c_request_handler();
+
+protected:
+#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     static Xbus_Esc xbusEsc;
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM || CONFIG_VOLTAGE1 || CONFIG_NTC1
@@ -116,7 +119,6 @@ private:
     static Xbus_Gps_Loc xbusGpsLoc;
     static Xbus_Gps_Stat xbusGpsStat;
 #endif
-    static void i2c_request_handler();
 
 protected:
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM
