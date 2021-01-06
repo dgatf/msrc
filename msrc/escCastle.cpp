@@ -57,7 +57,9 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 {
     if (!castleTelemetryReceived)
     {
+#ifndef FIXED_CALIB
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
+#endif
         castleCont = 0;
     }
     castleTelemetryReceived = false;

@@ -16,6 +16,8 @@
     10      temp ntc (C) or calib 2 (500us)  63.8125
 */
 
+#define FIXED_CALIB
+
 #define MS_TO_COMP(SCALER) F_CPU / (SCALER * 1000UL)
 #define RX_MAX_CYCLES 2 // minimum is 2
 

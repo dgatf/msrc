@@ -62,9 +62,11 @@ void Xbus::i2c_request_handler()
         memcpy(buffer, (uint8_t *)&xbusGpsStat, sizeof(xbusGpsStat));
         break;
 #endif
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM || CONFIG_VOLTAGE1 || CONFIG_NTC1
     case XBUS_RPM_VOLT_TEMP:
         memcpy(buffer, (uint8_t *)&xbusRpmVoltTemp1, sizeof(xbusRpmVoltTemp1));
         break;
+#endif
     default:
         return;
     }
