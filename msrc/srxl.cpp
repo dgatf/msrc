@@ -9,7 +9,7 @@ void Srxl::begin()
     pinMode(LED_BUILTIN, OUTPUT);
     srxlSerial.begin(115200);
     srxlSerial.setTimeout(1000);
-#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE
+#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     esc.begin();
 #endif
     uint8_t cont = 0;
@@ -64,14 +64,14 @@ void Srxl::send()
     {
 #if CONFIG_AIRSPEED
     case XBUS_AIRSPEED:
-        memcpy(buffer + 3, (byte *)&xbusAirspeed, sizeof(xbusEsc));
+        memcpy(buffer + 3, (byte *)&xbusAirspeed, sizeof(xbusAirspeed));
         buffer[20] = getCrc(buffer + 3, 16);
         srxlSerial.write(buffer, 20);
         break;
 #endif
 #if CONFIG_CURRENT
     case XBUS_BATTERY:
-        memcpy(buffer + 3, (byte *)&xbusBattery, sizeof(xbusEsc));
+        memcpy(buffer + 3, (byte *)&xbusBattery, sizeof(xbusBattery));
         buffer[20] = getCrc(buffer + 3, 16);
         srxlSerial.write(buffer, 20);
         break;

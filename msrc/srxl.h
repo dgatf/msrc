@@ -19,6 +19,7 @@ class Srxl : public Xbus
 {
 private:
     uint8_t list[7] = {0};
+    SoftwareSerial srxlSerial = SoftwareSerial(PIN_SMARTPORT_RX, PIN_SMARTPORT_TX);
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     Xbus_Esc xbusEsc;
 #endif
@@ -37,7 +38,6 @@ private:
 #if CONFIG_GPS
     Xbus_Gps_Loc xbusGpsLoc;
     Xbus_Gps_Stat xbusGpsStat;
-    SoftwareSerial srxlSerial = SoftwareSerial(PIN_SMARTPORT_RX, PIN_SMARTPORT_TX);
 #endif
     uint16_t getCrc(uint8_t *buffer, uint8_t lenght);
     uint16_t byteCrc (uint16_t crc, uint8_t new_byte);

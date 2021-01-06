@@ -125,13 +125,13 @@ protected:
 #if CONFIG_VOLTAGE1
     Voltage volt1 = Voltage(PIN_VOLTAGE1, CONFIG_ALPHA_VOLT);
 #endif
-#if CONFIG_TEMP1
+#if CONFIG_NTC1
     Ntc ntc1 = Ntc(PIN_NTC1, CONFIG_ALPHA_TEMP);
 #endif
 #if CONFIG_VOLTAGE2
     Voltage volt2 = Voltage(PIN_VOLTAGE2, CONFIG_ALPHA_VOLT);
 #endif
-#if CONFIG_TEMP2
+#if CONFIG_NTC2
     Ntc ntc2 = Ntc(PIN_NTC2, CONFIG_ALPHA_TEMP);
 #endif
 #if CONFIG_AIRSPEED

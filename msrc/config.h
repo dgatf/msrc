@@ -2,7 +2,7 @@
 #define RX_PROTOCOL RX_XBUS  // RX_SMARTPORT, RX_XBUS, RX_SRXL
 
 // Select sensors
-#define CONFIG_ESC_PROTOCOL PROTOCOL_HW_V3 // PROTOCOL_NONE PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE
+#define CONFIG_ESC_PROTOCOL PROTOCOL_NONE // PROTOCOL_NONE PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE
 #define CONFIG_AIRSPEED true
 #define CONFIG_GPS true
 #define CONFIG_VOLTAGE1 true
@@ -44,12 +44,12 @@
    Connect arduino Rx to TTL Tx for flashing, then if applicabe connect arduino Rx to esc or gps
 */
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_PLOTTER rpm/60
 //#define DEBUG_ESC
 
-#define SIM_RX
-#define SIM_SENSORS
+//#define SIM_RX
+//#define SIM_SENSORS
 
 
 //-------------------------END OF CONFIG-----------------------------//

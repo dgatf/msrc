@@ -159,6 +159,5 @@ Xbus xbus;
 #endif
 
 #if RX_PROTOCOL == RX_SRXL
-SoftwareSerial srxlSerial(PIN_SMARTPORT_RX, PIN_SMARTPORT_TX);
 Srxl srxl;
 #endif
