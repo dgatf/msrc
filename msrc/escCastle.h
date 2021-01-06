@@ -18,7 +18,7 @@
 
 //#define DEBUG_ESC
 
-//#define FIXED_CALIB
+#define FIXED_CALIB
 //#define DEBUG_CALIB
 
 #define MS_TO_COMP(SCALER) F_CPU / (SCALER * 1000UL)
