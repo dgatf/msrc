@@ -6,7 +6,7 @@ Compatible with the following RX protocols:
 
 - Smartport: FrSky
 - XBUS: Spektrum
-- SRXL: JR (XBUS mode B), Jeti, Spektrum, Graupner, Multiplex, Beastx
+- SRXL: Spektrum
 
 The following sensors are supported:
 

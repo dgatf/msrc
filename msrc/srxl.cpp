@@ -57,7 +57,7 @@ void Srxl::send()
 {
     static uint8_t cont = 1;
     uint8_t buffer[21] = {0};
-    buffer[0] = RADIO_MANUFACTURER;
+    buffer[0] = 0x05; // = spektrum. No info for other brands
     buffer[1] = 0x80;
     buffer[2] = 0x15;
     uint16_t crc;
@@ -94,7 +94,8 @@ void Srxl::send()
     default:
         return;
     }
-    crc = __builtin_bswap16(getCrc(buffer + 3, 16));
+    crc = __builtin_bswap16(getCrc(buffer, 19));  // including header
+    //crc = __builtin_bswap16(getCrc(buffer + 3, 16));  // excluding header, 3bytes: header, type, lenght
     memcpy(buffer + 19, &crc, 2);
     srxlSerial.write(buffer, 21);
 #ifdef DEBUG
@@ -125,10 +126,10 @@ void Srxl::checkSerial()
     if (srxlSerial.available())
     {
         static uint32_t timestamp = 0;
-        uint8_t buffer[20];
+        uint8_t buffer[SRXL_FRAMELEN];
         static bool mute = false;
-        uint8_t lenght = srxlSerial.readBytes(buffer, 20);
-        if (lenght == 20 && buffer[0] == RADIO_MANUFACTURER && buffer[1] == 0x12)
+        uint8_t lenght = srxlSerial.readBytes(buffer, SRXL_FRAMELEN);
+        if (lenght == SRXL_FRAMELEN && buffer[0] == SRXL_VARIANT && buffer[1] == 0x12)
         {
 #ifdef DEBUG
             DEBUG_SERIAL.print("RF received: ");
