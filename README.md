@@ -352,7 +352,11 @@ Adjust constants in *pressure.h*:
 
 ## 8. Change log
 
-[v0.7] (https://github.com/dgatf/msrc/tree/v0.7)
+0.8
+
+- Added Rx protocols XBUS and SRXL
+
+[v0.7](https://github.com/dgatf/msrc/tree/v0.7)
 
 - Added analog airspeed sensor (MPXV7002)
 - Fixed Castle Link bug
