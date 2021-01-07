@@ -1,134 +1,41 @@
 #include "msrc.h"
 
+// ISR handlers
+
+void (*TIMER1_CAPT_handlerP)() = NULL;
+ISR(TIMER1_CAPT_vect)
+{
+    if (TIMER1_CAPT_handlerP)
+        TIMER1_CAPT_handlerP();
+}
+void (*TIMER1_COMPB_handlerP)() = NULL;
+ISR(TIMER1_COMPB_vect)
+{
+    if (TIMER1_COMPB_handlerP)
+        TIMER1_COMPB_handlerP();
+}
+void (*TIMER1_OVF_handlerP)() = NULL;
+ISR(TIMER1_OVF_vect)
+{
+    if (TIMER1_OVF_handlerP)
+        TIMER1_OVF_handlerP();
+}
+void (*INT0_handlerP)() = NULL;
+ISR(INT0_vect)
+{
+    if (INT0_handlerP)
+        INT0_handlerP();
+}
+void (*TIMER2_COMPA_handlerP)() = NULL;
+ISR(TIMER2_COMPA_vect)
+{
+    if (TIMER2_COMPA_handlerP)
+        TIMER2_COMPA_handlerP();
+}
+
 uint8_t calcAlpha(uint8_t elements)
 {
     return round((2.0F / (elements + 1)) * 100);
-}
-
-Config readConfig()
-{
-    Config config;
-    uint32_t chk;
-    EEPROM.get(0, chk);
-    if (chk == 0x64616E69)
-    {
-        EEPROM.get(4, config);
-        if (config.refresh.rpm > 16)
-            config.refresh.rpm = 2;
-        if (config.refresh.volt > 16)
-            config.refresh.volt = 10;
-        if (config.refresh.curr > 16)
-            config.refresh.curr = 10;
-        if (config.refresh.temp > 16)
-            config.refresh.temp = 10;
-        if (config.alpha.rpm > 100)
-            config.alpha.rpm = 100;
-        if (config.alpha.volt > 100)
-            config.alpha.volt = 100;
-        if (config.alpha.curr > 100)
-            config.alpha.curr = 100;
-        if (config.alpha.temp > 100)
-            config.alpha.temp = 100;
-    }
-    else
-    {
-        writeConfig(config);
-    }
-#ifdef DEBUG
-    debugSerial.println("READ CONFIG");
-#endif
-#ifdef DEBUG2
-    debugSerial.println("Read cfg");
-    debugSerial.print("Prot ");
-    debugSerial.println(config.protocol);
-    debugSerial.print("V1 ");
-    debugSerial.println(config.voltage1);
-    debugSerial.print("V2 ");
-    debugSerial.println(config.voltage2);
-    debugSerial.print("C ");
-    debugSerial.println(config.current);
-    debugSerial.print("NTC1 ");
-    debugSerial.println(config.ntc1);
-    debugSerial.print("NTC2 ");
-    debugSerial.println(config.ntc2);
-    debugSerial.print("PWM ");
-    debugSerial.println(config.pwmOut);
-    debugSerial.print("R RPM ");
-    debugSerial.println(config.refresh.rpm);
-    debugSerial.print("R V ");
-    debugSerial.println(config.refresh.volt);
-    debugSerial.print("R C ");
-    debugSerial.println(config.refresh.curr);
-    debugSerial.print("R T ");
-    debugSerial.println(config.refresh.temp);
-    debugSerial.print("a RPM ");
-    debugSerial.println(config.alpha.rpm);
-    debugSerial.print("a V ");
-    debugSerial.println(config.alpha.volt);
-    debugSerial.print("a C ");
-    debugSerial.println(config.alpha.curr);
-    debugSerial.print("a T ");
-    debugSerial.println(config.alpha.temp);
-    debugSerial.print("I2C1 ");
-    debugSerial.println(config.deviceI2C[0].type);
-    debugSerial.print("Addr1 ");
-    debugSerial.println(config.deviceI2C[0].address);
-    debugSerial.print("I2C2 ");
-    debugSerial.println(config.deviceI2C[1].type);
-    debugSerial.print("Addr2 ");
-    debugSerial.println(config.deviceI2C[1].address);
-#endif
-    return config;
-}
-
-void writeConfig(Config &config)
-{
-    EEPROM.put(0, (uint32_t)0x64616E69);
-    EEPROM.put(4, config);
-#ifdef DEBUG
-    debugSerial.println("WRITE CONFIG");
-#endif
-#ifdef DEBUG2
-    debugSerial.println("Write cfg");
-    debugSerial.print("Prot ");
-    debugSerial.println(config.protocol);
-    debugSerial.print("V1 ");
-    debugSerial.println(config.voltage1);
-    debugSerial.print("V2 ");
-    debugSerial.println(config.voltage2);
-    debugSerial.print("C ");
-    debugSerial.println(config.current);
-    debugSerial.print("NTC1 ");
-    debugSerial.println(config.ntc1);
-    debugSerial.print("NTC2 ");
-    debugSerial.println(config.ntc2);
-    debugSerial.print("PWM ");
-    debugSerial.println(config.pwmOut);
-    debugSerial.print("R RPM ");
-    debugSerial.println(config.refresh.rpm);
-    debugSerial.print("R V ");
-    debugSerial.println(config.refresh.volt);
-    debugSerial.print("R C ");
-    debugSerial.println(config.refresh.curr);
-    debugSerial.print("R T ");
-    debugSerial.println(config.refresh.temp);
-    debugSerial.print("a RPM ");
-    debugSerial.println(config.alpha.rpm);
-    debugSerial.print("a V ");
-    debugSerial.println(config.alpha.volt);
-    debugSerial.print("a C ");
-    debugSerial.println(config.alpha.curr);
-    debugSerial.print("a T ");
-    debugSerial.println(config.alpha.temp);
-    debugSerial.print("I2C1 ");
-    debugSerial.println(config.deviceI2C[0].type);
-    debugSerial.print("Addr1 ");
-    debugSerial.println(config.deviceI2C[0].address);
-    debugSerial.print("I2C2 ");
-    debugSerial.println(config.deviceI2C[1].type);
-    debugSerial.print("Addr2 ");
-    debugSerial.println(config.deviceI2C[1].address);
-#endif
 }
 
 void setPwmOut(bool pwmOut)
@@ -151,15 +58,16 @@ void setPwmOut(bool pwmOut)
 void updatePwmOut()
 {
     static float rpm = 0;
-    if (rpmSensorP->valueL() != rpm)
+    if (rpmPwmoutP == NULL) return;
+    if (*rpmPwmoutP != rpm)
     {
-        rpm = rpmSensorP->valueL();
+        rpm = *rpmPwmoutP;
         noInterrupts();
         if (rpm >= 2000)
         {
             TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
             OCR1A = (7.5 * (uint32_t)F_CPU / rpm) - 1;
-            OCR1B = DUTY * OCR1A;
+            OCR1B = PWMOUT_DUTY * OCR1A;
         }
         else
         {
@@ -169,6 +77,7 @@ void updatePwmOut()
     }
 }
 
+#if RX_PROTOCOL == RX_SMARTPORT
 void initConfig(Config &config)
 {
     smartport.deleteSensors();
@@ -185,27 +94,27 @@ void initConfig(Config &config)
         esc = new EscPWM(config.alpha.rpm);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
-        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
     }
     if (config.protocol == PROTOCOL_HW_V3)
     {
         Sensor *sensorP;
         EscHW3 *esc;
-        esc = new EscHW3(escSerial, config.alpha.rpm);
+        esc = new EscHW3(ESC_SERIAL, config.alpha.rpm);
+
         esc->begin();
+        rpmPwmoutP = esc->rpmP;
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
-        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
     }
     if (config.protocol >= PROTOCOL_HW_V4_LV && config.protocol <= PROTOCOL_HW_V5_HV)
     {
         Sensor *sensorP;
         EscHW4 *esc;
-        esc = new EscHW4(escSerial, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp, config.protocol - PROTOCOL_HW_V4_LV);
+        esc = new EscHW4(ESC_SERIAL, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp, config.protocol - PROTOCOL_HW_V4_LV);
         esc->begin();
+        rpmPwmoutP = esc->rpmP;
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, ESCHW4_RPM, config.refresh.rpm, esc);
-        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
         sensorP = new SensorDouble(ESC_POWER_FIRST_ID, ESCHW4_CURRENT, ESCHW4_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);
@@ -223,7 +132,6 @@ void initConfig(Config &config)
         esc = new EscCastle(config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, CASTLE_RPM, config.refresh.rpm, esc);
-        rpmSensorP = sensorP;
         smartport.addSensor(sensorP);
         sensorP = new SensorDouble(ESC_POWER_FIRST_ID, CASTLE_CURRENT, CASTLE_VOLTAGE, config.refresh.volt, esc);
         smartport.addSensor(sensorP);
@@ -242,6 +150,7 @@ void initConfig(Config &config)
     {
         Sensor *sensorP;
         Bn220 *gps;
+        gps = new Bn220(GPS_SERIAL);
         gps = new Bn220(gpsSerial);
         gps->begin();
         sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, BN220_LON, BN220_LAT, config.refresh.def, gps);
@@ -319,6 +228,126 @@ void initConfig(Config &config)
     }
 }
 
+Config readConfig()
+{
+    Config config;
+    uint32_t chk;
+    EEPROM.get(0, chk);
+    if (chk == 0x64616E69)
+    {
+        EEPROM.get(4, config);
+        if (config.refresh.rpm > 16)
+            config.refresh.rpm = 2;
+        if (config.refresh.volt > 16)
+            config.refresh.volt = 10;
+        if (config.refresh.curr > 16)
+            config.refresh.curr = 10;
+        if (config.refresh.temp > 16)
+            config.refresh.temp = 10;
+        if (config.alpha.rpm > 100)
+            config.alpha.rpm = 100;
+        if (config.alpha.volt > 100)
+            config.alpha.volt = 100;
+        if (config.alpha.curr > 100)
+            config.alpha.curr = 100;
+        if (config.alpha.temp > 100)
+            config.alpha.temp = 100;
+    }
+    else
+    {
+        writeConfig(config);
+    }
+#ifdef DEBUG
+    DEBUG_SERIAL.println("READ CONFIG");
+    DEBUG_SERIAL.print("Prot ");
+    DEBUG_SERIAL.println(config.protocol);
+    DEBUG_SERIAL.print("V1 ");
+    DEBUG_SERIAL.println(config.voltage1);
+    DEBUG_SERIAL.print("V2 ");
+    DEBUG_SERIAL.println(config.voltage2);
+    DEBUG_SERIAL.print("C ");
+    DEBUG_SERIAL.println(config.current);
+    DEBUG_SERIAL.print("NTC1 ");
+    DEBUG_SERIAL.println(config.ntc1);
+    DEBUG_SERIAL.print("NTC2 ");
+    DEBUG_SERIAL.println(config.ntc2);
+    DEBUG_SERIAL.print("PWM ");
+    DEBUG_SERIAL.println(config.pwmOut);
+    DEBUG_SERIAL.print("R RPM ");
+    DEBUG_SERIAL.println(config.refresh.rpm);
+    DEBUG_SERIAL.print("R V ");
+    DEBUG_SERIAL.println(config.refresh.volt);
+    DEBUG_SERIAL.print("R C ");
+    DEBUG_SERIAL.println(config.refresh.curr);
+    DEBUG_SERIAL.print("R T ");
+    DEBUG_SERIAL.println(config.refresh.temp);
+    DEBUG_SERIAL.print("a RPM ");
+    DEBUG_SERIAL.println(config.alpha.rpm);
+    DEBUG_SERIAL.print("a V ");
+    DEBUG_SERIAL.println(config.alpha.volt);
+    DEBUG_SERIAL.print("a C ");
+    DEBUG_SERIAL.println(config.alpha.curr);
+    DEBUG_SERIAL.print("a T ");
+    DEBUG_SERIAL.println(config.alpha.temp);
+    DEBUG_SERIAL.print("I2C1 ");
+    DEBUG_SERIAL.println(config.deviceI2C[0].type);
+    DEBUG_SERIAL.print("Addr1 ");
+    DEBUG_SERIAL.println(config.deviceI2C[0].address);
+    DEBUG_SERIAL.print("I2C2 ");
+    DEBUG_SERIAL.println(config.deviceI2C[1].type);
+    DEBUG_SERIAL.print("Addr2 ");
+    DEBUG_SERIAL.println(config.deviceI2C[1].address);
+#endif
+    return config;
+}
+
+void writeConfig(Config &config)
+{
+    EEPROM.put(0, (uint32_t)0x64616E69);
+    EEPROM.put(4, config);
+#ifdef DEBUG
+    DEBUG_SERIAL.println("WRITE CONFIG");
+    DEBUG_SERIAL.print("Prot ");
+    DEBUG_SERIAL.println(config.protocol);
+    DEBUG_SERIAL.print("V1 ");
+    DEBUG_SERIAL.println(config.voltage1);
+    DEBUG_SERIAL.print("V2 ");
+    DEBUG_SERIAL.println(config.voltage2);
+    DEBUG_SERIAL.print("C ");
+    DEBUG_SERIAL.println(config.current);
+    DEBUG_SERIAL.print("NTC1 ");
+    DEBUG_SERIAL.println(config.ntc1);
+    DEBUG_SERIAL.print("NTC2 ");
+    DEBUG_SERIAL.println(config.ntc2);
+    DEBUG_SERIAL.print("PWM ");
+    DEBUG_SERIAL.println(config.pwmOut);
+    DEBUG_SERIAL.print("R RPM ");
+    DEBUG_SERIAL.println(config.refresh.rpm);
+    DEBUG_SERIAL.print("R V ");
+    DEBUG_SERIAL.println(config.refresh.volt);
+    DEBUG_SERIAL.print("R C ");
+    DEBUG_SERIAL.println(config.refresh.curr);
+    DEBUG_SERIAL.print("R T ");
+    DEBUG_SERIAL.println(config.refresh.temp);
+    DEBUG_SERIAL.print("a RPM ");
+    DEBUG_SERIAL.println(config.alpha.rpm);
+    DEBUG_SERIAL.print("a V ");
+    DEBUG_SERIAL.println(config.alpha.volt);
+    DEBUG_SERIAL.print("a C ");
+    DEBUG_SERIAL.println(config.alpha.curr);
+    DEBUG_SERIAL.print("a T ");
+    DEBUG_SERIAL.println(config.alpha.temp);
+    DEBUG_SERIAL.print("I2C1 ");
+    DEBUG_SERIAL.println(config.deviceI2C[0].type);
+    DEBUG_SERIAL.print("Addr1 ");
+    DEBUG_SERIAL.println(config.deviceI2C[0].address);
+    DEBUG_SERIAL.print("I2C2 ");
+    DEBUG_SERIAL.println(config.deviceI2C[1].type);
+    DEBUG_SERIAL.print("Addr2 ");
+    DEBUG_SERIAL.println(config.deviceI2C[1].address);
+#endif
+}
+
 void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
 {
     if (smartport.maintenanceMode())
@@ -387,8 +416,8 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         if (frameId == 0x31 && dataId == 0x5000 && (uint8_t)(value) == 0xF1)
         {
 #ifdef DEBUG
-            debugSerial.print("PACKET 1: ");
-            debugSerial.println(value);
+            DEBUG_SERIAL.print("PACKET 1: ");
+            DEBUG_SERIAL.println(value);
 #endif
             Config config;
             config.airspeed = BM_AIRSPEED(value);
@@ -408,8 +437,8 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
                 smartport.update(frameId, dataId, value);
             }
 #ifdef DEBUG
-            debugSerial.print("PACKET 2: ");
-            debugSerial.println(value);
+            DEBUG_SERIAL.print("PACKET 2: ");
+            DEBUG_SERIAL.println(value);
 #endif
             config.alpha.rpm = calcAlpha(BM_AVG_ELEM_RPM(value));
             config.alpha.volt = calcAlpha(BM_AVG_ELEM_VOLT(value));
@@ -421,8 +450,8 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
                 smartport.update(frameId, dataId, value);
             }
 #ifdef DEBUG
-            debugSerial.print("PACKET 3: ");
-            debugSerial.println(value);
+            DEBUG_SERIAL.print("PACKET 3: ");
+            DEBUG_SERIAL.println(value);
 #endif
             config.deviceI2C[0].type = BM_I2C1(value);
             config.deviceI2C[1].type = BM_I2C2(value);
@@ -442,26 +471,42 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         }
     }
 }
+#endif
 
 void setup()
 {
 #ifdef DEBUG
-    debugSerial.begin(9600);
-    debugSerial.println("\nDEBUG");
-    debugSerial.print("V");
-    debugSerial.print(VERSION_MAJOR);
-    debugSerial.print(".");
-    debugSerial.print(VERSION_MINOR);
-    debugSerial.print(".");
-    debugSerial.println(VERSION_PATCH);
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV
+    DEBUG_SERIAL.begin(19200);
+#elif CONFIG_GPS
+    DEBUG_SERIAL.begin(9600);
+#else
+    DEBUG_SERIAL.begin(115200);
 #endif
+    DEBUG_SERIAL.println("\nDEBUG");
+    DEBUG_SERIAL.print("V");
+    DEBUG_SERIAL.print(VERSION_MAJOR);
+    DEBUG_SERIAL.print(".");
+    DEBUG_SERIAL.print(VERSION_MINOR);
+    DEBUG_SERIAL.print(".");
+    DEBUG_SERIAL.println(VERSION_PATCH);
+#endif
+#if RX_PROTOCOL == RX_SMARTPORT
     smartportSerial.begin(57600);
+    smartport.setDataId(DATA_ID);
+#endif
+#if RX_PROTOCOL != RX_XBUS
     Wire.begin();
     Wire.setTimeout(WIRE_TIMEOUT);
-    smartport.setDataId(DATA_ID);
+#endif
+#if RX_PROTOCOL == RX_XBUS
+    xbus.begin();
+#endif
+#if RX_PROTOCOL == RX_SRXL
+    srxl.begin();
+#endif
     TIMSK1 = 0;
-
-#ifdef CONFIG_LUA
+#if defined(CONFIG_LUA) && RX_PROTOCOL == RX_SMARTPORT
     Config config = readConfig();
 #else
     Config config;
@@ -469,11 +514,14 @@ void setup()
 #ifdef DEBUG
     delay(100);
 #endif
+#if RX_PROTOCOL == RX_SMARTPORT
     initConfig(config);
+#endif
 }
 
 void loop()
 {
+#if RX_PROTOCOL == RX_SMARTPORT
     uint8_t frameId;
     uint16_t dataId;
     uint32_t value;
@@ -488,11 +536,19 @@ void loop()
         config.sensorId = smartport.crcToId(smartport.sensorId());
         writeConfig(config);
     }
+#endif
     if (pwmOut)
     {
         updatePwmOut();
     }
+#if RX_PROTOCOL == RX_XBUS
+    xbus.update();
+#endif
+#if RX_PROTOCOL == RX_SRXL
+    srxl.update();
+    srxl.checkSerial();
+#endif
 #ifdef DEBUG_PLOTTER
-    debugSerial.println(DEBUG_PLOTTER);
+    DEBUG_SERIAL.println(DEBUG_PLOTTER);
 #endif
 }

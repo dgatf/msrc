@@ -12,51 +12,13 @@
 #define VERSION_MINOR 7
 #define VERSION_PATCH 0
 
-// pins
-#define PIN_SMARTPORT_RX 7
-#define PIN_SMARTPORT_TX 12
-#define PIN_NTC1 A0
-#define PIN_NTC2 A1
-#define PIN_VOLTAGE1 A2
-#define PIN_VOLTAGE2 A3
-#define PIN_CURRENT A6
-#define PIN_PRESSURE A7
-
 // opentx
 #define DATA_ID 0x5100 // DataId (sensor type)
-#define CONFIG_LUA     // Uncomment if using lua script for configuration
-
-// esc protocol
-#define PROTOCOL_NONE 0
-#define PROTOCOL_HW_V3 1
-#define PROTOCOL_HW_V4_LV 2
-#define PROTOCOL_HW_V4_HV 3
-#define PROTOCOL_HW_V5_LV 4
-#define PROTOCOL_HW_V5_HV 5
-#define PROTOCOL_PWM 6
-#define PROTOCOL_CASTLE 7
-
-// pwm out
-#define PIN_PWM_OUT_OCR 10
-#define DUTY 0.5 // 0.5 = 50%
 
 // i2c
 #define I2C_NONE 0
 #define I2C_BMP280 1
 #define WIRE_TIMEOUT 3
-
-#define escSerial Serial
-#define gpsSerial Serial
-#define debugSerial Serial
-
-/* Debug
-   Disconnect Vcc from the RC model to the Arduino
-   Do not connect at the same time Vcc from the model and usb (TTL)
-   Telemetry may not work properly in debug mode
-   Connect arduino Rx to TTL Tx for flashing, then connect arduino Rx to esc
-*/
-//#define DEBUG
-//#define DEBUG_PLOTTER rpm/60
 
 // Config bitmask
 
@@ -104,7 +66,6 @@
 #include <SoftwareSerial.h>
 #include <Wire.h>
 
-#include "smartport.h"
 #include "escHW3.h"
 #include "escHW4.h"
 #include "escPWM.h"
@@ -114,27 +75,41 @@
 #include "pressure.h"
 #include "bmp280.h"
 #include "bn220.h"
+#include "config.h"
+
+#if RX_PROTOCOL == RX_SMARTPORT
+#include "smartport.h"
+#endif
+#if RX_PROTOCOL == RX_XBUS
+#include "xbus.h"
+#endif
+#if RX_PROTOCOL == RX_SRXL
+#include "srxl.h"
+#endif
+//#if RX_PROTOCOL == RX_IBUS
+//#include "ibus.h"
+//#endif
 
 // Default config
 
 struct Refresh
 {
     // max refresh rate 15 (1.5s)
-    uint8_t rpm = 2;   // telemetry rpm refresh rate (ms / 100)
-    uint8_t volt = 10; // telemetry voltage refresh rate (ms / 100)
-    uint8_t curr = 10; // telemetry current refresh rate (ms / 100)
-    uint8_t temp = 10; // telemetry temperature refresh rate (ms / 100)
-    uint8_t def = 10;  // telemetry default refresh rate (ms / 100)
+    uint8_t rpm = CONFIG_REFRESH_RPM;   // telemetry rpm refresh rate (ms / 100)
+    uint8_t volt = CONFIG_REFRESH_VOLT; // telemetry voltage refresh rate (ms / 100)
+    uint8_t curr = CONFIG_REFRESH_CURR; // telemetry current refresh rate (ms / 100)
+    uint8_t temp = CONFIG_REFRESH_TEMP; // telemetry temperature refresh rate (ms / 100)
+    uint8_t def = CONFIG_REFRESH_DEF;  // telemetry default refresh rate (ms / 100)
 };
 
 struct Alpha
 {
     // equivalent EMA to SMA elements (alpha=2/(N+1))
-    uint8_t rpm = 33;  // rpm averaging elements (alpha * 100)
-    uint8_t volt = 33; // voltage averaging elements (alpha * 100)
-    uint8_t curr = 33; // current averaging elements (alpha * 100)
-    uint8_t temp = 33; // temperature averaging elements (alpha * 100)
-    uint8_t def = 33;  // (alpha * 100)
+    uint8_t rpm = CONFIG_ALPHA_RPM;  // rpm averaging elements (alpha * 100)
+    uint8_t volt = CONFIG_ALPHA_VOLT; // voltage averaging elements (alpha * 100)
+    uint8_t curr = CONFIG_ALPHA_CURR; // current averaging elements (alpha * 100)
+    uint8_t temp = CONFIG_ALPHA_TEMP; // temperature averaging elements (alpha * 100)
+    uint8_t def = CONFIG_ALPHA_DEF;  // (alpha * 100)
 };
 
 struct DeviceI2C
@@ -145,23 +120,23 @@ struct DeviceI2C
 
 struct Config
 {
-    uint8_t sensorId = 10;
-    uint8_t protocol = PROTOCOL_NONE; // esc protocol
-    bool airspeed = false;            // enable/disable pressure analog reading
-    bool gps = false;                 // enable/disable serial gps (not feasible with esc serial)
-    bool voltage1 = false;            // enable/disable voltage1 analog reading
-    bool voltage2 = false;            // enable/disable voltage2 analog reading
-    bool current = false;             // enable/disable current analog reading
-    bool ntc1 = false;                // enable/disable ntc1 analog reading
-    bool ntc2 = false;                // enable/disable ntc2 analog reading
-    bool pwmOut = false;              // enable/disable pwm out generation (governor)
+    uint8_t sensorId = SENSOR_ID;
+    uint8_t protocol = CONFIG_ESC_PROTOCOL; // esc protocol
+    bool airspeed = CONFIG_AIRSPEED;            // enable/disable pressure analog reading
+    bool gps = CONFIG_GPS;                 // enable/disable serial gps (not feasible with esc serial)
+    bool voltage1 = CONFIG_VOLTAGE1;            // enable/disable voltage1 analog reading
+    bool voltage2 = CONFIG_VOLTAGE2;            // enable/disable voltage2 analog reading
+    bool current = CONFIG_CURRENT;             // enable/disable current analog reading
+    bool ntc1 = CONFIG_NTC1;                // enable/disable ntc1 analog reading
+    bool ntc2 = CONFIG_NTC2;                // enable/disable ntc2 analog reading
+    bool pwmOut = CONFIG_PWMOUT;              // enable/disable pwm out generation (governor)
     Refresh refresh;
     Alpha alpha;
     DeviceI2C deviceI2C[2];
 };
 
 bool pwmOut = false;
-Sensor *rpmSensorP;
+float *rpmPwmoutP = NULL;
 Config readConfig();
 void writeConfig(Config &config);
 void initConfig(Config &config);
@@ -172,5 +147,15 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value);
 void setup();
 void loop();
 
+#if RX_PROTOCOL == RX_SMARTPORT
 SoftwareSerial smartportSerial(PIN_SMARTPORT_RX, PIN_SMARTPORT_TX, true);
 Smartport smartport(smartportSerial);
+#endif
+
+#if RX_PROTOCOL == RX_XBUS
+Xbus xbus;
+#endif
+
+#if RX_PROTOCOL == RX_SRXL
+Srxl srxl;
+#endif

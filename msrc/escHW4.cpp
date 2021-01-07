@@ -6,6 +6,7 @@ void EscHW4::begin()
 {
     serial_.begin(19200);
     serial_.setTimeout(ESCHW4_ESCSERIAL_TIMEOUT);
+    rpmP = &value_[2];
 }
 
 bool EscHW4::update()
@@ -32,15 +33,15 @@ bool EscHW4::update()
                         type_ = i;
                     }*/
 #ifdef DEBUG_SIGNATURE
-                    Serial.print("ESC TYPE [");
-                    Serial.print(type_);
-                    Serial.print("]: ");
+                    DEBUG_SERIAL.print("ESC TYPE [");
+                    DEBUG_SERIAL.print(type_);
+                    DEBUG_SERIAL.print("]: ");
                     for (int i = 0; i < 12; i++)
                     {
-                        Serial.print(data[i], HEX);
-                        Serial.print(" ");
+                        DEBUG_SERIAL.print(data[i], HEX);
+                        DEBUG_SERIAL.print(" ");
                     }
-                    Serial.println();
+                    DEBUG_SERIAL.println();
 #endif
                 //}
                 return false;

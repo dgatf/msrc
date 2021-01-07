@@ -1,8 +1,8 @@
 #include "escPWM.h"
 
-volatile uint16_t escPwmDuration = 0;
-volatile bool escPwmRunning = false;
-volatile bool escPwmUpdate = false;
+volatile uint16_t EscPWM::escPwmDuration = 0;
+volatile bool EscPWM::escPwmRunning = false;
+volatile bool EscPWM::escPwmUpdate = false;
 
 EscPWM::EscPWM(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
 
@@ -47,8 +47,8 @@ float EscPWM::read(uint8_t index)
         }
         interrupts();
 #ifdef DEBUG_ESC
-        Serial.print("RPM: ");
-        Serial.println(rpm_);
+        DEBUG_SERIAL.print("RPM: ");
+        DEBUG_SERIAL.println(rpm_);
 #endif
 #ifdef SIM_SENSORS
         return 10000;

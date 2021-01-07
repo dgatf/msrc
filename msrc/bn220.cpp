@@ -42,11 +42,11 @@ void Bn220::update()
 #ifdef DEBUG_GPS
                 if (nmeaCmd_)
                 {
-                    Serial.print("\n");
-                    Serial.print(nmeaCmd_);
-                    Serial.print(" ");
-                    Serial.print(buffer_ + 2);
-                    Serial.print(": ");
+                    DEBUG_SERIAL.print("\n");
+                    DEBUG_SERIAL.print(nmeaCmd_);
+                    DEBUG_SERIAL.print(" ");
+                    DEBUG_SERIAL.print(buffer_ + 2);
+                    DEBUG_SERIAL.print(": ");
                 }
 #endif
             }
@@ -141,14 +141,14 @@ void Bn220::parser(uint8_t type, char *data)
         }
 
 #ifdef DEBUG_GPS
-        Serial.print(contIndex_);
-        Serial.print("(");
-        Serial.print(type);
-        Serial.print(",");
-        Serial.print(data);
-        Serial.print(",");
-        Serial.print(value_[type]);
-        Serial.print(") ");
+        DEBUG_SERIAL.print(contIndex_);
+        DEBUG_SERIAL.print("(");
+        DEBUG_SERIAL.print(type);
+        DEBUG_SERIAL.print(",");
+        DEBUG_SERIAL.print(data);
+        DEBUG_SERIAL.print(",");
+        DEBUG_SERIAL.print(value_[type]);
+        DEBUG_SERIAL.print(") ");
 #endif
     }
 }

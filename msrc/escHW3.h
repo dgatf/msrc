@@ -3,8 +3,6 @@
 
 #define ESCSERIAL_TIMEOUT 3
 
-//#define DEBUG_ESC
-
 #include <Arduino.h>
 #include "device.h"
 
@@ -17,6 +15,7 @@ private:
 
 protected:
 public:
+    float *rpmP;
     EscHW3(HardwareSerial &serial, uint8_t alphaRpm);
     void begin();
     bool update();

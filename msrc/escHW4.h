@@ -1,7 +1,6 @@
 #ifndef ESCHW4_H
 #define ESCHW4_H
 
-//#define DEBUG_ESC
 //#define DEBUG_SIGNATURE
 
 #define ESCHW4_TYPE_V4_LV 0
@@ -52,6 +51,8 @@ private:
 
 protected:
 public:
+    float *rpmP;
+
     EscHW4(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type);
     void begin();
     bool update();

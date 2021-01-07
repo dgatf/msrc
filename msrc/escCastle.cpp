@@ -1,14 +1,14 @@
 #include "escCastle.h"
 
-volatile bool castleTelemetryReceived = false;
+volatile bool EscCastle::castleTelemetryReceived = false;
 #ifdef SIM_SENSORS
-volatile uint16_t castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 500};
+volatile uint16_t EscCastle::castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 500};
 #else
-volatile uint16_t castleTelemetry[12] = {0};
+volatile uint16_t EscCastle::castleTelemetry[12] = {0};
 #endif
-volatile uint16_t castleCompsPerMilli = 1 * MS_TO_COMP(8);
-volatile uint8_t castleCont = 0;
-volatile uint8_t castleRxLastReceived = 0;
+volatile uint16_t EscCastle::castleCompsPerMilli = 1 * MS_TO_COMP(8);
+volatile uint8_t EscCastle::castleCont = 0;
+volatile uint8_t EscCastle::castleRxLastReceived = 0;
 
 EscCastle::EscCastle(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
@@ -164,10 +164,10 @@ float EscCastle::read(uint8_t index)
         break;
     }
 #ifdef DEBUG_ESC
-    Serial.print("Value [");
-    Serial.print(index);
-    Serial.print("]: ");
-    Serial.println(value);
+    DEBUG_SERIAL.print("Value [");
+    DEBUG_SERIAL.print(index);
+    DEBUG_SERIAL.print("]: ");
+    DEBUG_SERIAL.println(value);
 #endif
     if (value < 0)
         return 0;

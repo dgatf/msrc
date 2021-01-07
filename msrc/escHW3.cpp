@@ -6,6 +6,7 @@ void EscHW3::begin()
 {
     serial_.begin(19200);
     serial_.setTimeout(ESCSERIAL_TIMEOUT);
+    rpmP = &rpm_;
 }
 
 bool EscHW3::update()
