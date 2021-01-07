@@ -34,7 +34,13 @@ If the ESC have a serial port for telemetry output it can be decoded connecting 
 Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry
 
 <p align="center"><img src="./images/msrc_serial.png" width="600"><br>
-  <i>ESC serial circuit</i><br><br></p>
+  <i>ESC serial circuit Smartport</i><br><br></p>
+
+<p align="center"><img src="./images/xbus.png" width="600"><br>
+  <i>ESC serial circuit XBUS</i><br><br></p>
+
+<p align="center"><img src="./images/srxl.png" width="600"><br>
+  <i>ESC serial circuit SRXL</i><br><br></p>
 
 #### PWM signal
 
