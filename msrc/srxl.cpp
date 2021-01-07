@@ -57,7 +57,7 @@ void Srxl::send()
 {
     static uint8_t cont = 1;
     uint8_t buffer[21] = {0};
-    buffer[0] = 0xA5;
+    buffer[0] = RADIO_MANUFACTURER;
     buffer[1] = 0x80;
     buffer[2] = 0x15;
     uint16_t crc;
@@ -128,7 +128,7 @@ void Srxl::checkSerial()
         uint8_t buffer[20];
         static bool mute = false;
         uint8_t lenght = srxlSerial.readBytes(buffer, 20);
-        if (lenght == 20 && buffer[0] == 0xA5 && buffer[1] == 0x12)
+        if (lenght == 20 && buffer[0] == RADIO_MANUFACTURER && buffer[1] == 0x12)
         {
 #ifdef DEBUG
             DEBUG_SERIAL.print("RF received: ");

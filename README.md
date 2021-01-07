@@ -5,8 +5,8 @@ This is a DIY project to send multiple sensors telemetry using an Arduino Pro Mi
 Compatible with the following RX protocols:
 
 - Smartport: FrSky
-- XBUS: JR, Spektrum
-- SRXL: JR, Jeti, Spektrum, Graupner, Multiplex, Beastx
+- XBUS: Spektrum
+- SRXL: JR (XBUS mode B), Jeti, Spektrum, Graupner, Multiplex, Beastx
 
 The following sensors are supported:
 
