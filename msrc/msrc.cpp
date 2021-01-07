@@ -101,6 +101,7 @@ void initConfig(Config &config)
         Sensor *sensorP;
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, config.alpha.rpm);
+
         esc->begin();
         rpmPwmoutP = esc->rpmP;
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
@@ -150,6 +151,7 @@ void initConfig(Config &config)
         Sensor *sensorP;
         Bn220 *gps;
         gps = new Bn220(GPS_SERIAL);
+        gps = new Bn220(gpsSerial);
         gps->begin();
         sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, BN220_LON, BN220_LAT, config.refresh.def, gps);
         smartport.addSensor(sensorP);

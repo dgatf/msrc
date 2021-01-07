@@ -49,6 +49,10 @@ void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
 void EscCastle::INT0_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT1 - OCR1B;
+#ifdef DEBUG_CALIB
+    Serial.print(castleTelemetry[castleCont]);
+    Serial.print(" ");
+#endif
     castleCont++;
     castleTelemetryReceived = true;
 }
@@ -61,6 +65,11 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
 #endif
         castleCont = 0;
+#ifdef DEBUG_CALIB
+        Serial.println();
+        Serial.print(millis());
+        Serial.print(" ");
+#endif  
     }
     castleTelemetryReceived = false;
     if (castleRxLastReceived > RX_MAX_CYCLES)
@@ -83,6 +92,10 @@ void EscCastle::begin()
     TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
     INT0_handlerP = INT0_handler;
     TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
+
+#ifdef DEBUG_CALIB
+    Serial.begin(115200);
+#endif
 
     // ICP1 (PB0 PIN8) -> RX THR, INPUT
     // INT0 (PD2, PIN2)-> TELEMETRY, INPUT
