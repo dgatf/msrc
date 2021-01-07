@@ -2,7 +2,7 @@
 #define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL
 
 // Select SRLX valriant (only for SRXL)
-#define SRXL_VARIANT SRXL_V5  // SRXL_V1 (JR XBUS MODE B), SRXL_V2, SRXL_V5 (SPEKTRUM). Remark: telemetry only available for spektrum radios
+#define SRXL_VARIANT SRXL_V5  // Only implemented SRXL_V5 (SPEKTRUM)
 
 // Select sensors
 #define CONFIG_ESC_PROTOCOL PROTOCOL_NONE // PROTOCOL_NONE PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE
@@ -59,8 +59,8 @@
 
 //-------------------------END OF CONFIG-----------------------------//
 
-#define SRXL_V1 0x01
-#define SRXL_V2 0x02
+//#define SRXL_V1 0x01
+//#define SRXL_V2 0x02
 #define SRXL_V5 0x05
 
 #define CONFIG_ALPHA_RPM N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
