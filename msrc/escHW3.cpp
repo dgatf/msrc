@@ -1,14 +1,14 @@
 #include "escHW3.h"
 
-EscHW3Interface::EscHW3Interface(HardwareSerial &serial, uint8_t alphaRpm) : alphaRpm_(alphaRpm), serial_(serial) {}
+EscHW3::EscHW3(HardwareSerial &serial, uint8_t alphaRpm) : alphaRpm_(alphaRpm), serial_(serial) {}
 
-void EscHW3Interface::begin()
+void EscHW3::begin()
 {
     serial_.begin(19200);
     serial_.setTimeout(ESCSERIAL_TIMEOUT);
 }
 
-bool EscHW3Interface::update()
+bool EscHW3::update()
 {
     static uint16_t tsEsc_ = 0;
     while (serial_.available() >= 10)
@@ -54,7 +54,7 @@ bool EscHW3Interface::update()
     return false;
 }
 
-float EscHW3Interface::read(uint8_t index)
+float EscHW3::read(uint8_t index)
 {
 #ifdef SIM_SENSORS
     if (index == 0)

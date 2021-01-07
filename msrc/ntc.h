@@ -13,11 +13,11 @@
 #include <Arduino.h>
 #include "voltage.h"
 
-class NtcInterface : public VoltageInterface
+class Ntc : public Voltage
 {
 private:
 public:
-    NtcInterface(uint8_t pin, uint8_t alpha);
+    Ntc(uint8_t pin, uint8_t alpha);
     float read(uint8_t index);
 };
 

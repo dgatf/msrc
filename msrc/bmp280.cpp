@@ -1,8 +1,8 @@
 #include "bmp280.h"
 
-Bmp280Interface::Bmp280Interface(uint8_t device, uint8_t alphaTemp, uint8_t alphaDef) : Bmp(device, alphaTemp, alphaDef) {}
+Bmp280::Bmp280(uint8_t device, uint8_t alphaTemp, uint8_t alphaDef) : Bmp(device, alphaTemp, alphaDef) {}
 
-void Bmp280Interface::begin()
+void Bmp280::begin()
 {
     uint8_t configReg[1] = {(STANDBY_MS_250 << 5) | (FILTER_X8 << 2) | 0};
     uint8_t measureReg[1] = {(BMP280_OVERSAMPLING_X4 << 5) | (BMP280_OVERSAMPLING_X4 << 2) | BMP280_NORMAL};
@@ -22,7 +22,7 @@ void Bmp280Interface::begin()
     P9_ = readInt(device_, 0x9E, LITTLE_ENDIAN);
 }
 
-float Bmp280Interface::readTemperature()
+float Bmp280::readTemperature()
 {
     uint8_t data[3];
     readBytes(device_, BMP280_REGISTER_TEMPDATA, data, 3);
@@ -37,7 +37,7 @@ float Bmp280Interface::readTemperature()
     return temperature_;
 }
 
-float Bmp280Interface::readPressure()
+float Bmp280::readPressure()
 {
     int64_t var1, var2, p;
     uint8_t data[3];
@@ -68,7 +68,7 @@ float Bmp280Interface::readPressure()
     return pressure_;
 }
 
-float Bmp280Interface::read(uint8_t index)
+float Bmp280::read(uint8_t index)
 {
     if (index == BMP_TEMPERATURE)
     {

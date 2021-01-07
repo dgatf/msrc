@@ -1,14 +1,14 @@
 #include "escHW4.h"
 
-EscHW4Interface::EscHW4Interface(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp), type_(type) {}
+EscHW4::EscHW4(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp), type_(type) {}
 
-void EscHW4Interface::begin()
+void EscHW4::begin()
 {
     serial_.begin(19200);
     serial_.setTimeout(ESCHW4_ESCSERIAL_TIMEOUT);
 }
 
-bool EscHW4Interface::update()
+bool EscHW4::update()
 {
     while (serial_.available() >= 13)
     {
@@ -90,12 +90,12 @@ bool EscHW4Interface::update()
     return false;
 }
 
-float EscHW4Interface::calcVolt(uint16_t voltRaw)
+float EscHW4::calcVolt(uint16_t voltRaw)
 {
     return ESCHW4_V_REF * voltRaw / ESCHW4_ADC_RES * voltageDivisor_[type_];
 }
 
-float EscHW4Interface::calcTemp(uint16_t tempRaw)
+float EscHW4::calcTemp(uint16_t tempRaw)
 {
     float voltage = tempRaw * ESCHW4_V_REF / ESCHW4_ADC_RES;
     float ntcR_Rref = (voltage * ESCHW4_NTC_R1 / (ESCHW4_V_REF - voltage)) / ESCHW4_NTC_R_REF;
@@ -105,14 +105,14 @@ float EscHW4Interface::calcTemp(uint16_t tempRaw)
     return temperature;
 }
 
-float EscHW4Interface::calcCurr(uint16_t currentRaw)
+float EscHW4::calcCurr(uint16_t currentRaw)
 {
     if (value_[ESCHW4_THR] < 128 || currentRaw - rawCurrentOffset_[type_] < 0)
         return 0;
     return (currentRaw - rawCurrentOffset_[type_]) * ESCHW4_V_REF / (ESCHW4_DIFFAMP_GAIN * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
 }
 
-float EscHW4Interface::read(uint8_t index)
+float EscHW4::read(uint8_t index)
 {
     if (index <= ESCHW4_CELL_VOLTAGE)
     {

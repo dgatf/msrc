@@ -10,7 +10,7 @@
 #include <Arduino.h>
 #include "device.h"
 
-class VoltageInterface : public AbstractDevice
+class Voltage : public AbstractDevice
 {
 protected:
     uint8_t pin_;
@@ -19,7 +19,7 @@ protected:
     float readVoltage();
 
 public:
-    VoltageInterface(uint8_t pin, uint8_t alpha);
+    Voltage(uint8_t pin, uint8_t alpha);
     virtual float read(uint8_t index);
 };
 

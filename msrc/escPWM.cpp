@@ -4,9 +4,9 @@ volatile uint16_t escPwmDuration = 0;
 volatile bool escPwmRunning = false;
 volatile bool escPwmUpdate = false;
 
-EscPWMInterface::EscPWMInterface(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
+EscPWM::EscPWM(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
 
-void EscPWMInterface::TIMER1_CAPT_handler()
+void EscPWM::TIMER1_CAPT_handler()
 {
     escPwmDuration = ICR1;
     TCNT1 = 0;              // reset timer
@@ -14,12 +14,12 @@ void EscPWMInterface::TIMER1_CAPT_handler()
     escPwmUpdate = true;
 }
 
-void EscPWMInterface::TIMER1_OVF_handler()
+void EscPWM::TIMER1_OVF_handler()
 {
     escPwmRunning = false;
 }
 
-void EscPWMInterface::begin()
+void EscPWM::begin()
 {
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
     TIMER1_OVF_handlerP = TIMER1_OVF_handler;
@@ -30,7 +30,7 @@ void EscPWMInterface::begin()
 
 }
 
-float EscPWMInterface::read(uint8_t index)
+float EscPWM::read(uint8_t index)
 {
     if (index == 0)
     {

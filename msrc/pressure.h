@@ -11,12 +11,12 @@
 #include <Arduino.h>
 #include "voltage.h"
 
-class PressureInterface : public VoltageInterface
+class Pressure : public Voltage
 {
 private:
     float voltageOffset = 0;
 public:
-    PressureInterface(uint8_t pin, uint8_t alpha);
+    Pressure(uint8_t pin, uint8_t alpha);
     float read(uint8_t index);
 };
 

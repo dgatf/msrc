@@ -181,8 +181,8 @@ void initConfig(Config &config)
     if (config.protocol == PROTOCOL_PWM)
     {
         Sensor *sensorP;
-        EscPWMInterface *esc;
-        esc = new EscPWMInterface(config.alpha.rpm);
+        EscPWM *esc;
+        esc = new EscPWM(config.alpha.rpm);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
         rpmSensorP = sensorP;
@@ -191,8 +191,8 @@ void initConfig(Config &config)
     if (config.protocol == PROTOCOL_HW_V3)
     {
         Sensor *sensorP;
-        EscHW3Interface *esc;
-        esc = new EscHW3Interface(escSerial, config.alpha.rpm);
+        EscHW3 *esc;
+        esc = new EscHW3(escSerial, config.alpha.rpm);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
         rpmSensorP = sensorP;
@@ -201,8 +201,8 @@ void initConfig(Config &config)
     if (config.protocol >= PROTOCOL_HW_V4_LV && config.protocol <= PROTOCOL_HW_V5_HV)
     {
         Sensor *sensorP;
-        EscHW4Interface *esc;
-        esc = new EscHW4Interface(escSerial, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp, config.protocol - PROTOCOL_HW_V4_LV);
+        EscHW4 *esc;
+        esc = new EscHW4(escSerial, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp, config.protocol - PROTOCOL_HW_V4_LV);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, ESCHW4_RPM, config.refresh.rpm, esc);
         rpmSensorP = sensorP;
@@ -219,8 +219,8 @@ void initConfig(Config &config)
     if (config.protocol == PROTOCOL_CASTLE)
     {
         Sensor *sensorP;
-        EscCastleInterface *esc;
-        esc = new EscCastleInterface(config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp);
+        EscCastle *esc;
+        esc = new EscCastle(config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp);
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, CASTLE_RPM, config.refresh.rpm, esc);
         rpmSensorP = sensorP;
@@ -241,8 +241,8 @@ void initConfig(Config &config)
     if (config.gps == true)
     {
         Sensor *sensorP;
-        Bn220Interface *gps;
-        gps = new Bn220Interface(gpsSerial);
+        Bn220 *gps;
+        gps = new Bn220(gpsSerial);
         gps->begin();
         sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, BN220_LON, BN220_LAT, config.refresh.def, gps);
         smartport.addSensor(sensorP);
@@ -258,48 +258,48 @@ void initConfig(Config &config)
     if (config.airspeed == true)
     {
         Sensor *sensorP;
-        PressureInterface *pressure;
-        pressure = new PressureInterface(PIN_PRESSURE, config.alpha.volt);
+        Pressure *pressure;
+        pressure = new Pressure(PIN_PRESSURE, config.alpha.volt);
         sensorP = new Sensor(AIR_SPEED_FIRST_ID, config.refresh.volt, pressure);
         smartport.addSensor(sensorP);
     }
     if (config.voltage1 == true)
     {
         Sensor *sensorP;
-        VoltageInterface *voltage;
-        voltage = new VoltageInterface(PIN_VOLTAGE1, config.alpha.volt);
+        Voltage *voltage;
+        voltage = new Voltage(PIN_VOLTAGE1, config.alpha.volt);
         sensorP = new Sensor(A3_FIRST_ID, config.refresh.volt, voltage);
         smartport.addSensor(sensorP);
     }
     if (config.voltage2 == true)
     {
         Sensor *sensorP;
-        VoltageInterface *voltage;
-        voltage = new VoltageInterface(PIN_VOLTAGE2, config.alpha.volt);
+        Voltage *voltage;
+        voltage = new Voltage(PIN_VOLTAGE2, config.alpha.volt);
         sensorP = new Sensor(A4_FIRST_ID, config.refresh.volt, voltage);
         smartport.addSensor(sensorP);
     }
     if (config.current == true)
     {
         Sensor *sensorP;
-        VoltageInterface *voltage;
-        voltage = new VoltageInterface(PIN_CURRENT, config.alpha.curr);
+        Voltage *voltage;
+        voltage = new Voltage(PIN_CURRENT, config.alpha.curr);
         sensorP = new Sensor(CURR_FIRST_ID, config.refresh.curr, voltage);
         smartport.addSensor(sensorP);
     }
     if (config.ntc1 == true)
     {
         Sensor *sensorP;
-        NtcInterface *ntc;
-        ntc = new NtcInterface(PIN_NTC1, config.alpha.temp);
+        Ntc *ntc;
+        ntc = new Ntc(PIN_NTC1, config.alpha.temp);
         sensorP = new Sensor(T1_FIRST_ID, config.refresh.temp, ntc);
         smartport.addSensor(sensorP);
     }
     if (config.ntc2 == true)
     {
         Sensor *sensorP;
-        NtcInterface *ntc;
-        ntc = new NtcInterface(PIN_NTC2, config.alpha.temp);
+        Ntc *ntc;
+        ntc = new Ntc(PIN_NTC2, config.alpha.temp);
         sensorP = new Sensor(T2_FIRST_ID, config.refresh.temp, ntc);
         smartport.addSensor(sensorP);
     }
@@ -308,8 +308,8 @@ void initConfig(Config &config)
         if (config.deviceI2C[i].type == I2C_BMP280)
         {
             Sensor *sensorP;
-            Bmp280Interface *bmp;
-            bmp = new Bmp280Interface(config.deviceI2C[i].address, config.alpha.temp, config.alpha.def);
+            Bmp280 *bmp;
+            bmp = new Bmp280(config.deviceI2C[i].address, config.alpha.temp, config.alpha.def);
             bmp->begin();
             sensorP = new Sensor(T1_FIRST_ID + 2, BMP_TEMPERATURE, config.refresh.temp, bmp);
             smartport.addSensor(sensorP);

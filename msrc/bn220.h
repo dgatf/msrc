@@ -26,7 +26,7 @@
 #include <Arduino.h>
 #include "device.h"
 
-class Bn220Interface : public AbstractDevice
+class Bn220 : public AbstractDevice
 {
 private:
     const uint8_t nmeaData[5][9][2] = {{{0, 0}},
@@ -46,7 +46,7 @@ private:
     void parser(uint8_t type, char *data);
 
 public:
-    Bn220Interface(HardwareSerial &serial);
+    Bn220(HardwareSerial &serial);
     void begin();
     float read(uint8_t index);
 };

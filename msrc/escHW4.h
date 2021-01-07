@@ -32,7 +32,7 @@
 #include "device.h"
 #include "escCell.h"
 
-class EscHW4Interface : public AbstractDevice, public EscCell
+class EscHW4 : public AbstractDevice, public EscCell
 {
 private:
     /*const uint8_t signature_[4][12] = {{0x9B, 0x03, 0xE8, 0x01, 0x08, 0x5B, 0x00, 0x01, 0x00, 0x21, 0x21, 0xB9},      // ESCHW4_TYPE_V4_LV
@@ -52,7 +52,7 @@ private:
 
 protected:
 public:
-    EscHW4Interface(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type);
+    EscHW4(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type);
     void begin();
     bool update();
     float read(uint8_t index);
