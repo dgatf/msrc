@@ -50,8 +50,8 @@ void EscCastle::INT0_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT1 - OCR1B;
 #ifdef DEBUG_CALIB
-    Serial.print(castleTelemetry[castleCont]);
-    Serial.print(" ");
+    DEBUG_SERIAL.print(castleTelemetry[castleCont]);
+    DEBUG_SERIAL.print(" ");
 #endif
     castleCont++;
     castleTelemetryReceived = true;
@@ -66,9 +66,9 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 #endif
         castleCont = 0;
 #ifdef DEBUG_CALIB
-        Serial.println();
-        Serial.print(millis());
-        Serial.print(" ");
+        DEBUG_SERIAL.println();
+        DEBUG_SERIAL.print(millis());
+        DEBUG_SERIAL.print(" ");
 #endif  
     }
     castleTelemetryReceived = false;
