@@ -30,10 +30,10 @@ The following Rx protocols are supported:
 
 Depending on the receiver protocol connect the Rx as follows
 
-<p align="center"><img src="./images/smartport_srxl.png" width="550"><br>
+<p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
   <i>Smartport or SRXL</i><br><br></p>
 
-<p align="center"><img src="./images/xbus.png" width="450"><br>
+<p align="center"><img src="./images/xbus.png" width="300"><br>
   <i>XBUS</i><br><br></p>
 
 ## 1. Sensors
@@ -96,7 +96,7 @@ The following analog sensors are supported:
 
 ### 1.4. I2C sensors
 
-The following I2C sensors are suported (pins A4, A5):
+I2C sensors not compatible with XBUS. The following I2C sensors are suported (pins A4, A5):
 
 - Barometer: BMP280
 
