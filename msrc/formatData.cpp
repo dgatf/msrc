@@ -43,7 +43,7 @@ uint32_t FormatData::formatData(uint16_t dataId, float valueL)
 
 uint32_t FormatData::formatCell(uint8_t cellIndex, float value1, float value2)
 {
-    return cellIndex | round(value1 * 500) << 8 | round(value2 * 500) << 22;
+    return cellIndex | (uint16_t)round(value1 * 500) << 8 | (uint32_t)round(value2 * 500) << 22;
 }
 
 uint32_t FormatData::formatLatLon(uint8_t type, float value)

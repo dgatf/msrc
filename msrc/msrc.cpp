@@ -151,7 +151,6 @@ void initConfig(Config &config)
         Sensor *sensorP;
         Bn220 *gps;
         gps = new Bn220(GPS_SERIAL);
-        gps = new Bn220(gpsSerial);
         gps->begin();
         sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, BN220_LON, BN220_LAT, config.refresh.def, gps);
         smartport.addSensor(sensorP);
