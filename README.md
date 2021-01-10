@@ -20,6 +20,22 @@ The following sensors are supported:
 
 All sensors are optional. Make the circuit with the desired sensors and enable them with the configuration, with a lua script id using smartport or config.h for the rest 
 
+## 1. Receiver
+
+The following Rx protocols are supported:
+
+- Smartport (Frsky): inverted serial, 57200 bps
+- SRXL v5 (Spektrum): serial, 115200 bps
+- XBUS (Spektrum): I2C
+
+Depending on the receiver protocol connect the Rx as follows
+
+<p align="center"><img src="./images/smartport_srxl.png" width="550"><br>
+  <i>Smartport or SRXL</i><br><br></p>
+
+<p align="center"><img src="./images/xbus.png" width="450"><br>
+  <i>XBUS</i><br><br></p>
+
 ## 1. Sensors
 
 ### 1.1. ESC
@@ -33,28 +49,22 @@ If the ESC have a serial port for telemetry output it can be decoded connecting 
 
 Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry
 
-<p align="center"><img src="./images/msrc_serial.png" width="600"><br>
-  <i>ESC serial circuit Smartport</i><br><br></p>
-
-<p align="center"><img src="./images/xbus.png" width="600"><br>
-  <i>ESC serial circuit XBUS</i><br><br></p>
-
-<p align="center"><img src="./images/srxl.png" width="600"><br>
-  <i>ESC serial circuit SRXL</i><br><br></p>
+<p align="center"><img src="./images/serial.png" width="400"><br>
+  <i>ESC serial</i><br><br></p>
 
 #### PWM signal
 
 If the ESC have a PWM signal for motor RPMs or a phase sensor is installed, the RPMs can be measured with the 16bit timer of the Pro Mini. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
 
-<p align="center"><img src="./images/msrc_pwm.png" width="600"><br>
+<p align="center"><img src="./images/pwm_in.png" width="400"><br>
   <i>PWM signal/phase sensor circuit</i><br><br></p>
 
 #### Castle link
 
 ESC Castle Link protocol is also implemented. The telemetry values goes together with the PWM input signal to the ESC. This is an inverted PWM signal and the ESC option *Castle Link* has to be enabled
 
-<p align="center"><img src="./images/msrc_castle.png" width="600"><br>
-  <i>Minimum circuit Castle Link</i><br><br></p>
+<p align="center"><img src="./images/msrc_castle.png" width="500"><br>
+  <i>Castle Link with Smartport. For an opto ESC feed Vcc from Rx servo, not Smartport</i><br><br></p>
 
 #### Available ESC telemetry
 
@@ -91,7 +101,7 @@ The following I2C sensors are suported (pins A4, A5):
 - Barometer: BMP280
 
 <p align="center"><img src="./images/msrc_full.png" width="600"><br>
-  <i>I2C and analog sensors</i><br><br></p>
+  <i>I2C and analog sensors with Smartport</i><br><br></p>
 
 
 ## 2. Flash to Arduino
