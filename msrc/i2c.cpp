@@ -6,7 +6,7 @@ int16_t I2C::readInt(uint8_t device, uint8_t reg, uint8_t endian)
 {
     uint8_t data[2] = {0};
     readBytes(device, reg, data, 2);
-    if (endian == BIG_ENDIAN)
+    if (endian == I2C_BIG_ENDIAN)
         return data[0] << 8 | data[1];
     return data[1] << 8 | data[0];
 }
@@ -15,7 +15,7 @@ uint16_t I2C::readUInt(uint8_t device, uint8_t reg, uint8_t endian)
 {
     uint8_t data[2] = {0};
     readBytes(device, reg, data, 2);
-    if (endian == BIG_ENDIAN)
+    if (endian == I2C_BIG_ENDIAN)
         return data[0] << 8 | data[1];
     return data[1] << 8 | data[0];
 }

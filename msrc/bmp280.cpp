@@ -8,18 +8,18 @@ void Bmp280::begin()
     uint8_t measureReg[1] = {(BMP280_OVERSAMPLING_X4 << 5) | (BMP280_OVERSAMPLING_X4 << 2) | BMP280_NORMAL};
     writeBytes(device_, BMP280_REGISTER_CONFIG, configReg, 1);
     writeBytes(device_, BMP280_REGISTER_CONTROL, measureReg, 1);
-    T1_ = readUInt(device_, 0x88, LITTLE_ENDIAN);
-    T2_ = readInt(device_, 0x8A, LITTLE_ENDIAN);
-    T3_ = readInt(device_, 0x8C, LITTLE_ENDIAN);
-    P1_ = readUInt(device_, 0x8E, LITTLE_ENDIAN);
-    P2_ = readInt(device_, 0x90, LITTLE_ENDIAN);
-    P3_ = readInt(device_, 0x92, LITTLE_ENDIAN);
-    P4_ = readInt(device_, 0x94, LITTLE_ENDIAN);
-    P5_ = readInt(device_, 0x96, LITTLE_ENDIAN);
-    P6_ = readInt(device_, 0x98, LITTLE_ENDIAN);
-    P7_ = readInt(device_, 0x9A, LITTLE_ENDIAN);
-    P8_ = readInt(device_, 0x9C, LITTLE_ENDIAN);
-    P9_ = readInt(device_, 0x9E, LITTLE_ENDIAN);
+    T1_ = readUInt(device_, 0x88, I2C_LITTLE_ENDIAN);
+    T2_ = readInt(device_, 0x8A, I2C_LITTLE_ENDIAN);
+    T3_ = readInt(device_, 0x8C, I2C_LITTLE_ENDIAN);
+    P1_ = readUInt(device_, 0x8E, I2C_LITTLE_ENDIAN);
+    P2_ = readInt(device_, 0x90, I2C_LITTLE_ENDIAN);
+    P3_ = readInt(device_, 0x92, I2C_LITTLE_ENDIAN);
+    P4_ = readInt(device_, 0x94, I2C_LITTLE_ENDIAN);
+    P5_ = readInt(device_, 0x96, I2C_LITTLE_ENDIAN);
+    P6_ = readInt(device_, 0x98, I2C_LITTLE_ENDIAN);
+    P7_ = readInt(device_, 0x9A, I2C_LITTLE_ENDIAN);
+    P8_ = readInt(device_, 0x9C, I2C_LITTLE_ENDIAN);
+    P9_ = readInt(device_, 0x9E, I2C_LITTLE_ENDIAN);
 }
 
 float Bmp280::readTemperature()

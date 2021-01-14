@@ -6,12 +6,13 @@ volatile uint16_t EscCastle::castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000
 #else
 volatile uint16_t EscCastle::castleTelemetry[12] = {0};
 #endif
-volatile uint16_t EscCastle::castleCompsPerMilli = 1 * MS_TO_COMP(8);
+volatile uint16_t EscCastle::castleCompsPerMilli = 1 * CASTLE_MS_TO_COMP(8);
 volatile uint8_t EscCastle::castleCont = 0;
 volatile uint8_t EscCastle::castleRxLastReceived = 0;
 
 EscCastle::EscCastle(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
+#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
 void EscCastle::TIMER1_CAPT_handler() // RX INPUT
 {
     static uint16_t ts = 0;
@@ -61,15 +62,13 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 {
     if (!castleTelemetryReceived)
     {
-#ifndef FIXED_CALIB
-        castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
-#endif
+        //castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
 #ifdef DEBUG_CALIB
         DEBUG_SERIAL.println();
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
-#endif  
+#endif
     }
     castleTelemetryReceived = false;
     if (castleRxLastReceived > RX_MAX_CYCLES)
@@ -85,17 +84,85 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
     TIMSK2 = 0;        // DISABLE TIMER2 INTS
     DDRB |= _BV(DDB2); // PWM OUT PIN 10 OUTPUT
 }
+#endif
+
+#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
+void EscCastle::TIMER1_CAPT_handler() // RX INPUT
+{
+    if (TCCR1B & _BV(ICES1)) // RX RISING (PULSE START)
+    {
+        TCNT1 = 0; // RESET COUNTER
+    }
+    else // RX FALLING (PULSE END)
+    {
+        TIMSK4 |= _BV(OCIE4B); // ENABLE OCR MATCH INTERRUPT
+        OCR4B = ICR1;
+        castleRxLastReceived = 0;
+    }
+    TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 EDGE
+}
+
+void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
+{
+    DDRE &= ~_BV(DDE0);   // INPUT ICP4 (PE0, 22)
+    PORTE |= _BV(PE2);    // PE2 PULLUP
+    TIFR4 |= _BV(ICF4);   // CLEAR ICP3 CAPTURE FLAG
+    TIMSK4 |= _BV(ICIE4); // ENABLE ICP3 CAPT
+    TCNT2 = 0;            // RESET TIMER2 COUNTER
+    TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
+    TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
+}
+
+void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
+{
+    castleTelemetry[castleCont] = TCNT4 - OCR4B;
+#ifdef DEBUG_CALIB
+    DEBUG_SERIAL.print(castleTelemetry[castleCont]);
+    DEBUG_SERIAL.print(" ");
+#endif
+    castleCont++;
+    castleTelemetryReceived = true;
+}
+
+void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
+{
+    if (!castleTelemetryReceived)
+    {
+        castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
+        castleCont = 0;
+#ifdef DEBUG_CALIB
+        DEBUG_SERIAL.println();
+        DEBUG_SERIAL.print(millis());
+        DEBUG_SERIAL.print(" ");
+#endif
+    }
+    castleTelemetryReceived = false;
+    if (castleRxLastReceived > RX_MAX_CYCLES)
+    {
+        OCR4B = 0;              // DISABLE PWM
+        TIMSK4 &= ~_BV(OCIE4B); // DISABLE OCR MATCH INTERRUPT
+    }
+    else
+    {
+        castleRxLastReceived++;
+    }
+    TIMSK4 &= ~_BV(ICIE4);  // DISABLE ICP4 CAPT
+    DDRE |= _BV(DDE0);      // OUTPUT ICP4 (PE0, 22)
+    TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
+}
+#endif
 
 void EscCastle::begin()
 {
+#ifdef DEBUG_CALIB
+    ESC_SERIAL.begin(115200);
+#endif
+
+#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
     TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
     INT0_handlerP = INT0_handler;
     TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
-
-#ifdef DEBUG_CALIB
-    Serial.begin(115200);
-#endif
 
     // ICP1 (PB0 PIN8) -> RX THR, INPUT
     // INT0 (PD2, PIN2)-> TELEMETRY, INPUT
@@ -103,12 +170,12 @@ void EscCastle::begin()
 
     // TIMER 1, ICP1
     DDRB |= _BV(DDB2);                                            // PWM OUT PIN 10
-    TCCR1A = _BV(WGM11) | _BV(WGM10) | _BV(COM1B1) | _BV(COM1B0); // TOGGLE OC1A ON OCR1B
+    TCCR1A = _BV(WGM11) | _BV(WGM10) | _BV(COM1B1) | _BV(COM1B0); // TOGGLE OC1B ON OCR1B
     TCCR1B = _BV(WGM13) | _BV(WGM12);                             // MODE 15
     TCCR1B |= _BV(ICES1);                                         // RISING
     TCCR1B |= _BV(CS11);                                          // SCALER 8
     TIMSK1 = _BV(ICIE1);                                          // INTS: CAPT, COMPB
-    OCR1A = 20 * MS_TO_COMP(8);                                   // 50Hz = 20ms
+    OCR1A = 20 * CASTLE_MS_TO_COMP(8);                            // 50Hz = 20ms
     PORTB |= _BV(PB0);                                            // PB0 PULLUP
 
     // INT0
@@ -117,7 +184,36 @@ void EscCastle::begin()
     // TIMER 2
     TCCR2A = 0;                                 // NORMAL MODE
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * MS_TO_COMP(1024);              // 12ms
+    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms
+#endif
+
+#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
+    TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
+    TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
+    TIMER4_COMPB_handlerP = TIMER4_COMPB_handler;
+    TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
+
+    // TIMER1: ICP1 (PB0, PIN 8) (RX)
+    TCCR1B = 0;           // MODE 0 (NORMAL)
+    TCCR1B |= _BV(ICES1); // RISING
+    TCCR1B |= _BV(CS11);  // SCALER 8
+    TIMSK1 = _BV(ICIE1);  // CAPTURE INTERRUPT
+
+    // TIMER3, ICP3 (PE2, A6) (ESC OUTPUT, TELEMETRY INPUT). OC3B (PD2 PIN 2) -> OUTPUT/INPUT PULL UP
+    DDRD |= _BV(DDD2);                   // OC4B PD2 (PIN 2)
+    TCCR4A = _BV(WGM41) | _BV(WGM40);    // MODE 15 (TOP OCR4A)
+    TCCR4B = _BV(WGM43) | _BV(WGM42);    //
+    TCCR4A |= _BV(COM4B1) | _BV(COM4B0); // TOGGLE OC4B ON OCR4B (INVERTING)
+    TCCR4B &= ~_BV(ICES4);               // FALLING
+    TCCR4B |= _BV(CS41);                 // SCALER 8
+    TIMSK4 = _BV(ICIE4) | _BV(OCIE4B);   // INTS: CAPT, COMPB
+    OCR4A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
+
+    // TIMER 2
+    TCCR2A = 0;                                 // NORMAL MODE
+    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
+    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms, TOGGLE ICP3 INPUT/OUTPUT
+#endif
 }
 
 float EscCastle::read(uint8_t index)
@@ -149,7 +245,7 @@ float EscCastle::read(uint8_t index)
         if (castleTelemetry[10] > castleTelemetry[9])
         {
             float ntc_value = ((float)castleTelemetry[index] / castleCompsPerMilli - 0.5) * scaler[index];
-            value = 1 / (log(ntc_value * R2 / (255.0F - ntc_value) / R0) / B + 1 / 298.0F) - 273.0F;
+            value = 1 / (log(ntc_value * CASTLE_R2 / (255.0F - ntc_value) / CASTLE_R0) / CASTLE_B + 1 / 298.0F) - 273.0F;
         }
         else
         {

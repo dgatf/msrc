@@ -1,12 +1,22 @@
 # MSRC - Multi Sensor for RC - Smartport, XBUS, SRXL
 
-This is a DIY project to send multiple sensors telemetry using an Arduino Pro Mini 328P (3.3v or 5v) for a fraction of the weight and cost of the stock sensors
+This is a DIY project to send multiple sensors telemetry using an Arduino Pro Mini 328P (3.3v or 5v) or ATMega2560 Pro Mini for a fraction of the weight and cost of the stock sensors
 
 Compatible with the following RX protocols:
 
 - Smartport: FrSky
 - XBUS: Spektrum
 - SRXL: Spektrum
+
+Compatible boards:
+
+| Board     | MCU |Size (mm) | Weight (g) | Castle telemetry | Serial ports | Programmer required | Price |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Pro Mini  | ATMega328 (8/16MHz) | 33x18     | 2          | Unstable         | 1            | Yes                 | $3    |
+| Teensy 2  | ATMega32u4 (16MHz)|31x18     | 11         | Yes              | 1            | No                  | $7    |
+| Teensy LC | Cortex M0 (48MHz) |36x18     | 11         | Yes              | 3            | No                  | $20   |
+
+If Castle telemetry is not needed and one serial port is enough (2 serial are required only when ESC serial and GPS) it is recommended Pro Mini as is lighter and cheaper. In the other hand a USB to TTL programmer is needed
 
 The following sensors are supported:
 
@@ -58,6 +68,9 @@ If the ESC have a PWM signal for motor RPMs or a phase sensor is installed, the 
 
 <p align="center"><img src="./images/pwm_in.png" width="400"><br>
   <i>PWM signal/phase sensor circuit</i><br><br></p>
+
+<p align="center"><img src="./images/pwm_in_atmega2560.png" width="300"><br>
+  <i>PWM signal/phase sensor circuit, ATMega2560 Pro Mini</i><br><br></p>
 
 #### Castle link
 

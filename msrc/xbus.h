@@ -1,11 +1,11 @@
 #ifndef XBUS_H
 #define XBUS_H
 
+#define XBUS_AIRSPEED 0x11
+#define XBUS_ALTIMETER 0x12
 #define XBUS_GPS_LOC 0x16
 #define XBUS_GPS_STAT 0x17
 #define XBUS_ESC 0x20
-#define XBUS_AIRSPEED 0x11
-#define XBUS_ALTIMETER 0x12
 #define XBUS_BATTERY 0x34
 #define XBUS_RPM_VOLT_TEMP 0x7E
 
@@ -51,14 +51,6 @@ struct Xbus_RpmVoltTemp
     int16_t temperature = 0;   // degrees F
 };
 
-struct Xbus_Airspeed
-{
-    uint8_t identifier = 0x11;
-    uint8_t sID = 0;          // Secondary ID
-    uint16_t airspeed = 0;    // 1 km/h increments
-    uint16_t maxAirspeed = 0; // 1 km/h increments
-};
-
 struct Xbus_Battery
 {
     uint8_t id = 0x34;        // Source device = 0x34
@@ -96,11 +88,13 @@ struct Xbus_Gps_Stat
 class Xbus
 {
 private:
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
     uint8_t addressMask = 0;
+#endif
     static void i2c_request_handler();
 
 protected:
-#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 || CONFIG_ESC_PROTOCOL ==  PROTOCOL_HW_V4_LV || CONFIG_ESC_PROTOCOL ==  PROTOCOL_HW_V4_HV || CONFIG_ESC_PROTOCOL ==  PROTOCOL_HW_V5_LV || CONFIG_ESC_PROTOCOL ==  PROTOCOL_HW_V5_HV
     static Xbus_Esc xbusEsc;
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM || CONFIG_VOLTAGE1 || CONFIG_NTC1
@@ -108,6 +102,34 @@ protected:
 #endif
 #if CONFIG_VOLTAGE2 || CONFIG_NTC2
     static Xbus_RpmVoltTemp xbusRpmVoltTemp2;
+#endif
+#if CONFIG_AIRSPEED
+    static Xbus_Airspeed xbusAirspeed;
+    Pressure airspeed = Pressure(PIN_PRESSURE, CONFIG_ALPHA_DEF);
+#endif
+#if CONFIG_CURRENT
+    static Xbus_Battery xbusBattery;
+    Voltage curr = Voltage(PIN_CURRENT, CONFIG_ALPHA_CURR);
+#endif
+#if CONFIG_GPS
+    static Xbus_Gps_Loc xbusGpsLoc;
+    static Xbus_Gps_Stat xbusGpsStat;
+    Bn220 gps = Bn220(GPS_SERIAL);
+#endif
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM
+    EscPWM escPwm = EscPWM(CONFIG_ALPHA_RPM);
+#endif
+#if CONFIG_VOLTAGE1
+    Voltage volt1 = Voltage(PIN_VOLTAGE1, CONFIG_ALPHA_VOLT);
+#endif
+#if CONFIG_NTC1
+    Ntc ntc1 = Ntc(PIN_NTC1, CONFIG_ALPHA_TEMP);
+#endif
+#if CONFIG_VOLTAGE2
+    Voltage volt2 = Voltage(PIN_VOLTAGE2, CONFIG_ALPHA_VOLT);
+#endif
+#if CONFIG_NTC2
+    Ntc ntc2 = Ntc(PIN_NTC2, CONFIG_ALPHA_TEMP);
 #endif
 #if CONFIG_AIRSPEED
     static Xbus_Airspeed xbusAirspeed;
