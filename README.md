@@ -85,9 +85,6 @@ Connect PWM signal to pin 8
 <p align="center"><img src="./images/pwm_in.png" width="400"><br>
   <i>PWM signal/phase sensor circuit</i><br><br></p>
 
-<p align="center"><img src="./images/pwm_in_atmega2560.png" width="300"><br>
-  <i>PWM signal/phase sensor circuit, ATMega2560 Pro Mini</i><br><br></p>
-
 #### Castle link
 
 The telemetry is send over the ESC signal. *Castle Link* has to be enabled in the ESC config
