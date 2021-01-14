@@ -1,6 +1,6 @@
 # MSRC - Multi Sensor for RC - Smartport, XBUS, SRXL
 
-This is a DIY project to send multiple sensors telemetry using an Arduino Pro Mini 328P (3.3v or 5v) or ATMega2560 Pro Mini for a fraction of the weight and cost of the stock sensors
+This is a DIY project to send multiple sensors telemetry using an ATMega328P (Arduino Pro Mini) or ATMega328PB (Pololu ATMega328PB) based board, for a fraction of the weight and cost of the stock sensors
 
 Compatible RX protocols:
 
@@ -13,7 +13,7 @@ Compatible MCUs: ATMega328P, ATMega328PB
 Advantages of the ATMega328PB:
 
 - Accurate Castle telemetry
-- 2 UARTS (for using ESC serial and GPS at the same time)
+- 2 x UARTS (ESC serial and GPS can be connected at the same time)
 
 If nor Castle and 2 serial ports are required, the ATMega328P may be better choice, as is cheaper and easier to find
 
