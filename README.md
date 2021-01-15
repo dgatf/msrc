@@ -24,7 +24,7 @@ If nor Castle and 2 serial ports are required, the ATMega328P may be better choi
 
 For the ATMega328P it is recommended the Arduino Pro Mini. Other ATMega328P boards with USB connector may not read properly the serial port if connected (ESC serial or GPS). Also it is smaller and lighter than other ATMega328P boards
 
-For the ATMega328PB it is recommended the Pololu ATMega328PB. This is better choice than ATMega2560 as is smaller and lighter, but maybe harder to find
+For the ATMega328PB it is recommended the Pololu ATMega328PB. This is better choice than ATMega2560 as is smaller and lighter
 
 For the ATMega2560 it is recommencded the ATMega2560 Pro Mini
 
