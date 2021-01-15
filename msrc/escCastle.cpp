@@ -180,7 +180,7 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
         OCR5B = ICR4;
         castleRxLastReceived = 0;
     }
-    TCCR4B ^= _BV(ICES4); // TOGGLE ICP1 EDGE
+    TCCR4B ^= _BV(ICES4); // TOGGLE ICP4 EDGE
 }
 
 void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
@@ -227,7 +227,7 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
     {
         castleRxLastReceived++;
     }
-    TIMSK5 &= ~_BV(ICIE5);  // DISABLE ICP4 CAPT
+    TIMSK5 &= ~_BV(ICIE5);  // DISABLE ICP5 CAPT
     DDRL |= _BV(DDL1);      // OUTPUT ICP5 (PL1, 48)
     TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
 }
