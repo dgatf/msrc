@@ -95,7 +95,7 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
     }
     else // RX FALLING (PULSE END)
     {
-        if (TIMSK4 & _BV(OCIE4B) == 0)
+        if (!(TIMSK4 & _BV(OCIE4B)))
         {
             TCNT4 = 0;             // RESET COUNTER
             TIFR4 |= _BV(OCF4B);   // CLEAR OCRB CAPTURE FLAG
