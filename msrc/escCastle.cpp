@@ -98,6 +98,7 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         if (TIMSK4 & _BV(OCIE4B) == 0)
         {
             TCNT4 = 0;             // RESET COUNTER
+            TIFR4 |= _BV(OCF4B);   // CLEAR OCRB CAPTURE FLAG
             TIMSK4 |= _BV(OCIE4B); // ENABLE OCR MATCH INTERRUPT
         }
         OCR4B = ICR1;
