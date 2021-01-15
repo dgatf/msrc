@@ -238,7 +238,11 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
     }
     else // RX FALLING (PULSE END)
     {
-        TIMSK4 |= _BV(OCIE4B); // ENABLE OCR MATCH INTERRUPT
+        if (TIMSK5 & _BV(OCIE5B) == 0)
+        {
+            TCNT5 = 0;             // RESET COUNTER
+            TIMSK5 |= _BV(OCIE5B); // ENABLE OCR MATCH INTERRUPT
+        }
         OCR5B = ICR4;
         castleRxLastReceived = 0;
     }
@@ -372,7 +376,6 @@ void EscCastle::begin()
     TCCR5A |= _BV(COM5B1) | _BV(COM5B0); // TOGGLE OC5B ON OCR5B (INVERTING)
     TCCR5B &= ~_BV(ICES5);               // FALLING
     TCCR5B |= _BV(CS51);                 // SCALER 8
-    TIMSK5 = _BV(OCIE5B);                // INTS: COMPB
     OCR5A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
 
     // TIMER 2
@@ -381,33 +384,6 @@ void EscCastle::begin()
     OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms, TOGGLE ICP4 INPUT/OUTPUT
 #endif
 
-#if defined(__AVR_ATmega2560__)
-    TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
-    TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
-    TIMER5_COMPB_handlerP = TIMER5_COMPB_handler;
-    TIMER5_CAPT_handlerP = TIMER5_CAPT_handler;
-
-    // TIMER4: ICP4 (PL0, PIN 49) (RX)
-    TCCR4B = 0;           // MODE 0 (NORMAL)
-    TCCR4B |= _BV(ICES4); // RISING
-    TCCR4B |= _BV(CS41);  // SCALER 8
-    TIMSK4 = _BV(ICIE4);  // CAPTURE INTERRUPT
-
-    // TIMER5, ICP5 (PL1, 48) (ESC OUTPUT, TELEMETRY INPUT). OC5B (PL4 PIN 45) -> OUTPUT/INPUT PULL UP
-    DDRL |= _BV(DDL4);                   // OUTPUT OC5B PL4 (PIN 45)
-    TCCR5A = _BV(WGM51) | _BV(WGM50);    // MODE 15 (TOP OCR4A)
-    TCCR5B = _BV(WGM53) | _BV(WGM52);    //
-    TCCR5A |= _BV(COM5B1) | _BV(COM5B0); // TOGGLE OC5B ON OCR5B (INVERTING)
-    TCCR5B &= ~_BV(ICES5);               // FALLING
-    TCCR5B |= _BV(CS51);                 // SCALER 8
-    TIMSK5 = _BV(OCIE5B);                // INTS: COMPB
-    OCR5A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
-
-    // TIMER 2
-    TCCR2A = 0;                                 // NORMAL MODE
-    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms, TOGGLE ICP3 INPUT/OUTPUT
-#endif
 }
 
 float EscCastle::read(uint8_t index)
