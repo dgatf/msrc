@@ -215,7 +215,7 @@ void EscCastle::begin()
     // TIMER 2
     TCCR2A = 0;                                 // NORMAL MODE
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms, TOGGLE ICP4 INPUT/OUTPUT
+    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms, TOGGLE OC4B INPUT/OUTPUT
 #endif
 }
 
