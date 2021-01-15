@@ -108,10 +108,10 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
 
 void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
 {
-    DDRE &= ~_BV(DDE0);   // INPUT ICP4 (PE0, 22)
-    PORTE |= _BV(PE2);    // PE2 PULLUP
-    TIFR4 |= _BV(ICF4);   // CLEAR ICP3 CAPTURE FLAG
-    TIMSK4 |= _BV(ICIE4); // ENABLE ICP3 CAPT
+    DDRD &= ~_BV(DDD2);   // INPUT OC4B (PD2, 2)
+    PORTD |= _BV(PD2);    // PD2 PULLUP
+    TIFR4 |= _BV(ICF4);   // CLEAR ICP4 CAPTURE FLAG
+    TIMSK4 |= _BV(ICIE4); // ENABLE ICP4 CAPT
     TCNT2 = 0;            // RESET TIMER2 COUNTER
     TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
     TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
@@ -151,7 +151,7 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
         castleRxLastReceived++;
     }
     TIMSK4 &= ~_BV(ICIE4);  // DISABLE ICP4 CAPT
-    DDRE |= _BV(DDE0);      // OUTPUT ICP4 (PE0, 22)
+    DDRD |= _BV(DDD2);      // OUTPUT OC4B (PD2, 2)
     TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
 }
 #endif
