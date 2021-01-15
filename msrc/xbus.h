@@ -88,7 +88,7 @@ struct Xbus_Gps_Stat
 class Xbus
 {
 private:
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
     uint8_t addressMask = 0;
 #endif
     static void i2c_request_handler();

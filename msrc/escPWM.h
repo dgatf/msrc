@@ -11,6 +11,10 @@
 extern void (*TIMER1_CAPT_handlerP)();
 extern void (*TIMER1_OVF_handlerP)();
 #endif
+#if defined(__AVR_ATmega2560__)
+extern void (*TIMER4_CAPT_handlerP)();
+extern void (*TIMER4_OVF_handlerP)();
+#endif
 
 class EscPWM : public AbstractDevice
 {
@@ -23,6 +27,10 @@ private:
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
     static void TIMER1_CAPT_handler();
     static void TIMER1_OVF_handler();
+#endif
+#if defined(__AVR_ATmega2560__)
+    static void TIMER4_CAPT_handler();
+    static void TIMER4_OVF_handler();
 #endif
 
 protected:

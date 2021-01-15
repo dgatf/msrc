@@ -78,6 +78,12 @@ private:
     static void TIMER4_COMPB_handler();
     static void TIMER4_CAPT_handler();
 #endif
+#if defined(__AVR_ATmega2560__)
+    static void TIMER4_CAPT_handler();
+    static void TIMER2_COMPA_handler();
+    static void TIMER5_COMPB_handler();
+    static void TIMER5_CAPT_handler();
+#endif
 
 protected:
 public:

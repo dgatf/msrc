@@ -34,7 +34,7 @@ void Xbus::i2c_request_handler()
     if (cont > 5)
         cont = 0;
 #else
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
     uint8_t address = TWDR >> 1;
 #endif
 #endif
@@ -86,7 +86,7 @@ void Xbus::i2c_request_handler()
 void Xbus::begin()
 {
     pinMode(LED_BUILTIN, OUTPUT);
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM || CONFIG_VOLTAGE1 || CONFIG_VOLTAGE2 || CONFIG_NTC1 || CONFIG_NTC2
     addressMask |= XBUS_RPM_VOLT_TEMP;
 #endif
@@ -101,7 +101,7 @@ void Xbus::begin()
     addressMask |= XBUS_BATTERY;
 #endif
 #endif
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
     Wire.begin(addressMask);
     Wire.onRequest(i2c_request_handler);
     TWAMR = addressMask << 1;

@@ -56,6 +56,11 @@
 #define GPS_SERIAL Serial1
 #define DEBUG_SERIAL Serial
 #endif
+#if defined(__AVR_ATmega2560__)
+#define ESC_SERIAL Serial1
+#define GPS_SERIAL Serial2
+#define DEBUG_SERIAL Serial
+#endif
 
 /* Debug
    Disconnect Vcc from the RC model to the Arduino
@@ -92,6 +97,10 @@
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
 #define PIN_SMARTPORT_RX 4
 #define PIN_SMARTPORT_TX 23
+#endif
+#if defined(__AVR_ATmega2560__)
+#define PIN_SMARTPORT_RX 4
+#define PIN_SMARTPORT_TX 12
 #endif
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
