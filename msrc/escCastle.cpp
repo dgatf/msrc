@@ -95,7 +95,11 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
     }
     else // RX FALLING (PULSE END)
     {
-        TIMSK4 |= _BV(OCIE4B); // ENABLE OCR MATCH INTERRUPT
+        if (TIMSK4 & _BV(OCIE4B) == 0)
+        {
+            TCNT4 = 0;             // RESET COUNTER
+            TIMSK4 |= _BV(OCIE4B); // ENABLE OCR MATCH INTERRUPT
+        }
         OCR4B = ICR1;
         castleRxLastReceived = 0;
     }
@@ -199,20 +203,19 @@ void EscCastle::begin()
     TCCR1B |= _BV(CS11);  // SCALER 8
     TIMSK1 = _BV(ICIE1);  // CAPTURE INTERRUPT
 
-    // TIMER3, ICP3 (PE2, A6) (ESC OUTPUT, TELEMETRY INPUT). OC3B (PD2 PIN 2) -> OUTPUT/INPUT PULL UP
+    // TIMER4, ICP4 (PE0, 22) (ESC OUTPUT, TELEMETRY INPUT). OC4B (PD2 PIN 2) -> OUTPUT/INPUT PULL UP
     DDRD |= _BV(DDD2);                   // OC4B PD2 (PIN 2)
     TCCR4A = _BV(WGM41) | _BV(WGM40);    // MODE 15 (TOP OCR4A)
     TCCR4B = _BV(WGM43) | _BV(WGM42);    //
     TCCR4A |= _BV(COM4B1) | _BV(COM4B0); // TOGGLE OC4B ON OCR4B (INVERTING)
     TCCR4B &= ~_BV(ICES4);               // FALLING
     TCCR4B |= _BV(CS41);                 // SCALER 8
-    TIMSK4 = _BV(ICIE4) | _BV(OCIE4B);   // INTS: CAPT, COMPB
     OCR4A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
 
     // TIMER 2
     TCCR2A = 0;                                 // NORMAL MODE
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms, TOGGLE ICP3 INPUT/OUTPUT
+    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms, TOGGLE ICP4 INPUT/OUTPUT
 #endif
 }
 
