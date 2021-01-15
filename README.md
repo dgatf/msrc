@@ -120,7 +120,7 @@ This MCU produce accurate telemetry values
 This MCU produce accurate telemetry values
 
 - Connect Rx to pin 49
-- Connect ESC to pins 48 and 45
+- Connect ESC to pins 48 and 45 with a pull up resistor
 
 <ins>ATMega2560</ins>
 

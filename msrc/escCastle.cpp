@@ -172,7 +172,11 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
     }
     else // RX FALLING (PULSE END)
     {
-        TIMSK4 |= _BV(OCIE4B); // ENABLE OCR MATCH INTERRUPT
+        if (TIMSK5 & _BV(OCIE5B) == 0)
+        {
+            TCNT5 = 0;             // RESET COUNTER
+            TIMSK5 |= _BV(OCIE5B); // ENABLE OCR MATCH INTERRUPT
+        }
         OCR5B = ICR4;
         castleRxLastReceived = 0;
     }
