@@ -187,9 +187,9 @@ void EscCastle::begin()
     EICRA = _BV(ISC01); // INT0 FALLING
 
     // TIMER 2
-    TCCR2A = 0;                                 // NORMAL MODE
-    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms
+    TCCR2A = 0;                           // NORMAL MODE
+    TCCR2B = _BV(CS22) | _BV(CS20);       // SCALER 1024
+    OCR2A = 12 * CASTLE_MS_TO_COMP(1024); // 12ms
 #endif
 
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
@@ -214,9 +214,9 @@ void EscCastle::begin()
     OCR4A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
 
     // TIMER 2
-    TCCR2A = 0;                                 // NORMAL MODE
-    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms, TOGGLE OC4B INPUT/OUTPUT
+    TCCR2A = 0;                           // NORMAL MODE
+    TCCR2B = _BV(CS22) | _BV(CS20);       // SCALER 1024
+    OCR2A = 12 * CASTLE_MS_TO_COMP(1024); // 12ms, TOGGLE OC4B INPUT/OUTPUT
 #endif
 }
 
