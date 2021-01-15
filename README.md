@@ -94,14 +94,14 @@ The telemetry is send over the ESC signal. *Castle Link* has to be enabled in th
 The telemetry values are not accurate all the time. Some readings are increased by 5-10%. This is a hardware limitation
 
 - Connect Rx to pin 8
-- Connect ESC to pins 2 and 10
+- Connect ESC to pins 2 and 10 with a pull up resistor
 
 <ins>ATMega328PB</ins>
 
 This MCU produce accurate telemetry values. Connect Smartport signal to pins 4 and 23
 
 - Connect Rx to pin 8
-- Connect ESC to pins 2 and 22
+- Connect ESC to pins 2 and 22 with a pull up resistor
 
 <p align="center"><img src="./images/castle.png" width="500"><br>
   <i>Castle Link with Smartport</i><br><br></p>
