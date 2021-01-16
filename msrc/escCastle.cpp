@@ -101,8 +101,8 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         if (!(TIMSK4 & _BV(OCIE4B)))
         {
             TCNT4 = 0;             // RESET COUNTER
-            TIFR4 |= _BV(OCF4B);   // CLEAR OCRB CAPTURE FLAG
-            TIMSK4 |= _BV(OCIE4B); // ENABLE OCR MATCH INTERRUPT
+            TIFR4 |= _BV(OCF4B);   // CLEAR OCRB FLAG
+            TIMSK4 |= _BV(OCIE4B); // ENABLE OCRB MATCH INTERRUPT
         }
         OCR4B = ICR1;
         castleRxLastReceived = 0;
@@ -159,6 +159,80 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
     }
     TIMSK4 &= ~_BV(ICIE4);  // DISABLE ICP4 CAPT
     DDRD |= _BV(DDD2);      // OUTPUT OC4B (PD2, 2)
+    TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
+}
+#endif
+
+#if defined(__AVR_ATmega2560__)
+void EscCastle::TIMER4_CAPT_handler() // RX INPUT
+{
+    if (TCCR4B & _BV(ICES4)) // RX RISING (PULSE START)
+    {
+        TCNT4 = 0; // RESET COUNTER
+    }
+    else // RX FALLING (PULSE END)
+    {
+        if (!(TIMSK5 & _BV(OCIE5B)))
+        {
+            TCNT5 = 0;             // RESET COUNTER
+            TIFR5 |= _BV(OCF5B);   // CLEAR OCRB CAPTURE FLAG
+            TIMSK5 |= _BV(OCIE5B); // ENABLE OCRB MATCH INTERRUPT
+        }
+        OCR5B = ICR4;
+        castleRxLastReceived = 0;
+    }
+    TCCR4B ^= _BV(ICES4); // TOGGLE ICP4 EDGE
+}
+
+void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
+{
+    DDRL &= ~_BV(DDL4);   // INPUT OC5B (PL4, 45)
+    PORTL |= _BV(PL4);    // PL4 PULLUP
+    TIFR5 |= _BV(ICF5);   // CLEAR ICP5 CAPTURE FLAG
+    TIMSK5 |= _BV(ICIE5); // ENABLE ICP5 CAPT
+    TCNT2 = 0;            // RESET TIMER2 COUNTER
+    TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
+    TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
+}
+
+void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
+{
+    castleTelemetry[castleCont] = TCNT5 - OCR5B;
+#ifdef DEBUG_CASTLE
+    DEBUG_SERIAL.print(castleTelemetry[castleCont]);
+    DEBUG_SERIAL.print(" ");
+#endif
+    if (castleCont < 11)
+    {
+        castleCont++;
+        castleTelemetryReceived = true;
+    }
+}
+
+void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
+{
+    if (!castleTelemetryReceived)
+    {
+        castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
+        castleCont = 0;
+#ifdef DEBUG_CASTLE
+        DEBUG_SERIAL.println();
+        DEBUG_SERIAL.print(millis());
+        DEBUG_SERIAL.print(" ");
+#endif
+    }
+    castleTelemetryReceived = false;
+    if (castleRxLastReceived > RX_MAX_CYCLES)
+    {
+        OCR5B = 0;              // DISABLE PWM
+        TIMSK5 &= ~_BV(OCIE5B); // DISABLE OCR MATCH INTERRUPT
+    }
+    else
+    {
+        castleRxLastReceived++;
+    }
+    TIMSK5 &= ~_BV(ICIE5);  // DISABLE ICP5 CAPT
+    DDRL |= _BV(DDL4);      // OUTPUT OC5B (PL4, 45)
     TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
 }
 #endif
@@ -220,6 +294,33 @@ void EscCastle::begin()
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
     OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms
 #endif
+
+#if defined(__AVR_ATmega2560__)
+    TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
+    TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
+    TIMER5_COMPB_handlerP = TIMER5_COMPB_handler;
+    TIMER5_CAPT_handlerP = TIMER5_CAPT_handler;
+
+    // TIMER4. RX INPUT. ICP4 (PL0, PIN 49)
+    TCCR4B = 0;           // MODE 0 (NORMAL)
+    TCCR4B |= _BV(ICES4); // RISING EDGE
+    TCCR4B |= _BV(CS41);  // SCALER 8
+    TIMSK4 = _BV(ICIE4);  // CAPTURE INTERRUPT
+
+    // TIMER5. ESC: PWM OUTPUT, TELEMETRY INPUT. ICP5 (Pl1, PIN 48). OC5B (Pl4 PIN 45) -> OUTPUT/INPUT PULL UP
+    DDRL |= _BV(DDL4);                   // OUTPUT OC5B PL4 (PIN 45)
+    TCCR5A = _BV(WGM51) | _BV(WGM50);    // MODE 15 (TOP OCR5A)
+    TCCR5B = _BV(WGM53) | _BV(WGM52);    //
+    TCCR5A |= _BV(COM5B1) | _BV(COM5B0); // TOGGLE OC5B ON OCR5B (INVERTING)
+    TCCR5B &= ~_BV(ICES5);               // FALLING EDGE
+    TCCR5B |= _BV(CS51);                 // SCALER 8
+    OCR5A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
+
+    // TIMER 2. TOGGLE OC5B INPUT/OUTPUT
+    TCCR2A = 0;                                 // NORMAL MODE
+    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
+    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms
+#endif
 }
 
 float EscCastle::read(uint8_t index)
@@ -265,7 +366,7 @@ float EscCastle::read(uint8_t index)
         value = 0;
         break;
     }
-#ifdef DEBUG_ESC
+#ifdef DEBUG_CASTLE
     DEBUG_SERIAL.print("Value [");
     DEBUG_SERIAL.print(index);
     DEBUG_SERIAL.print("]: ");

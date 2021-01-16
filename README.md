@@ -1,6 +1,6 @@
 # MSRC - Multi Sensor for RC - Smartport, XBUS, SRXL
 
-This is a DIY project to send multiple sensors telemetry using an ATMega328P (Arduino Pro Mini) or ATMega328PB (Pololu ATMega328PB) based board, for a fraction of the weight and cost of the stock sensors
+This is a DIY project to send multiple sensors telemetry using an ATMega328P (Arduino Pro Mini), ATMega328PB (Pololu ATMega328PB) or ATMega2560 based board, for a fraction of the weight and cost of the stock sensors
 
 Compatible RX protocols:
 
@@ -8,18 +8,25 @@ Compatible RX protocols:
 - XBUS: Spektrum
 - SRXL: Spektrum
 
-Compatible MCUs: ATMega328P, ATMega328PB
+Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560
 
 Advantages of the ATMega328PB:
 
 - Accurate Castle telemetry
 - 2 x UARTS (ESC serial and GPS can be connected at the same time)
 
+Advantages of the ATMega2560:
+
+- Accurate Castle telemetry
+- 4 x UARTS (ESC serial and GPS can be connected at the same time)
+
 If nor Castle and 2 serial ports are required, the ATMega328P may be better choice, as is cheaper and easier to find
 
 For the ATMega328P it is recommended the Arduino Pro Mini. Other ATMega328P boards with USB connector may not read properly the serial port if connected (ESC serial or GPS). Also it is smaller and lighter than other ATMega328P boards
 
-For the ATMega328PB it is recommended the Pololu ATMega328PB
+For the ATMega328PB it is recommended the Pololu ATMega328PB. This is better choice than ATMega2560 as is smaller and lighter
+
+For the ATMega2560 it is recommencded the ATMega2560 Pro Mini
 
 Implemented sensors:
 
@@ -47,13 +54,18 @@ Depending on the receiver protocol connect to the Rx as follows
 
 - ATMega328P. Connect Smartport signal to pins 7 and 12
 - ATMega328PB. Connect Smartport signal to pins 4 and 23
+- ATMega2560. Connect Smartport signal to pins 4 and 12
 
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
   <i>Smartport or SRXL</i><br><br></p>
 
 ### XBUS
 
+<inv>ATMega328P/PB</inv>
 Connect XBUS to SDA/A4 and SCL/A5
+
+<inv>ATMega2560</inv>
+Connect XBUS to 20 (SDA) and 21 (SCL)
 
 <p align="center"><img src="./images/xbus.png" width="300"><br>
   <i>XBUS</i><br><br></p>
@@ -64,12 +76,12 @@ Connect XBUS to SDA/A4 and SCL/A5
 
 #### Serial telemetry
 
-If the ESC have a serial port for telemetry output it can be decoded connecting the ESC to the available UART in the Pro Mini. Serial protocols implemented:
+Compatible ESC serial protocols:
 
 - Hobbywing Platinum V3: RPM
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature (Mosfet and BEC), voltage and current
 
-Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry (pin 10)
+Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry (pin 10 on ATMega328P/PB or pin 7 on ATMega2560)
 
 Connect ESC serial to Arduino RX/0
 
@@ -78,9 +90,9 @@ Connect ESC serial to Arduino RX/0
 
 #### PWM signal
 
-If the ESC have a PWM signal for motor RPMs or a phase sensor is installed, the RPMs can be measured with the 16bit timer of the Pro Mini. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
+If the ESC have a PWM signal or a phase sensor is installed, RPMs can be measured with the 16bit timer of the Pro Mini. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
 
-Connect PWM signal to pin 8
+Connect PWM signal to pin 8 (ATMega328P/PB) or pin 49 (ATMega2560)
 
 <p align="center"><img src="./images/pwm_in.png" width="400"><br>
   <i>PWM signal/phase sensor circuit</i><br><br></p>
@@ -98,10 +110,17 @@ The telemetry values are not accurate all the time. Some readings are increased 
 
 <ins>ATMega328PB</ins>
 
-This MCU produce accurate telemetry values. Connect Smartport signal to pins 4 and 23
+This MCU produce accurate telemetry values
 
 - Connect Rx to pin 8
 - Connect ESC to pins 2 and 22 with a pull up resistor
+
+<ins>ATMega2560</ins>
+
+This MCU produce accurate telemetry values
+
+- Connect Rx to pin 49
+- Connect ESC to pins 48 and 45 with a pull up resistor
 
 <p align="center"><img src="./images/castle.png" width="500"><br>
   <i>Castle Link with Smartport</i><br><br></p>
@@ -127,6 +146,7 @@ Serial GPS (NMEA protocol) is supported
 
 - ATMega328P. Connect to Arduino RX/0. Not feasible to use with ESC serial at the same time
 - ATMega328PB. Connect to pin 12/RX1
+- ATMega2560. Connect to pin 17/RX2
 
 ### 1.3. Analog sensors
 
@@ -146,7 +166,6 @@ I2C sensors not compatible with XBUS. The following I2C sensors are suported (pi
 <p align="center"><img src="./images/full.png" width="600"><br>
   <i>I2C and analog sensors with Smartport</i><br><br></p>
 
-
 ## 2. Flash to Arduino
 
 Using Arduino IDE copy folder *msrc* and open *msrc.ino*
@@ -155,6 +174,7 @@ Select the board:
 
 - ATMega328B: *Arduino Pro or Pro Mini*, processor *ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
 - ATMega328PB: *Pololu A-Star 328PB*, version and flash
+- ATMega2560: *Arduino Mega or Mega 2560*, processor *ATMega2560* and flash
 
 ## 3. Configuration
 

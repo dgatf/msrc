@@ -21,6 +21,21 @@ void EscPWM::TIMER1_OVF_handler()
 }
 #endif
 
+#if defined(__AVR_ATmega2560__)
+void EscPWM::TIMER4_CAPT_handler()
+{
+    escPwmDuration = ICR4;
+    TCNT4 = 0; // reset timer
+    escPwmRunning = true;
+    escPwmUpdate = true;
+}
+
+void EscPWM::TIMER4_OVF_handler()
+{
+    escPwmRunning = false;
+}
+#endif
+
 void EscPWM::begin()
 {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
@@ -30,6 +45,15 @@ void EscPWM::begin()
     TCCR1A = 0;
     TCCR1B = _BV(CS11) | _BV(ICES1) | _BV(ICNC1);
     TIMSK1 = _BV(ICIE1) | _BV(TOIE1);
+#endif
+
+#if defined(__AVR_ATmega2560__)
+    // TIMER4: MODE 0 (NORMAL), SCALER 8, CAPTURE AND OVERFLOW INTERRUPT. ICP4, PL0, PIN 49
+    TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
+    TIMER4_OVF_handlerP = TIMER4_OVF_handler;
+    TCCR4A = 0;
+    TCCR4B = _BV(CS41) | _BV(ICES4) | _BV(ICNC4);
+    TIMSK4 = _BV(ICIE4) | _BV(TOIE4);
 #endif
 }
 

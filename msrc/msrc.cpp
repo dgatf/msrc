@@ -74,6 +74,45 @@ ISR(TIMER4_CAPT_vect)
 }
 #endif
 
+#if defined(__AVR_ATmega2560__)
+void (*TIMER4_CAPT_handlerP)() = NULL;
+ISR(TIMER4_CAPT_vect)
+{
+    if (TIMER4_CAPT_handlerP)
+        TIMER4_CAPT_handlerP();
+}
+void (*TIMER4_COMPB_handlerP)() = NULL;
+ISR(TIMER4_COMPB_vect)
+{
+    if (TIMER4_COMPB_handlerP)
+        TIMER4_COMPB_handlerP();
+}
+void (*TIMER4_OVF_handlerP)() = NULL;
+ISR(TIMER4_OVF_vect)
+{
+    if (TIMER4_OVF_handlerP)
+        TIMER4_OVF_handlerP();
+}
+void (*TIMER2_COMPA_handlerP)() = NULL;
+ISR(TIMER2_COMPA_vect)
+{
+    if (TIMER2_COMPA_handlerP)
+        TIMER2_COMPA_handlerP();
+}
+void (*TIMER5_COMPB_handlerP)() = NULL;
+ISR(TIMER5_COMPB_vect)
+{
+    if (TIMER5_COMPB_handlerP)
+        TIMER5_COMPB_handlerP();
+}
+void (*TIMER5_CAPT_handlerP)() = NULL;
+ISR(TIMER5_CAPT_vect)
+{
+    if (TIMER5_CAPT_handlerP)
+        TIMER5_CAPT_handlerP();
+}
+#endif
+
 uint8_t calcAlpha(uint8_t elements)
 {
     return round((2.0F / (elements + 1)) * 100);
@@ -90,11 +129,20 @@ void setPwmOut(bool pwmOut)
         TCCR1A = _BV(WGM11) | _BV(WGM10);
         TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);
 #endif
+#if defined(__AVR_ATmega2560__)
+        // TIMER4: MODE 15 (TOP OCRA), SCALER 8. OC4B, PH4, PIN 7
+        DDRH |= _BV(DDH4);
+        TCCR4A = _BV(WGM41) | _BV(WGM40);
+        TCCR4B = _BV(WGM43) | _BV(WGM42) | _BV(CS41);
+#endif
     }
     else
     {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
         TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
+#endif
+#if defined(__AVR_ATmega2560__)
+        TCCR4A &= ~_BV(COM4A1) & ~_BV(COM4B1);
 #endif
     }
     interrupts();
@@ -116,11 +164,19 @@ void updatePwmOut()
             OCR1A = (60000 / rpm) * MS_TO_COMP(8) - 1;
             OCR1B = PWMOUT_DUTY * OCR1A;
 #endif
+#if defined(__AVR_ATmega2560__)
+            TCCR4A |= _BV(COM4A1) | _BV(COM4B1);
+            OCR4A = (60000 / rpm) * MS_TO_COMP(8) - 1;
+            OCR4B = PWMOUT_DUTY * OCR4A;
+#endif
         }
         else
         {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
             TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
+#endif
+#if defined(__AVR_ATmega2560__)
+            TCCR4A &= ~_BV(COM4A1) & ~_BV(COM4B1);
 #endif
         }
         interrupts();
