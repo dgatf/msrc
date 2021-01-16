@@ -101,8 +101,8 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         if (!(TIMSK4 & _BV(OCIE4B)))
         {
             TCNT4 = 0;             // RESET COUNTER
-            TIFR4 |= _BV(OCF4B);   // CLEAR OCRB CAPTURE FLAG
-            TIMSK4 |= _BV(OCIE4B); // ENABLE OCR MATCH INTERRUPT
+            TIFR4 |= _BV(OCF4B);   // CLEAR OCRB FLAG
+            TIMSK4 |= _BV(OCIE4B); // ENABLE OCRB MATCH INTERRUPT
         }
         OCR4B = ICR1;
         castleRxLastReceived = 0;
@@ -186,8 +186,8 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
 
 void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
 {
-    DDRL &= ~_BV(DDL1);   // INPUT ICP5 (PL1, 48)
-    PORTL |= _BV(PL1);    // PL0 PULLUP
+    DDRL &= ~_BV(DDL4);   // INPUT OC5B (PL4, 45)
+    PORTL |= _BV(PL4);    // PL4 PULLUP
     TIFR5 |= _BV(ICF5);   // CLEAR ICP5 CAPTURE FLAG
     TIMSK5 |= _BV(ICIE5); // ENABLE ICP5 CAPT
     TCNT2 = 0;            // RESET TIMER2 COUNTER
@@ -229,7 +229,7 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
         castleRxLastReceived++;
     }
     TIMSK5 &= ~_BV(ICIE5);  // DISABLE ICP5 CAPT
-    DDRL |= _BV(DDL1);      // OUTPUT ICP5 (PL1, 48)
+    DDRL |= _BV(DDL4);      // OUTPUT OC5B (PL4, 45)
     TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
 }
 #endif
@@ -385,7 +385,7 @@ void EscCastle::begin()
 
     // TIMER 2
     TCCR2A = 0;                           // NORMAL MODE
-    TCCR2B = _BV(CS22) | _BV(CS20);       // SCALER 1024
+    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20);       // SCALER 1024
     OCR2A = 12 * CASTLE_MS_TO_COMP(1024); // 12ms, TOGGLE OC5B INPUT/OUTPUT
 #endif
 
