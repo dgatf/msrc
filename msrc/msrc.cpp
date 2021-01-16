@@ -130,7 +130,7 @@ void setPwmOut(bool pwmOut)
         TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);
 #endif
 #if defined(__AVR_ATmega2560__)
-        // TIMER4: MODE 15 (OCR), SCALER 8 (OC4B, PH4, PIN 7)
+        // TIMER4: MODE 15 (TOP OCRA), SCALER 8. OC4B, PH4, PIN 7
         DDRH |= _BV(DDH4);
         TCCR4A = _BV(WGM41) | _BV(WGM40);
         TCCR4B = _BV(WGM43) | _BV(WGM42) | _BV(CS41);

@@ -301,27 +301,26 @@ void EscCastle::begin()
     TIMER5_COMPB_handlerP = TIMER5_COMPB_handler;
     TIMER5_CAPT_handlerP = TIMER5_CAPT_handler;
 
-    // TIMER4: ICP4 (PL0, PIN 49) (RX)
+    // TIMER4. RX INPUT. ICP4 (PL0, PIN 49)
     TCCR4B = 0;           // MODE 0 (NORMAL)
-    TCCR4B |= _BV(ICES4); // RISING
+    TCCR4B |= _BV(ICES4); // RISING EDGE
     TCCR4B |= _BV(CS41);  // SCALER 8
     TIMSK4 = _BV(ICIE4);  // CAPTURE INTERRUPT
 
-    // TIMER5 (ESC OUTPUT, TELEMETRY INPUT) ICP5 (PL1, 48). OC5B (PL4 PIN 45) -> OUTPUT/INPUT PULL UP
+    // TIMER5. ESC: PWM OUTPUT, TELEMETRY INPUT. ICP5 (Pl1, PIN 48). OC5B (Pl4 PIN 45) -> OUTPUT/INPUT PULL UP
     DDRL |= _BV(DDL4);                   // OUTPUT OC5B PL4 (PIN 45)
     TCCR5A = _BV(WGM51) | _BV(WGM50);    // MODE 15 (TOP OCR5A)
     TCCR5B = _BV(WGM53) | _BV(WGM52);    //
     TCCR5A |= _BV(COM5B1) | _BV(COM5B0); // TOGGLE OC5B ON OCR5B (INVERTING)
-    TCCR5B &= ~_BV(ICES5);               // FALLING
+    TCCR5B &= ~_BV(ICES5);               // FALLING EDGE
     TCCR5B |= _BV(CS51);                 // SCALER 8
     OCR5A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
 
-    // TIMER 2
+    // TIMER 2. TOGGLE OC5B INPUT/OUTPUT
     TCCR2A = 0;                                 // NORMAL MODE
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms, TOGGLE OC5B INPUT/OUTPUT
+    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms
 #endif
-
 }
 
 float EscCastle::read(uint8_t index)
