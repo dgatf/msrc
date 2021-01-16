@@ -122,13 +122,6 @@ This MCU produce accurate telemetry values
 - Connect Rx to pin 49
 - Connect ESC to pins 48 and 45 with a pull up resistor
 
-<ins>ATMega2560</ins>
-
-This MCU produce accurate telemetry values
-
-- Connect Rx to pin 49
-- Connect ESC to pins 48 and 45
-
 <p align="center"><img src="./images/castle.png" width="500"><br>
   <i>Castle Link with Smartport</i><br><br></p>
 
