@@ -16,12 +16,9 @@
     10      temp ntc (C) or calib 2 (500us)  63.8125
 */
 
-#define FIXED_CALIB
+//#define DEBUG_CASTLE
 
-#define FIXED_CALIB
-//#define DEBUG_CALIB
-
-#define MS_TO_COMP(SCALER) F_CPU / (SCALER * 1000UL)
+#define CASTLE_MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000UL))
 #define RX_MAX_CYCLES 2 // minimum is 2
 
 #define CASTLE_VOLTAGE 1
@@ -34,18 +31,26 @@
 #define CASTLE_TEMP_NTC 10
 #define CASTLE_CELL_VOLTAGE 11
 
-#define R0 10000.0F
-#define R2 10200.0F
-#define B 3455.0F
+#define CASTLE_R0 10000.0F
+#define CASTLE_R2 10200.0F
+#define CASTLE_B 3455.0F
 
 #include <Arduino.h>
 #include "device.h"
 #include "escCell.h"
 
+#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
 extern void (*TIMER1_CAPT_handlerP)();
 extern void (*TIMER1_COMPB_handlerP)();
 extern void (*INT0_handlerP)();
 extern void (*TIMER2_COMPA_handlerP)();
+#endif
+#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
+extern void (*TIMER1_CAPT_handlerP)();
+extern void (*TIMER2_COMPA_handlerP)();
+extern void (*TIMER4_COMPB_handlerP)();
+extern void (*TIMER4_CAPT_handlerP)();
+#endif
 
 class EscCastle : public AbstractDevice, public EscCell
 {
@@ -61,10 +66,18 @@ private:
     static volatile uint8_t castleRxLastReceived;
     const float scaler[11] = {0, 20, 4, 50, 1, 0.2502, 20416.7, 4, 4, 30, 63.8125};
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
+#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
     static void TIMER1_CAPT_handler();
     static void TIMER1_COMPB_handler();
     static void INT0_handler();
     static void TIMER2_COMPA_handler();
+#endif
+#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
+    static void TIMER1_CAPT_handler();
+    static void TIMER2_COMPA_handler();
+    static void TIMER4_COMPB_handler();
+    static void TIMER4_CAPT_handler();
+#endif
 
 protected:
 public:

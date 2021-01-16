@@ -1,14 +1,27 @@
 # MSRC - Multi Sensor for RC - Smartport, XBUS, SRXL
 
-This is a DIY project to send multiple sensors telemetry using an Arduino Pro Mini 328P (3.3v or 5v) for a fraction of the weight and cost of the stock sensors
+This is a DIY project to send multiple sensors telemetry using an ATMega328P (Arduino Pro Mini) or ATMega328PB (Pololu ATMega328PB) based board, for a fraction of the weight and cost of the stock sensors
 
-Compatible with the following RX protocols:
+Compatible RX protocols:
 
 - Smartport: FrSky
 - XBUS: Spektrum
 - SRXL: Spektrum
 
-The following sensors are supported:
+Compatible MCUs: ATMega328P, ATMega328PB
+
+Advantages of the ATMega328PB:
+
+- Accurate Castle telemetry
+- 2 x UARTS (ESC serial and GPS can be connected at the same time)
+
+If nor Castle and 2 serial ports are required, the ATMega328P may be better choice, as is cheaper and easier to find
+
+For the ATMega328P it is recommended the Arduino Pro Mini. Other ATMega328P boards with USB connector may not read properly the serial port if connected (ESC serial or GPS). Also it is smaller and lighter than other ATMega328P boards
+
+For the ATMega328PB it is recommended the Pololu ATMega328PB
+
+Implemented sensors:
 
 - ESC
   - ESCs with serial telemetry (Hobbywing V3/V4/V5)
@@ -18,9 +31,9 @@ The following sensors are supported:
 - I2C sensors: BMP280
 - Analog sensors: voltage, temperature, current, air speed
 
-All sensors are optional. Make the circuit with the desired sensors and enable them with the configuration, with a lua script id using smartport or config.h for the rest 
+All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration, with a lua script if using smartport or in config.h for the rest of Rx protocols 
 
-## 1. Receiver
+## 1. Receiver protocol
 
 The following Rx protocols are supported:
 
@@ -28,10 +41,19 @@ The following Rx protocols are supported:
 - SRXL v5 (Spektrum): serial, 115200 bps
 - XBUS (Spektrum): I2C
 
-Depending on the receiver protocol connect the Rx as follows
+Depending on the receiver protocol connect to the Rx as follows
+
+### Smartport and SRXL
+
+- ATMega328P. Connect Smartport signal to pins 7 and 12
+- ATMega328PB. Connect Smartport signal to pins 4 and 23
 
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
   <i>Smartport or SRXL</i><br><br></p>
+
+### XBUS
+
+Connect XBUS to SDA/A4 and SCL/A5
 
 <p align="center"><img src="./images/xbus.png" width="300"><br>
   <i>XBUS</i><br><br></p>
@@ -47,7 +69,9 @@ If the ESC have a serial port for telemetry output it can be decoded connecting 
 - Hobbywing Platinum V3: RPM
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature (Mosfet and BEC), voltage and current
 
-Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry
+Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry (pin 10)
+
+Connect ESC serial to Arduino RX/0
 
 <p align="center"><img src="./images/serial.png" width="400"><br>
   <i>ESC serial</i><br><br></p>
@@ -56,15 +80,31 @@ Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM v
 
 If the ESC have a PWM signal for motor RPMs or a phase sensor is installed, the RPMs can be measured with the 16bit timer of the Pro Mini. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
 
+Connect PWM signal to pin 8
+
 <p align="center"><img src="./images/pwm_in.png" width="400"><br>
   <i>PWM signal/phase sensor circuit</i><br><br></p>
 
 #### Castle link
 
-ESC Castle Link protocol is also implemented. The telemetry values goes together with the PWM input signal to the ESC. This is an inverted PWM signal and the ESC option *Castle Link* has to be enabled
+The telemetry is send over the ESC signal. *Castle Link* has to be enabled in the ESC config
 
-<p align="center"><img src="./images/msrc_castle.png" width="500"><br>
-  <i>Castle Link with Smartport. For an opto ESC feed Vcc from Rx servo, not Smartport</i><br><br></p>
+<ins>ATMega328P</ins>
+
+The telemetry values are not accurate all the time. Some readings are increased by 5-10%. This is a hardware limitation
+
+- Connect Rx to pin 8
+- Connect ESC to pins 2 and 10 with a pull up resistor
+
+<ins>ATMega328PB</ins>
+
+This MCU produce accurate telemetry values. Connect Smartport signal to pins 4 and 23
+
+- Connect Rx to pin 8
+- Connect ESC to pins 2 and 22 with a pull up resistor
+
+<p align="center"><img src="./images/castle.png" width="500"><br>
+  <i>Castle Link with Smartport</i><br><br></p>
 
 #### Available ESC telemetry
 
@@ -83,7 +123,10 @@ If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7
 
 ### 1.2. Serial GPS
 
-Serial GPS (NMEA protocol) is supported although is not feasible to connect at the same time with a serial ESC as there is only one UART available. The connections are the same as for the ESC serial
+Serial GPS (NMEA protocol) is supported
+
+- ATMega328P. Connect to Arduino RX/0. Not feasible to use with ESC serial at the same time
+- ATMega328PB. Connect to pin 12/RX1
 
 ### 1.3. Analog sensors
 
@@ -100,14 +143,18 @@ I2C sensors not compatible with XBUS. The following I2C sensors are suported (pi
 
 - Barometer: BMP280
 
-<p align="center"><img src="./images/msrc_full.png" width="600"><br>
+<p align="center"><img src="./images/full.png" width="600"><br>
   <i>I2C and analog sensors with Smartport</i><br><br></p>
 
 
 ## 2. Flash to Arduino
 
-Using Arduino IDE copy folder *msrc* and open *msrc.ino*. Select board *Arduino Pro or Pro Mini*, processor *ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
+Using Arduino IDE copy folder *msrc* and open *msrc.ino*
 
+Select the board:
+
+- ATMega328B: *Arduino Pro or Pro Mini*, processor *ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
+- ATMega328PB: *Pololu A-Star 328PB*, version and flash
 
 ## 3. Configuration
 

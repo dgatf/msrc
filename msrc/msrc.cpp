@@ -2,6 +2,7 @@
 
 // ISR handlers
 
+#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
 void (*TIMER1_CAPT_handlerP)() = NULL;
 ISR(TIMER1_CAPT_vect)
 {
@@ -32,6 +33,46 @@ ISR(TIMER2_COMPA_vect)
     if (TIMER2_COMPA_handlerP)
         TIMER2_COMPA_handlerP();
 }
+#endif
+
+#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
+void (*TIMER1_CAPT_handlerP)() = NULL;
+ISR(TIMER1_CAPT_vect)
+{
+    if (TIMER1_CAPT_handlerP)
+        TIMER1_CAPT_handlerP();
+}
+void (*TIMER1_COMPB_handlerP)() = NULL;
+ISR(TIMER1_COMPB_vect)
+{
+    if (TIMER1_COMPB_handlerP)
+        TIMER1_COMPB_handlerP();
+}
+void (*TIMER1_OVF_handlerP)() = NULL;
+ISR(TIMER1_OVF_vect)
+{
+    if (TIMER1_OVF_handlerP)
+        TIMER1_OVF_handlerP();
+}
+void (*TIMER2_COMPA_handlerP)() = NULL;
+ISR(TIMER2_COMPA_vect)
+{
+    if (TIMER2_COMPA_handlerP)
+        TIMER2_COMPA_handlerP();
+}
+void (*TIMER4_COMPB_handlerP)() = NULL;
+ISR(TIMER4_COMPB_vect)
+{
+    if (TIMER4_COMPB_handlerP)
+        TIMER4_COMPB_handlerP();
+}
+void (*TIMER4_CAPT_handlerP)() = NULL;
+ISR(TIMER4_CAPT_vect)
+{
+    if (TIMER4_CAPT_handlerP)
+        TIMER4_CAPT_handlerP();
+}
+#endif
 
 uint8_t calcAlpha(uint8_t elements)
 {
@@ -43,14 +84,18 @@ void setPwmOut(bool pwmOut)
     noInterrupts();
     if (pwmOut)
     {
-        // TIMER1 setup: mode 15 (OCR), scaler 8 (OC1B, PB2, pin 10)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+        // TIMER1: MODE 15 (TOP OCRA), SCALER 8. OC1B, PB2, PIN 10
         DDRB |= _BV(DDB2);
         TCCR1A = _BV(WGM11) | _BV(WGM10);
         TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);
+#endif
     }
     else
     {
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
         TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
+#endif
     }
     interrupts();
 }
@@ -58,20 +103,25 @@ void setPwmOut(bool pwmOut)
 void updatePwmOut()
 {
     static float rpm = 0;
-    if (rpmPwmoutP == NULL) return;
+    if (rpmPwmoutP == NULL)
+        return;
     if (*rpmPwmoutP != rpm)
     {
         rpm = *rpmPwmoutP;
         noInterrupts();
         if (rpm >= 2000)
         {
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
             TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
-            OCR1A = (7.5 * (uint32_t)F_CPU / rpm) - 1;
+            OCR1A = (60000 / rpm) * MS_TO_COMP(8) - 1;
             OCR1B = PWMOUT_DUTY * OCR1A;
+#endif
         }
         else
         {
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
             TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
+#endif
         }
         interrupts();
     }
@@ -475,13 +525,11 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
 void setup()
 {
 #ifdef DEBUG
-#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV
-    DEBUG_SERIAL.begin(19200);
-#elif CONFIG_GPS
-    DEBUG_SERIAL.begin(9600);
-#else
+    // DEBUG is on Serial
+    // Baud rate depends on whats connected to Serial
+    // If is an ESC serial it will be changed to 19600. If it is a GPS, to 9600
+    // Otherwise it is at 115200
     DEBUG_SERIAL.begin(115200);
-#endif
     DEBUG_SERIAL.println("\nDEBUG");
     DEBUG_SERIAL.print("V");
     DEBUG_SERIAL.print(VERSION_MAJOR);
@@ -504,7 +552,6 @@ void setup()
 #if RX_PROTOCOL == RX_SRXL
     srxl.begin();
 #endif
-    TIMSK1 = 0;
 #if defined(CONFIG_LUA) && RX_PROTOCOL == RX_SMARTPORT
     Config config = readConfig();
 #else

@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#define BIG_ENDIAN 1
-#define LITTLE_ENDIAN 0
+#define I2C_BIG_ENDIAN 1
+#define I2C_LITTLE_ENDIAN 0
 
 class I2C
 {

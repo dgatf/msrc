@@ -54,7 +54,7 @@ uint32_t FormatData::formatLatLon(uint8_t type, float value)
     if (type == TYPE_LON) {
         data |= (uint32_t)1 << 31;
     }
-    data |= abs(round(value * 10000));
+    data |= (uint32_t)abs(round(value * 10000));
     return data;
 }
 

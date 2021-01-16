@@ -34,7 +34,9 @@ void Xbus::i2c_request_handler()
     if (cont > 5)
         cont = 0;
 #else
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
     uint8_t address = TWDR >> 1;
+#endif
 #endif
     uint8_t buffer[16] = {0};
     switch (address)
@@ -84,6 +86,7 @@ void Xbus::i2c_request_handler()
 void Xbus::begin()
 {
     pinMode(LED_BUILTIN, OUTPUT);
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM || CONFIG_VOLTAGE1 || CONFIG_VOLTAGE2 || CONFIG_NTC1 || CONFIG_NTC2
     addressMask |= XBUS_RPM_VOLT_TEMP;
 #endif
@@ -97,9 +100,12 @@ void Xbus::begin()
 #if CONFIG_CURRENT
     addressMask |= XBUS_BATTERY;
 #endif
+#endif
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
     Wire.begin(addressMask);
     Wire.onRequest(i2c_request_handler);
     TWAMR = addressMask << 1;
+#endif
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     esc.begin();
 #endif
@@ -161,7 +167,8 @@ void Xbus::update()
         lon *= -1;
     else
         xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_IS_EAST_BIT;
-    if (lon >= 6000) {
+    if (lon >= 6000)
+    {
         xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
         lon -= 6000;
     }
@@ -172,7 +179,8 @@ void Xbus::update()
     xbusGpsStat.numSats = gps.read(BN220_SAT);
 
     float alt = gps.read(BN220_ALT);
-    if (alt < 0) {
+    if (alt < 0)
+    {
         xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_NEGATIVE_ALT_BIT;
         alt *= -1;
     }
@@ -218,7 +226,8 @@ void Xbus::bcd(uint32_t *output, float value, uint8_t precision)
     for (int i = 0; i < precision; i++)
         value = value * 10;
     sprintf(buf, "%08li", (uint32_t)value);
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
         *output |= (uint32_t)(buf[i] - 48) << ((7 - i) * 4);
     }
 }

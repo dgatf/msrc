@@ -20,6 +20,8 @@
 #define I2C_BMP280 1
 #define WIRE_TIMEOUT 3
 
+#define MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000UL))
+
 // Config bitmask
 
 // byte 1: command
@@ -90,7 +92,15 @@
 //#include "ibus.h"
 //#endif
 
-// Default config
+#if RX_PROTOCOL == RX_SMARTPORT
+#include "smartport.h"
+#endif
+#if RX_PROTOCOL == RX_XBUS
+#include "xbus.h"
+#endif
+#if RX_PROTOCOL == RX_SRXL
+#include "srxl.h"
+#endif
 
 struct Refresh
 {

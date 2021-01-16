@@ -1,11 +1,18 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#if !defined(__AVR_ATmega328P__ ) && !defined(__AVR_ATmega328PB__ )
+#warning "MCU not supported"
+#endif
+
 // Select RX protocol
 #define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL
 
 // Select SRLX valriant (only for SRXL)
-#define SRXL_VARIANT SRXL_V5  // Only implemented SRXL_V5 (SPEKTRUM)
+#define SRXL_VARIANT SRXL_V5 // Only implemented SRXL_V5 (SPEKTRUM)
 
 // Select sensors
-#define CONFIG_ESC_PROTOCOL PROTOCOL_NONE // PROTOCOL_NONE PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE
+#define CONFIG_ESC_PROTOCOL PROTOCOL_NONE // PROTOCOL_NONE PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V4_HV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE
 #define CONFIG_AIRSPEED false
 #define CONFIG_GPS false
 #define CONFIG_VOLTAGE1 false
@@ -39,9 +46,16 @@
 #define PWMOUT_DUTY 0.5 // 0.5 = 50%
 
 // Serial ports
+#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
 #define ESC_SERIAL Serial
 #define GPS_SERIAL Serial
 #define DEBUG_SERIAL Serial
+#endif
+#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
+#define ESC_SERIAL Serial
+#define GPS_SERIAL Serial1
+#define DEBUG_SERIAL Serial
+#endif
 
 /* Debug
    Disconnect Vcc from the RC model to the Arduino
@@ -71,8 +85,14 @@
 
 #define N_TO_ALPHA(VALUE) 2 / (1 + VALUE) * 100
 
+#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
 #define PIN_SMARTPORT_RX 7
 #define PIN_SMARTPORT_TX 12
+#endif
+#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
+#define PIN_SMARTPORT_RX 4
+#define PIN_SMARTPORT_TX 23
+#endif
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
@@ -93,3 +113,5 @@
 #define PROTOCOL_HW_V5_HV 5
 #define PROTOCOL_PWM 6
 #define PROTOCOL_CASTLE 7
+
+#endif
