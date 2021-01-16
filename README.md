@@ -26,7 +26,9 @@ For the ATMega328P it is recommended the Arduino Pro Mini. Other ATMega328P boar
 
 For the ATMega328PB it is recommended the Pololu ATMega328PB. This is better choice than ATMega2560 as is smaller and lighter
 
-For the ATMega2560 it is recommencded the ATMega2560 Pro Mini
+For the ATMega2560 it is recommended the ATMega2560 Pro Mini
+
+On the other hand for Arduino Pro Mini and Pololu ATMega328PB requires a USB-TTL programmer for flahsing, where for ATMega2560 can be flashed  with a USB cable 
 
 Implemented sensors:
 
@@ -432,6 +434,7 @@ Adjust constants in *pressure.h*:
 0.8
 
 - Added Rx protocols XBUS and SRXL
+- Added support for ATMega328PB and ATMega2560
 
 [v0.7](https://github.com/dgatf/msrc/tree/v0.7)
 
