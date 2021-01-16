@@ -202,8 +202,11 @@ void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
 #endif
-    castleCont++;
-    castleTelemetryReceived = true;
+    if (castleCont < 11)
+    {
+        castleCont++;
+        castleTelemetryReceived = true;
+    }
 }
 
 void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
@@ -272,8 +275,11 @@ void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
 #endif
-    castleCont++;
-    castleTelemetryReceived = true;
+    if (castleCont < 11)
+    {
+        castleCont++;
+        castleTelemetryReceived = true;
+    }
 }
 
 void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
