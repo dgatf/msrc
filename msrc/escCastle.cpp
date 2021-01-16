@@ -198,7 +198,7 @@ void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
 void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT5 - OCR5B;
-#ifdef DEBUG_CALIB
+#ifdef DEBUG_CASTLE
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
 #endif
@@ -215,7 +215,7 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
-#ifdef DEBUG_CALIB
+#ifdef DEBUG_CASTLE
         DEBUG_SERIAL.println();
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
@@ -271,7 +271,7 @@ void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
 void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT5 - OCR5B;
-#ifdef DEBUG_CALIB
+#ifdef DEBUG_CASTLE
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
 #endif
@@ -288,8 +288,8 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
-#ifdef DEBUG_CALIB
-        DEBUG_SERIAL.println();
+#ifdef DEBUG_CASTLE
+        DEBUG_SERIAL.println(); 
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
 #endif
@@ -440,7 +440,7 @@ float EscCastle::read(uint8_t index)
         value = 0;
         break;
     }
-#ifdef DEBUG_ESC
+#ifdef DEBUG_CASTLE
     DEBUG_SERIAL.print("Value [");
     DEBUG_SERIAL.print(index);
     DEBUG_SERIAL.print("]: ");
