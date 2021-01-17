@@ -283,6 +283,8 @@ void EscCastle::begin()
     TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
 
     // TIMER1. RX INPUT. ICP1 (PB0, PIN 8)
+    PORTB |= _BV(PB0);     // ICP1 PULLUP
+    TCCR1A = 0;
     TCCR1B = 0;           // MODE 0 (NORMAL)
     TCCR1B |= _BV(ICES1); // RISING EDGE
     TCCR1B |= _BV(CS11);  // SCALER 8
@@ -309,13 +311,14 @@ void EscCastle::begin()
     TIMER5_CAPT_handlerP = TIMER5_CAPT_handler;
 
     // TIMER4. RX INPUT. ICP4 (PL0, PIN 49)
+    PORTL |= _BV(PL0);    // ICP3 PULLUP
+    TCCR4A = 0;           //
     TCCR4B = 0;           // MODE 0 (NORMAL)
     TCCR4B |= _BV(ICES4); // RISING EDGE
     TCCR4B |= _BV(CS41);  // SCALER 8
     TIMSK4 = _BV(ICIE4);  // CAPTURE INTERRUPT
 
     // TIMER5. ESC: PWM OUTPUT, TELEMETRY INPUT. ICP5 (Pl1, PIN 48). OC5B (Pl4 PIN 45) -> OUTPUT/INPUT PULL UP
-    DDRL |= _BV(DDL4);                   // OUTPUT OC5B PL4 (PIN 45)
     TCCR5A = _BV(WGM51) | _BV(WGM50);    // MODE 15 (TOP OCR5A)
     TCCR5B = _BV(WGM53) | _BV(WGM52);    //
     TCCR5A |= _BV(COM5B1) | _BV(COM5B0); // TOGGLE OC5B ON OCR5B (INVERTING)
