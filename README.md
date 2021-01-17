@@ -28,7 +28,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560
 
-| MCU | Castle telemetry | UART(1) |
+| MCU | Castle telemetry | UART<sup>(1)</sup> |
 | :---: | :---: | :---: |
 | ATMega328P | Unstable| 1 |
 | ATMega328PB | :white_check_mark: | 2 |
@@ -52,15 +52,15 @@ Pololu ATMega328PB is better choice than ATMega2560 as is smaller and lighter
 | NTC 2 | A1 | A1 | A1 |
 | Voltage 1 | A2 | A2 | A2 |
 | Voltage 2 | A3 | A3 | A3 |
-| Current | A6 | A6 | A4 |
-| Airspeed | A7 | A7 | A5 |
+| Current | A6 | A6 | A6 |
+| Airspeed | A7 | A7 | A7 |
 | ESC serial | RX | RX0 | RX1 |
+| GPS | RX | RX1 | RX2 |
 | PWM in | 8 | 8 | 49 |
 | PWM out | 10 | 10 | 7 |
-| GPS | RX | RX1 | RX2 |
 | Rx Castle | 8 | 8 | 49 |
-| ESC Castle(1) | 2/10 | 2/22 | 45/48 |
-| Smartport/SRXL | 7/12(2) | 4/23(2) | 4/12(2) |
+| ESC Castle<sup>(1)</sup> | 2/10 | 2/22 | 45/48 |
+| Smartport/SRXL | 7/12<sup>(2)</sup> | 4/23<sup>(2)</sup> | 4/12<sup>(2)</sup> |
 | XBUS/sensor SDA | A4 | A4 | 20 |
 | XBUS/sensor SCL | A5 | A5 | 21 |
 
