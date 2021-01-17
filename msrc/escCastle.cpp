@@ -9,6 +9,7 @@ volatile uint16_t EscCastle::castleTelemetry[12] = {0};
 volatile uint16_t EscCastle::castleCompsPerMilli = 1 * CASTLE_MS_TO_COMP(8);
 volatile uint8_t EscCastle::castleCont = 0;
 volatile uint8_t EscCastle::castleRxLastReceived = 0;
+volatile uint16_t EscCastle::castlePwmRx = 0;
 
 EscCastle::EscCastle(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
@@ -30,6 +31,7 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         {
             OCR1B = ICR1 + OCR1A - ts;
         }
+        castlePwmRx = OCR1B;
         TIMSK1 |= _BV(OCIE1B);
         castleRxLastReceived = 0;
     }
@@ -49,7 +51,7 @@ void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
 
 void EscCastle::INT0_handler() // READ TELEMETRY
 {
-    castleTelemetry[castleCont] = TCNT1 - OCR1B;
+    castleTelemetry[castleCont] = TCNT1 - castlePwmRx;
 #ifdef DEBUG_CASTLE
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
@@ -119,11 +121,12 @@ void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
     TCNT2 = 0;            // RESET TIMER2 COUNTER
     TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
     TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
+    castlePwmRx = OCR4B;  // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
 }
 
 void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
 {
-    castleTelemetry[castleCont] = TCNT4 - OCR4B;
+    castleTelemetry[castleCont] = TCNT4 - castlePwmRx;
 #ifdef DEBUG_CASTLE
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
@@ -193,11 +196,12 @@ void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
     TCNT2 = 0;            // RESET TIMER2 COUNTER
     TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
     TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
+    castlePwmRx = OCR5B;  // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
 }
 
 void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
 {
-    castleTelemetry[castleCont] = TCNT5 - OCR5B;
+    castleTelemetry[castleCont] = TCNT5 - castlePwmRx;
 #ifdef DEBUG_CASTLE
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");

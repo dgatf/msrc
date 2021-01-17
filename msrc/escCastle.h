@@ -62,14 +62,11 @@ class EscCastle : public AbstractDevice, public EscCell
 {
 private:
     static volatile bool castleTelemetryReceived;
-#ifdef SIM_SENSORS
     static volatile uint16_t castleTelemetry[12];
-#else
-    static volatile uint16_t castleTelemetry[12];
-#endif
     static volatile uint16_t castleCompsPerMilli;
     static volatile uint8_t castleCont;
     static volatile uint8_t castleRxLastReceived;
+    static volatile uint16_t castlePwmRx;
     const float scaler[11] = {0, 20, 4, 50, 1, 0.2502, 20416.7, 4, 4, 30, 63.8125};
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
