@@ -10,6 +10,24 @@ Compatible RX protocols:
 
 Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560
 
+Implemented sensors:
+
+- ESC
+  - ESCs with serial telemetry (Hobbywing V3/V4/V5)
+  - ESC with PWM signal or phase sensor
+  - ESC Castle Link
+- GPS serial (NMEA)
+- I2C sensors: BMP280
+- Analog sensors: voltage, temperature, current, air speed
+
+All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration, with a lua script if using smartport or in config.h for the rest of Rx protocols 
+
+## 1. Boards
+
+### 1.1 MCU
+
+Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560
+
 | MCU | Castle telemetry | UART(1) |
 | :---: | :---: | :---: |
 | ATMega328P | Unstable| 1 |
@@ -26,19 +44,30 @@ Recommended board for ATMega2560 is ATMega2560 Pro Mini
 
 Pololu ATMega328PB is better choice than ATMega2560 as is smaller and lighter
 
-Implemented sensors:
+### 1.2 Connections
 
-- ESC
-  - ESCs with serial telemetry (Hobbywing V3/V4/V5)
-  - ESC with PWM signal or phase sensor
-  - ESC Castle Link
-- GPS serial (NMEA)
-- I2C sensors: BMP280
-- Analog sensors: voltage, temperature, current, air speed
+| Board | Arduino Pro Mini | Pololu ATMega328PB | Arduino ATMega2560 |
+| :---: | :---: | :---: | :---: |
+| NTC 1 | A0 | A0 | A0 |
+| NTC 2 | A1 | A1 | A1 |
+| Voltage 1 | A2 | A2 | A2 |
+| Voltage 2 | A3 | A3 | A3 |
+| Current | A6 | A6 | A4 |
+| Airspeed | A7 | A7 | A5 |
+| ESC serial | RX | RX0 | RX1 |
+| PWM in | 8 | 8 | 49 |
+| PWM out | 10 | 10 | 7 |
+| GPS | RX | RX1 | RX2 |
+| Rx Castle | 8 | 8 | 49 |
+| ESC Castle(1) | 2/10 | 2/22 | 45/48 |
+| Smartport/SRXL | 7/12(2) | 4/23(2) | 4/12(2) |
+| XBUS/sensor SDA | A4 | A4 | 20 |
+| XBUS/sensor SCL | A5 | A5 | 21 |
 
-All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration, with a lua script if using smartport or in config.h for the rest of Rx protocols 
+(1) with pull up 3.3k  
+(2) with resistor 3.3k
 
-## 1. Receiver protocol
+## 2. Receiver protocol
 
 The following Rx protocols are supported:
 
@@ -68,9 +97,9 @@ Connect XBUS to 20 (SDA) and 21 (SCL)
 <p align="center"><img src="./images/xbus.png" width="300"><br>
   <i>XBUS</i><br><br></p>
 
-## 1. Sensors
+## 3. Sensors
 
-### 1.1. ESC
+### 3.1. ESC
 
 #### Serial telemetry
 
@@ -138,7 +167,7 @@ This MCU produce accurate telemetry values
 
 If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for correct cell count
 
-### 1.2. Serial GPS
+### 3.2. Serial GPS
 
 Serial GPS (NMEA protocol) is supported
 
@@ -146,7 +175,7 @@ Serial GPS (NMEA protocol) is supported
 - ATMega328PB. Connect to pin 12/RX1
 - ATMega2560. Connect to pin 17/RX2
 
-### 1.3. Analog sensors
+### 3.3. Analog sensors
 
 The following analog sensors are supported:
 
@@ -155,7 +184,7 @@ The following analog sensors are supported:
 - Current sensor (Hall effect) (A6)
 - Airspeed sensor (MPXV7002) (A7)
 
-### 1.4. I2C sensors
+### 3.4. I2C sensors
 
 I2C sensors not compatible with XBUS. The following I2C sensors are suported (pins A4, A5):
 
@@ -164,7 +193,7 @@ I2C sensors not compatible with XBUS. The following I2C sensors are suported (pi
 <p align="center"><img src="./images/full.png" width="600"><br>
   <i>I2C and analog sensors with Smartport</i><br><br></p>
 
-## 2. Flash to Arduino
+## 4. Flash to Arduino
 
 Using Arduino IDE copy folder *msrc* and open *msrc.ino*
 
@@ -174,7 +203,7 @@ Select the board:
 - ATMega328PB: *Pololu A-Star 328PB*, version and flash
 - ATMega2560: *Arduino Mega or Mega 2560*, processor *ATMega2560* and flash
 
-## 3. Configuration
+## 5. Configuration
 
 ### Smartport
 
@@ -205,7 +234,7 @@ Options:
 
 Configuration is done in *config.h*
 
-## 4. OpenTx sensors
+## 6. OpenTx sensors
 
 The default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
 
@@ -246,16 +275,16 @@ I2C:
 
 Some of the sensors have to be adusted in openTx
 
-### 4.1. Adjust RPM sensor (Erpm)
+### 6.1. Adjust RPM sensor (Erpm)
 
 - Blades/poles: number of pair of poles * main gear teeth  
 - Multiplier: pinion gear teeth
 
-### 4.2. Adjust voltage sensors (A3, A4)
+### 6.2. Adjust voltage sensors (A3, A4)
 
 Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4 sensor
 
-### 4.3. Adjust analog current sensor (Curr)
+### 6.3. Adjust analog current sensor (Curr)
 
 If using a hall effect sensor, adjust the ratio: *1000 / output sensitivity (mV/A)*
 
@@ -265,13 +294,13 @@ To calculate the battery consumption add a new sensor:
 - Formula: Consumption
 - Sensor: Curr
 
-### 4.4 Calibrate current sensor HW V4/V5 (EscA)
+### 6.4 Calibrate current sensor HW V4/V5 (EscA)
 
 HW V4/V5 uses few different offsets to measure the current. It have been detected two types, V4 and V5, but there seems to be more types
 
 Current value should be close to 0 A without blades and throttle at 50%. If this is not the case you can calibrate the current sensor (EscA) in opentx (sensor->edit sensor->offset) by adjusting the offset with the value at this condition (no blades and 50% throttle)
 
-## 5. Images
+## 7. Images
 
 <p align="center"><img src="./images/top.jpg" width="300">  <img src="./images/bottom.jpg" width="300"></p>
 
@@ -280,14 +309,14 @@ Current value should be close to 0 A without blades and throttle at 50%. If this
 <p align="center"><img src="./images/450_3.jpg" width="300">  <img src="./images/450_x7.bmp" width="300"><br><i>MSRC on Align 450 connected to Hobbywing V3 Platinum and two thermistors for ESC and motor</i><br></p>
 
 
-## 6. Video
+## 8. Video
 
 [Video](https://youtu.be/Mby2rlmAMlU)
 
 
-## 7. Annex
+## 9. Annex
 
-### 7.1. ESC protocol specifications Hobbywing
+### 9.1. ESC protocol specifications Hobbywing
 
 Serial parameters:
 
@@ -331,23 +360,23 @@ Examples:
 | V5HV130A   | 0x9B  | 0x9B  | 0x03  | 0xE8  | 0x01  | 0x0B  | 0x41  | 0x21  | 0x44  | 0xB9  | 0x21  | 0x21  | 0xB9  |
 
 
-### 7.2. ESC protocol specifications Castle Link
+### 9.2. ESC protocol specifications Castle Link
 
 For best accuracy RX pulse input is captured with a timer interrupt and ESC pulse output is produced by hardware PWM. Maximum latency is 20ms
 
 See [Castle Link Live](https://dzf8vqv24eqhg.cloudfront.net/userfiles/4671/6540/ckfinder/files/Product%20Manuals/Accessories%20and%20replacement%20parts/castle_link_live_2_0.pdf?dc=201606221536-537)
 
-### 7.3. Output PWM signal for FBL
+### 9.3. Output PWM signal for FBL
 
 For best accuracy PWM signal output for FBL is produced by hardware PWM from serial RPM values. Maximum latency is 40ms
 
-### 7.4. ADC voltage
+### 9.4. ADC voltage
 
 To obtain the voltage at the analog pin it is required the ADC bits (b) and the Vref:
 
 <img src="https://latex.codecogs.com/svg.latex?V_o=V_{ref}*\frac{Raw}{2^b}" title="Vo = Vref * Raw / 2^bits" /><br>
 
-### 7.5. Analog voltage sensors. Voltage divider circuit
+### 9.5. Analog voltage sensors. Voltage divider circuit
 
 Two battery voltages can be measured through the analog pins A2 and A3
 Metal resistors are recommended as gives more accurate readings (0.1W or higher)
@@ -369,7 +398,7 @@ For 6S battery (or lower) and Pro Mini 3.3v:
 
 If more than 6S change R values or you may burn the Arduino!
 
-### 7.6. Temperature sensors. Thermistors
+### 9.6. Temperature sensors. Thermistors
 
 Two temperature sensors can be installed through the analog pins A0 and A1
 Temperature is measured with NTC thermistors (100k). Adjust thermistor Beta in ntc.h if needed (NTC_BETA, default is 4190). Sensor output in Celsius
@@ -388,7 +417,7 @@ Or with Steinhart and Hart Equation if data is available:
 
 <img src="https://latex.codecogs.com/svg.latex?T=\frac{1}{A+B*ln\frac{R_t}{R_{ref}}+C*ln(\frac{R_t}{R_{ref}})^2+D*ln(\frac{R_t}{R_{ref}})^3}" title="T = 1/[A+Bln(Rt/Rref)+Cln(Rt/Rref)²+Dln(Rt/Rref)³]" />
 
-### 7.7. Current
+### 9.7. Current
 
 #### Hall effect
 
@@ -405,7 +434,7 @@ The voltage drop in the shunt resistor is amplified by a differential amplifier 
 <p align="center"><img src="./images/High-Side-Current-Sensing.png" width="200"></p>
 
 
-### 7.8. Air Speed
+### 9.8. Air Speed
 
 Air speed is measured with a differential pressure sensor 
 
@@ -425,7 +454,7 @@ Adjust constants in *pressure.h*:
 - TRANSFER_SLOPE (B) as per sensor datasheet
 - For fine tuning measure the Vcc on the sensor and adjust TRANSFER_VCC
 
-## 8. Change log
+## 10. Change log
 
 0.8
 
