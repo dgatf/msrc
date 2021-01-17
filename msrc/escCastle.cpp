@@ -106,6 +106,7 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         {
             TCNT4 = 0;             // RESET COUNTER
             TIFR4 |= _BV(OCF4B);   // CLEAR OCRB FLAG
+            DDRD |= _BV(DDD2);     // OUTPUT OC4B (PD2, 2)
             TIMSK4 |= _BV(OCIE4B); // ENABLE OCRB MATCH INTERRUPT
             TIMSK1 |= _BV(TOIE1);  // ENABLE OVERFLOW INTERRUPT
         }
@@ -181,10 +182,11 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
         {
             TCNT5 = 0;             // RESET COUNTER
             TIFR5 |= _BV(OCF5B);   // CLEAR OCRB CAPTURE FLAG
+            DDRL &= ~_BV(DDL4);    // INPUT OC5B (PL4, 45)
             TIMSK5 |= _BV(OCIE5B); // ENABLE OCRB MATCH INTERRUPT
+            TIMSK4 |= _BV(TOIE4);  // ENABLE OVERFLOW INTERRUPT
         }
         OCR5B = ICR4;
-        castleRxLastReceived = 0;
     }
     TCCR4B ^= _BV(ICES4); // TOGGLE ICP4 EDGE
 }
