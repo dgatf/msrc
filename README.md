@@ -10,7 +10,7 @@ Compatible RX protocols:
 
 Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560
 
-| MCU | Castle | UART(1) |
+| MCU | Castle telemetry | UART(1) |
 | :---: | :---: | :---: |
 | ATMega328P | Unstable| 1 |
 | ATMega328PB | :white_check_mark: | 2 |
