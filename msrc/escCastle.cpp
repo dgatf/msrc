@@ -8,12 +8,14 @@ volatile uint16_t EscCastle::castleTelemetry[12] = {0};
 #endif
 volatile uint16_t EscCastle::castleCompsPerMilli = 1 * CASTLE_MS_TO_COMP(8);
 volatile uint8_t EscCastle::castleCont = 0;
-volatile uint8_t EscCastle::castleRxLastReceived = 0;
 volatile uint16_t EscCastle::castlePwmRx = 0;
 
 EscCastle::EscCastle(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
+
+volatile uint8_t EscCastle::castleRxLastReceived = 0;
+
 void EscCastle::TIMER1_CAPT_handler() // RX INPUT
 {
     static uint16_t ts = 0;
@@ -105,11 +107,20 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
             TCNT4 = 0;             // RESET COUNTER
             TIFR4 |= _BV(OCF4B);   // CLEAR OCRB FLAG
             TIMSK4 |= _BV(OCIE4B); // ENABLE OCRB MATCH INTERRUPT
+            TIMSK1 |= _BV(TOIE1);  // ENABLE OVERFLOW INTERRUPT
         }
         OCR4B = ICR1;
-        castleRxLastReceived = 0;
     }
     TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 EDGE
+}
+
+void EscCastle::TIMER1_OVF_handler() // NO RX INPUT
+{
+    DDRD &= ~_BV(DDD2);    // INPUT OC4B (PD2, 2)
+    PORTD |= _BV(PD2);     // PD2 PULLUP
+    TIMSK4 = 0;            // DISABLE INTERRUPTS
+    TCCR1B |= _BV(ICES1);  // RISING EDGE
+    TIMSK1 &= ~_BV(TOIE1); // DISABLE OVERFLOW INTERRUPT
 }
 
 void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
@@ -140,6 +151,9 @@ void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
 
 void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 {
+    TIMSK4 &= ~_BV(ICIE4);  // DISABLE ICP4 CAPT
+    DDRD |= _BV(DDD2);      // OUTPUT OC4B (PD2, 2)
+    TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
     if (!castleTelemetryReceived)
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
@@ -151,18 +165,6 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 #endif
     }
     castleTelemetryReceived = false;
-    if (castleRxLastReceived > RX_MAX_CYCLES)
-    {
-        OCR4B = 0;              // DISABLE PWM
-        TIMSK4 &= ~_BV(OCIE4B); // DISABLE OCR MATCH INTERRUPT
-    }
-    else
-    {
-        castleRxLastReceived++;
-    }
-    TIMSK4 &= ~_BV(ICIE4);  // DISABLE ICP4 CAPT
-    DDRD |= _BV(DDD2);      // OUTPUT OC4B (PD2, 2)
-    TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
 }
 #endif
 
@@ -185,6 +187,15 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
         castleRxLastReceived = 0;
     }
     TCCR4B ^= _BV(ICES4); // TOGGLE ICP4 EDGE
+}
+
+void EscCastle::TIMER4_OVF_handler() // NO RX INPUT
+{
+    DDRL &= ~_BV(DDL4);    // INPUT OC5B (PL4, 45)
+    PORTL |= _BV(PL4);     // PL4 PULLUP
+    TIMSK5 = 0;            // DISABLE INTERRUPTS
+    TCCR4B |= _BV(ICES4);  // RISING EDGE
+    TIMSK4 &= ~_BV(TOIE4); // DISABLE OVERFLOW INTERRUPT
 }
 
 void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
@@ -215,6 +226,9 @@ void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
 
 void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 {
+    TIMSK5 &= ~_BV(ICIE5);  // DISABLE ICP5 CAPT
+    DDRL |= _BV(DDL4);      // OUTPUT OC5B (PL4, 45)
+    TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
     if (!castleTelemetryReceived)
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
@@ -226,18 +240,6 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 #endif
     }
     castleTelemetryReceived = false;
-    if (castleRxLastReceived > RX_MAX_CYCLES)
-    {
-        OCR5B = 0;              // DISABLE PWM
-        TIMSK5 &= ~_BV(OCIE5B); // DISABLE OCR MATCH INTERRUPT
-    }
-    else
-    {
-        castleRxLastReceived++;
-    }
-    TIMSK5 &= ~_BV(ICIE5);  // DISABLE ICP5 CAPT
-    DDRL |= _BV(DDL4);      // OUTPUT OC5B (PL4, 45)
-    TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
 }
 #endif
 
@@ -285,7 +287,6 @@ void EscCastle::begin()
     TIMSK1 = _BV(ICIE1);  // CAPTURE INTERRUPT
 
     // TIMER4. ESC: PWM OUTPUT, TELEMETRY INPUT. ICP4 (PE0, PIN 22). OC4B (PD2 PIN 2) -> OUTPUT/INPUT PULL UP
-    DDRD |= _BV(DDD2);                   // OUTPUT OC4B PD2 (PIN 2)
     TCCR4A = _BV(WGM41) | _BV(WGM40);    // MODE 15 (TOP OCR4A)
     TCCR4B = _BV(WGM43) | _BV(WGM42);    //
     TCCR4A |= _BV(COM4B1) | _BV(COM4B0); // TOGGLE OC4B ON OCR4B (INVERTING)

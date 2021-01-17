@@ -65,11 +65,11 @@ private:
     static volatile uint16_t castleTelemetry[12];
     static volatile uint16_t castleCompsPerMilli;
     static volatile uint8_t castleCont;
-    static volatile uint8_t castleRxLastReceived;
     static volatile uint16_t castlePwmRx;
     const float scaler[11] = {0, 20, 4, 50, 1, 0.2502, 20416.7, 4, 4, 30, 63.8125};
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
+    static volatile uint8_t castleRxLastReceived;
     static void TIMER1_CAPT_handler();
     static void TIMER1_COMPB_handler();
     static void INT0_handler();
@@ -77,12 +77,14 @@ private:
 #endif
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
     static void TIMER1_CAPT_handler();
+    static void TIMER1_OVF_handler();
     static void TIMER2_COMPA_handler();
     static void TIMER4_COMPB_handler();
     static void TIMER4_CAPT_handler();
 #endif
 #if defined(__AVR_ATmega2560__)
     static void TIMER4_CAPT_handler();
+    static void TIMER4_OVF_handler();
     static void TIMER2_COMPA_handler();
     static void TIMER5_COMPB_handler();
     static void TIMER5_CAPT_handler();
