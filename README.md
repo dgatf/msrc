@@ -10,25 +10,21 @@ Compatible RX protocols:
 
 Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560
 
-Advantages of the ATMega328PB:
+| MCU | Castle | UART(1) |
+| :---: | :---: | :---: |
+| ATMega328P | Unstable| 1 |
+| ATMega328PB | :white_check_mark: | 2 |
+| ATMega2560 | :white_check_mark: | 3 |
 
-- Accurate Castle telemetry
-- 2 x UARTS (ESC serial and GPS can be connected at the same time)
+(1) 2 x UARTS allows to use ESC serial and GPS at the same time
 
-Advantages of the ATMega2560:
+Recommended board for ATMega328P is the Arduino Pro Mini (USB to TTL programmer is required). Other ATMega328P boards with USB connector may not read properly the serial port if connected (ESC serial or GPS)
 
-- Accurate Castle telemetry
-- 4 x UARTS (ESC serial and GPS can be connected at the same time)
+Recommended board for ATMega328PB is Pololu ATMega328PB
 
-If nor Castle and 2 serial ports are required, the ATMega328P may be better choice, as is cheaper and easier to find
+Recommended board for ATMega2560 is ATMega2560 Pro Mini
 
-For the ATMega328P it is recommended the Arduino Pro Mini. Other ATMega328P boards with USB connector may not read properly the serial port if connected (ESC serial or GPS). Also it is smaller and lighter than other ATMega328P boards
-
-For the ATMega328PB it is recommended the Pololu ATMega328PB. This is better choice than ATMega2560 as is smaller and lighter
-
-For the ATMega2560 it is recommended the ATMega2560 Pro Mini
-
-On the other hand for Arduino Pro Mini and Pololu ATMega328PB requires a USB-TTL programmer for flahsing, where for ATMega2560 can be flashed  with a USB cable 
+Pololu ATMega328PB is better choice than ATMega2560 as is smaller and lighter
 
 Implemented sensors:
 
