@@ -131,34 +131,6 @@ protected:
 #if CONFIG_NTC2
     Ntc ntc2 = Ntc(PIN_NTC2, CONFIG_ALPHA_TEMP);
 #endif
-#if CONFIG_AIRSPEED
-    static Xbus_Airspeed xbusAirspeed;
-    Pressure airspeed = Pressure(PIN_PRESSURE, CONFIG_ALPHA_DEF);
-#endif
-#if CONFIG_CURRENT
-    static Xbus_Battery xbusBattery;
-    Voltage curr = Voltage(PIN_CURRENT, CONFIG_ALPHA_CURR);
-#endif
-#if CONFIG_GPS
-    static Xbus_Gps_Loc xbusGpsLoc;
-    static Xbus_Gps_Stat xbusGpsStat;
-    Bn220 gps = Bn220(GPS_SERIAL);
-#endif
-#if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM
-    EscPWM escPwm = EscPWM(CONFIG_ALPHA_RPM);
-#endif
-#if CONFIG_VOLTAGE1
-    Voltage volt1 = Voltage(PIN_VOLTAGE1, CONFIG_ALPHA_VOLT);
-#endif
-#if CONFIG_NTC1
-    Ntc ntc1 = Ntc(PIN_NTC1, CONFIG_ALPHA_TEMP);
-#endif
-#if CONFIG_VOLTAGE2
-    Voltage volt2 = Voltage(PIN_VOLTAGE2, CONFIG_ALPHA_VOLT);
-#endif
-#if CONFIG_NTC2
-    Ntc ntc2 = Ntc(PIN_NTC2, CONFIG_ALPHA_TEMP);
-#endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3
     EscHW3 esc = EscHW3(ESC_SERIAL, CONFIG_ALPHA_RPM);
 #endif
