@@ -88,19 +88,6 @@
 #if RX_PROTOCOL == RX_SRXL
 #include "srxl.h"
 #endif
-//#if RX_PROTOCOL == RX_IBUS
-//#include "ibus.h"
-//#endif
-
-#if RX_PROTOCOL == RX_SMARTPORT
-#include "smartport.h"
-#endif
-#if RX_PROTOCOL == RX_XBUS
-#include "xbus.h"
-#endif
-#if RX_PROTOCOL == RX_SRXL
-#include "srxl.h"
-#endif
 
 struct Refresh
 {
