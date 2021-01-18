@@ -46,9 +46,9 @@ void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
     PORTB |= _BV(PB2);    // PB2 PULLUP
     EIFR |= _BV(INTF0);   // CLEAR INT0 FLAG
     EIMSK = _BV(INT0);    // ENABLE INT0 (PD2, PIN2)
-    TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 COMPA FLAG
-    TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 COMPA
-    TCNT2 = 0;            // RESET TIMER2
+    TCNT2 = 0;            // RESET TIMER2 COUNTER
+    TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
+    TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
 }
 
 void EscCastle::INT0_handler() // READ TELEMETRY
@@ -67,6 +67,18 @@ void EscCastle::INT0_handler() // READ TELEMETRY
 
 void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 {
+    EIMSK = 0;         // DISABLE INT0 (PD2, PIN2)
+    TIMSK2 = 0;        // DISABLE TIMER2 INTS
+    DDRB |= _BV(DDB2); // PWM OUT PIN 10 OUTPUT
+    if (castleRxLastReceived > RX_MAX_CYCLES)
+    {
+        OCR1B = 0;
+        TIMSK1 &= ~_BV(OCIE1B); // DISABLE INPUT STATE
+    }
+    else
+    {
+        castleRxLastReceived++;
+    }
     if (!castleTelemetryReceived)
     {
         //castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
@@ -78,18 +90,6 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 #endif
     }
     castleTelemetryReceived = false;
-    if (castleRxLastReceived > RX_MAX_CYCLES)
-    {
-        OCR1B = 0;
-        TIMSK1 &= ~_BV(OCIE1B); // DISABLE INPUT STATE
-    }
-    else
-    {
-        castleRxLastReceived++;
-    }
-    EIMSK = 0;         // DISABLE INT0 (PD2, PIN2)
-    TIMSK2 = 0;        // DISABLE TIMER2 INTS
-    DDRB |= _BV(DDB2); // PWM OUT PIN 10 OUTPUT
 }
 #endif
 
@@ -105,12 +105,14 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         if (!(TIMSK4 & _BV(OCIE4B)))
         {
             TCNT4 = 0;             // RESET COUNTER
-            TIFR4 |= _BV(OCF4B);   // CLEAR OCRB FLAG
             DDRD |= _BV(DDD2);     // OUTPUT OC4B (PD2, 2)
+            TIFR4 |= _BV(OCF4B);   // CLEAR OCRB FLAG
             TIMSK4 |= _BV(OCIE4B); // ENABLE OCRB MATCH INTERRUPT
+            TIFR1 |= _BV(TOV1);    // CLEAR OVERFLOW FLAG
             TIMSK1 |= _BV(TOIE1);  // ENABLE OVERFLOW INTERRUPT
         }
         OCR4B = ICR1;
+        castlePwmRx = OCR4B;  // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
     }
     TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 EDGE
 }
@@ -133,7 +135,6 @@ void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
     TCNT2 = 0;            // RESET TIMER2 COUNTER
     TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
     TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
-    castlePwmRx = OCR4B;  // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
 }
 
 void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
@@ -181,12 +182,14 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
         if (!(TIMSK5 & _BV(OCIE5B)))
         {
             TCNT5 = 0;             // RESET COUNTER
-            TIFR5 |= _BV(OCF5B);   // CLEAR OCRB CAPTURE FLAG
             DDRL &= ~_BV(DDL4);    // INPUT OC5B (PL4, 45)
+            TIFR5 |= _BV(OCF5B);   // CLEAR OCRB CAPTURE FLAG
             TIMSK5 |= _BV(OCIE5B); // ENABLE OCRB MATCH INTERRUPT
+            TIFR4 |= _BV(TOV4);    // CLEAR OVERFLOW FLAG
             TIMSK4 |= _BV(TOIE4);  // ENABLE OVERFLOW INTERRUPT
         }
         OCR5B = ICR4;
+        castlePwmRx = OCR5B;  // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
     }
     TCCR4B ^= _BV(ICES4); // TOGGLE ICP4 EDGE
 }
@@ -209,7 +212,6 @@ void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
     TCNT2 = 0;            // RESET TIMER2 COUNTER
     TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
     TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
-    castlePwmRx = OCR5B;  // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
 }
 
 void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY

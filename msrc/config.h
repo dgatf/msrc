@@ -1,10 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#if !defined(__AVR_ATmega328P__ ) && !defined(__AVR_ATmega328PB__ ) && !defined(__AVR_ATmega2560__ )
-#warning "MCU not supported"
-#endif
-
 // Select RX protocol
 #define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL
 

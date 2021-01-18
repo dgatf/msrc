@@ -1,5 +1,9 @@
 #include "msrc.h"
 
+#if !defined(__AVR_ATmega328P__ ) && !defined(__AVR_ATmega328PB__ ) && !defined(__AVR_ATmega2560__ )
+#warning "MCU not supported"
+#endif
+
 // ISR handlers
 
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
