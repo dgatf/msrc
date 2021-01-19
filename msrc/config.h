@@ -57,6 +57,11 @@
 #define GPS_SERIAL Serial2
 #define DEBUG_SERIAL Serial
 #endif
+#if defined(__AVR_ATmega32U4__)
+#define ESC_SERIAL Serial1
+#define GPS_SERIAL Serial1
+#define DEBUG_SERIAL Serial
+#endif
 
 /* Debug
    Disconnect Vcc from the RC model to the Arduino
@@ -97,6 +102,10 @@
 #if defined(__AVR_ATmega2560__)
 #define PIN_SMARTPORT_RX 4
 #define PIN_SMARTPORT_TX 12
+#endif
+#if defined(__AVR_ATmega32U4__) // teensy 2.0 // arduino pro micro
+#define PIN_SMARTPORT_RX PB3 // 3
+#define PIN_SMARTPORT_TX PF5 // A5
 #endif
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
