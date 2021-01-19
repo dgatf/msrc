@@ -1,6 +1,6 @@
 #include "msrc.h"
 
-#if !defined(__AVR_ATmega328P__ ) && !defined(__AVR_ATmega328PB__ ) && !defined(__AVR_ATmega2560__ )
+#if !defined(__AVR_ATmega328P__ ) && !defined(__AVR_ATmega328PB__ ) && !defined(__AVR_ATmega2560__ ) && !defined(__AVR_ATmega32U4__)
 #warning "MCU not supported"
 #endif
 
@@ -117,6 +117,51 @@ ISR(TIMER5_CAPT_vect)
 }
 #endif
 
+#if defined(__AVR_ATmega32U4__)
+void (*TIMER1_CAPT_handlerP)() = NULL;
+ISR(TIMER1_CAPT_vect)
+{
+    if (TIMER1_CAPT_handlerP)
+        TIMER1_CAPT_handlerP();
+}
+void (*TIMER1_COMPB_handlerP)() = NULL;
+ISR(TIMER1_COMPB_vect)
+{
+    if (TIMER1_COMPB_handlerP)
+        TIMER1_COMPB_handlerP();
+}
+void (*TIMER1_OVF_handlerP)() = NULL;
+ISR(TIMER1_OVF_vect)
+{
+    if (TIMER1_OVF_handlerP)
+        TIMER1_OVF_handlerP();
+}
+void (*TIMER1_COMPC_handlerP)() = NULL;
+ISR(TIMER1_COMPC_vect)
+{
+    if (TIMER1_COMPC_handlerP)
+        TIMER1_COMPC_handlerP();
+}
+void (*TIMER3_COMPB_handlerP)() = NULL;
+ISR(TIMER3_COMPB_vect)
+{
+    if (TIMER3_COMPB_handlerP)
+        TIMER3_COMPB_handlerP();
+}
+void (*TIMER3_CAPT_handlerP)() = NULL;
+ISR(TIMER3_CAPT_vect)
+{
+    if (TIMER3_CAPT_handlerP)
+        TIMER3_CAPT_handlerP();
+}
+void (*TIMER3_OVF_handlerP)() = NULL;
+ISR(TIMER3_OVF_vect)
+{
+    if (TIMER3_OVF_handlerP)
+        TIMER3_OVF_handlerP();
+}
+#endif
+
 uint8_t calcAlpha(uint8_t elements)
 {
     return round((2.0F / (elements + 1)) * 100);
@@ -139,10 +184,16 @@ void setPwmOut(bool pwmOut)
         TCCR4A = _BV(WGM41) | _BV(WGM40);
         TCCR4B = _BV(WGM43) | _BV(WGM42) | _BV(CS41);
 #endif
+#if defined(__AVR_ATmega32U4__)
+        // TIMER1: MODE 15 (TOP OCRA), SCALER 8. OC1B, PB6
+        DDRB |= _BV(DDB6);
+        TCCR1A = _BV(WGM11) | _BV(WGM10);
+        TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);
+#endif
     }
     else
     {
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
         TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
 #endif
 #if defined(__AVR_ATmega2560__)
@@ -163,7 +214,7 @@ void updatePwmOut()
         noInterrupts();
         if (rpm >= 2000)
         {
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
             TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
             OCR1A = (60000 / rpm) * MS_TO_COMP(8) - 1;
             OCR1B = PWMOUT_DUTY * OCR1A;
@@ -176,7 +227,7 @@ void updatePwmOut()
         }
         else
         {
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
             TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
 #endif
 #if defined(__AVR_ATmega2560__)

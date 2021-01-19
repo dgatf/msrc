@@ -7,7 +7,7 @@
 #include <Arduino.h>
 #include "device.h"
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
 extern void (*TIMER1_CAPT_handlerP)();
 extern void (*TIMER1_OVF_handlerP)();
 #endif
@@ -24,7 +24,7 @@ private:
     static volatile bool escPwmUpdate;
     uint8_t alphaRpm_;
     float rpm_;
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
     static void TIMER1_CAPT_handler();
     static void TIMER1_OVF_handler();
 #endif

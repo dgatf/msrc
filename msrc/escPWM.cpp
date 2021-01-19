@@ -6,7 +6,7 @@ volatile bool EscPWM::escPwmUpdate = false;
 
 EscPWM::EscPWM(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
 void EscPWM::TIMER1_CAPT_handler()
 {
     escPwmDuration = ICR1;
@@ -38,7 +38,7 @@ void EscPWM::TIMER4_OVF_handler()
 
 void EscPWM::begin()
 {
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
     // TIMER1: MODE 0 (NORMAL), SCALER 8, CAPTURE AND OVERFLOW INTERRUPT. ICP1, PB0, PIN 8
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
     TIMER1_OVF_handlerP = TIMER1_OVF_handler;
