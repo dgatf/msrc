@@ -8,7 +8,7 @@ Compatible RX protocols:
 - XBUS: Spektrum
 - SRXL: Spektrum
 
-Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4
+Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560, ATMega32U4 and Teensy LC
 
 Implemented sensors:
 
