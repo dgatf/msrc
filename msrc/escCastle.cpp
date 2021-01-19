@@ -112,7 +112,7 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
             TIMSK1 |= _BV(TOIE1);  // ENABLE OVERFLOW INTERRUPT
         }
         OCR4B = ICR1;
-        castlePwmRx = OCR4B;  // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
+        castlePwmRx = OCR4B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
     }
     TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 EDGE
 }
@@ -182,14 +182,14 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
         if (!(TIMSK5 & _BV(OCIE5B)))
         {
             TCNT5 = 0;             // RESET COUNTER
-            DDRL &= ~_BV(DDL4);    // INPUT OC5B (PL4, 45)
+            DDRL |= _BV(DDL4);     // OUTPUT OC5B (PL4, 45)
             TIFR5 |= _BV(OCF5B);   // CLEAR OCRB CAPTURE FLAG
             TIMSK5 |= _BV(OCIE5B); // ENABLE OCRB MATCH INTERRUPT
             TIFR4 |= _BV(TOV4);    // CLEAR OVERFLOW FLAG
             TIMSK4 |= _BV(TOIE4);  // ENABLE OVERFLOW INTERRUPT
         }
         OCR5B = ICR4;
-        castlePwmRx = OCR5B;  // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
+        castlePwmRx = OCR5B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
     }
     TCCR4B ^= _BV(ICES4); // TOGGLE ICP4 EDGE
 }
@@ -205,13 +205,10 @@ void EscCastle::TIMER4_OVF_handler() // NO RX INPUT
 
 void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
 {
-    DDRL &= ~_BV(DDL4);   // INPUT OC5B (PL4, 45)
-    PORTL |= _BV(PL4);    // PL4 PULLUP
-    TIFR5 |= _BV(ICF5);   // CLEAR ICP5 CAPTURE FLAG
-    TIMSK5 |= _BV(ICIE5); // ENABLE ICP5 CAPT
-    TCNT2 = 0;            // RESET TIMER2 COUNTER
-    TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
-    TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
+    DDRL &= ~_BV(DDL4);                 // INPUT OC5B (PL4, 45)
+    PORTL |= _BV(PL4);                  // PL4 PULLUP
+    TIFR5 |= _BV(OCF5C) | _BV(ICF5);    // CLEAR ICP5 CAPTURE/OC5C MATCH FLAGS
+    TIMSK5 |= _BV(OCIE5C) | _BV(ICIE5); // ENABLE ICP5 CAPT/OC5C MATCH
 }
 
 void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
@@ -228,11 +225,10 @@ void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
     }
 }
 
-void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
+void EscCastle::TIMER5_COMPC_handler() // START OUTPUT STATE
 {
-    TIMSK5 &= ~_BV(ICIE5);  // DISABLE ICP5 CAPT
-    DDRL |= _BV(DDL4);      // OUTPUT OC5B (PL4, 45)
-    TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
+    TIMSK5 &= ~_BV(ICIE5); // DISABLE ICP5 CAPT
+    DDRL |= _BV(DDL4);     // OUTPUT OC5B (PL4, 45)
     if (!castleTelemetryReceived)
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
@@ -280,13 +276,14 @@ void EscCastle::begin()
 
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
+    TIMER1_OVF_handlerP = TIMER1_OVF_handler;
     TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
     TIMER4_COMPB_handlerP = TIMER4_COMPB_handler;
     TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
 
     // TIMER1. RX INPUT. ICP1 (PB0, PIN 8)
-    PORTB |= _BV(PB0);     // ICP1 PULLUP
-    TCCR1A = 0;
+    PORTB |= _BV(PB0);    // ICP1 PULLUP
+    TCCR1A = 0;           //
     TCCR1B = 0;           // MODE 0 (NORMAL)
     TCCR1B |= _BV(ICES1); // RISING EDGE
     TCCR1B |= _BV(CS11);  // SCALER 8
@@ -308,8 +305,9 @@ void EscCastle::begin()
 
 #if defined(__AVR_ATmega2560__)
     TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
-    TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
+    TIMER4_OVF_handlerP = TIMER4_OVF_handler;
     TIMER5_COMPB_handlerP = TIMER5_COMPB_handler;
+    TIMER5_COMPC_handlerP = TIMER5_COMPC_handler;
     TIMER5_CAPT_handlerP = TIMER5_CAPT_handler;
 
     // TIMER4. RX INPUT. ICP4 (PL0, PIN 49)
@@ -327,11 +325,7 @@ void EscCastle::begin()
     TCCR5B &= ~_BV(ICES5);               // FALLING EDGE
     TCCR5B |= _BV(CS51);                 // SCALER 8
     OCR5A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
-
-    // TIMER 2. TOGGLE OC5B INPUT/OUTPUT
-    TCCR2A = 0;                                 // NORMAL MODE
-    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * CASTLE_MS_TO_COMP(1024);       // 12ms
+    OCR5C = 12 * CASTLE_MS_TO_COMP(8);   // TOGGLE OC5B OUTPUT
 #endif
 }
 

@@ -97,17 +97,17 @@ ISR(TIMER4_OVF_vect)
     if (TIMER4_OVF_handlerP)
         TIMER4_OVF_handlerP();
 }
-void (*TIMER2_COMPA_handlerP)() = NULL;
-ISR(TIMER2_COMPA_vect)
-{
-    if (TIMER2_COMPA_handlerP)
-        TIMER2_COMPA_handlerP();
-}
 void (*TIMER5_COMPB_handlerP)() = NULL;
 ISR(TIMER5_COMPB_vect)
 {
     if (TIMER5_COMPB_handlerP)
         TIMER5_COMPB_handlerP();
+}
+void (*TIMER5_COMPC_handlerP)() = NULL;
+ISR(TIMER5_COMPC_vect)
+{
+    if (TIMER5_COMPC_handlerP)
+        TIMER5_COMPC_handlerP();
 }
 void (*TIMER5_CAPT_handlerP)() = NULL;
 ISR(TIMER5_CAPT_vect)
