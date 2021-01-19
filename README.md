@@ -35,7 +35,7 @@ Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560
 | ATMega2560 | :white_check_mark: | 3 |
 | ATMega32U4 | :white_check_mark:<sup>(2)</sup> | 1 |
 
-(1) 2 x UARTS allows to use ESC serial and GPS at the same time
+(1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Arduino Pro Mini requires hardware modification
 
 Recommended board for ATMega328P is the Arduino Pro Mini (USB to TTL programmer is required)
