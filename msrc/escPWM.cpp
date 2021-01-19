@@ -67,6 +67,25 @@ void EscPWM::FTM0_IRQ_handler()
 }
 #endif
 
+#if defined(__MKL26Z64__)
+void EscPWM::FTM0_IRQHandler()
+{
+    if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH0
+    {
+        escPwmDuration = FTM0_CNT;
+        FTM0_C0SC |= FTM_CSC_CHF; // CLEAR FLAG
+        FTM0_CNT = 0;             // RESET COUNTER
+        escPwmRunning = true;
+        escPwmUpdate = true;
+    }
+    else if (FTM0_SC & FTM_SC_TOF) // TIMER OVERFLOW INTERRUPT
+    {
+        FTM0_SC |= FTM_SC_TOF; // CLEAR FLAG
+        escPwmRunning = false;
+    }
+}
+#endif
+
 void EscPWM::begin()
 {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
