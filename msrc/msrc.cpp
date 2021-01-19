@@ -1,6 +1,6 @@
 #include "msrc.h"
 
-#if !defined(__AVR_ATmega328P__ ) && !defined(__AVR_ATmega328PB__ ) && !defined(__AVR_ATmega2560__ ) && !defined(__AVR_ATmega32U4__)
+#if !defined(__AVR_ATmega328P__ ) && !defined(__AVR_ATmega328PB__ ) && !defined(__AVR_ATmega2560__ ) && !defined(__AVR_ATmega32U4__)  && !defined(__MKL26Z64__)
 #warning "MCU not supported"
 #endif
 

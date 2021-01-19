@@ -79,6 +79,22 @@
 #define GPS_SERIAL Serial1
 #endif
 
+#if defined(__MKL26Z64__)
+#define PIN_SMARTPORT_RX 2
+#define PIN_SMARTPORT_TX 21
+#define PIN_NTC1 14
+#define PIN_NTC2 15
+#define PIN_VOLTAGE1 16
+#define PIN_VOLTAGE2 17
+#define PIN_CURRENT 18
+#define PIN_PRESSURE 19
+
+#define SOFTWARE_SERIAL
+#define SMARTPORT_SRXL_SERIAL softSerial
+#define ESC_SERIAL Serial1
+#define GPS_SERIAL Serial1
+#endif
+
 // Lua config (only opentx)
 //#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
 
