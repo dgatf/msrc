@@ -1,6 +1,6 @@
 # MSRC - Multi Sensor for RC - Smartport, XBUS, SRXL
 
-This is a DIY project to send multiple sensors telemetry using an ATMega328P (Arduino Pro Mini), ATMega328PB (Pololu ATMega328PB) or ATMega2560 based board, for a fraction of the weight and cost of the stock sensors
+This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors
 
 Compatible RX protocols:
 
@@ -8,7 +8,7 @@ Compatible RX protocols:
 - XBUS: Spektrum
 - SRXL: Spektrum
 
-Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560
+Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560 and ATMega32U4
 
 Implemented sensors:
 
@@ -33,36 +33,41 @@ Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560
 | ATMega328P | Unstable| 1 |
 | ATMega328PB | :white_check_mark: | 2 |
 | ATMega2560 | :white_check_mark: | 3 |
+| ATMega32U4 | :white_check_mark:<sup>(2)</sup> | 1 |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time
+(2) Arduino Pro Mini requires hardware modification
 
-Recommended board for ATMega328P is the Arduino Pro Mini (USB to TTL programmer is required). Other ATMega328P boards with USB connector may not read properly the serial port if connected (ESC serial or GPS)
+Recommended board for ATMega328P is the Arduino Pro Mini (USB to TTL programmer is required)
+
+ATMega328P/PB and ATMega2560 boards with USB connector may not read properly RX0 (shared with USB)
 
 Recommended board for ATMega328PB is Pololu ATMega328PB
 
 Recommended board for ATMega2560 is ATMega2560 Pro Mini
 
-Pololu ATMega328PB is better choice than ATMega2560 as is smaller and lighter
+Usually best choice are Arduino Pro Mini or Pololu ATMega328PB, depending on your requirements
 
 ### 1.2 Connections
 
-| Board | Arduino Pro Mini | Pololu ATMega328PB | Arduino ATMega2560 |
-| :---: | :---: | :---: | :---: |
-| NTC 1 | A0 | A0 | A0 |
-| NTC 2 | A1 | A1 | A1 |
-| Voltage 1 | A2 | A2 | A2 |
-| Voltage 2 | A3 | A3 | A3 |
-| Current | A6 | A6 | A6 |
-| Airspeed | A7 | A7 | A7 |
-| ESC serial | RX | RX0 | RX1 |
-| GPS | RX | RX1 | RX2 |
-| PWM in | 8 | 8 | 49 |
-| PWM out | 10 | 10 | 7 |
-| Rx Castle | 8 | 8 | 49 |
-| ESC Castle<sup>(1)</sup> | 2/10 | 2/22 | 45/48 |
-| Smartport/SRXL | 7/12<sup>(2)</sup> | 4/23<sup>(2)</sup> | 4/12<sup>(2)</sup> |
-| XBUS/sensor SDA | A4 | A4 | 20 |
-| XBUS/sensor SCL | A5 | A5 | 21 |
+| Board | Arduino Pro Mini | Pololu ATMega328PB | Arduino ATMega2560 | Teensy 2 |
+| :---: | :---: | :---: | :---: | :---: |
+| MCU | ATMega328P | ATMega328PB | ATMega2560 | ATMega32U4 |
+| NTC 1 | A0 | A0 | A0 | F0 |
+| NTC 2 | A1 | A1 | A1 | F1 |
+| Voltage 1 | A2 | A2 | A2 | F4 |
+| Voltage 2 | A3 | A3 | A3 | F5 |
+| Current | A6 | A6 | A6 | B6 |
+| Airspeed | A7 | A7 | A7 | B5 |
+| ESC serial | RX | RX0 | RX1 | D2 |
+| GPS | RX | RX1 | RX2 | D2 |
+| PWM in | 8 | 8 | 49 | D4 |
+| PWM out | 10 | 10 | 7 | B6 |
+| Rx Castle | 8 | 8 | 49 | C7 |
+| ESC Castle<sup>(1)</sup> | 2/10 | 2/22 | 45/48 | C8/B6 |
+| Smartport/SRXL | 7/12<sup>(2)</sup> | 4/23<sup>(2)</sup> | 4/12<sup>(2)</sup> | B3/F5<sup>(2)</sup> |
+| XBUS/sensor SDA | A4 | A4 | 20 | D1 |
+| XBUS/sensor SCL | A5 | A5 | 21 | D0 |
 
 (1) with pull up 3.3k  
 (2) with resistor 3.3k
