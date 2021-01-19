@@ -59,6 +59,13 @@ extern void (*TIMER5_COMPB_handlerP)();
 extern void (*TIMER5_COMPC_handlerP)();
 extern void (*TIMER5_CAPT_handlerP)();
 #endif
+#if defined(__AVR_ATmega32U4__)
+extern void (*TIMER3_CAPT_handlerP)();
+extern void (*TIMER3_OVF_handlerP)();
+extern void (*TIMER1_COMPB_handlerP)();
+extern void (*TIMER1_CAPT_handlerP)();
+extern void (*TIMER1_COMPC_handlerP)();
+#endif
 
 class EscCastle : public AbstractDevice, public EscCell
 {
@@ -90,6 +97,15 @@ private:
     static void TIMER5_COMPB_handler();
     static void TIMER5_COMPC_handler();
     static void TIMER5_CAPT_handler();
+#endif
+uint8_t kk2;
+#if defined(__AVR_ATmega32U4__)
+    uint8_t kk;
+    static void TIMER3_CAPT_handler();
+    static void TIMER3_OVF_handler();
+    static void TIMER1_COMPC_handler();
+    static void TIMER1_COMPB_handler();
+    static void TIMER1_CAPT_handler();
 #endif
 
 protected:

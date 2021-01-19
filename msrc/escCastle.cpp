@@ -243,6 +243,152 @@ void EscCastle::TIMER5_COMPC_handler() // START OUTPUT STATE
 }
 #endif
 
+#if defined(__AVR_ATmega32U4__)
+void EscCastle::TIMER3_CAPT_handler() // RX INPUT
+{
+    if (TCCR3B & _BV(ICES3)) // RX RISING (PULSE START)
+    {
+        TCNT3 = 0; // RESET COUNTER
+    }
+    else // RX FALLING (PULSE END)
+    {
+        if (!(TIMSK1 & _BV(OCIE1B)))
+        {
+            TCNT1 = 0;             // RESET COUNTER
+            DDRB |= _BV(DDB6);     // OUTPUT OC1B (PB6, 10)
+            TIFR1 |= _BV(OCF1B);   // CLEAR OCRB/OCRC FLAGS
+            TIMSK1 |= _BV(OCIE1B); // ENABLE OCRB1 MATCH INTERRUPT
+            TIMSK3 |= _BV(TOIE3);  // ENABLE OVERFLOW INTERRUPT
+        }
+        OCR1B = ICR3;
+        castlePwmRx = OCR1B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
+    }
+    TCCR3B ^= _BV(ICES3); // TOGGLE ICP3 EDGE
+}
+
+void EscCastle::TIMER3_OVF_handler() // NO RX INPUT
+{
+    DDRB &= ~_BV(DDB6);    // INPUT OC1B (PB6, 10)
+    PORTB |= _BV(PB6);     // PB6 PULLUP
+    TIMSK1 = 0;            // DISABLE INTERRUPTS
+    TCCR3B |= _BV(ICES3);  // RISING EDGE
+    TIMSK3 &= ~_BV(TOIE3); // DISABLE OVERFLOW INTERRUPT
+}
+
+void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
+{
+    DDRB &= ~_BV(DDB6);   // INPUT OC1B (PB6)
+    PORTB |= _BV(PB6);    // PD2 PULLUP
+    TIFR1 |= _BV(ICF1);   // CLEAR ICP1 CAPTURE FLAG
+    TIMSK1 |= _BV(ICIE1); // ENABLE ICP1 CAPT
+}
+
+void EscCastle::TIMER1_CAPT_handler() // READ TELEMETRY
+{
+    castleTelemetry[castleCont] = TCNT1 - castlePwmRx;
+#ifdef DEBUG_CASTLE
+    DEBUG_SERIAL.print(castleTelemetry[castleCont]);
+    DEBUG_SERIAL.print(" ");
+#endif
+    if (castleCont < 11)
+    {
+        castleCont++;
+        castleTelemetryReceived = true;
+    }
+}
+
+void EscCastle::TIMER1_COMPC_handler() // START OUTPUT STATE
+{
+    TIMSK1 &= ~_BV(ICIE1); // DISABLE ICP1 CAPT
+    DDRB |= _BV(DDB6);     // OUTPUT OC1B (PB6)
+    TIMSK1 &= ~_BV(OCIE1C); // DISABLE TIMER1 OCRC INTERRUPT
+    if (!castleTelemetryReceived)
+    {
+        castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
+        castleCont = 0;
+#ifdef DEBUG_CASTLE
+        DEBUG_SERIAL.println();
+        DEBUG_SERIAL.print(millis());
+        DEBUG_SERIAL.print(" ");
+#endif
+    }
+    castleTelemetryReceived = false;
+}
+#endif
+
+#if defined(__AVR_ATmega32U4__)
+void EscCastle::TIMER3_CAPT_handler() // RX INPUT
+{
+    if (TCCR3B & _BV(ICES3)) // RX RISING (PULSE START)
+    {
+        TCNT3 = 0; // RESET COUNTER
+    }
+    else // RX FALLING (PULSE END)
+    {
+        if (!(TIMSK1 & _BV(OCIE1B)))
+        {
+            TCNT1 = 0;             // RESET COUNTER
+            DDRB |= _BV(DDB6);     // OUTPUT OC1B (PB6, 10)
+            TIFR1 |= _BV(OCF1B);   // CLEAR OCRB/OCRC FLAGS
+            TIMSK1 |= _BV(OCIE1B); // ENABLE OCRB1 MATCH INTERRUPT
+            TIMSK3 |= _BV(TOIE3);  // ENABLE OVERFLOW INTERRUPT
+        }
+        OCR1B = ICR3;
+        castlePwmRx = OCR1B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
+    }
+    TCCR3B ^= _BV(ICES3); // TOGGLE ICP3 EDGE
+}
+
+void EscCastle::TIMER3_OVF_handler() // NO RX INPUT
+{
+    DDRB &= ~_BV(DDB6);    // INPUT OC1B (PB6, 10)
+    PORTB |= _BV(PB6);     // PB6 PULLUP
+    TIMSK1 = 0;            // DISABLE INTERRUPTS
+    TCCR3B |= _BV(ICES3);  // RISING EDGE
+    TIMSK3 &= ~_BV(TOIE3); // DISABLE OVERFLOW INTERRUPT
+}
+
+void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
+{
+    DDRB &= ~_BV(DDB6);   // INPUT OC1B (PB6)
+    PORTB |= _BV(PB6);    // PD2 PULLUP
+    TIFR1 |= _BV(ICF1);   // CLEAR ICP1 CAPTURE FLAG
+    TIMSK1 |= _BV(ICIE1); // ENABLE ICP1 CAPT
+}
+
+void EscCastle::TIMER1_CAPT_handler() // READ TELEMETRY
+{
+    castleTelemetry[castleCont] = TCNT1 - castlePwmRx;
+#ifdef DEBUG_CASTLE
+    DEBUG_SERIAL.print(castleTelemetry[castleCont]);
+    DEBUG_SERIAL.print(" ");
+#endif
+    if (castleCont < 11)
+    {
+        castleCont++;
+        castleTelemetryReceived = true;
+    }
+}
+
+void EscCastle::TIMER1_COMPC_handler() // START OUTPUT STATE
+{
+    TIMSK1 &= ~_BV(ICIE1); // DISABLE ICP1 CAPT
+    DDRB |= _BV(DDB6);     // OUTPUT OC1B (PB6)
+    TIMSK1 &= ~_BV(OCIE1C); // DISABLE TIMER1 OCRC INTERRUPT
+    if (!castleTelemetryReceived)
+    {
+        castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
+        castleCont = 0;
+#ifdef DEBUG_CASTLE
+        DEBUG_SERIAL.println();
+        DEBUG_SERIAL.print(millis());
+        DEBUG_SERIAL.print(" ");
+#endif
+    }
+    castleTelemetryReceived = false;
+}
+#endif
+
 void EscCastle::begin()
 {
 #ifdef DEBUG_CASTLE
@@ -326,6 +472,31 @@ void EscCastle::begin()
     TCCR5B |= _BV(CS51);                 // SCALER 8
     OCR5A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
     OCR5C = 12 * CASTLE_MS_TO_COMP(8);   // TOGGLE OC5B OUTPUT
+#endif
+
+#if defined(__AVR_ATmega32U4__)
+    TIMER3_CAPT_handlerP = TIMER3_CAPT_handler;
+    TIMER3_OVF_handlerP = TIMER3_OVF_handler;
+    TIMER1_COMPC_handlerP = TIMER1_COMPC_handler;
+    TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
+    TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
+
+    // TIMER3. RX INPUT. ICP3 (PC7)
+    PORTC |= _BV(PC7);    // ICP3 PULLUP
+    TCCR3A = 0;           //
+    TCCR3B = 0;           // MODE 0 (NORMAL)
+    TCCR3B |= _BV(ICES3); // RISING EDGE
+    TCCR3B |= _BV(CS31);  // SCALER 8
+    TIMSK3 = _BV(ICIE3);  // CAPTURE INTERRUPT
+
+    // TIMER1. ESC: PWM OUTPUT, TELEMETRY INPUT. ICP1 (PD4). OC1B (PB6) -> OUTPUT/INPUT PULL UP
+    TCCR1A = _BV(WGM11) | _BV(WGM10);    // MODE 15 (TOP OCR4A)
+    TCCR1B = _BV(WGM13) | _BV(WGM12);    //
+    TCCR1A |= _BV(COM4B1) | _BV(COM4B0); // TOGGLE OC4B ON OCR4B (INVERTING)
+    TCCR1B &= ~_BV(ICES1);               // FALLING EDGE
+    TCCR1B |= _BV(CS11);                 // SCALER 8
+    OCR1A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
+    OCR1C = 12 * CASTLE_MS_TO_COMP(8);   // TOGGLE OC1B OUTPUT
 #endif
 }
 
