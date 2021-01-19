@@ -334,6 +334,79 @@ void EscCastle::TIMER1_COMPC_handler() // START OUTPUT STATE
 }
 #endif
 
+#if defined(__MKL26Z64__)
+void EscCastle::FTM2_IRQHandler()
+{
+    if (FTM2_C0SC & FTM_CSC_CHF) // TIMER INPUT CAPTURE INTERRUPT RX
+    {
+        if (FTM2_C0SC & FTM_CSC_ELSB) // FALLING EDGE (PULSE END)
+        {
+            if (!(FTM2_C0SC & FTM_CSC_CHIE)) // FTM2 DISABLED
+            {
+                FTM0_CNT = 0;
+                FTM0_C0SC &= ~0x3C;        // DISABLE CHANNEL
+                FTM0_C0SC |= FTM_CSC_MSB;  // OUTPUT
+                FTM0_C0SC |= FTM_CSC_ELSA; // LOW TRUE
+                FTM0_C0SC |= FTM_CSC_CHF;  // CLEAR FLAG
+                FTM0_C0SC |= FTM_CSC_CHIE; // ENABLE INTERRUPT
+                FTM0_SC |= FTM_SC_CLKS(1); // ENABLE COUNTER
+            }
+            FTM0_C0V = FTM2_CNT; // UPDATE FTM0 PWM
+        }
+        else // RISING EDGE (PULSE START)
+        {
+            FTM2_CNT = 0;
+        }
+        FTM2_C0SC ^= FTM_CSC_ELSB; // TOGGLE INPUT POLARITY DIRECTION
+        FTM2_C0SC |= FTM_CSC_CHF;  // CLEAR FLAG
+    }
+    else if (FTM2_SC & FTM_SC_TOF) // TIMER OVERFLOW INTERRUPT
+    {
+        FTM0_C0SC &= ~0x3C;        // DISABLE CHANNEL
+        FTM0_SC |= FTM_SC_CLKS(0); // DISABLE FTM0 COUNTER
+        FTM2_SC |= FTM_SC_TOF;     // CLEAR FLAG
+    }
+}
+
+void EscCastle::FTM0_IRQHandler()
+{
+    if (FTM0_C0SC & FTM_CSC_CHF) // CH0 INTERRUPT (TOGGLE CH0 TO INPUT)
+    {
+        FTM0_C0SC &= ~0x3C;        // DISABLE CH0
+        FTM0_C0SC &= FTM_CSC_CHIE; // DISABLE INTERRUPT CH0
+        FTM0_C1SC |= FTM_CSC_CHF;  // CLEAR FLAG CH1
+        FTM0_C1SC |= FTM_CSC_CHIE; // ENABLE INTERRUPT CH1
+        FTM0_C2SC |= FTM_CSC_CHF;  // CLEAR FLAG CH2
+        FTM0_C2SC |= FTM_CSC_CHIE; // ENABLE INTERRUPT CH2
+        FTM0_C0SC |= FTM_CSC_CHF;  // CLEAR FLAG CH0
+        if (!castleTelemetryReceived)
+        {
+            castleCont = 0;
+            castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
+            castleTelemetryReceived = false;
+        }
+    }
+    if (FTM0_C1SC & FTM_CSC_CHF) // CH1 INTERRUPT (CAPTURE TELEMETRY)
+    {
+        castleTelemetry[castleCont] = FTM0_CNT - FTM0_C0V;
+        castleCont++;
+        castleTelemetryReceived = true;
+        FTM0_C1SC |= FTM_CSC_CHF; // CLEAR FLAG CH1
+    }
+    if (FTM0_C2SC & FTM_CSC_CHF) // CH2 INTERRUPT (TOGGLE CH0 TO OUTPUT)
+    {
+        FTM0_C0SC &= ~0x3C;         // DISABLE CHANNEL
+        FTM0_C0SC |= FTM_CSC_MSB;   // OUTPUT
+        FTM0_C0SC |= FTM_CSC_ELSA;  // LOW TRUE
+        FTM0_C0SC |= FTM_CSC_CHF;   // CLEAR FLAG CH0
+        FTM0_C0SC |= FTM_CSC_CHIE;  // ENABLE INTERRUPT CH0
+        FTM0_C1SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT CH1
+        FTM0_C2SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT CH2
+        FTM0_C2SC |= FTM_CSC_CHF;   // CLEAR FLAG CH2
+    }
+}
+#endif
+
 void EscCastle::begin()
 {
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
@@ -439,6 +512,32 @@ void EscCastle::begin()
     OCR1A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
     OCR1C = 12 * CASTLE_MS_TO_COMP(8);   // TOGGLE OC1B OUTPUT
 #endif
+
+#if defined(__MKL26Z64__)
+    // FTM2 (2 CH): CAPTURE RX PULSE (PIN: CH0 -> PTA1 -> 3)
+    FTM2_SC |= FTM_SC_PS(7);      // PRESCALER 128
+    FTM2_SC |= FTM_SC_CLKS(1);    // ENABLE COUNTER
+    FTM2_SC |= FTM_SC_TOIE;       // ENABLE OVERFLOW INTERRUPT
+    FTM2_C0SC |= FTM_CSC_ELSA;    // CAPTURE RISING
+    FTM2_C0SC |= FTM_CSC_CHIE;    // ENABLE INTERRUPT
+    PORTA_PCR1 = PORT_PCR_MUX(3); // TPM2_CH0 MUX 3 -> PTA1 -> 11
+    NVIC_ENABLE_IRQ(IRQ_FTM2);
+
+    // FTM0 (6 CH): INVERTED PWM AT 20MHZ AND CAPTURE TELEMETRY (PINS: CH0 PWM OUTPUT (PTC1 -> 22/A8), CH1 CAPTURE INPUT (PTC2 -> 23/A9))
+    FTM0_SC |= FTM_SC_PS(7);                // PRESCALER 128
+    FTM0_MOD = 20 * CASTLE_MS_TO_COMP(128); // 20ms (100HZ)
+    FTM0_C2V = 12 * CASTLE_MS_TO_COMP(128); // 12ms TOGGLE CH0 TO OUTPUT
+    FTM0_C0SC |= FTM_CSC_MSB;               // OUTPUT CH0
+    FTM0_C0SC |= FTM_CSC_ELSA;              // LOW PULSES CH0
+    FTM0_C1SC |= FTM_CSC_ELSB;              // CAPTURE FALLING
+    FTM0_C2SC |= FTM_CSC_MSA;               // SOFTWARE COMPARE ??
+    PORTC_PCR1 = PORT_PCR_MUX(4);           // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8 (PWM OUT)
+    PORTC_PCR2 = PORT_PCR_MUX(4);           // TPM0_CH1 MUX 4 -> PTC2 -> 23/A9 (CAPTURE)
+
+    //PORTC_PCR2 = PORT_PCR_MUX(4);
+    NVIC_ENABLE_IRQ(IRQ_FTM0);
+#endif
+
 }
 
 float EscCastle::read(uint8_t index)

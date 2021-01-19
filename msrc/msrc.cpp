@@ -190,6 +190,13 @@ void setPwmOut(bool pwmOut)
         TCCR1A = _BV(WGM11) | _BV(WGM10);
         TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);
 #endif
+#if defined(__MKL26Z64__)
+        FTM0_SC |= FTM_SC_PS(7);       // PRESCALER 128
+        FTM0_SC |= FTM_SC_CLKS(1);     // ENABLE COUNTER
+        FTM0_C0SC |= FTM_CSC_ELSB;     // HIGH PULSES
+        FTM0_C0SC |= FTM_CSC_MSB;      // OUTPUT PWM
+        PORTC_PCR1 |= PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8
+#endif
     }
     else
     {
@@ -198,6 +205,9 @@ void setPwmOut(bool pwmOut)
 #endif
 #if defined(__AVR_ATmega2560__)
         TCCR4A &= ~_BV(COM4B1);
+#endif
+#if defined(__MKL26Z64__)
+        FTM0_SC |= FTM_SC_CLKS(0); // DISABLE COUNTER
 #endif
     }
     interrupts();
@@ -224,6 +234,11 @@ void updatePwmOut()
             OCR4A = (60000 / rpm) * MS_TO_COMP(8) - 1;
             OCR4B = PWMOUT_DUTY * OCR4A;
 #endif
+#if defined(__MKL26Z64__)
+            FTM0_SC |= FTM_SC_CLKS(1);                     // ENABLE COUNTER
+            FTM0_MOD = (60000 / rpm) * MS_TO_COMP(128) - 1; // SET FRECUENCY
+            FTM0_C0V = PWMOUT_DUTY * FTM0_MOD;             // SET DUTY
+#endif
         }
         else
         {
@@ -232,6 +247,9 @@ void updatePwmOut()
 #endif
 #if defined(__AVR_ATmega2560__)
             TCCR4A &= ~_BV(COM4B1);
+#endif
+#if defined(__MKL26Z64__)
+            FTM0_SC |= FTM_SC_CLKS(0); // DISABLE COUNTER
 #endif
         }
         interrupts();

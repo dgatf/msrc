@@ -32,6 +32,9 @@ private:
     static void TIMER4_CAPT_handler();
     static void TIMER4_OVF_handler();
 #endif
+#if defined(__MKL26Z64__)
+    static void FTM0_IRQHandler();
+#endif
 
 protected:
 public:

@@ -105,6 +105,10 @@ private:
     static void TIMER1_COMPB_handler();
     static void TIMER1_CAPT_handler();
 #endif
+#if defined(__MKL26Z64__)
+    static void FTM0_IRQHandler();
+    static void FTM2_IRQHandler();
+#endif
 
 protected:
 public:

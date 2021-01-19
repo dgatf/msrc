@@ -48,6 +48,25 @@ void EscPWM::TIMER4_OVF_handler()
 }
 #endif
 
+#if defined(__MKL26Z64__)
+void EscPWM::FTM0_IRQHandler()
+{
+    if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH0
+    {
+        escPwmDuration = FTM0_CNT;
+        FTM0_C0SC |= FTM_CSC_CHF; // CLEAR FLAG
+        FTM0_CNT = 0;             // RESET COUNTER
+        escPwmRunning = true;
+        escPwmUpdate = true;
+    }
+    else if (FTM0_SC & FTM_SC_TOF) // TIMER OVERFLOW INTERRUPT
+    {
+        FTM0_SC |= FTM_SC_TOF; // CLEAR FLAG
+        escPwmRunning = false;
+    }
+}
+#endif
+
 void EscPWM::begin()
 {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
@@ -68,6 +87,16 @@ void EscPWM::begin()
     TCCR4A = 0;
     TCCR4B = _BV(CS41) | _BV(ICES4) | _BV(ICNC4);
     TIMSK4 = _BV(ICIE4) | _BV(TOIE4);
+#endif
+
+#if defined(__MKL26Z64__)
+    FTM0_SC |= FTM_SC_PS(7);       // PRESCALER 128
+    FTM0_SC |= FTM_SC_CLKS(1);     // ENABLE COUNTER
+    FTM0_SC |= FTM_SC_TOIE;        // ENABLE OVERFLOW INTERRUPT
+    FTM0_C0SC |= FTM_CSC_ELSA;     // CAPTURE RISING CH0
+    FTM0_C0SC |= FTM_CSC_CHIE;     // ENABLE INTERRUPT CH0
+    PORTC_PCR1 |= PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8
+    NVIC_ENABLE_IRQ(IRQ_FTM0);
 #endif
 }
 
