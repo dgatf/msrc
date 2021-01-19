@@ -498,31 +498,6 @@ void EscCastle::begin()
     OCR1A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
     OCR1C = 12 * CASTLE_MS_TO_COMP(8);   // TOGGLE OC1B OUTPUT
 #endif
-
-#if defined(__AVR_ATmega32U4__)
-    TIMER3_CAPT_handlerP = TIMER3_CAPT_handler;
-    TIMER3_OVF_handlerP = TIMER3_OVF_handler;
-    TIMER1_COMPC_handlerP = TIMER1_COMPC_handler;
-    TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
-    TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
-
-    // TIMER3. RX INPUT. ICP3 (PC7)
-    PORTC |= _BV(PC7);    // ICP3 PULLUP
-    TCCR3A = 0;           //
-    TCCR3B = 0;           // MODE 0 (NORMAL)
-    TCCR3B |= _BV(ICES3); // RISING EDGE
-    TCCR3B |= _BV(CS31);  // SCALER 8
-    TIMSK3 = _BV(ICIE3);  // CAPTURE INTERRUPT
-
-    // TIMER1. ESC: PWM OUTPUT, TELEMETRY INPUT. ICP1 (PD4). OC1B (PB6) -> OUTPUT/INPUT PULL UP
-    TCCR1A = _BV(WGM11) | _BV(WGM10);    // MODE 15 (TOP OCR4A)
-    TCCR1B = _BV(WGM13) | _BV(WGM12);    //
-    TCCR1A |= _BV(COM4B1) | _BV(COM4B0); // TOGGLE OC4B ON OCR4B (INVERTING)
-    TCCR1B &= ~_BV(ICES1);               // FALLING EDGE
-    TCCR1B |= _BV(CS11);                 // SCALER 8
-    OCR1A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
-    OCR1C = 12 * CASTLE_MS_TO_COMP(8);   // TOGGLE OC1B OUTPUT
-#endif
 }
 
 float EscCastle::read(uint8_t index)
