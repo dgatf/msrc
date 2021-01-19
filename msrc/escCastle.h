@@ -98,9 +98,7 @@ private:
     static void TIMER5_COMPC_handler();
     static void TIMER5_CAPT_handler();
 #endif
-uint8_t kk2;
 #if defined(__AVR_ATmega32U4__)
-    uint8_t kk;
     static void TIMER3_CAPT_handler();
     static void TIMER3_OVF_handler();
     static void TIMER1_COMPC_handler();
