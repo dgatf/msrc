@@ -232,7 +232,7 @@ void setPwmOut(bool pwmOut)
         SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
 #endif
 #if defined(__MKL26Z64__)
-        FTM0_SC |= FTM_SC_CLKS(0); // DISABLE COUNTER
+        SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
 #endif
     }
     interrupts();
@@ -282,7 +282,8 @@ void updatePwmOut()
             FTM0_CNT = 0;
 #endif
 #if defined(__MKL26Z64__)
-            FTM0_SC |= FTM_SC_CLKS(0); // DISABLE COUNTER
+            SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
+            FTM0_CNT = 0;
 #endif
         }
         interrupts();

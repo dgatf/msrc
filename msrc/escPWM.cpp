@@ -87,7 +87,7 @@ void EscPWM::FTM0_IRQ_handler()
 #endif
 
 #if defined(__MKL26Z64__)
-void EscPWM::FTM0_IRQHandler()
+void EscPWM::FTM0_IRQ_handler()
 {
     if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH0
     {
