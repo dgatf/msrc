@@ -700,7 +700,11 @@ void setup()
     DEBUG_SERIAL.println(VERSION_PATCH);
 #endif
 #if RX_PROTOCOL == RX_SMARTPORT
+#if defined(__MKL26Z64__)
+    SMARTPORT_SRXL_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV);
+#else
     SMARTPORT_SRXL_SERIAL.begin(57600);
+#endif
     smartport.setDataId(DATA_ID);
 #endif
 #if RX_PROTOCOL != RX_XBUS
