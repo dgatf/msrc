@@ -1,6 +1,6 @@
 #include "msrc.h"
 
-#if !defined(__AVR_ATmega328P__ ) && !defined(__AVR_ATmega328PB__ ) && !defined(__AVR_ATmega2560__ ) && !defined(__AVR_ATmega32U4__)  && !defined(__MKL26Z64__)
+#if !defined(__AVR_ATmega328P__) && !defined(__AVR_ATmega328PB__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__MKL26Z64__)
 #warning "MCU not supported"
 #endif
 
@@ -162,6 +162,21 @@ ISR(TIMER3_OVF_vect)
 }
 #endif
 
+#if defined(__MKL26Z64__)
+void (*FTM0_IRQ_handlerP)() = NULL;
+void ftm0_isr()
+{
+    if (FTM0_IRQ_handlerP)
+        FTM0_IRQ_handlerP();
+}
+void (*FTM2_IRQ_handlerP)() = NULL;
+void ftm2_isr()
+{
+    if (FTM2_IRQ_handlerP)
+        FTM2_IRQ_handlerP();
+}
+#endif
+
 uint8_t calcAlpha(uint8_t elements)
 {
     return round((2.0F / (elements + 1)) * 100);
@@ -191,9 +206,13 @@ void setPwmOut(bool pwmOut)
         TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);
 #endif
 #if defined(__MKL26Z64__)
-        FTM0_SC |= FTM_SC_PS(7);       // PRESCALER 128
+        FTM0_SC = 0;
+        delayMicroseconds(1);
+        FTM0_CNT = 0;
+        SIM_SCGC6 |= SIM_SCGC6_FTM0;   // ENABLE CLOCK
+        FTM0_SC = FTM_SC_PS(7);        // PRESCALER 128
         FTM0_SC |= FTM_SC_CLKS(1);     // ENABLE COUNTER
-        FTM0_C0SC |= FTM_CSC_ELSB;     // HIGH PULSES
+        FTM0_C0SC = FTM_CSC_ELSB;      // HIGH PULSES
         FTM0_C0SC |= FTM_CSC_MSB;      // OUTPUT PWM
         PORTC_PCR1 |= PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8
 #endif
@@ -207,7 +226,7 @@ void setPwmOut(bool pwmOut)
         TCCR4A &= ~_BV(COM4B1);
 #endif
 #if defined(__MKL26Z64__)
-        FTM0_SC |= FTM_SC_CLKS(0); // DISABLE COUNTER
+        SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
 #endif
     }
     interrupts();
@@ -235,9 +254,9 @@ void updatePwmOut()
             OCR4B = PWMOUT_DUTY * OCR4A;
 #endif
 #if defined(__MKL26Z64__)
-            FTM0_SC |= FTM_SC_CLKS(1);                     // ENABLE COUNTER
+            SIM_SCGC6 |= SIM_SCGC6_FTM0;                    // ENABLE CLOCK
             FTM0_MOD = (60000 / rpm) * MS_TO_COMP(128) - 1; // SET FRECUENCY
-            FTM0_C0V = PWMOUT_DUTY * FTM0_MOD;             // SET DUTY
+            FTM0_C0V = PWMOUT_DUTY * FTM0_MOD;              // SET DUTY
 #endif
         }
         else
@@ -249,7 +268,8 @@ void updatePwmOut()
             TCCR4A &= ~_BV(COM4B1);
 #endif
 #if defined(__MKL26Z64__)
-            FTM0_SC |= FTM_SC_CLKS(0); // DISABLE COUNTER
+            SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
+            FTM0_CNT = 0;
 #endif
         }
         interrupts();

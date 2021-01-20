@@ -66,6 +66,11 @@ extern void (*TIMER1_COMPB_handlerP)();
 extern void (*TIMER1_CAPT_handlerP)();
 extern void (*TIMER1_COMPC_handlerP)();
 #endif
+#if defined(__MKL26Z64__)
+extern void (*FTM0_IRQ_handlerP)();
+extern void (*FTM2_IRQ_handlerP)();
+
+#endif
 
 class EscCastle : public AbstractDevice, public EscCell
 {
@@ -106,8 +111,8 @@ private:
     static void TIMER1_CAPT_handler();
 #endif
 #if defined(__MKL26Z64__)
-    static void FTM0_IRQHandler();
-    static void FTM2_IRQHandler();
+    static void FTM0_IRQ_handler();
+    static void FTM2_IRQ_handler();
 #endif
 
 protected:

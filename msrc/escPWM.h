@@ -15,6 +15,9 @@ extern void (*TIMER1_OVF_handlerP)();
 extern void (*TIMER4_CAPT_handlerP)();
 extern void (*TIMER4_OVF_handlerP)();
 #endif
+#if defined(__MKL26Z64__)
+extern void (*FTM0_IRQ_handlerP)();
+#endif
 
 class EscPWM : public AbstractDevice
 {
@@ -33,7 +36,7 @@ private:
     static void TIMER4_OVF_handler();
 #endif
 #if defined(__MKL26Z64__)
-    static void FTM0_IRQHandler();
+    static void FTM0_IRQ_handler();
 #endif
 
 protected:

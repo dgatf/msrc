@@ -335,7 +335,7 @@ void EscCastle::TIMER1_COMPC_handler() // START OUTPUT STATE
 #endif
 
 #if defined(__MKL26Z64__)
-void EscCastle::FTM2_IRQHandler()
+void EscCastle::FTM2_IRQ_handler()
 {
     if (FTM2_C0SC & FTM_CSC_CHF) // TIMER INPUT CAPTURE INTERRUPT RX
     {
@@ -344,12 +344,12 @@ void EscCastle::FTM2_IRQHandler()
             if (!(FTM2_C0SC & FTM_CSC_CHIE)) // FTM2 DISABLED
             {
                 FTM0_CNT = 0;
-                FTM0_C0SC &= ~0x3C;        // DISABLE CHANNEL
-                FTM0_C0SC |= FTM_CSC_MSB;  // OUTPUT
-                FTM0_C0SC |= FTM_CSC_ELSA; // LOW TRUE
-                FTM0_C0SC |= FTM_CSC_CHF;  // CLEAR FLAG
-                FTM0_C0SC |= FTM_CSC_CHIE; // ENABLE INTERRUPT
-                FTM0_SC |= FTM_SC_CLKS(1); // ENABLE COUNTER
+                FTM0_C0SC &= ~0x3C;          // DISABLE CHANNEL
+                FTM0_C0SC |= FTM_CSC_MSB;    // OUTPUT
+                FTM0_C0SC |= FTM_CSC_ELSA;   // LOW TRUE
+                FTM0_C0SC |= FTM_CSC_CHF;    // CLEAR FLAG
+                FTM0_C0SC |= FTM_CSC_CHIE;   // ENABLE INTERRUPT
+                SIM_SCGC6 |= SIM_SCGC6_FTM0; // ENABLE CLOCK
             }
             FTM0_C0V = FTM2_CNT; // UPDATE FTM0 PWM
         }
@@ -362,13 +362,14 @@ void EscCastle::FTM2_IRQHandler()
     }
     else if (FTM2_SC & FTM_SC_TOF) // TIMER OVERFLOW INTERRUPT
     {
-        FTM0_C0SC &= ~0x3C;        // DISABLE CHANNEL
-        FTM0_SC |= FTM_SC_CLKS(0); // DISABLE FTM0 COUNTER
-        FTM2_SC |= FTM_SC_TOF;     // CLEAR FLAG
+        FTM0_C0SC &= ~0x3C;          // DISABLE CHANNEL
+        SIM_SCGC6 |= SIM_SCGC6_FTM0; // DISABLE CLOCK
+        FTM0_CNT = 0;                // RESET COUNTER
+        FTM2_SC |= FTM_SC_TOF;       // CLEAR FLAG
     }
 }
 
-void EscCastle::FTM0_IRQHandler()
+void EscCastle::FTM0_IRQ_handler()
 {
     if (FTM0_C0SC & FTM_CSC_CHF) // CH0 INTERRUPT (TOGGLE CH0 TO INPUT)
     {
@@ -515,6 +516,10 @@ void EscCastle::begin()
 
 #if defined(__MKL26Z64__)
     // FTM2 (2 CH): CAPTURE RX PULSE (PIN: CH0 -> PTA1 -> 3)
+    FTM2_IRQ_handlerP = FTM2_IRQ_handler;
+    FTM2_SC = 0;
+    delayMicroseconds(1);
+    FTM2_CNT = 0;
     FTM2_SC |= FTM_SC_PS(7);      // PRESCALER 128
     FTM2_SC |= FTM_SC_CLKS(1);    // ENABLE COUNTER
     FTM2_SC |= FTM_SC_TOIE;       // ENABLE OVERFLOW INTERRUPT
@@ -524,6 +529,10 @@ void EscCastle::begin()
     NVIC_ENABLE_IRQ(IRQ_FTM2);
 
     // FTM0 (6 CH): INVERTED PWM AT 20MHZ AND CAPTURE TELEMETRY (PINS: CH0 PWM OUTPUT (PTC1 -> 22/A8), CH1 CAPTURE INPUT (PTC2 -> 23/A9))
+    FTM0_IRQ_handlerP = FTM0_IRQ_handler;
+    FTM0_SC = 0;
+    delayMicroseconds(1);
+    FTM0_CNT = 0;
     FTM0_SC |= FTM_SC_PS(7);                // PRESCALER 128
     FTM0_MOD = 20 * CASTLE_MS_TO_COMP(128); // 20ms (100HZ)
     FTM0_C2V = 12 * CASTLE_MS_TO_COMP(128); // 12ms TOGGLE CH0 TO OUTPUT
@@ -537,7 +546,6 @@ void EscCastle::begin()
     //PORTC_PCR2 = PORT_PCR_MUX(4);
     NVIC_ENABLE_IRQ(IRQ_FTM0);
 #endif
-
 }
 
 float EscCastle::read(uint8_t index)
