@@ -417,7 +417,7 @@ Adjust constants in *pressure.h*:
 0.8
 
 - Added Rx protocols XBUS and SRXL
-- Added support for ATmega328PB, ATmega2560 and ATmega32U4
+- Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 
 [v0.7](https://github.com/dgatf/msrc/tree/v0.7)
 
