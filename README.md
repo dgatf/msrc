@@ -26,25 +26,17 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 ### 1.1 MCU
 
-| MCU | Castle telemetry | UART<sup>(1)</sup> |
-| :---: | :---: | :---: |
-| ATmega328P | Unstable| 1 |
-| ATmega328PB | :white_check_mark: | 2 |
-| ATmega2560 | :white_check_mark: | 3 |
-| ATmega32U4 | :white_check_mark:<sup>(2)</sup> | 1 |
+| MCU | Recommended board | Castle telemetry | UART<sup>(1)</sup> |
+| :---: | :---: | :---: | :---: |
+| ATmega328P | Arduino Pro Mini | Unstable| 1 |
+| ATmega328PB | Pololu ATmega328PB | :white_check_mark: | 2 |
+| ATmega2560 | ATmega2560 Pro Mini | :white_check_mark: | 4 |
+| ATmega32U4 | Teensy 2 | :white_check_mark:<sup>(2)</sup> | 1 |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Arduino Pro Mini requires hardware modification
 
-Recommended board for ATmega328P is the Arduino Pro Mini (USB to TTL programmer is required)
-
 ATmega328P/PB and ATmega2560 boards with USB connector may not read properly RX0 (shared with USB)
-
-Recommended board for ATmega328PB is Pololu ATmega328PB
-
-Recommended board for ATmega2560 is ATmega2560 Pro Mini
-
-Recommended board for ATmega32U4 is Teensy 2
 
 Usually best choice are Arduino Pro Mini or Pololu ATmega328PB, depending on your requirements
 
