@@ -8,7 +8,7 @@ Compatible RX protocols:
 - XBUS: Spektrum
 - SRXL: Spektrum
 
-Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560 and ATMega32U4
+Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4
 
 Implemented sensors:
 
@@ -26,33 +26,33 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 ### 1.1 MCU
 
-Compatible MCUs: ATMega328P, ATMega328PB, ATMega2560
-
 | MCU | Castle telemetry | UART<sup>(1)</sup> |
 | :---: | :---: | :---: |
-| ATMega328P | Unstable| 1 |
-| ATMega328PB | :white_check_mark: | 2 |
-| ATMega2560 | :white_check_mark: | 3 |
-| ATMega32U4 | :white_check_mark:<sup>(2)</sup> | 1 |
+| ATmega328P | Unstable| 1 |
+| ATmega328PB | :white_check_mark: | 2 |
+| ATmega2560 | :white_check_mark: | 3 |
+| ATmega32U4 | :white_check_mark:<sup>(2)</sup> | 1 |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Arduino Pro Mini requires hardware modification
 
-Recommended board for ATMega328P is the Arduino Pro Mini (USB to TTL programmer is required)
+Recommended board for ATmega328P is the Arduino Pro Mini (USB to TTL programmer is required)
 
-ATMega328P/PB and ATMega2560 boards with USB connector may not read properly RX0 (shared with USB)
+ATmega328P/PB and ATmega2560 boards with USB connector may not read properly RX0 (shared with USB)
 
-Recommended board for ATMega328PB is Pololu ATMega328PB
+Recommended board for ATmega328PB is Pololu ATmega328PB
 
-Recommended board for ATMega2560 is ATMega2560 Pro Mini
+Recommended board for ATmega2560 is ATmega2560 Pro Mini
 
-Usually best choice are Arduino Pro Mini or Pololu ATMega328PB, depending on your requirements
+Recommended board for ATmega32U4 is Teensy 2
+
+Usually best choice are Arduino Pro Mini or Pololu ATmega328PB, depending on your requirements
 
 ### 1.2 Connections
 
-| Board | Arduino Pro Mini | Pololu ATMega328PB | Arduino ATMega2560 | Teensy 2 |
+| Board | Arduino Pro Mini | Pololu ATmega328PB | Arduino ATmega2560 | Teensy 2 |
 | :---: | :---: | :---: | :---: | :---: |
-| MCU | ATMega328P | ATMega328PB | ATMega2560 | ATMega32U4 |
+| MCU | ATmega328P | ATmega328PB | ATmega2560 | ATmega32U4 |
 | NTC 1 | A0 | A0 | A0 | F0 |
 | NTC 2 | A1 | A1 | A1 | F1 |
 | Voltage 1 | A2 | A2 | A2 | F4 |
@@ -84,19 +84,19 @@ Depending on the receiver protocol connect to the Rx as follows
 
 ### Smartport and SRXL
 
-- ATMega328P. Connect Smartport signal to pins 7 and 12
-- ATMega328PB. Connect Smartport signal to pins 4 and 23
-- ATMega2560. Connect Smartport signal to pins 4 and 12
+- ATmega328P. Connect Smartport signal to pins 7 and 12
+- ATmega328PB. Connect Smartport signal to pins 4 and 23
+- ATmega2560. Connect Smartport signal to pins 4 and 12
 
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
   <i>Smartport or SRXL</i><br><br></p>
 
 ### XBUS
 
-<inv>ATMega328P/PB</inv>
+<inv>ATmega328P/PB</inv>
 Connect XBUS to SDA/A4 and SCL/A5
 
-<inv>ATMega2560</inv>
+<inv>ATmega2560</inv>
 Connect XBUS to 20 (SDA) and 21 (SCL)
 
 <p align="center"><img src="./images/xbus.png" width="300"><br>
@@ -113,7 +113,7 @@ Compatible ESC serial protocols:
 - Hobbywing Platinum V3: RPM
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature (Mosfet and BEC), voltage and current
 
-Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry (pin 10 on ATMega328P/PB or pin 7 on ATMega2560)
+Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry (pin 10 on ATmega328P/PB or pin 7 on ATmega2560)
 
 Connect ESC serial to Arduino RX/0
 
@@ -124,7 +124,7 @@ Connect ESC serial to Arduino RX/0
 
 If the ESC have a PWM signal or a phase sensor is installed, RPMs can be measured with the 16bit timer of the Pro Mini. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
 
-Connect PWM signal to pin 8 (ATMega328P/PB) or pin 49 (ATMega2560)
+Connect PWM signal to pin 8 (ATmega328P/PB) or pin 49 (ATmega2560)
 
 <p align="center"><img src="./images/pwm_in.png" width="400"><br>
   <i>PWM signal/phase sensor circuit</i><br><br></p>
@@ -133,21 +133,21 @@ Connect PWM signal to pin 8 (ATMega328P/PB) or pin 49 (ATMega2560)
 
 The telemetry is send over the ESC signal. *Castle Link* has to be enabled in the ESC config
 
-<ins>ATMega328P</ins>
+<ins>ATmega328P</ins>
 
 The telemetry values are not accurate all the time. Some readings are increased by 5-10%. This is a hardware limitation
 
 - Connect Rx to pin 8
 - Connect ESC to pins 2 and 10 with a pull up resistor
 
-<ins>ATMega328PB</ins>
+<ins>ATmega328PB</ins>
 
 This MCU produce accurate telemetry values
 
 - Connect Rx to pin 8
 - Connect ESC to pins 2 and 22 with a pull up resistor
 
-<ins>ATMega2560</ins>
+<ins>ATmega2560</ins>
 
 This MCU produce accurate telemetry values
 
@@ -176,9 +176,9 @@ If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7
 
 Serial GPS (NMEA protocol) is supported
 
-- ATMega328P. Connect to Arduino RX/0. Not feasible to use with ESC serial at the same time
-- ATMega328PB. Connect to pin 12/RX1
-- ATMega2560. Connect to pin 17/RX2
+- ATmega328P. Connect to Arduino RX/0. Not feasible to use with ESC serial at the same time
+- ATmega328PB. Connect to pin 12/RX1
+- ATmega2560. Connect to pin 17/RX2
 
 ### 3.3. Analog sensors
 
@@ -204,9 +204,9 @@ Using Arduino IDE copy folder *msrc* and open *msrc.ino*
 
 Select the board:
 
-- ATMega328B: *Arduino Pro or Pro Mini*, processor *ATMega328P (3.3V 8MHz or 5V 16MHz)* and flash
-- ATMega328PB: *Pololu A-Star 328PB*, version and flash
-- ATMega2560: *Arduino Mega or Mega 2560*, processor *ATMega2560* and flash
+- ATmega328B: *Arduino Pro or Pro Mini*, processor *ATmega328P (3.3V 8MHz or 5V 16MHz)* and flash
+- ATmega328PB: *Pololu A-Star 328PB*, version and flash
+- ATmega2560: *Arduino Mega or Mega 2560*, processor *ATmega2560* and flash
 
 ## 5. Configuration
 
@@ -464,7 +464,7 @@ Adjust constants in *pressure.h*:
 0.8
 
 - Added Rx protocols XBUS and SRXL
-- Added support for ATMega328PB and ATMega2560
+- Added support for ATmega328PB, ATmega2560 and ATmega32U4
 
 [v0.7](https://github.com/dgatf/msrc/tree/v0.7)
 
