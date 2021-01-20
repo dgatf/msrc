@@ -641,6 +641,7 @@ void setup()
     // If is an ESC serial it will be changed to 19600. If it is a GPS, to 9600
     // Otherwise it is at 115200
     DEBUG_SERIAL.begin(115200);
+    while (!DEBUG_SERIAL);
     DEBUG_SERIAL.println("\nDEBUG");
     DEBUG_SERIAL.print("V");
     DEBUG_SERIAL.print(VERSION_MAJOR);

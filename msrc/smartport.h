@@ -56,6 +56,7 @@
 
 #include <Arduino.h>
 #include "sensor.h"
+#include "config.h"
 
 class Smartport : public FormatData
 {
@@ -75,7 +76,6 @@ private:
     void sendByte(uint8_t c, uint16_t *crcp);
 
 public:
-    //Smartport(Stream &serial, uint8_t dataId, uint8_t sensorId);
     Smartport(Stream &serial);
     ~Smartport();
     uint8_t idToCrc(uint8_t sensorId);
