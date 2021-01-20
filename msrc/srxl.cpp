@@ -1,5 +1,7 @@
 #include "srxl.h"
 
+//Srxl::Srxl(Stream &serial) : serial_(serial) {}
+
 Srxl::Srxl(Stream &serial) : serial_(serial) {}
 
 void Srxl::begin()

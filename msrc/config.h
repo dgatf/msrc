@@ -79,9 +79,7 @@
 #define GPS_SERIAL Serial1
 #endif
 
-#if defined(__MKL26Z64__)
-#define PIN_SMARTPORT_RX 2
-#define PIN_SMARTPORT_TX 21
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
 #define PIN_NTC1 14
 #define PIN_NTC2 15
 #define PIN_VOLTAGE1 16

@@ -8,7 +8,7 @@ Compatible RX protocols:
 - XBUS: Spektrum
 - SRXL: Spektrum
 
-Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560, ATmega32U4 and Teensy LC
+Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4 and Teensy LC/3.0/3.1
 
 Implemented sensors:
 
@@ -26,19 +26,18 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 ### 1.1 MCU
 
-| MCU | Recommended board | Castle telemetry | UART<sup>(1)</sup> |
-| :---: | :---: | :---: | :---: |
-| ATmega328P | Arduino Pro Mini | Unstable| 1 |
-| ATmega328PB | Pololu ATmega328PB | :white_check_mark: | 2 |
-| ATmega2560 | ATmega2560 Pro Mini | :white_check_mark: | 4 |
-| ATmega32U4 | Teensy 2 | :white_check_mark:<sup>(3)</sup> | 1 |
-| ARM CortexM0+ | :white_check_mark: | 3 | :white_check_mark: |
+| MCU | Recommended board | Castle telemetry | UART<sup>(1)</sup> | Inverted UART<sup>(2)</sup> |
+| :---: | :---: | :---: | :---: | :---: |
+| ATmega328P | Arduino Pro Mini | Unstable| 1 | :x: |
+| ATmega328PB | Pololu ATmega328PB | :white_check_mark: | 2 | :x: |
+| ATmega2560 | ATmega2560 Pro Mini | :white_check_mark: | 4 | :x: |
+| ATmega32U4 | Teensy 2 | :white_check_mark:<sup>(3)</sup> | 1 | :x: |
+| ARM CortexM0+ | Teensy LC | :white_check_mark: | 3 | :white_check_mark: |
+| ARM CortexM4 | Teensy 3.0/3.1 | :white_check_mark: | 3 | :white_check_mark: |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Allows to use hardware serial for smartport
 (3) Arduino Pro Mini requires hardware modification
-
-Recommended board for ATmega328P is the Arduino Pro Mini (USB to TTL programmer is required)
 
 ATmega328P/PB and ATmega2560 boards with USB connector may not read properly RX0 (shared with USB)
 
@@ -46,9 +45,9 @@ Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashi
 
 ### 1.2 Connections
 
-| Board | Arduino Pro Mini | Pololu ATmega328PB | Arduino ATmega2560 | Teensy 2 |
-| :---: | :---: | :---: | :---: | :---: |
-| MCU | ATmega328P | ATmega328PB | ATmega2560 | ATmega32U4 | ARM CortexM0+ |
+| Board | Arduino Pro Mini | Pololu ATmega328PB | Arduino ATmega2560 | Teensy 2 | Teensy LC<br/>Teensy 3.x |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| MCU | ATmega328P | ATmega328PB | ATmega2560 | ATmega32U4 | ARMCortexM0+<br/>ARMCortexM4 |
 | NTC 1 | A0 | A0 | A0 | F6(A1) | 14 |
 | NTC 2 | A1 | A1 | A1 | F7(A0) | 15 |
 | Voltage 1 | A2 | A2 | A2 | F5(A3) | 16 |

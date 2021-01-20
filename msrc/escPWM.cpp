@@ -86,7 +86,7 @@ void EscPWM::FTM0_IRQ_handler()
 }
 #endif
 
-#if defined(__MKL26Z64__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
 void EscPWM::FTM0_IRQ_handler()
 {
     if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH0
@@ -127,7 +127,7 @@ void EscPWM::begin()
     TIMSK4 = _BV(ICIE4) | _BV(TOIE4);
 #endif
 
-#if defined(__MKL26Z64__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
     FTM0_IRQ_handlerP = FTM0_IRQ_handler;
     FTM0_SC = 0;
     delayMicroseconds(1);
@@ -152,7 +152,7 @@ float EscPWM::read(uint8_t index)
         {
             if (escPwmUpdate)
             {
-#if defined(__MKL26Z64__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
                 float rpm = 60000UL / (escPwmDuration * COMP_TO_MS(128));
 #else
                 float rpm = 60000UL / (escPwmDuration * COMP_TO_MS(8));

@@ -15,7 +15,7 @@ extern void (*TIMER1_OVF_handlerP)();
 extern void (*TIMER4_CAPT_handlerP)();
 extern void (*TIMER4_OVF_handlerP)();
 #endif
-#if defined(__MKL26Z64__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
 extern void (*FTM0_IRQ_handlerP)();
 #endif
 
@@ -35,7 +35,7 @@ private:
     static void TIMER4_CAPT_handler();
     static void TIMER4_OVF_handler();
 #endif
-#if defined(__MKL26Z64__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
     static void FTM0_IRQ_handler();
 #endif
 
