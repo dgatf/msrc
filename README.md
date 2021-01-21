@@ -33,7 +33,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 | ATmega2560 | ATmega2560 Pro Mini | :white_check_mark: | 4 | :x: |
 | ATmega32U4 | Teensy 2 | :white_check_mark:<sup>(3)</sup> | 1 | :x: |
 | ARM CortexM0+ | Teensy LC | :white_check_mark: | 3 | :white_check_mark: |
-| ARM CortexM4 | Teensy 3.x | :white_check_mark: | 3 | :white_check_mark: |
+| ARM CortexM4 | Teensy 3.2 | :white_check_mark: | 3 | :white_check_mark: |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Allows to use hardware serial for Smartport  
