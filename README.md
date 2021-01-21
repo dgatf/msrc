@@ -34,7 +34,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 | ATmega32U4 | Teensy 2 | :white_check_mark:<sup>(2)</sup> | 1 |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
-(2) Arduino Pro Mini requires hardware modification
+(2) Arduino Pro Micro requires hardware modification
 
 ATmega328P/PB and ATmega2560 boards with USB connector may not read properly RX0 (shared with USB)
 
@@ -76,20 +76,10 @@ Depending on the receiver protocol connect to the Rx as follows
 
 ### Smartport and SRXL
 
-- ATmega328P. Connect Smartport signal to pins 7 and 12
-- ATmega328PB. Connect Smartport signal to pins 4 and 23
-- ATmega2560. Connect Smartport signal to pins 4 and 12
-
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
   <i>Smartport or SRXL</i><br><br></p>
 
 ### XBUS
-
-<inv>ATmega328P/PB</inv>
-Connect XBUS to SDA/A4 and SCL/A5
-
-<inv>ATmega2560</inv>
-Connect XBUS to 20 (SDA) and 21 (SCL)
 
 <p align="center"><img src="./images/xbus.png" width="300"><br>
   <i>XBUS</i><br><br></p>
@@ -105,18 +95,15 @@ Compatible ESC serial protocols:
 - Hobbywing Platinum V3: RPM
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature (Mosfet and BEC), voltage and current
 
-Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry (pin 10 on ATmega328P/PB or pin 7 on ATmega2560)
+Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry
 
-Connect ESC serial to Arduino RX/0
 
 <p align="center"><img src="./images/serial.png" width="400"><br>
   <i>ESC serial</i><br><br></p>
 
 #### PWM signal
 
-If the ESC have a PWM signal or a phase sensor is installed, RPMs can be measured with the 16bit timer of the Pro Mini. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
-
-Connect PWM signal to pin 8 (ATmega328P/PB) or pin 49 (ATmega2560)
+If the ESC have a PWM signal or a phase sensor is installed, RPMs can be measured. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
 
 <p align="center"><img src="./images/pwm_in.png" width="400"><br>
   <i>PWM signal/phase sensor circuit</i><br><br></p>
@@ -125,26 +112,7 @@ Connect PWM signal to pin 8 (ATmega328P/PB) or pin 49 (ATmega2560)
 
 The telemetry is send over the ESC signal. *Castle Link* has to be enabled in the ESC config
 
-<ins>ATmega328P</ins>
-
-The telemetry values are not accurate all the time. Some readings are increased by 5-10%. This is a hardware limitation
-
-- Connect Rx to pin 8
-- Connect ESC to pins 2 and 10 with a pull up resistor
-
-<ins>ATmega328PB</ins>
-
-This MCU produce accurate telemetry values
-
-- Connect Rx to pin 8
-- Connect ESC to pins 2 and 22 with a pull up resistor
-
-<ins>ATmega2560</ins>
-
-This MCU produce accurate telemetry values
-
-- Connect Rx to pin 49
-- Connect ESC to pins 48 and 45 with a pull up resistor
+If using ATmega328P telemetry values are not accurate all the time. Some readings are increased by 5-10%. This is a hardware limitation
 
 <p align="center"><img src="./images/castle.png" width="500"><br>
   <i>Castle Link with Smartport</i><br><br></p>
@@ -168,22 +136,18 @@ If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7
 
 Serial GPS (NMEA protocol) is supported
 
-- ATmega328P. Connect to Arduino RX/0. Not feasible to use with ESC serial at the same time
-- ATmega328PB. Connect to pin 12/RX1
-- ATmega2560. Connect to pin 17/RX2
-
 ### 3.3. Analog sensors
 
 The following analog sensors are supported:
 
-- 2 x voltage divider (A2, A3)
-- 2 x temperature sensors (thermistors) (A0, A1)
-- Current sensor (Hall effect) (A6)
-- Airspeed sensor (MPXV7002) (A7)
+- 2 x voltage divider
+- 2 x temperature sensors (thermistors)
+- Current sensor (Hall effect)
+- Airspeed sensor (MPXV7002)
 
 ### 3.4. I2C sensors
 
-I2C sensors not compatible with XBUS. The following I2C sensors are suported (pins A4, A5):
+I2C sensors not compatible with XBUS. The following I2C sensors are suported:
 
 - Barometer: BMP280
 
@@ -192,13 +156,7 @@ I2C sensors not compatible with XBUS. The following I2C sensors are suported (pi
 
 ## 4. Flash to Arduino
 
-Using Arduino IDE copy folder *msrc* and open *msrc.ino*
-
-Select the board:
-
-- ATmega328B: *Arduino Pro or Pro Mini*, processor *ATmega328P (3.3V 8MHz or 5V 16MHz)* and flash
-- ATmega328PB: *Pololu A-Star 328PB*, version and flash
-- ATmega2560: *Arduino Mega or Mega 2560*, processor *ATmega2560* and flash
+Using Arduino IDE copy folder *msrc* and open *msrc.ino*. Select the board and flash
 
 ## 5. Configuration
 
