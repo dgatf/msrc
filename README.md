@@ -38,7 +38,8 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 ATmega328P/PB and ATmega2560 boards with USB connector may not read properly RX0 (shared with USB)
 
-Usually best choice are Arduino Pro Mini or Pololu ATmega328PB, depending on your requirements
+Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
+
 
 ### 1.2 Connections
 
