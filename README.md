@@ -36,8 +36,8 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 | ARM CortexM4 | Teensy 3.0/3.1 | :white_check_mark: | 3 | :white_check_mark: |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
-(2) Allows to use hardware serial for smartport
-(3) Arduino Pro Mini requires hardware modification
+(2) Allows to use hardware serial for Smartport  
+(3) Arduino Pro Micro requires hardware modification
 
 ATmega328P/PB and ATmega2560 boards with USB connector may not read properly RX0 (shared with USB)
 
@@ -99,7 +99,6 @@ Compatible ESC serial protocols:
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature (Mosfet and BEC), voltage and current
 
 Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry
-
 
 <p align="center"><img src="./images/serial.png" width="400"><br>
   <i>ESC serial</i><br><br></p>
