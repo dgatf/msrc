@@ -36,7 +36,7 @@
 #define SENSOR_ID 10
 
 // Lua config
-//#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
+#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
 
 // Pwm out
 #define PWMOUT_DUTY 0.5 // 0.5 = 50%
