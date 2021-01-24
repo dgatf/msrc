@@ -145,8 +145,10 @@ void setup();
 void loop();
 
 #if RX_PROTOCOL == RX_SMARTPORT
-SoftwareSerial smartportSerial(PIN_SMARTPORT_RX, PIN_SMARTPORT_TX, true);
-Smartport smartport(smartportSerial);
+#ifdef SOFTWARE_SERIAL
+SoftwareSerial SMARTPORT_SRXL_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX, true);
+#endif
+Smartport smartport(SMARTPORT_SRXL_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_XBUS
@@ -154,5 +156,8 @@ Xbus xbus;
 #endif
 
 #if RX_PROTOCOL == RX_SRXL
-Srxl srxl;
+#ifdef SOFTWARE_SERIAL
+SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+#endif
+Srxl srxl(SMARTPORT_SRXL_SERIAL);
 #endif

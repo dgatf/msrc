@@ -38,7 +38,7 @@ private:
                                        {0x9B, 0x03, 0xE8, 0x01, 0x0B, 0x41, 0x21, 0x44, 0xB9, 0x21, 0x21, 0xB9}};     // ESCHW4_TYPE_V5_HV*/
     const float voltageDivisor_[4] = {11, 21, 11, 21};
     const float rawCurrentOffset_[4] = {15, 15, 660, 660};
-    HardwareSerial &serial_;
+    Stream &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
     float value_[8] = {0};
     uint8_t type_;
@@ -51,7 +51,7 @@ protected:
 public:
     float *rpmP;
 
-    EscHW4(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type);
+    EscHW4(Stream &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type);
     void begin();
     bool update();
     float read(uint8_t index);

@@ -1,11 +1,9 @@
 #include "escHW3.h"
 
-EscHW3::EscHW3(HardwareSerial &serial, uint8_t alphaRpm) : alphaRpm_(alphaRpm), serial_(serial) {}
+EscHW3::EscHW3(Stream &serial, uint8_t alphaRpm) : alphaRpm_(alphaRpm), serial_(serial) {}
 
 void EscHW3::begin()
 {
-    serial_.begin(19200);
-    serial_.setTimeout(ESCSERIAL_TIMEOUT);
     rpmP = &rpm_;
 }
 

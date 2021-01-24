@@ -1,12 +1,6 @@
 #include "bn220.h"
 
-Bn220::Bn220(HardwareSerial &serial) : serial_(serial) {}
-
-void Bn220::begin()
-{
-    serial_.begin(9600);
-    serial_.setTimeout(BN220_TIMEOUT);
-}
+Bn220::Bn220(Stream &serial) : serial_(serial) {}
 
 void Bn220::update()
 {

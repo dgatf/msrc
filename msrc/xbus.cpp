@@ -96,16 +96,21 @@ void Xbus::begin()
 #if CONFIG_GPS
     addressMask |= XBUS_GPS_LOC;
     addressMask |= XBUS_GPS_STAT;
+    GPS_SERIAL.begin(9600);
+    GPS_SERIAL.setTimeout(BN220_TIMEOUT);
 #endif
 #if CONFIG_CURRENT
     addressMask |= XBUS_BATTERY;
 #endif
+#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
+    addressMask |= XBUS_ESC;
+    ESC_SERIAL.begin(19200);
+    ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
+    esc.begin();
+#endif
     Wire.begin(addressMask);
     Wire.onRequest(i2c_request_handler);
     TWAMR = addressMask << 1;
-#endif
-#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
-    esc.begin();
 #endif
 #if CONFIG_VOLTAGE2 || CONFIG_NTC2
     xbusRpmVoltTemp2.sID = 1;
