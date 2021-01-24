@@ -635,10 +635,10 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
 
 void setup()
 {
-#ifdef DEBUG
+#if defined(DEBUG) || defined(DEBUG_ESC)
     // DEBUG is on Serial
     // Baud rate depends on whats connected to Serial
-    // If is an ESC serial it will be changed to 19600. If it is a GPS, to 9600
+    // For boards with 1 UART: If is an ESC serial it will be changed to 19600. If it is a GPS, to 9600
     // Otherwise it is at 115200
     DEBUG_SERIAL.begin(115200);
     while (!DEBUG_SERIAL);

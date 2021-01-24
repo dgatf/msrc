@@ -65,24 +65,24 @@ bool EscHW4::update()
 #ifdef DEBUG_ESC
                 uint32_t pn =
                     (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
-                serial_.print("PN: ");
-                serial_.print(pn);
-                serial_.print(" RPM: ");
-                serial_.print(rpm);
-                serial_.print(" Volt: ");
-                serial_.print(voltage);
-                serial_.print(" Curr: ");
-                serial_.print(current);
-                serial_.print(" tempFET: ");
-                serial_.print(tempFET);
-                serial_.print(" tempBEC: ");
-                serial_.print(tempBEC);
-                /*serial_.print(" ");
+                DEBUG_SERIAL.print("PN: ");
+                DEBUG_SERIAL.print(pn);
+                DEBUG_SERIAL.print(" RPM: ");
+                DEBUG_SERIAL.print(rpm);
+                DEBUG_SERIAL.print(" Volt: ");
+                DEBUG_SERIAL.print(voltage);
+                DEBUG_SERIAL.print(" Curr: ");
+                DEBUG_SERIAL.print(current);
+                DEBUG_SERIAL.print(" tempFET: ");
+                DEBUG_SERIAL.print(tempFET);
+                DEBUG_SERIAL.print(" tempBEC: ");
+                DEBUG_SERIAL.print(tempBEC);
+                /*DEBUG_SERIAL.print(" ");
                 //for (uint8_t i = 0; i < cont; i++) {
-                serial_.print(data[i], HEX);
-                serial_.print(" ");
+                DEBUG_SERIAL.print(data[i], HEX);
+                DEBUG_SERIAL.print(" ");
                 }*/
-                serial_.println();
+                DEBUG_SERIAL.println();
 #endif
                 return true;
             }
@@ -115,6 +115,7 @@ float EscHW4::calcCurr(uint16_t currentRaw)
 
 float EscHW4::read(uint8_t index)
 {
+    //Serial.println(value_[ESCHW4_RPM]);
     if (index <= ESCHW4_CELL_VOLTAGE)
     {
 #ifdef SIM_SENSORS

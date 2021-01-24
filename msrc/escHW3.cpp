@@ -31,10 +31,10 @@ bool EscHW3::update()
 #ifdef DEBUG_ESC
                 uint32_t pn =
                     (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
-                serial_.print("PN: ");
-                serial_.print(pn);
-                serial_.print(" RPM: ");
-                serial_.println(rpm);
+                DEBUG_SERIAL.print("PN: ");
+                DEBUG_SERIAL.print(pn);
+                DEBUG_SERIAL.print(" RPM: ");
+                DEBUG_SERIAL.println(rpm);
 #endif
                 return true;
             }

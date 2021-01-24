@@ -7,6 +7,32 @@
 // Select SRLX valriant (only for SRXL)
 #define SRXL_VARIANT SRXL_V5 // Only implemented SRXL_V5 (SPEKTRUM)
 
+// Sensor Id (only smartport)
+#define SENSOR_ID 10
+
+// Pwm out
+#define PWMOUT_DUTY 0.5 // 0.5 = 50%
+
+// Lua config (only opentx)
+#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
+
+
+/* Debug
+   Disconnect Vcc from the RC model to the Arduino
+   Do not connect at the same time Vcc from the model and usb (TTL)
+   Telemetry may not work properly in debug mode
+   Connect arduino Rx to TTL Tx for flashing, then if applicabe connect arduino Rx to esc or gps
+*/
+
+//#define DEBUG
+//#define DEBUG_PLOTTER rpm/60
+//#define DEBUG_ESC
+
+//#define SIM_RX
+//#define SIM_SENSORS
+
+// --------------------------- Do not change config below if using lua script ---------------------------
+
 // Select sensors
 #define CONFIG_ESC_PROTOCOL PROTOCOL_NONE // PROTOCOL_NONE PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V4_HV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE
 #define CONFIG_AIRSPEED false
@@ -32,14 +58,11 @@
 #define CONFIG_AVERAGING_ELEMENTS_TEMP 3
 #define CONFIG_AVERAGING_ELEMENTS_DEF 3
 
-// Sensor Id (smartport)
-#define SENSOR_ID 10
+//------------------------- END OF CONFIG -----------------------------//
 
-// Lua config
-#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
-
-// Pwm out
-#define PWMOUT_DUTY 0.5 // 0.5 = 50%
+//#define SRXL_V1 0x01
+//#define SRXL_V2 0x02
+#define SRXL_V5 0x05
 
 // Serial ports
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
@@ -63,33 +86,13 @@
 #define DEBUG_SERIAL Serial
 #endif
 
-/* Debug
-   Disconnect Vcc from the RC model to the Arduino
-   Do not connect at the same time Vcc from the model and usb (TTL)
-   Telemetry may not work properly in debug mode
-   Connect arduino Rx to TTL Tx for flashing, then if applicabe connect arduino Rx to esc or gps
-*/
-
-//#define DEBUG
-//#define DEBUG_PLOTTER rpm/60
-//#define DEBUG_ESC
-
-//#define SIM_RX
-//#define SIM_SENSORS
-
-//-------------------------END OF CONFIG-----------------------------//
-
-//#define SRXL_V1 0x01
-//#define SRXL_V2 0x02
-#define SRXL_V5 0x05
-
 #define CONFIG_ALPHA_RPM N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
 #define CONFIG_ALPHA_VOLT N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
 #define CONFIG_ALPHA_CURR N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
 #define CONFIG_ALPHA_TEMP N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
 #define CONFIG_ALPHA_DEF N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
 
-#define N_TO_ALPHA(VALUE) 2 / (1 + VALUE) * 100
+#define N_TO_ALPHA(VALUE) (2.0 / (1 + VALUE) * 100)
 
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
 #define PIN_SMARTPORT_RX 7
