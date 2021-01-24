@@ -262,7 +262,8 @@ void initConfig(Config &config)
         Sensor *sensorP;
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, config.alpha.rpm);
-
+        ESC_SERIAL.begin(19200);
+        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         esc->begin();
         rpmPwmoutP = esc->rpmP;
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
@@ -272,6 +273,8 @@ void initConfig(Config &config)
     {
         Sensor *sensorP;
         EscHW4 *esc;
+        ESC_SERIAL.begin(19200);
+        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         esc = new EscHW4(ESC_SERIAL, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp, config.protocol - PROTOCOL_HW_V4_LV);
         esc->begin();
         rpmPwmoutP = esc->rpmP;
@@ -311,8 +314,9 @@ void initConfig(Config &config)
     {
         Sensor *sensorP;
         Bn220 *gps;
+        GPS_SERIAL.begin(9600);
+        GPS_SERIAL.setTimeout(BN220_TIMEOUT);
         gps = new Bn220(GPS_SERIAL);
-        gps->begin();
         sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, BN220_LON, BN220_LAT, config.refresh.def, gps);
         smartport.addSensor(sensorP);
         sensorP = new Sensor(GPS_ALT_FIRST_ID, BN220_ALT, config.refresh.def, gps);
@@ -651,7 +655,7 @@ void setup()
     DEBUG_SERIAL.println(VERSION_PATCH);
 #endif
 #if RX_PROTOCOL == RX_SMARTPORT
-    smartportSerial.begin(57600);
+    SMARTPORT_SRXL_SERIAL.begin(57600);
     smartport.setDataId(DATA_ID);
 #endif
 #if RX_PROTOCOL != RX_XBUS
@@ -662,7 +666,9 @@ void setup()
     xbus.begin();
 #endif
 #if RX_PROTOCOL == RX_SRXL
-    srxl.begin();
+    SMARTPORT_SRXL_SERIAL.begin(115200);
+    SMARTPORT_SRXL_SERIAL.setTimeout(SRXLSERIAL_TIMEOUT);
+    srxl.begin(SMARTPORT_SRXL_SERIAL);
 #endif
 #if defined(CONFIG_LUA) && RX_PROTOCOL == RX_SMARTPORT
     Config config = readConfig();

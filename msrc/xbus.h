@@ -16,6 +16,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <SoftwareSerial.h>
 #include "escHW3.h"
 #include "escHW4.h"
 #include "escPWM.h"
@@ -114,6 +115,9 @@ protected:
 #if CONFIG_GPS
     static Xbus_Gps_Loc xbusGpsLoc;
     static Xbus_Gps_Stat xbusGpsStat;
+#ifdef SOFTWARE_SERIAL
+    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+#endif
     Bn220 gps = Bn220(GPS_SERIAL);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM
@@ -132,9 +136,15 @@ protected:
     Ntc ntc2 = Ntc(PIN_NTC2, CONFIG_ALPHA_TEMP);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3
+#ifdef SOFTWARE_SERIAL
+    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+#endif
     EscHW3 esc = EscHW3(ESC_SERIAL, CONFIG_ALPHA_RPM);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV
+#ifdef SOFTWARE_SERIAL
+    SoftwareSerial softSerial = SoftwareSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+#endif
     EscHW4 esc = EscHW4(ESC_SERIAL, CONFIG_ALPHA_RPM, CONFIG_ALPHA_VOLT, CONFIG_ALPHA_CURR, CONFIG_ALPHA_TEMP, CONFIG_ESC_PROTOCOL - PROTOCOL_HW_V4_LV);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE

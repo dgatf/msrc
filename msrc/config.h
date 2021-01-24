@@ -14,7 +14,7 @@
 #define PWMOUT_DUTY 0.5 // 0.5 = 50%
 
 // Lua config (only opentx)
-#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
+//#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
 
 
 /* Debug
@@ -66,25 +66,30 @@
 
 // Serial ports
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
+#define SOFTWARE_SERIAL
+#define SMARTPORT_SRXL_SERIAL softSerial
 #define ESC_SERIAL Serial
 #define GPS_SERIAL Serial
-#define DEBUG_SERIAL Serial
 #endif
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
+#define SOFTWARE_SERIAL
+#define SMARTPORT_SRXL_SERIAL softSerial
 #define ESC_SERIAL Serial
 #define GPS_SERIAL Serial1
-#define DEBUG_SERIAL Serial
 #endif
 #if defined(__AVR_ATmega2560__)
+#define SOFTWARE_SERIAL
+#define SMARTPORT_SRXL_SERIAL softSerial
 #define ESC_SERIAL Serial1
 #define GPS_SERIAL Serial2
-#define DEBUG_SERIAL Serial
 #endif
 #if defined(__AVR_ATmega32U4__)
+#define SOFTWARE_SERIAL
+#define SMARTPORT_SRXL_SERIAL softSerial
 #define ESC_SERIAL Serial1
 #define GPS_SERIAL Serial1
-#define DEBUG_SERIAL Serial
 #endif
+#define DEBUG_SERIAL Serial
 
 #define CONFIG_ALPHA_RPM N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
 #define CONFIG_ALPHA_VOLT N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
@@ -95,27 +100,45 @@
 #define N_TO_ALPHA(VALUE) (2.0 / (1 + VALUE) * 100)
 
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
-#define PIN_SMARTPORT_RX 7
-#define PIN_SMARTPORT_TX 12
-#endif
-#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
-#define PIN_SMARTPORT_RX 4
-#define PIN_SMARTPORT_TX 23
-#endif
-#if defined(__AVR_ATmega2560__)
-#define PIN_SMARTPORT_RX 4
-#define PIN_SMARTPORT_TX 12
-#endif
-#if defined(__AVR_ATmega32U4__) // teensy 2.0 // arduino pro micro
-#define PIN_SMARTPORT_RX PB3 // 3
-#define PIN_SMARTPORT_TX PF5 // A5
-#endif
+#define PIN_SOFTSERIAL_RX 7
+#define PIN_SOFTSERIAL_TX 12
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
+#endif
+#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
+#define PIN_SOFTSERIAL_RX 4
+#define PIN_SOFTSERIAL_TX 23
+#define PIN_NTC1 A0
+#define PIN_NTC2 A1
+#define PIN_VOLTAGE1 A2
+#define PIN_VOLTAGE2 A3
+#define PIN_CURRENT A6
+#define PIN_PRESSURE A7
+#endif
+#if defined(__AVR_ATmega2560__)
+#define PIN_SOFTSERIAL_RX 10
+#define PIN_SOFTSERIAL_TX 15
+#define PIN_NTC1 A0
+#define PIN_NTC2 A1
+#define PIN_VOLTAGE1 A2
+#define PIN_VOLTAGE2 A3
+#define PIN_CURRENT A6
+#define PIN_PRESSURE A7
+#endif
+#if defined(__AVR_ATmega32U4__) // teensy 2.0 // arduino pro micro
+#define PIN_SOFTSERIAL_RX PB2 // 16
+#define PIN_SOFTSERIAL_TX PB4 // 8
+#define PIN_NTC1 A0 // PF7
+#define PIN_NTC2 A1 // PF6
+#define PIN_VOLTAGE1 A2 // PF5
+#define PIN_VOLTAGE2 A3 // PF4
+#define PIN_CURRENT A9 // PB5
+#define PIN_PRESSURE A7 // PD7
+#endif 
 
 #define RX_SMARTPORT 1
 #define RX_XBUS 2

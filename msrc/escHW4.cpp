@@ -1,11 +1,9 @@
 #include "escHW4.h"
 
-EscHW4::EscHW4(HardwareSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp), type_(type) {}
+EscHW4::EscHW4(Stream &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp), type_(type) {}
 
 void EscHW4::begin()
 {
-    serial_.begin(19200);
-    serial_.setTimeout(ESCHW4_ESCSERIAL_TIMEOUT);
     rpmP = &value_[2];
 }
 

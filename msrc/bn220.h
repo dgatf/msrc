@@ -41,13 +41,12 @@ private:
     uint32_t time_, date_;
     uint8_t contIndex_ = 0, contBuff_ = 0, sat_, nmeaCmd_ = 255;
     char buffer_[20] = {};
-    HardwareSerial &serial_;
+    Stream &serial_;
     void update();
     void parser(uint8_t type, char *data);
 
 public:
-    Bn220(HardwareSerial &serial);
-    void begin();
+    Bn220(Stream &serial);
     float read(uint8_t index);
 };
 

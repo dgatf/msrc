@@ -46,21 +46,21 @@ Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashi
 | Board | Arduino Pro Mini | Pololu ATmega328PB | Arduino ATmega2560 | Teensy 2 |
 | :---: | :---: | :---: | :---: | :---: |
 | MCU | ATmega328P | ATmega328PB | ATmega2560 | ATmega32U4 |
-| NTC 1 | A0 | A0 | A0 | F0 |
-| NTC 2 | A1 | A1 | A1 | F1 |
-| Voltage 1 | A2 | A2 | A2 | F4 |
-| Voltage 2 | A3 | A3 | A3 | F5 |
-| Current | A6 | A6 | A6 | B6 |
-| Airspeed | A7 | A7 | A7 | B5 |
-| ESC serial | RX | RX0 | RX1 | D2 |
-| GPS | RX | RX1 | RX2 | D2 |
-| PWM in | 8 | 8 | 49 | D4 |
-| PWM out | 10 | 10 | 7 | B6 |
+| NTC 1 | A0 | A0 | A0 | F6(A1) |
+| NTC 2 | A1 | A1 | A1 | F7(A0) |
+| Voltage 1 | A2 | A2 | A2 | F5(A3) |
+| Voltage 2 | A3 | A3 | A3 | F4(A2) |
+| Current | A6 | A6 | A6 | B5(A9) |
+| Airspeed | A7 | A7 | A7 | D7(A7) |
+| ESC serial | RX | RX0 | RX1 | D2(RX1) |
+| GPS | RX | RX1 | RX2 | D2(RX1) |
+| PWM in | 8 | 8 | 49 | D4(A6) |
+| PWM out | 10 | 10 | 7 | B6(A10) |
 | Rx Castle | 8 | 8 | 49 | C7 |
 | ESC Castle<sup>(1)</sup> | 2/10 | 2/22 | 45/48 | C8/B6 |
-| Smartport/SRXL | 7/12<sup>(2)</sup> | 4/23<sup>(2)</sup> | 4/12<sup>(2)</sup> | B3/F5<sup>(2)</sup> |
-| XBUS/sensor SDA | A4 | A4 | 20 | D1 |
-| XBUS/sensor SCL | A5 | A5 | 21 | D0 |
+| Smartport/SRXL | 7/12<sup>(2)</sup> | 4/23<sup>(2)</sup> | 4/12<sup>(2)</sup> | B2/B4<sup>(2)</sup>(16/8) |
+| XBUS/sensor SDA | A4 | A4 | 20 | D1(2) |
+| XBUS/sensor SCL | A5 | A5 | 21 | D0(3) |
 
 (1) with pull up 3.3k  
 (2) with resistor 3.3k
