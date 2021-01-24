@@ -1,8 +1,6 @@
 #ifndef ESCHW4_H
 #define ESCHW4_H
 
-//#define DEBUG_SIGNATURE
-
 #define ESCHW4_TYPE_V4_LV 0
 #define ESCHW4_TYPE_V4_HV 1
 #define ESCHW4_TYPE_V5_LV 2

@@ -32,7 +32,7 @@ bool EscHW4::update()
                     {
                         type_ = i;
                     }*/
-#ifdef DEBUG_SIGNATURE
+#ifdef DEBUG_ESC
                     DEBUG_SERIAL.print("ESC TYPE [");
                     DEBUG_SERIAL.print(type_);
                     DEBUG_SERIAL.print("]: ");
