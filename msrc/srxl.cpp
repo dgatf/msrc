@@ -1,18 +1,18 @@
 #include "srxl.h"
 
-//Srxl::Srxl(Stream &serial) : serial_(serial) {}
-
-Srxl::Srxl() {}
+Srxl::Srxl(Stream &serial) : serial_(serial) {}
 
 void Srxl::begin()
 {
     pinMode(LED_BUILTIN, OUTPUT);
-    srxlSerial.begin(115200);
-    srxlSerial.setTimeout(2);
-#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
-    esc.begin();
-#endif
     uint8_t cont = 0;
+#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
+    ESC_SERIAL.begin(19200);
+    ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
+    esc.begin();
+    cont++;
+    list[cont] = XBUS_ESC;
+#endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM || CONFIG_VOLTAGE1 || CONFIG_NTC1
     cont++;
     list[cont] = XBUS_RPM_VOLT_TEMP;
@@ -22,6 +22,8 @@ void Srxl::begin()
     list[cont] = XBUS_AIRSPEED;
 #endif
 #if CONFIG_GPS
+    GPS_SERIAL.begin(9600);
+    GPS_SERIAL.setTimeout(BN220_TIMEOUT);
     cont++;
     list[cont] = XBUS_GPS_LOC;
     cont++;
@@ -97,7 +99,7 @@ void Srxl::send()
     crc = __builtin_bswap16(getCrc(buffer, 19));  // including header
     //crc = __builtin_bswap16(getCrc(buffer + 3, 16));  // excluding header, 3bytes: header, type, lenght
     memcpy(buffer + 19, &crc, 2);
-    srxlSerial.write(buffer, 21);
+    SMARTPORT_SRXL_SERIAL.write(buffer, 21);
 #ifdef DEBUG
     DEBUG_SERIAL.print("TM send: ");
     DEBUG_SERIAL.println(millis());
@@ -123,12 +125,12 @@ void Srxl::checkSerial()
         timestamp = millis();
     }
 #else
-    if (srxlSerial.available())
+    if (SMARTPORT_SRXL_SERIAL.available())
     {
         static uint32_t timestamp = 0;
         uint8_t buffer[SRXL_FRAMELEN];
         static bool mute = false;
-        uint8_t lenght = srxlSerial.readBytes(buffer, SRXL_FRAMELEN);
+        uint8_t lenght = SMARTPORT_SRXL_SERIAL.readBytes(buffer, SRXL_FRAMELEN);
         if (lenght == SRXL_FRAMELEN && buffer[0] == SRXL_VARIANT && buffer[1] == 0x12)
         {
 #ifdef DEBUG
@@ -147,11 +149,11 @@ void Srxl::checkSerial()
             {
                 timestamp = millis();
                 delay(1);
-                while (srxlSerial.available() && millis() - timestamp < 8000)
+                while (SMARTPORT_SRXL_SERIAL.available() && millis() - timestamp < 8000)
                 {
                     char buf[21];
-                    uint8_t lenght = srxlSerial.readBytes(buf, 21);
-                    if (lenght == 21 && !srxlSerial.available())
+                    uint8_t lenght = SMARTPORT_SRXL_SERIAL.readBytes(buf, 21);
+                    if (lenght == 21 && !SMARTPORT_SRXL_SERIAL.available())
                         delay(1);
                 }
                 send();
