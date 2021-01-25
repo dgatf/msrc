@@ -13,11 +13,17 @@ void EscPWM::TIMER1_CAPT_handler()
     TCNT1 = 0; // reset timer
     escPwmRunning = true;
     escPwmUpdate = true;
+#ifdef DEBUG_ESC
+    DEBUG_SERIAL.println(escPwmDuration);
+#endif
 }
 
 void EscPWM::TIMER1_OVF_handler()
 {
     escPwmRunning = false;
+#ifdef DEBUG_ESC
+    DEBUG_SERIAL.println("STOP");
+#endif
 }
 #endif
 
@@ -28,11 +34,17 @@ void EscPWM::TIMER4_CAPT_handler()
     TCNT4 = 0; // reset timer
     escPwmRunning = true;
     escPwmUpdate = true;
+#ifdef DEBUG_ESC
+    DEBUG_SERIAL.println(escPwmDuration);
+#endif
 }
 
 void EscPWM::TIMER4_OVF_handler()
 {
     escPwmRunning = false;
+#ifdef DEBUG_ESC
+    DEBUG_SERIAL.println("STOP");
+#endif
 }
 #endif
 
@@ -40,6 +52,7 @@ void EscPWM::begin()
 {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
     // TIMER1: MODE 0 (NORMAL), SCALER 8, CAPTURE AND OVERFLOW INTERRUPT. ICP1, PB0, PIN 8
+    PORTB |= _BV(PB0); // PULL UP
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
     TIMER1_OVF_handlerP = TIMER1_OVF_handler;
     TCCR1A = 0;
@@ -49,6 +62,7 @@ void EscPWM::begin()
 
 #if defined(__AVR_ATmega2560__)
     // TIMER4: MODE 0 (NORMAL), SCALER 8, CAPTURE AND OVERFLOW INTERRUPT. ICP4, PL0, PIN 49
+    PORTL |= _BV(PL0); // PULL UP
     TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
     TIMER4_OVF_handlerP = TIMER4_OVF_handler;
     TCCR4A = 0;
@@ -76,7 +90,7 @@ float EscPWM::read(uint8_t index)
             rpm_ = 0;
         }
         interrupts();
-#ifdef DEBUG_ESC
+#ifdef DEBUG
         DEBUG_SERIAL.print("RPM: ");
         DEBUG_SERIAL.println(rpm_);
 #endif
