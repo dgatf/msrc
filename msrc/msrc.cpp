@@ -194,10 +194,10 @@ void setPwmOut(bool pwmOut)
     else
     {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
-        TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
+        TCCR1A &= ~_BV(COM1B1);
 #endif
 #if defined(__AVR_ATmega2560__)
-        TCCR4A &= ~_BV(COM4A1) & ~_BV(COM4B1);
+        TCCR4A &= ~_BV(COM4B1);
 #endif
     }
     interrupts();
@@ -215,12 +215,12 @@ void updatePwmOut()
         if (rpm >= 2000)
         {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
-            TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
+            TCCR1A |= _BV(COM1B1);
             OCR1A = (60000 / rpm) * MS_TO_COMP(8) - 1;
             OCR1B = PWMOUT_DUTY * OCR1A;
 #endif
 #if defined(__AVR_ATmega2560__)
-            TCCR4A |= _BV(COM4A1) | _BV(COM4B1);
+            TCCR4A |= _BV(COM4B1);
             OCR4A = (60000 / rpm) * MS_TO_COMP(8) - 1;
             OCR4B = PWMOUT_DUTY * OCR4A;
 #endif
@@ -228,10 +228,10 @@ void updatePwmOut()
         else
         {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
-            TCCR1A &= ~_BV(COM1A1) & ~_BV(COM1B1);
+            TCCR1A &= ~_BV(COM1B1);
 #endif
 #if defined(__AVR_ATmega2560__)
-            TCCR4A &= ~_BV(COM4A1) & ~_BV(COM4B1);
+            TCCR4A &= ~_BV(COM4B1);
 #endif
         }
         interrupts();
