@@ -91,8 +91,9 @@
 */
 
 //#define DEBUG
-//#define DEBUG_PLOTTER rpm/60
 //#define DEBUG_ESC
+//#define DEBUG_ESC_RX
+//#define DEBUG_PLOTTER rpm/60
 
 //#define SIM_RX
 //#define SIM_SENSORS

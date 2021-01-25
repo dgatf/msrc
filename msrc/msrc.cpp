@@ -639,7 +639,7 @@ void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
 
 void setup()
 {
-#if defined(DEBUG) || defined(DEBUG_ESC)
+#if defined(DEBUG) || defined(DEBUG_ESC) || defined(DEBUG_ESC_RX) || defined(DEBUG_PLOTTER)
     // DEBUG is on Serial
     // Baud rate depends on whats connected to Serial
     // For boards with 1 UART: If is an ESC serial it will be changed to 19600. If it is a GPS, to 9600

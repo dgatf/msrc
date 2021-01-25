@@ -90,10 +90,6 @@ float EscPWM::read(uint8_t index)
             rpm_ = 0;
         }
         interrupts();
-#ifdef DEBUG
-        DEBUG_SERIAL.print("RPM: ");
-        DEBUG_SERIAL.println(rpm_);
-#endif
 #ifdef SIM_SENSORS
         return 10000;
 #endif
