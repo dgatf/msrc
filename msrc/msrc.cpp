@@ -719,9 +719,7 @@ void setup()
 #else
     Config config;
 #endif
-#ifdef DEBUG
     delay(100);
-#endif
 #if RX_PROTOCOL == RX_SMARTPORT
     initConfig(config);
 #endif
