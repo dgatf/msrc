@@ -39,7 +39,9 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 (2) Allows to use hardware serial for Smartport  
 (3) Arduino Pro Micro requires hardware modification
 
-ATmega328P/PB and ATmega2560 boards with USB connector may not read properly RX0 (shared with USB)
+ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC serial or GPS as they use 3.3v logic level and Arduino 5v. In this case if using 5v it is better without USB (Pro Mini) and/or use software serial. Thus is preferred ATmege 3.3v boards (which are 5v tolerant)
+
+Teensy LC is not 5v tolerant. Preferred is Teensy 3.2 which is 5v tolerant
 
 Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
 
