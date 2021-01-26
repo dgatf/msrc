@@ -36,6 +36,9 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         castlePwmRx = OCR1B;
         TIMSK1 |= _BV(OCIE1B);
         castleRxLastReceived = 0;
+#ifdef DEBUG_ESC_RX
+        DEBUG_SERIAL.println(castlePwmRx);
+#endif
     }
     TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 DIRECTION
 }
@@ -344,7 +347,7 @@ void EscCastle::FTM1_IRQ_handler()
         {
             FTM0_C0V = (uint16_t)(FTM1_C0V - ts); // UPDATE FTM0 PWM
             FTM0_C0SC |= FTM_CSC_CHIE;
-            castlePwmRx = FTM0_C0V;               // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
+            castlePwmRx = FTM0_C0V; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
             FTM1_CNT = 0;
 #ifdef DEBUG_ESC_RX
             DEBUG_SERIAL.println(castlePwmRx);
@@ -360,7 +363,7 @@ void EscCastle::FTM1_IRQ_handler()
         FTM0_C4SC &= ~FTM_CSC_CHIE;
         FTM0_C2SC &= ~FTM_CSC_CHIE;
         PORTC_PCR1 = PORT_PCR_MUX(0); // PTC1 MUX 0 -> DISABLE
-        FTM1_SC |= FTM_SC_TOF; // CLEAR FLAG
+        FTM1_SC |= FTM_SC_TOF;        // CLEAR FLAG
 #ifdef DEBUG_ESC_RX
         DEBUG_SERIAL.println("STOP");
 #endif
@@ -425,14 +428,15 @@ void EscCastle::begin()
     TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
 
     // TIMER 1, ESC: PWM OUTPUT, RX INPUT. ICP1 (PB0, PIN 8). OC1B (PB2 PIN 10) -> OUTPUT/INPUT PULL UP
-    DDRB |= _BV(DDB2);                  // OUTPUT OC1B PB2 (PIN 10)
-    TCCR1A = _BV(WGM11) | _BV(WGM10);   // MODE 15
-    TCCR1B = _BV(WGM13) | _BV(WGM12);   //
-    TCCR1A = _BV(COM1B1) | _BV(COM1B0); // TOGGLE OC1B ON OCR1B
-    TCCR1B |= _BV(ICES1);               // RISING EDGE
-    TCCR1B |= _BV(CS11);                // SCALER 8
-    TIMSK1 = _BV(ICIE1);                // CAPTURE INTERRUPT
-    OCR1A = 20 * CASTLE_MS_TO_COMP(8);  // 50Hz = 20ms
+    DDRB |= _BV(DDB2);                   // OUTPUT OC1B PB2 (PIN 10)
+    PORTB |= _BV(PB0);                   // ICP1 PULLUP
+    TCCR1A = _BV(WGM11) | _BV(WGM10);    // MODE 15
+    TCCR1B = _BV(WGM13) | _BV(WGM12);    //
+    TCCR1A |= _BV(COM1B1) | _BV(COM1B0); // TOGGLE OC1B ON OCR1B
+    TCCR1B |= _BV(ICES1);                // RISING EDGE
+    TCCR1B |= _BV(CS11);                 // SCALER 8
+    TIMSK1 = _BV(ICIE1);                 // CAPTURE INTERRUPT
+    OCR1A = 20 * CASTLE_MS_TO_COMP(8);   // 50Hz = 20ms
 
     // INT0. TELEMETRY INPUT (PD2, PIN2)
     EICRA = _BV(ISC01); // FALLING EDGE
