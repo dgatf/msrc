@@ -37,6 +37,9 @@ void Xbus::i2c_request_handler()
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
     uint8_t address = TWDR >> 1;
 #endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    uint8_t address = I2C0_D >> 1;
+#endif
 #endif
     uint8_t buffer[16] = {0};
     switch (address)
@@ -111,6 +114,11 @@ void Xbus::begin()
     Wire.begin(addressMask);
     Wire.onRequest(i2c_request_handler);
     TWAMR = addressMask << 1;
+#endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    Wire.begin(XBUS_AIRSPEED);
+    Wire.onRequest(i2c_request_handler);
+    I2C0_RA = XBUS_RPM_VOLT_TEMP << 1;
 #endif
 #if CONFIG_VOLTAGE2 || CONFIG_NTC2
     xbusRpmVoltTemp2.sID = 1;

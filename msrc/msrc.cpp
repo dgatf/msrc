@@ -1,6 +1,6 @@
 #include "msrc.h"
 
-#if !defined(__AVR_ATmega328P__ ) && !defined(__AVR_ATmega328PB__ ) && !defined(__AVR_ATmega2560__ ) && !defined(__AVR_ATmega32U4__)
+#if !defined(__AVR_ATmega328P__) && !defined(__AVR_ATmega328PB__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__MKL26Z64__) && !defined(__MK20DX128__) && !defined(__MK20DX256__) && !defined(__MK64FX512__) && !defined(__MK66FX1M0__)
 #warning "MCU not supported"
 #endif
 
@@ -162,6 +162,21 @@ ISR(TIMER3_OVF_vect)
 }
 #endif
 
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+void (*FTM0_IRQ_handlerP)() = NULL;
+void ftm0_isr()
+{
+    if (FTM0_IRQ_handlerP)
+        FTM0_IRQ_handlerP();
+}
+void (*FTM1_IRQ_handlerP)() = NULL;
+void ftm1_isr()
+{
+    if (FTM1_IRQ_handlerP)
+        FTM1_IRQ_handlerP();
+}
+#endif
+
 uint8_t calcAlpha(uint8_t elements)
 {
     return round((2.0F / (elements + 1)) * 100);
@@ -190,6 +205,19 @@ void setPwmOut(bool pwmOut)
         TCCR1A = _BV(WGM11) | _BV(WGM10);
         TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS11);
 #endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+        FTM0_SC = 0;
+        delayMicroseconds(1);
+        FTM0_CNT = 0;
+        SIM_SCGC6 |= SIM_SCGC6_FTM0;   // ENABLE CLOCK
+        FTM0_SC = FTM_SC_PS(7);        // PRESCALER 128
+        FTM0_SC |= FTM_SC_CLKS(1);     // ENABLE COUNTER
+        FTM0_C0SC = 0;                 // DISABLE CHANNEL
+        delayMicroseconds(1);          //
+        FTM0_C0SC = FTM_CSC_ELSB;      // HIGH PULSES
+        FTM0_C0SC |= FTM_CSC_MSB;      // OUTPUT PWM
+        PORTC_PCR1 |= PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8
+#endif
     }
     else
     {
@@ -198,6 +226,9 @@ void setPwmOut(bool pwmOut)
 #endif
 #if defined(__AVR_ATmega2560__)
         TCCR4A &= ~_BV(COM4B1);
+#endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+        SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
 #endif
     }
     interrupts();
@@ -224,6 +255,11 @@ void updatePwmOut()
             OCR4A = (60000 / rpm) * MS_TO_COMP(8) - 1;
             OCR4B = PWMOUT_DUTY * OCR4A;
 #endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+            SIM_SCGC6 |= SIM_SCGC6_FTM0;                    // ENABLE CLOCK
+            FTM0_MOD = (60000 / rpm) * MS_TO_COMP(128) - 1; // SET FRECUENCY
+            FTM0_C0V = PWMOUT_DUTY * FTM0_MOD;              // SET DUTY
+#endif
         }
         else
         {
@@ -232,6 +268,10 @@ void updatePwmOut()
 #endif
 #if defined(__AVR_ATmega2560__)
             TCCR4A &= ~_BV(COM4B1);
+#endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+            SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
+            FTM0_CNT = 0;
 #endif
         }
         interrupts();
@@ -655,7 +695,11 @@ void setup()
     DEBUG_SERIAL.println(VERSION_PATCH);
 #endif
 #if RX_PROTOCOL == RX_SMARTPORT
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    SMARTPORT_SRXL_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV);
+#else
     SMARTPORT_SRXL_SERIAL.begin(57600);
+#endif
     smartport.setDataId(DATA_ID);
 #endif
 #if RX_PROTOCOL != RX_XBUS

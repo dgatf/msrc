@@ -18,7 +18,8 @@
 
 //#define DEBUG_CASTLE
 
-#define CASTLE_MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000UL))
+#define CASTLE_MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000.0))
+#define CASTLE_COMP_TO_MS(SCALER) ((SCALER * 1000.0) / F_CPU)
 #define RX_MAX_CYCLES 2 // minimum is 2
 
 #define CASTLE_VOLTAGE 1
@@ -66,6 +67,11 @@ extern void (*TIMER1_COMPB_handlerP)();
 extern void (*TIMER1_CAPT_handlerP)();
 extern void (*TIMER1_COMPC_handlerP)();
 #endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+extern void (*FTM0_IRQ_handlerP)();
+extern void (*FTM1_IRQ_handlerP)();
+
+#endif
 
 class EscCastle : public AbstractDevice, public EscCell
 {
@@ -104,6 +110,10 @@ private:
     static void TIMER1_COMPC_handler();
     static void TIMER1_COMPB_handler();
     static void TIMER1_CAPT_handler();
+#endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    static void FTM0_IRQ_handler();
+    static void FTM1_IRQ_handler();
 #endif
 
 protected:

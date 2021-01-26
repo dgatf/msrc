@@ -8,7 +8,7 @@ Compatible RX protocols:
 - XBUS: Spektrum
 - SRXL: Spektrum
 
-Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4
+Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4 and Teensy LC/3.x
 
 Implemented sensors:
 
@@ -26,41 +26,43 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 ### 1.1 MCU
 
-| MCU | Recommended board | Castle telemetry | UART<sup>(1)</sup> |
-| :---: | :---: | :---: | :---: |
-| ATmega328P | Arduino Pro Mini | Unstable| 1 |
-| ATmega328PB | Pololu ATmega328PB | :white_check_mark: | 2 |
-| ATmega2560 | ATmega2560 Pro Mini | :white_check_mark: | 4 |
-| ATmega32U4 | Teensy 2 | :white_check_mark:<sup>(2)</sup> | 1 |
+| MCU | Recommended board | Castle telemetry | UART<sup>(1)</sup> | Inverted UART<sup>(2)</sup> |
+| :---: | :---: | :---: | :---: | :---: |
+| ATmega328P | Arduino Pro Mini | Unstable| 1 | :x: |
+| ATmega328PB | Pololu ATmega328PB | :white_check_mark: | 2 | :x: |
+| ATmega2560 | ATmega2560 Pro Mini | :white_check_mark: | 4 | :x: |
+| ATmega32U4 | Teensy 2 | :white_check_mark:<sup>(3)</sup> | 1 | :x: |
+| ARM CortexM0+ | Teensy LC | :white_check_mark: | 3 | :white_check_mark: |
+| ARM CortexM4 | Teensy 3.2 | :white_check_mark: | 3 | :white_check_mark: |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
-(2) Arduino Pro Micro requires hardware modification
+(2) Allows to use hardware serial for Smartport  
+(3) Arduino Pro Micro requires hardware modification
 
 ATmega328P/PB and ATmega2560 boards with USB connector may not read properly RX0 (shared with USB)
 
 Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
 
-
 ### 1.2 Connections
 
-| Board | Arduino Pro Mini | Pololu ATmega328PB | Arduino ATmega2560 | Teensy 2 |
-| :---: | :---: | :---: | :---: | :---: |
-| MCU | ATmega328P | ATmega328PB | ATmega2560 | ATmega32U4 |
-| NTC 1 | A0 | A0 | A0 | F6(A1) |
-| NTC 2 | A1 | A1 | A1 | F7(A0) |
-| Voltage 1 | A2 | A2 | A2 | F5(A3) |
-| Voltage 2 | A3 | A3 | A3 | F4(A2) |
-| Current | A6 | A6 | A6 | B5(A9) |
-| Airspeed | A7 | A7 | A7 | D7(A7) |
-| ESC serial | RX | RX0 | RX1 | D2(RX1) |
-| GPS | RX | RX1 | RX2 | D2(RX1) |
-| PWM in | 8 | 8 | 49 | D4(A6) |
-| PWM out | 10 | 10 | 7 | B6(A10) |
-| Rx Castle | 8 | 8 | 49 | C7 |
-| ESC Castle<sup>(1)</sup> | 2/10 | 2/22 | 45/48 | C8/B6 |
-| Smartport/SRXL | 7/12<sup>(2)</sup> | 4/23<sup>(2)</sup> | 4/12<sup>(2)</sup> | B2/B4<sup>(2)</sup>(16/8) |
-| XBUS/sensor SDA | A4 | A4 | 20 | D1(2) |
-| XBUS/sensor SCL | A5 | A5 | 21 | D0(3) |
+| Board | Arduino Pro Mini | Pololu ATmega328PB | Arduino ATmega2560 | Teensy 2 | Teensy LC<br/>Teensy 3.x |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| MCU | ATmega328P | ATmega328PB | ATmega2560 | ATmega32U4 | ARMCortexM0+<br/>ARMCortexM4 |
+| NTC 1 | A0 | A0 | A0 | F6(A1) | 14 |
+| NTC 2 | A1 | A1 | A1 | F7(A0) | 15 |
+| Voltage 1 | A2 | A2 | A2 | F5(A3) | 16 |
+| Voltage 2 | A3 | A3 | A3 | F4(A2) | 17 |
+| Current | A6 | A6 | A6 | B5(A9) | 20 |
+| Airspeed | A7 | A7 | A7 | D7(A7) | 26 |
+| ESC serial | RX | RX0 | RX1 | D2(RX1) | 9 |
+| GPS | RX | RX1 | RX2 | D2(RX1) | 7 |
+| PWM in | 8 | 8 | 49 | D4(A6) | 22 |
+| PWM out | 10 | 10 | 7 | B6(A10) | 22 |
+| Rx Castle | 8 | 8 | 49 | C7 | 3 |
+| ESC Castle<sup>(1)</sup> | 2/10 | 2/22 | 45/48 | C8/B6 | 22/23 |
+| Smartport/SRXL | 7/12<sup>(2)</sup> | 4/23<sup>(2)</sup> | 4/12<sup>(2)</sup> | B2/B4<sup>(2)</sup>(16/8) | 0/1<sup>(2)</sup> |
+| XBUS/sensor SDA | A4 | A4 | 20 | D1(2) | 18 |
+| XBUS/sensor SCL | A5 | A5 | 21 | D0(3) | 19 |
 
 (1) with pull up 3.3k  
 (2) with resistor 3.3k
@@ -97,7 +99,6 @@ Compatible ESC serial protocols:
 - Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature (Mosfet and BEC), voltage and current
 
 Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry
-
 
 <p align="center"><img src="./images/serial.png" width="400"><br>
   <i>ESC serial</i><br><br></p>
@@ -415,7 +416,7 @@ Adjust constants in *pressure.h*:
 0.8
 
 - Added Rx protocols XBUS and SRXL
-- Added support for ATmega328PB, ATmega2560 and ATmega32U4
+- Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 
 [v0.7](https://github.com/dgatf/msrc/tree/v0.7)
 
