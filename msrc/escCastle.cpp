@@ -102,9 +102,10 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
 void EscCastle::TIMER1_CAPT_handler() // RX INPUT
 {
+    static uint16_t ts = 0;
     if (TCCR1B & _BV(ICES1)) // RX RISING (PULSE START)
     {
-        TCNT1 = 0; // RESET COUNTER
+        ts = ICR1;
     }
     else // RX FALLING (PULSE END)
     {
@@ -117,8 +118,9 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
             TIFR1 |= _BV(TOV1);    // CLEAR OVERFLOW FLAG
             TIMSK1 |= _BV(TOIE1);  // ENABLE OVERFLOW INTERRUPT
         }
-        OCR4B = ICR1;
+        OCR4B = ICR1 - ts;
         castlePwmRx = OCR4B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
+        TCNT1 = 0; // RESET COUNTER
 #ifdef DEBUG_ESC_RX
         DEBUG_SERIAL.println(castlePwmRx);
 #endif
@@ -182,9 +184,10 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 #if defined(__AVR_ATmega2560__)
 void EscCastle::TIMER4_CAPT_handler() // RX INPUT
 {
+    static uint16_t ts = 0;
     if (TCCR4B & _BV(ICES4)) // RX RISING (PULSE START)
     {
-        TCNT4 = 0; // RESET COUNTER
+        ts = ICR4;
     }
     else // RX FALLING (PULSE END)
     {
@@ -197,8 +200,9 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
             TIFR4 |= _BV(TOV4);    // CLEAR OVERFLOW FLAG
             TIMSK4 |= _BV(TOIE4);  // ENABLE OVERFLOW INTERRUPT
         }
-        OCR5B = ICR4;
+        OCR5B = ICR4 - ts;
         castlePwmRx = OCR5B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
+        TCNT4 = 0;           // RESET COUNTER
 #ifdef DEBUG_ESC_RX
         DEBUG_SERIAL.println(castlePwmRx);
 #endif
@@ -261,9 +265,10 @@ void EscCastle::TIMER5_COMPC_handler() // START OUTPUT STATE
 #if defined(__AVR_ATmega32U4__)
 void EscCastle::TIMER3_CAPT_handler() // RX INPUT
 {
+    static uint16_t ts = 0;
     if (TCCR3B & _BV(ICES3)) // RX RISING (PULSE START)
     {
-        TCNT3 = 0; // RESET COUNTER
+        ts = ICR3;
     }
     else // RX FALLING (PULSE END)
     {
@@ -275,8 +280,9 @@ void EscCastle::TIMER3_CAPT_handler() // RX INPUT
             TIMSK1 |= _BV(OCIE1B); // ENABLE OCRB1 MATCH INTERRUPT
             TIMSK3 |= _BV(TOIE3);  // ENABLE OVERFLOW INTERRUPT
         }
-        OCR1B = ICR3;
+        OCR1B = ICR3 - ts;
         castlePwmRx = OCR1B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
+        TCNT3 = 0; // RESET COUNTER
 #ifdef DEBUG_ESC_RX
         DEBUG_SERIAL.println(castlePwmRx);
 #endif
