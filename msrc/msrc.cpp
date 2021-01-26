@@ -212,6 +212,8 @@ void setPwmOut(bool pwmOut)
         SIM_SCGC6 |= SIM_SCGC6_FTM0;   // ENABLE CLOCK
         FTM0_SC = FTM_SC_PS(7);        // PRESCALER 128
         FTM0_SC |= FTM_SC_CLKS(1);     // ENABLE COUNTER
+        FTM0_C0SC = 0;                 // DISABLE CHANNEL
+        delayMicroseconds(1);          //
         FTM0_C0SC = FTM_CSC_ELSB;      // HIGH PULSES
         FTM0_C0SC |= FTM_CSC_MSB;      // OUTPUT PWM
         PORTC_PCR1 |= PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8
@@ -224,12 +226,6 @@ void setPwmOut(bool pwmOut)
 #endif
 #if defined(__AVR_ATmega2560__)
         TCCR4A &= ~_BV(COM4B1);
-#endif
-#if defined(__MKL26Z64__)
-        SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
-#endif
-#if defined(__MKL26Z64__)
-        SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
         SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
@@ -272,14 +268,6 @@ void updatePwmOut()
 #endif
 #if defined(__AVR_ATmega2560__)
             TCCR4A &= ~_BV(COM4B1);
-#endif
-#if defined(__MKL26Z64__)
-            SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
-            FTM0_CNT = 0;
-#endif
-#if defined(__MKL26Z64__)
-            SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK
-            FTM0_CNT = 0;
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
             SIM_SCGC6 &= ~SIM_SCGC6_FTM0; // DISABLE CLOCK

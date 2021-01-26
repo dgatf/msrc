@@ -87,10 +87,9 @@
 #define PIN_CURRENT 18
 #define PIN_PRESSURE 19
 
-#define SOFTWARE_SERIAL
-#define SMARTPORT_SRXL_SERIAL softSerial
-#define ESC_SERIAL Serial1
-#define GPS_SERIAL Serial1
+#define SMARTPORT_SRXL_SERIAL Serial1
+#define ESC_SERIAL Serial2
+#define GPS_SERIAL Serial3
 #endif
 
 // Lua config (only opentx)

@@ -75,7 +75,7 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
         OCR1B = 0;
         TIMSK1 &= ~_BV(OCIE1B); // DISABLE PIN
 #ifdef DEBUG_ESC_RX
-    DEBUG_SERIAL.println("STOP");
+        DEBUG_SERIAL.println("STOP");
 #endif
     }
     else
@@ -520,28 +520,49 @@ void EscCastle::begin()
     FTM1_SC = 0;
     delayMicroseconds(1);
     FTM1_CNT = 0;
-    FTM1_SC |= FTM_SC_PS(7);      // PRESCALER 128
+    SIM_SCGC6 |= SIM_SCGC6_FTM1;  // ENABLE CLOCK
+    FTM1_SC = FTM_SC_PS(7);       // PRESCALER 128
     FTM1_SC |= FTM_SC_CLKS(1);    // ENABLE COUNTER
     FTM1_SC |= FTM_SC_TOIE;       // ENABLE OVERFLOW INTERRUPT
+
+    // INPUT CAPTURE CH
+    FTM1_C0SC = 0;
+    delayMicroseconds(1);
     FTM1_C0SC |= FTM_CSC_ELSA;    // CAPTURE RISING
     FTM1_C0SC |= FTM_CSC_CHIE;    // ENABLE INTERRUPT
     PORTB_PCR0 = PORT_PCR_MUX(3); // TPM1_CH0 MUX 3 -> PTB0 -> 16
     NVIC_ENABLE_IRQ(IRQ_FTM1);
 
-    // FTM0 (6 CH): INVERTED PWM AT 20MHZ AND CAPTURE TELEMETRY (PINS: CH0 PWM OUTPUT (PTC1 -> 22/A8), CH1 CAPTURE INPUT (PTC2 -> 23/A9))
+    // FTM0 (6 CH): INVERTED PWM AT 20MHZ AND CAPTURE TELEMETRY (PINS: CH0 PWM OUTPUT (PTC1 -> 22/A8), CH4 MUX 4 CAPTURE INPUT (PTD4 -> 6))
     FTM0_IRQ_handlerP = FTM0_IRQ_handler;
     FTM0_SC = 0;
     delayMicroseconds(1);
     FTM0_CNT = 0;
-    FTM0_SC |= FTM_SC_PS(7);                // PRESCALER 128
+    SIM_SCGC6 |= SIM_SCGC6_FTM0;            // ENABLE CLOCK
+    FTM0_SC = FTM_SC_PS(7);                 // PRESCALER 128
     FTM0_MOD = 20 * CASTLE_MS_TO_COMP(128); // 20ms (100HZ)
+
+    // OUTPUT CH (ESC CONTROL)
+    FTM0_C0SC = 0;
+    delayMicroseconds(1);
+    FTM0_C0SC = FTM_CSC_MSB;   // OUTPUT CH0
+    FTM0_C0SC |= FTM_CSC_ELSA; // LOW PULSES CH0
+
+    // INPUT CH (TELEMETRY)
+    FTM0_C4SC = 0;
+    delayMicroseconds(1);
+    FTM0_C4SC |= FTM_CSC_ELSB; // CAPTURE FALLING
+
+    // TOGGLE CH0 TO OUTPUT
+    FTM0_C2SC = 0;
+    delayMicroseconds(1);
+    FTM0_C2SC = FTM_CSC_MSA;                // SOFTWARE COMPARE
     FTM0_C2V = 12 * CASTLE_MS_TO_COMP(128); // 12ms TOGGLE CH0 TO OUTPUT
-    FTM0_C0SC |= FTM_CSC_MSB;               // OUTPUT CH0
-    FTM0_C0SC |= FTM_CSC_ELSA;              // LOW PULSES CH0
-    FTM0_C1SC |= FTM_CSC_ELSB;              // CAPTURE FALLING
-    FTM0_C2SC |= FTM_CSC_MSA;               // SOFTWARE COMPARE ??
-    PORTC_PCR1 = PORT_PCR_MUX(4);           // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8 (PWM OUT)
-    PORTC_PCR2 = PORT_PCR_MUX(4);           // TPM0_CH1 MUX 4 -> PTC2 -> 23/A9 (CAPTURE) 
+
+    // SET PINS
+    PORTC_PCR1 = PORT_PCR_MUX(4);               // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8 (PWM OUT)
+    PORTD_PCR4 = PORT_PCR_MUX(4) | PORT_PCR_PE; // TPM0_CH4 MUX 4 -> PTD4 -> 6 (CAPTURE), PULLUP
+
     NVIC_ENABLE_IRQ(IRQ_FTM0);
 #endif
 }

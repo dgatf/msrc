@@ -48,59 +48,27 @@ void EscPWM::TIMER4_OVF_handler()
 }
 #endif
 
-#if defined(__MKL26Z64__)
-void EscPWM::FTM0_IRQ_handler()
-{
-    if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH0
-    {
-        escPwmDuration = FTM0_CNT;
-        FTM0_C0SC |= FTM_CSC_CHF; // CLEAR FLAG
-        FTM0_CNT = 0;             // RESET COUNTER
-        escPwmRunning = true;
-        escPwmUpdate = true;
-    }
-    else if (FTM0_SC & FTM_SC_TOF) // TIMER OVERFLOW INTERRUPT
-    {
-        FTM0_SC |= FTM_SC_TOF; // CLEAR FLAG
-        escPwmRunning = false;
-    }
-}
-#endif
-
-#if defined(__MKL26Z64__)
-void EscPWM::FTM0_IRQ_handler()
-{
-    if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH0
-    {
-        escPwmDuration = FTM0_CNT;
-        FTM0_C0SC |= FTM_CSC_CHF; // CLEAR FLAG
-        FTM0_CNT = 0;             // RESET COUNTER
-        escPwmRunning = true;
-        escPwmUpdate = true;
-    }
-    else if (FTM0_SC & FTM_SC_TOF) // TIMER OVERFLOW INTERRUPT
-    {
-        FTM0_SC |= FTM_SC_TOF; // CLEAR FLAG
-        escPwmRunning = false;
-    }
-}
-#endif
-
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
 void EscPWM::FTM0_IRQ_handler()
 {
-    if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH0
+    if (FTM0_C4SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH4
     {
         escPwmDuration = FTM0_CNT;
-        FTM0_C0SC |= FTM_CSC_CHF; // CLEAR FLAG
+        FTM0_C4SC |= FTM_CSC_CHF; // CLEAR FLAG
         FTM0_CNT = 0;             // RESET COUNTER
         escPwmRunning = true;
         escPwmUpdate = true;
+#ifdef DEBUG_ESC
+        DEBUG_SERIAL.println(escPwmDuration);
+#endif
     }
-    else if (FTM0_SC & FTM_SC_TOF) // TIMER OVERFLOW INTERRUPT
+    if (FTM0_SC & FTM_SC_TOF) // TIMER OVERFLOW INTERRUPT
     {
         FTM0_SC |= FTM_SC_TOF; // CLEAR FLAG
         escPwmRunning = false;
+#ifdef DEBUG_ESC
+        DEBUG_SERIAL.println("STOP");
+#endif
     }
 }
 #endif
@@ -129,16 +97,19 @@ void EscPWM::begin()
 
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
     FTM0_IRQ_handlerP = FTM0_IRQ_handler;
-    FTM0_SC = 0;
-    delayMicroseconds(1);
+    FTM0_SC = 0;          // DISABLE TIMER
+    delayMicroseconds(1); //
     FTM0_CNT = 0;
-    SIM_SCGC6 |= SIM_SCGC6_FTM0;   // ENABLE CLOCK
-    FTM0_SC = FTM_SC_PS(7);        // PRESCALER 128
-    FTM0_SC |= FTM_SC_CLKS(1);     // ENABLE COUNTER
-    FTM0_SC |= FTM_SC_TOIE;        // ENABLE OVERFLOW INTERRUPT
-    FTM0_C0SC = FTM_CSC_ELSA;      // CAPTURE RISING CH0
-    FTM0_C0SC |= FTM_CSC_CHIE;     // ENABLE INTERRUPT CH0
-    PORTC_PCR1 |= PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8
+    SIM_SCGC6 |= SIM_SCGC6_FTM0; // ENABLE CLOCK
+    FTM0_MOD = 0xFFFF;
+    FTM0_SC = FTM_SC_PS(7);                     // PRESCALER 128
+    FTM0_SC |= FTM_SC_CLKS(1);                  // ENABLE COUNTER
+    FTM0_SC |= FTM_SC_TOIE;                     // ENABLE OVERFLOW INTERRUPT
+    FTM0_C4SC = 0;                              // DISABLE CHANNEL
+    delayMicroseconds(1);                       //
+    FTM0_C4SC = FTM_CSC_ELSA;                   // CAPTURE RISING CH4
+    FTM0_C4SC |= FTM_CSC_CHIE;                  // ENABLE INTERRUPT CH4
+    PORTD_PCR4 = PORT_PCR_MUX(4) | PORT_PCR_PE; // TPM0_CH4 MUX 4 -> PTD4 -> 6
     NVIC_ENABLE_IRQ(IRQ_FTM0);
 #endif
 }
