@@ -28,22 +28,20 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 | MCU | Recommended board | Castle telemetry | UART<sup>(1)</sup> | Inverted UART<sup>(2)</sup> |
 | :---: | :---: | :---: | :---: | :---: |
-| ATmega328P | Arduino Pro Mini | Unstable| 1 | :x: |
-| ATmega328PB | Pololu ATmega328PB | :white_check_mark: | 2 | :x: |
+| ATmega328P | Arduino Pro Mini<sup>(5)</sup> | Unstable| 1 | :x: |
+| ATmega328PB | Pololu ATmega328PB<sup>(5)</sup> | :white_check_mark: | 2 | :x: |
 | ATmega2560 | ATmega2560 Pro Mini | :white_check_mark: | 4 | :x: |
 | ATmega32U4 | Teensy 2 | :white_check_mark:<sup>(3)</sup> | 1 | :x: |
-| ARM CortexM0+ | Teensy LC | :white_check_mark: | 3 | :white_check_mark: |
+| ARM CortexM0+ | Teensy LC<sup>(4)</sup> | :white_check_mark: | 3 | :white_check_mark: |
 | ARM CortexM4 | Teensy 3.2 | :white_check_mark: | 3 | :white_check_mark: |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Allows to use hardware serial for Smartport  
 (3) Arduino Pro Micro requires hardware modification
+(4) Teensy LC is not 5v tolerant. If using with Castle is preferred Teensy 3.2, which is 5v tolerant
+(5) Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
 
 ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC serial or GPS as they use 3.3v logic level and Arduino 5v. In this case if using 5v it is better without USB (Pro Mini) and/or use software serial. Thus is preferred ATmega 3.3v (8Mhz) boards (which are 5v tolerant)
-
-Teensy LC is not 5v tolerant. If using with Castle is preferred Teensy 3.2, which is 5v tolerant
-
-Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
 
 ### 1.2 Connections
 
@@ -58,10 +56,10 @@ Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashi
 | Airspeed | A7 | A7 | A7 | D7(A7) | 26 |
 | ESC serial | RX | RX0 | RX1 | D2(RX1) | 9 |
 | GPS | RX | RX1 | RX2 | D2(RX1) | 7 |
-| PWM in | 8 | 8 | 49 | D4(A6) | 22 |
+| PWM in | 8 | 8 | 49 | D4(A6) | 6 |
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
-| Rx Castle | 8 | 8 | 49 | C7 | 3 |
-| ESC Castle<sup>(1)</sup> | 2/10 | 2/22 | 45/48 | C8/B6 | 22/23 |
+| Rx Castle | 8 | 8 | 49 | C7 | 16 |
+| ESC Castle<sup>(1)</sup> | 2/10 | 2/22 | 45/48 | C8/B6 | 22/6 |
 | Smartport/SRXL | 7/12<sup>(2)</sup> | 4/23<sup>(2)</sup> | 4/12<sup>(2)</sup> | B2/B4<sup>(2)</sup>(16/8) | 0/1<sup>(2)</sup> |
 | XBUS/sensor SDA | A4 | A4 | 20 | D1(2) | 18 |
 | XBUS/sensor SCL | A5 | A5 | 21 | D0(3) | 19 |
