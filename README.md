@@ -208,7 +208,8 @@ ESC:
 - ESC temp FET (HW) or ESC temp linear (Castle): EscT (0x0b70)
 - ESC temp BEC (HW) or ESC temp NTC (Castle): EscT (0x0b71)
 - ESC ripple voltage: EscV (0x0b51)
-- ESC BEC voltage: EscV (0x0e50)
+- ESC BEC voltage: BecV (0x0e50)
+- ESC BEC current: BecC (0x0e50)
 
 GPS:
 
