@@ -2,11 +2,15 @@
 
 volatile bool EscCastle::castleTelemetryReceived = false;
 #ifdef SIM_SENSORS
-volatile uint16_t EscCastle::castleTelemetry[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 500};
+volatile uint16_t EscCastle::castleTelemetry[12] = {2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 0, 1000};
 #else
 volatile uint16_t EscCastle::castleTelemetry[12] = {0};
 #endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+volatile uint16_t EscCastle::castleCompsPerMilli = 1 * CASTLE_MS_TO_COMP(32);
+#else
 volatile uint16_t EscCastle::castleCompsPerMilli = 1 * CASTLE_MS_TO_COMP(8);
+#endif
 volatile uint8_t EscCastle::castleCont = 0;
 volatile uint16_t EscCastle::castlePwmRx = 0;
 
