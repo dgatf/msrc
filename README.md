@@ -50,15 +50,15 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | Voltage 2 | A3 | A3 | A3 | F4(A2) | 17 |
 | Current | A6 | A6 | A6 | B5(A9) | 20 |
 | Airspeed | A7 | A7 | A7 | D7(A7) | 26 |
-| ESC serial | RX | RX0 | RX1 | D2(RX1) | 9 |
-| GPS | RX | RX1 | RX2 | D2(RX1) | 7 |
+| ESC serial | RX | RX0 | 19 | D2(RX1) | 9 |
+| GPS | RX | RX1 | 17 | D2(RX1) | 7 |
 | PWM in | 8 | 8 | 49 | D4(A6) | 6 |
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
-| ESC Castle<sup>(1)</sup> | 2/10 | 2/22 | 45/48 | C8/B6 | 22/6 |
-| Smartport/SRXL | 7/12<sup>(2)</sup> | 4/23<sup>(2)</sup> | 4/12<sup>(2)</sup> | B2/B4<sup>(2)</sup>(16/8) | 0/1<sup>(2)</sup> |
-| XBUS/sensor SDA | A4 | A4 | 20 | D1(2) | 18 |
-| XBUS/sensor SCL | A5 | A5 | 21 | D0(3) | 19 |
+| ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 22 & 6 |
+| Smartport or SRXL | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 4 & 12<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 0 & 1<sup>(2)</sup> |
+| XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18 |
+| XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19 |
 
 (1) with pull up 3.3k  
 (2) with resistor 3.3k
