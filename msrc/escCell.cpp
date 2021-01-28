@@ -24,3 +24,8 @@ uint8_t EscCell::setCellCount(float voltage)
         return 2;
     return 1;
 }
+
+float *EscCell::cellVoltageP()
+{
+    return &cellVoltage_;
+}

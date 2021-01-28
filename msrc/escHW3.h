@@ -15,11 +15,11 @@ private:
 
 protected:
 public:
-    float *rpmP;
     EscHW3(Stream &serial, uint8_t alphaRpm);
-    void begin();
-    bool update();
-    float read(uint8_t index);
+    virtual void update();
+    uint8_t *thrP();
+    uint8_t *pwmP();
+    float *rpmP();
 };
 
 #endif

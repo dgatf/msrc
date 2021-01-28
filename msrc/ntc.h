@@ -18,7 +18,7 @@ class Ntc : public Voltage
 private:
 public:
     Ntc(uint8_t pin, uint8_t alpha);
-    float read(uint8_t index);
+    virtual void update();
 };
 
 #endif

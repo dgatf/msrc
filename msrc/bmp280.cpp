@@ -1,6 +1,6 @@
 #include "bmp280.h"
 
-Bmp280::Bmp280(uint8_t device, uint8_t alphaTemp, uint8_t alphaDef) : Bmp(device, alphaTemp, alphaDef) {}
+Bmp280::Bmp280(uint8_t device, uint8_t alphaTemp, uint8_t alphaDef) : device_(device), alphaTemp_(alphaTemp), alphaDef_(alphaDef) {}
 
 void Bmp280::begin()
 {
@@ -22,7 +22,7 @@ void Bmp280::begin()
     P9_ = readInt(device_, 0x9E, I2C_LITTLE_ENDIAN);
 }
 
-float Bmp280::readTemperature()
+void Bmp280::readTemperature()
 {
     uint8_t data[3];
     readBytes(device_, BMP280_REGISTER_TEMPDATA, data, 3);
@@ -34,10 +34,9 @@ float Bmp280::readTemperature()
     t = (t_fine_ * 5 + 128) >> 8;
     temperature_ = (float)t / 100;
     //temperature_ = calcAverage((float)alphaTemp_ / 100, temperature_, (float)t / 100);
-    return temperature_;
 }
 
-float Bmp280::readPressure()
+void Bmp280::readPressure()
 {
     int64_t var1, var2, p;
     uint8_t data[3];
@@ -54,42 +53,51 @@ float Bmp280::readPressure()
     var1 =
         (((((int64_t)1) << 47) + var1)) * ((int64_t)P1_) >> 33;
 
-    if (var1 == 0)
+    if (var1 != 0)
     {
-        return 0; // avoid exception caused by division by zero
+        p = 1048576 - adc_P;
+        p = (((p << 31) - var2) * 3125) / var1;
+        var1 = (((int64_t)P9_) * (p >> 13) * (p >> 13)) >> 25;
+        var2 = (((int64_t)P8_) * p) >> 19;
+        p = ((p + var1 + var2) >> 8) + (((int64_t)P7_) << 4);
+        pressure_ = (float)p / 256;
+        //pressure_ = calcAverage((float)alphaDef_ / 100, pressure_, (float)p / 256);
     }
-    p = 1048576 - adc_P;
-    p = (((p << 31) - var2) * 3125) / var1;
-    var1 = (((int64_t)P9_) * (p >> 13) * (p >> 13)) >> 25;
-    var2 = (((int64_t)P8_) * p) >> 19;
-    p = ((p + var1 + var2) >> 8) + (((int64_t)P7_) << 4);
-    pressure_ = (float)p / 256;
-    //pressure_ = calcAverage((float)alphaDef_ / 100, pressure_, (float)p / 256);
-    return pressure_;
 }
 
-float Bmp280::read(uint8_t index)
+float Bmp280::calcAltitude(float pressure, float P0)
 {
-    if (index == BMP_TEMPERATURE)
-    {
+    if (P0 == -1000 && millis() > 2000)
+        P0 = pressure_;
+    if (P0 == -1000)
+        return 0;
+    return 44330.0 * (1 - pow(pressure_ / P0, 1 / 5.255));
+}
+
+void Bmp280::update()
+{
 #ifdef SIM_SENSORS
-        return 22;
+    temperature_ = 20;
+    pressure_ = 500;
+#else
+    readPressure();
 #endif
-        readTemperature();
-        return temperature_;
-    }
-    if (index == BMP_ALTITUDE)
-    {
-#ifdef SIM_SENSORS
-        return 500;
-#endif
-        if (readPressure())
-        {
-            altitude_ = calcAltitude();
-            if (altitude_ < 0)
-                altitude_ = 0;
-        }
-        return altitude_;
-    }
-    return 0;
+    altitude_ = calcAltitude(pressure_, P0_);
+    if (altitude_ < 0)
+        altitude_ = 0;
+}
+
+float *Bmp280::temperatureP()
+{
+    return &temperature_;
+}
+
+float *Bmp280::pressureP()
+{
+    return &pressure_;
+}
+
+float *Bmp280::altitudeP()
+{
+    return &altitude_;
 }

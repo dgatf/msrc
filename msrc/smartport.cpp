@@ -280,12 +280,12 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 }
                 if ((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) >= (uint16_t)spSensorP->refresh() * 100)
                 {
-                    sendData(spSensorP->frameId(), spSensorP->dataId(), spSensorP->value());
+                    sendData(spSensorP->frameId(), spSensorP->dataId(), spSensorP->valueFormatted());
 #ifdef DEBUG
                     DEBUG_SERIAL.print("id: ");
                     DEBUG_SERIAL.print(spSensorP->dataId(), HEX);
                     DEBUG_SERIAL.print(" v: ");
-                    DEBUG_SERIAL.print(spSensorP->value());
+                    DEBUG_SERIAL.print(spSensorP->valueFormatted());
                     DEBUG_SERIAL.print(" ts: ");
                     DEBUG_SERIAL.println(spSensorP->timestamp());
 #endif

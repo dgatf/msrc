@@ -17,7 +17,7 @@ private:
     float voltageOffset = 0;
 public:
     Pressure(uint8_t pin, uint8_t alpha);
-    float read(uint8_t index);
+    virtual void update();
 };
 
 #endif

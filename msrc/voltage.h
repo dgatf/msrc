@@ -20,7 +20,8 @@ protected:
 
 public:
     Voltage(uint8_t pin, uint8_t alpha);
-    virtual float read(uint8_t index);
+    virtual void update();
+    float *valueP();
 };
 
 #endif

@@ -75,6 +75,17 @@ void Bn220::update()
             }
         }
     }
+#ifdef SIM_SENSORS
+    lat_ = -630;   // 10º30" +E, -W
+    lon_ = -1250;  // 20º50" +N, -S
+    alt_ = 1283;   // m
+    spd_ = 158;    // kts
+    cog_ = 123.32; // º
+    kph_ = 132;    //
+    sat_ = 10;     //
+    date_ = 10101; // yymmdd
+    time_ = 20202; // hhmmss
+#endif
 }
 
 void Bn220::parser(uint8_t type, char *data)
@@ -83,7 +94,7 @@ void Bn220::parser(uint8_t type, char *data)
     {
         if (type == BN220_TIME)
         {
-            value_[BN220_TIME] = atol(data);
+            time_ = atol(data);
         }
         else if (type == BN220_LAT)
         {
@@ -91,7 +102,7 @@ void Bn220::parser(uint8_t type, char *data)
             float minLat;
             strncpy(degLat, data, 2);
             minLat = atof(data + 2);
-            value_[BN220_LAT] = latDir_ * (atof(degLat) * 60 + minLat);
+            lat_ = latDir_ * (atof(degLat) * 60 + minLat);
         }
         else if (type == BN220_LON)
         {
@@ -99,31 +110,31 @@ void Bn220::parser(uint8_t type, char *data)
             float minLon;
             strncpy(degLon, data, 3);
             minLon = atof(data + 3);
-            value_[BN220_LON] = lonDir_ * (atof(degLon) * 60 + minLon);
+            lon_ = lonDir_ * (atof(degLon) * 60 + minLon);
         }
         else if (type == BN220_ALT)
         {
-            value_[BN220_ALT] = atof(data);
+            alt_ = atof(data);
         }
         else if (type == BN220_SPD)
         {
-            value_[BN220_SPD] = atof(data);
+            spd_ = atof(data);
         }
         else if (type == BN220_COG)
         {
-            value_[BN220_COG] = atof(data);
+            cog_ = atof(data);
         }
         else if (type == BN220_DATE)
         {
-            value_[BN220_DATE] = atol(data);
+            date_ = atol(data);
         }
         else if (type == BN220_KPH)
         {
-            value_[BN220_KPH] = atof(data);
+            kph_ = atof(data);
         }
         else if (type == BN220_SAT)
         {
-            value_[BN220_SAT] = atoi(data);
+            sat_ = atoi(data);
         }
         else if (type == BN220_LAT_SIGN)
         {
@@ -147,23 +158,47 @@ void Bn220::parser(uint8_t type, char *data)
     }
 }
 
-float Bn220::read(uint8_t index)
+float *Bn220::latP()
 {
-    if (index < 9)
-    {
-        update();
-#ifdef SIM_SENSORS
-        value_[BN220_LAT] = -630;    // 10º30" +E, -W
-        value_[BN220_LON] = -1250;   // 20º50" +N, -S
-        value_[BN220_ALT] = 1283;    // m
-        value_[BN220_SPD] = 158;     // kts
-        value_[BN220_COG] = 123.32;  // º 
-        value_[BN220_KPH] = 132;     //
-        value_[BN220_SAT] = 10;      //
-        value_[BN220_DATE] = 10101;  // yymmdd
-        value_[BN220_TIME] = 20202;  // hhmmss
-#endif
-        return value_[index];
-    }
-    return 0;
+    return &lat_;
+}
+
+float *Bn220::lonP()
+{
+    return &lon_;
+}
+
+float *Bn220::altP()
+{
+    return &alt_;
+}
+
+float *Bn220::spdP()
+{
+    return &spd_;
+}
+
+float *Bn220::cogP()
+{
+    return &cog_;
+}
+
+float *Bn220::kphP()
+{
+    return &lat_;
+}
+
+uint8_t *Bn220::satP()
+{
+    return &sat_;
+}
+
+float *Bn220::dateP()
+{
+    return &date_;
+}
+
+float *Bn220::timeP()
+{
+    return &time_;
 }
