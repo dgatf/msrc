@@ -65,10 +65,10 @@ uint8_t Smartport::crcToId(uint8_t sensorIdCrc)
 
 void Smartport::sendByte(uint8_t c, uint16_t *crcp)
 {
-    uint16_t crc = *crcp;
 
     if (crcp != NULL)
     {
+        uint16_t crc = *crcp;
         crc += c;
         crc += crc >> 8;
         crc &= 0x00FF;
@@ -274,11 +274,11 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             {
                 static Sensor *spSensorP = sensorP; // loop sensors until correct timestamp or 1 sensors cycle
                 Sensor *initialSensorP = spSensorP;
-                while (((uint16_t)millis() - spSensorP->timestamp() <= (uint16_t)spSensorP->refresh() * 100) && spSensorP->nextP != initialSensorP)
+                while (((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) <= (uint16_t)spSensorP->refresh() * 100) && spSensorP->nextP != initialSensorP)
                 {
                     spSensorP = spSensorP->nextP;
                 }
-                if ((uint16_t)millis() - spSensorP->timestamp() >= (uint16_t)spSensorP->refresh() * 100)
+                if ((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) >= (uint16_t)spSensorP->refresh() * 100)
                 {
                     sendData(spSensorP->frameId(), spSensorP->dataId(), spSensorP->value());
 #ifdef DEBUG
