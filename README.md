@@ -1,12 +1,8 @@
 # MSRC - Multi Sensor for RC - Smartport, XBUS, SRXL
 
-This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors
+This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors. It adds support for several ESC telemetry protocols
 
-Compatible RX protocols:
-
-- Smartport: FrSky
-- XBUS: Spektrum
-- SRXL: Spektrum
+Compatible RX protocols: Smartport (FrSky), XBUS (Spektrum), SRXL v5 (Spektrum)
 
 Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4 and Teensy LC/3.x
 
