@@ -113,7 +113,6 @@ float EscHW4::calcCurr(uint16_t currentRaw)
 
 float EscHW4::read(uint8_t index)
 {
-    //Serial.println(value_[ESCHW4_RPM]);
     if (index <= ESCHW4_CELL_VOLTAGE)
     {
 #ifdef SIM_SENSORS
