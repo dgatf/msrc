@@ -165,7 +165,7 @@ void Xbus::update()
 #endif
 #if CONFIG_NTC2
     ntc2.update();
-    xbusRpmVoltTemp2.temperature = __builtin_bswap16(*ntc2.valueP();
+    xbusRpmVoltTemp2.temperature = __builtin_bswap16(*ntc2.valueP());
 #endif
 #if CONFIG_AIRSPEED
     airspeed.update();
@@ -173,7 +173,7 @@ void Xbus::update()
 #endif
 #if CONFIG_CURRENT
     curr.update();
-    xbusBattery.current = __builtin_bswap16(*curr.valueP() * 100);
+    xbusBattery.current_A = __builtin_bswap16(*curr.valueP() * 100);
 #endif
 #if CONFIG_GPS
     gps.update();
