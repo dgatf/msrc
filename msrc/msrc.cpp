@@ -115,6 +115,12 @@ ISR(TIMER5_CAPT_vect)
     if (TIMER5_CAPT_handlerP)
         TIMER5_CAPT_handlerP();
 }
+void (*TIMER2_COMPA_handlerP)() = NULL;
+ISR(TIMER2_COMPA_vect)
+{
+    if (TIMER2_COMPA_handlerP)
+        TIMER2_COMPA_handlerP();
+}
 #endif
 
 #if defined(__AVR_ATmega32U4__)
@@ -159,6 +165,12 @@ ISR(TIMER3_OVF_vect)
 {
     if (TIMER3_OVF_handlerP)
         TIMER3_OVF_handlerP();
+}
+void (*TIMER2_COMPA_handlerP)() = NULL;
+ISR(TIMER2_COMPA_vect)
+{
+    if (TIMER2_COMPA_handlerP)
+        TIMER2_COMPA_handlerP();
 }
 #endif
 

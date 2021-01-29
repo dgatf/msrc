@@ -71,8 +71,8 @@ void EscPWM::FTM0_IRQ_handler()
         if (escPwmRunning)
             escPwmDuration = FTM0_CNT - ts;
         ts = FTM0_CNT;
-        FTM0_C4SC |= FTM_CSC_CHF; // CLEAR FLAG
-        FTM1_C0SC |= FTM_CSC_CHF; // CLEAR FLAG
+        FTM0_C4SC |= FTM_CSC_CHF;  // CLEAR FLAG
+        FTM1_C0SC |= FTM_CSC_CHF;  // CLEAR FLAG
         FTM1_C0SC |= FTM_CSC_CHIE; // ENABLE FTM1 INTERRUPT
         escPwmRunning = true;
         escPwmUpdate = true;
@@ -88,9 +88,8 @@ void EscPWM::FTM1_IRQ_handler()
     {
         escPwmRunning = false;
         escPwmDuration = 0xFFFF;
-        FTM1_C0SC |= FTM_CSC_CHF; // CLEAR FLAG
+        FTM1_C0SC |= FTM_CSC_CHF;   // CLEAR FLAG
         FTM1_C0SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT
-        escPwmRunning = false;
 #ifdef DEBUG_ESC
         DEBUG_SERIAL.println("STOP");
 #endif
@@ -112,7 +111,7 @@ void EscPWM::begin()
     // TIMER 2: MOTOR STOP
     TCCR2A = 0;                                 // NORMAL MODE
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 2 * PWM_MS_TO_COMP(1024);           // 2ms
+    OCR2A = 12 * PWM_MS_TO_COMP(1024);          // 12ms
 #endif
 
 #if defined(__AVR_ATmega2560__)
@@ -127,7 +126,7 @@ void EscPWM::begin()
     // TIMER 2: MOTOR STOP
     TCCR2A = 0;                                 // NORMAL MODE
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 2 * PWM_MS_TO_COMP(1024);           // 2ms
+    OCR2A = 12 * PWM_MS_TO_COMP(1024);          // 12ms
 #endif
 
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
@@ -155,11 +154,11 @@ void EscPWM::begin()
     FTM1_MOD = 0xFFFF;
     SIM_SCGC6 |= SIM_SCGC6_FTM1;             // ENABLE CLOCK
     FTM1_SC = FTM_SC_PS(5) | FTM_SC_CLKS(1); // PRESCALER 32 | ENABLE COUNTER
-    // CH0: INPUT CAPTURE
+    // CH0: SOFTWARE
     FTM1_C0SC = 0;
     delayMicroseconds(1);
-    FTM1_C0SC = FTM_CSC_MSA | FTM_CSC_CHIE; // SOFTWARE INTERRUPT
-    FTM1_C0V = 2 * PWM_MS_TO_COMP(32);
+    FTM1_C0SC = FTM_CSC_MSA; // SOFTWARE INTERRUPT
+    FTM1_C0V = 12 * PWM_MS_TO_COMP(32);
 #endif
 }
 

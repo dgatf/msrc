@@ -38,6 +38,7 @@ private:
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
     static void FTM0_IRQ_handler();
+    static void FTM1_IRQ_handler();
 #endif
 
 protected:
