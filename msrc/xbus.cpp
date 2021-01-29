@@ -146,7 +146,7 @@ void Xbus::update()
     xbusEsc.tempFET = __builtin_bswap16(*esc.temperatureP() * 10);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM
-    xbusRpmVoltTemp1.microseconds = __builtin_bswap16(60000 / *escPwm.rpmP();
+    xbusRpmVoltTemp1.microseconds = __builtin_bswap16(60000 / *escPwm.rpmP());
 #endif
 #if CONFIG_VOLTAGE1
     xbusRpmVoltTemp1.volts = __builtin_bswap16(*volt1.valueP() * 100);
