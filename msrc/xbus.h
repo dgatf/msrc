@@ -137,7 +137,7 @@ protected:
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3
 #ifdef SOFTWARE_SERIAL
-    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+    SoftwareSerial softSerial = SoftwareSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
 #endif
     EscHW3 esc = EscHW3(ESC_SERIAL, CONFIG_ALPHA_RPM);
 #endif

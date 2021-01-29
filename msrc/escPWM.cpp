@@ -162,7 +162,8 @@ void EscPWM::update()
             float rpm = 60000UL / (escPwmDuration * PWM_COMP_TO_MS(32));
 #else
             float rpm = 60000UL / (escPwmDuration * PWM_COMP_TO_MS(8));
-#endif rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+#endif
+            rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
             escPwmUpdate = false;
         }
     }
@@ -172,7 +173,7 @@ void EscPWM::update()
     }
     interrupts();
 #ifdef SIM_SENSORS
-    rpm_ = 10000;
+    rpm_ = 12345.67;
 #endif
 }
 

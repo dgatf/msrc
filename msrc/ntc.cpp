@@ -13,7 +13,7 @@ void Ntc::update()
     }
     value_ = calcAverage(alpha_ / 100.0F, value_, temperature);
 #ifdef SIM_SENSORS
-    value_ = 56;
+    value_ = 12.34;
 #endif
 }
 

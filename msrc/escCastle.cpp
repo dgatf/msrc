@@ -2,7 +2,11 @@
 
 volatile bool EscCastle::castleTelemetryReceived = false;
 #ifdef SIM_SENSORS
-volatile uint16_t EscCastle::castleTelemetry[12] = {2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 0, 1000};
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+volatile uint16_t EscCastle::castleTelemetry[12] = {(uint16_t)CASTLE_MS_TO_COMP(32), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), 0, (uint16_t)(0.5 * CASTLE_MS_TO_COMP(32))};
+#else
+volatile uint16_t EscCastle::castleTelemetry[12] = {(uint16_t)CASTLE_MS_TO_COMP(8), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), 0, (uint16_t)(0.5 * CASTLE_MS_TO_COMP(8))};
+#endif
 #else
 volatile uint16_t EscCastle::castleTelemetry[12] = {0};
 #endif
@@ -13,7 +17,7 @@ volatile uint16_t EscCastle::castleCompsPerMilli = 1 * CASTLE_MS_TO_COMP(8);
 #endif
 volatile uint8_t EscCastle::castleCont = 0;
 volatile uint16_t EscCastle::castlePwmRx = 0;
-volatile bool EscCastle::castleUpdated = false;
+volatile bool EscCastle::castleUpdated = true;
 
 EscCastle::EscCastle(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
@@ -592,7 +596,6 @@ void EscCastle::begin()
 
 void EscCastle::update()
 {
-    float value;
     if (cellCount_ == 255)
     {
         if (millis() > 10000)

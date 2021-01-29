@@ -86,12 +86,12 @@ uint32_t SensorDateTime::valueFormatted()
     if (!type_)
     {
         type_ = !type_;
-        value_ = formatDateTime(TYPE_DATE, *valueLP_);
+        return formatDateTime(TYPE_DATE, *valueLP_);
     }
     else
     {
         type_ = !type_;
-        value_ = formatDateTime(TYPE_TIME, *valueMP_);
+        return formatDateTime(TYPE_TIME, *valueMP_);
     }
 }
 

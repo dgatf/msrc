@@ -105,11 +105,10 @@ void Xbus::begin()
 #if CONFIG_CURRENT
     addressMask |= XBUS_BATTERY;
 #endif
-#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
+#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM && CONFIG_ESC_PROTOCOL != PROTOCOL_CASTLE
     addressMask |= XBUS_ESC;
     ESC_SERIAL.begin(19200);
     ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
-    esc.begin();
 #endif
     Wire.begin(addressMask);
     Wire.onRequest(i2c_request_handler);
@@ -128,45 +127,56 @@ void Xbus::begin()
 void Xbus::update()
 {
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3
+    esc.update();
     xbusEsc.RPM = __builtin_bswap16(*esc.rpmP() / 10);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV
+    esc.update();
     xbusEsc.RPM = __builtin_bswap16(*esc.rpmP() / 10);
     xbusEsc.voltsInput = __builtin_bswap16(*esc.voltageP() * 100);
+    xbusEsc.tempFET = __builtin_bswap16(*esc.tempFetP() * 10);
     xbusEsc.currentMotor = __builtin_bswap16(*esc.currentP() * 100);
     xbusEsc.tempBEC = __builtin_bswap16(*esc.tempBecP() * 10);
-    xbusEsc.tempFET = __builtin_bswap16(*esc.tempFetP() * 10);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
+    esc.update();
     xbusEsc.RPM = __builtin_bswap16(*esc.rpmP() / 10);
     xbusEsc.voltsInput = __builtin_bswap16(*esc.voltageP() * 100);
     xbusEsc.currentMotor = __builtin_bswap16(*esc.currentP() * 100);
     xbusEsc.voltsBEC = *esc.becVoltageP() * 20;
-    //xbusEsc.tempBEC = __builtin_bswap16(esc.temperatureP * 10);
+    xbusEsc.currentBEC = *esc.becCurrentP() * 10;
     xbusEsc.tempFET = __builtin_bswap16(*esc.temperatureP() * 10);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM
+    escPWM.update();
     xbusRpmVoltTemp1.microseconds = __builtin_bswap16(60000 / *escPwm.rpmP());
 #endif
 #if CONFIG_VOLTAGE1
+    volt1.update();
     xbusRpmVoltTemp1.volts = __builtin_bswap16(*volt1.valueP() * 100);
 #endif
 #if CONFIG_NTC1
+    ntc1.update();
     xbusRpmVoltTemp1.temperature = __builtin_bswap16(*ntc1.valueP());
 #endif
 #if CONFIG_VOLTAGE2
+    volt2.update();
     xbusRpmVoltTemp2.volts = __builtin_bswap16(*volt2.valueP() * 100);
 #endif
 #if CONFIG_NTC2
+    ntc2.update();
     xbusRpmVoltTemp2.temperature = __builtin_bswap16(*ntc2.valueP();
 #endif
 #if CONFIG_AIRSPEED
+    airspeed.update();
     xbusAirspeed.airspeed = __builtin_bswap16(*airspeed.valueP());
 #endif
 #if CONFIG_CURRENT
-    xbusBattery.current_A = __builtin_bswap16(*curr.valueP() * 100);
+    curr.update();
+    xbusBattery.current = __builtin_bswap16(*curr.valueP() * 100);
 #endif
 #if CONFIG_GPS
+    gps.update();
     float lat = *gps.latP();
     if (lat < 0) // N=1,>0, S=0,<0
         lat *= -1;

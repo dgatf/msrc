@@ -39,7 +39,7 @@ void EscHW3::update()
         rpm_ = 0;
     }
 #ifdef SIM_SENSORS
-    rpm_ = 10000;
+    rpm_ = 12345.67;
 #endif
 }
 

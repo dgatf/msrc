@@ -83,11 +83,11 @@ void EscHW4::update()
         }
     }
 #ifdef SIM_SENSORS
-    rpm_ = 10000;
-    voltage_ = 24;
-    current_ = 2;
-    tempFet_ = 50;
-    tempBec_ = 30;
+    rpm_ = 12345.67;
+    voltage_ = 12.34;
+    current_ = 12.34;
+    tempFet_ = 12.34;
+    tempBec_ = 12.34;
     cellVoltage_ = voltage_ / cellCount_;
 #endif
 }
