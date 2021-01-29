@@ -135,7 +135,6 @@ void EscPWM::begin()
     FTM0_MOD = 0xFFFF;
     FTM0_SC = FTM_SC_PS(5);    // PRESCALER 32
     FTM0_SC |= FTM_SC_CLKS(1); // ENABLE COUNTER
-    FTM0_SC |= FTM_SC_TOIE;    // ENABLE OVERFLOW INTERRUPT
 
     FTM0_C4SC = 0;                              // DISABLE CHANNEL
     delayMicroseconds(1);                       //
