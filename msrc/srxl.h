@@ -24,7 +24,9 @@
 #define SRXL_FRAMELEN 35
 #endif
 
-// not sure if 18 or 19: 1 byte header + 16 bytes payload + 2 bytes crc = 19...?¿
+// telemetry frame lenght: <0xA5><packet_type=0x80><length=0x15><16-byte telemetry packet><CRC(2bytes)> = 0x15 = 21bytes
+// rf packet frame lenght: <0xA5><length=0x12><16-byte telemetry packet><CRC> = 0x12 = 18
+
 #if SRXL_VARIANT == SRXL_V5
 #define SRXL_FRAMELEN 18
 #endif

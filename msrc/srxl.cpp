@@ -1,7 +1,5 @@
 #include "srxl.h"
 
-//Srxl::Srxl(Stream &serial) : serial_(serial) {}
-
 Srxl::Srxl(Stream &serial) : serial_(serial) {}
 
 void Srxl::begin()
@@ -60,7 +58,7 @@ void Srxl::send()
 {
     static uint8_t cont = 1;
     uint8_t buffer[21] = {0};
-    buffer[0] = 0x05; // = spektrum. No info for other brands
+    buffer[0] = 0x05; // = spektrum
     buffer[1] = 0x80;
     buffer[2] = 0x15;
     uint16_t crc;
@@ -97,8 +95,8 @@ void Srxl::send()
     default:
         return;
     }
-    crc = __builtin_bswap16(getCrc(buffer, 19));  // including header
-    //crc = __builtin_bswap16(getCrc(buffer + 3, 16));  // excluding header, 3bytes: header, type, lenght
+    crc = __builtin_bswap16(getCrc(buffer, 19));  // all bytes including header
+    //crc = __builtin_bswap16(getCrc(buffer + 3, 16));  // only 16bytes (xbus)
     memcpy(buffer + 19, &crc, 2);
     SMARTPORT_SRXL_SERIAL.write(buffer, 21);
 #ifdef DEBUG
