@@ -9,15 +9,13 @@ class Sensor : public FormatData
 {
 protected:
     uint16_t timestamp_ = 0, dataId_, frameId_ = 0x10;
-    float valueL_ = 0;
+    float *valueLP_;
     uint32_t value_;
-    uint8_t indexL_ = 0;
     uint8_t refresh_;
-    AbstractDevice *device_;
+    AbstractDevice *deviceP_;
 
 public:
-    Sensor(uint16_t dataId, uint8_t indexL, uint8_t refresh, AbstractDevice *device);
-    Sensor(uint16_t dataId, uint8_t refresh, AbstractDevice *device);
+    Sensor(uint16_t dataId, float *valueLP, uint8_t refresh, AbstractDevice *deviceP);
     virtual ~Sensor();
     Sensor *nextP = NULL;
     uint16_t timestamp();
@@ -25,43 +23,40 @@ public:
     uint16_t dataId();
     uint16_t frameId();
     uint8_t refresh();
-    virtual void update();
-    virtual uint32_t value();
+    void update();
+    virtual uint32_t valueFormatted();
     float valueL();
 };
 
 class SensorDouble : public Sensor
 {
 protected:
-    float valueM_ = 0;
-    uint8_t indexM_ = 255;
+    float *valueMP_;
 
 public:
-    SensorDouble(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t refresh, AbstractDevice *device);
+    SensorDouble(uint16_t dataId, float *valueLP, float *valueMP, uint8_t refresh, AbstractDevice *deviceP);
     float valueM();
-    virtual void update();
-    virtual uint32_t value();
+    virtual uint32_t valueFormatted();
 };
 
 class SensorLatLon : public SensorDouble
 {
 protected:
-    uint8_t type_ = 0;
+    uint8_t type_ = TYPE_LAT;
 
 public:
-    SensorLatLon(uint16_t dataId, uint8_t indexLon, uint8_t indexLat, uint8_t refresh, AbstractDevice *device);
-    uint32_t value();
+    SensorLatLon(uint16_t dataId, float *lonP, float *latP, uint8_t refresh, AbstractDevice *deviceP);
+    uint32_t valueFormatted();
 };
 
 class SensorDateTime : public SensorDouble
 {
 protected:
-    uint8_t type_ = 0;
+    uint8_t type_ = TYPE_DATE;
 
 public:
-    SensorDateTime(uint16_t dataId, uint8_t indexTime, uint8_t indexDate, uint8_t refresh, AbstractDevice *device);
-    uint32_t value();
-    void update();
+    SensorDateTime(uint16_t dataId, float *timeP, float *dateP, uint8_t refresh, AbstractDevice *deviceP);
+    uint32_t valueFormatted();
 };
 
 class SensorCell : public SensorDouble
@@ -70,9 +65,8 @@ protected:
     uint8_t cellIndex_ = 0;
 
 public:
-    SensorCell(uint16_t dataId, uint8_t indexM, uint8_t indexL, uint8_t cellIndex, uint8_t refresh, AbstractDevice *device);
-    void update();
-    uint32_t value();
+    SensorCell(uint16_t dataId, float *indexM, float *indexL, uint8_t cellIndex, uint8_t refresh, AbstractDevice *deviceP);
+    uint32_t valueFormatted();
 };
 
 #endif

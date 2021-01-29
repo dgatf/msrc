@@ -2,12 +2,7 @@
 
 EscHW3::EscHW3(Stream &serial, uint8_t alphaRpm) : alphaRpm_(alphaRpm), serial_(serial) {}
 
-void EscHW3::begin()
-{
-    rpmP = &rpm_;
-}
-
-bool EscHW3::update()
+void EscHW3::update()
 {
     static uint16_t tsEsc_ = 0;
     while (serial_.available() >= 10)
@@ -34,36 +29,31 @@ bool EscHW3::update()
                 DEBUG_SERIAL.print(" RPM: ");
                 DEBUG_SERIAL.println(rpm);
 #endif
-                return true;
             }
         }
     }
-
-    if (rpm_ == 0)
-        return false;
-
     if ((uint16_t)millis() - tsEsc_ > 150)
     {
         pwm_ = 0;
         thr_ = 0;
         rpm_ = 0;
-        return true;
     }
-
-    return false;
+#ifdef SIM_SENSORS
+    rpm_ = 12345.67;
+#endif
 }
 
-float EscHW3::read(uint8_t index)
+uint8_t *EscHW3::thrP()
 {
-#ifdef SIM_SENSORS
-    if (index == 0)
-        return 10000;
-    return 0;
-#endif
-    if (index == 0)
-    {
-        update();
-        return rpm_;
-    }
-    return 0;
+    return &thr_;
+}
+
+uint8_t *EscHW3::pwmP()
+{
+    return &pwm_;
+}
+
+float *EscHW3::rpmP()
+{
+    return &rpm_;
 }

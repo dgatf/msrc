@@ -77,12 +77,12 @@ class EscCastle : public AbstractDevice, public EscCell
 {
 private:
     static volatile bool castleTelemetryReceived;
-    static volatile uint16_t castleTelemetry[12];
-    static volatile uint16_t castleCompsPerMilli;
+    static volatile uint16_t castleTelemetry[12], castleCompsPerMilli, castlePwmRx;
     static volatile uint8_t castleCont;
-    static volatile uint16_t castlePwmRx;
+    static volatile bool castleUpdated;
     const float scaler[11] = {0, 20, 4, 50, 1, 0.2502, 20416.7, 4, 4, 30, 63.8125};
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
+    float voltage_ = 0, rippleVoltage_ = 0, current_ = 0, thr_ = 0, output_ = 0, rpm_ = 0, becVoltage_ = 0, becCurrent_ = 0, temperature_ = 0;
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
     static volatile uint8_t castleRxLastReceived;
     static void TIMER1_CAPT_handler();
@@ -120,7 +120,16 @@ protected:
 public:
     EscCastle(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp);
     void begin();
-    float read(uint8_t index);
+    virtual void update();
+    float *voltageP();
+    float *rippleVoltageP();
+    float *currentP();
+    float *thrP();
+    float *outputP();
+    float *rpmP();
+    float *becVoltageP();
+    float *becCurrentP();
+    float *temperatureP();
 };
 
 #endif

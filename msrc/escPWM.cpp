@@ -151,33 +151,33 @@ void EscPWM::begin()
 #endif
 }
 
-float EscPWM::read(uint8_t index)
+void EscPWM::update()
 {
-    if (index == 0)
+    noInterrupts();
+    if (escPwmRunning)
     {
-        noInterrupts();
-        if (escPwmRunning)
+        if (escPwmUpdate)
         {
-            if (escPwmUpdate)
-            {
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-                float rpm = 60000UL / (escPwmDuration * PWM_COMP_TO_MS(32));
+            float rpm = 60000UL / (escPwmDuration * PWM_COMP_TO_MS(32));
 #else
-                float rpm = 60000UL / (escPwmDuration * PWM_COMP_TO_MS(8));
+            float rpm = 60000UL / (escPwmDuration * PWM_COMP_TO_MS(8));
 #endif
-                rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
-                escPwmUpdate = false;
-            }
+            rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+            escPwmUpdate = false;
         }
-        else
-        {
-            rpm_ = 0;
-        }
-        interrupts();
-#ifdef SIM_SENSORS
-        return 10000;
-#endif
-        return rpm_;
     }
-    return 0;
+    else
+    {
+        rpm_ = 0;
+    }
+    interrupts();
+#ifdef SIM_SENSORS
+    rpm_ = 12345.67;
+#endif
+}
+
+float *EscPWM::rpmP()
+{
+    return &rpm_;
 }

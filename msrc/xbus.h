@@ -86,6 +86,14 @@ struct Xbus_Gps_Stat
     uint8_t altitudeHigh = 0; // BCD, meters, format 2.0 (High bits alt)
 };
 
+struct Xbus_Airspeed
+{
+    uint8_t identifier = 0x11;
+    uint8_t sID;
+    uint16_t airspeed;    // 1 km/h increments
+    uint16_t maxAirspeed; // 1 km/h increments
+};
+
 class Xbus
 {
 private:
@@ -116,7 +124,7 @@ protected:
     static Xbus_Gps_Loc xbusGpsLoc;
     static Xbus_Gps_Stat xbusGpsStat;
 #ifdef SOFTWARE_SERIAL
-    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+    SoftwareSerial softSerial = SoftwareSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
 #endif
     Bn220 gps = Bn220(GPS_SERIAL);
 #endif
@@ -137,7 +145,7 @@ protected:
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3
 #ifdef SOFTWARE_SERIAL
-    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+    SoftwareSerial softSerial = SoftwareSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
 #endif
     EscHW3 esc = EscHW3(ESC_SERIAL, CONFIG_ALPHA_RPM);
 #endif

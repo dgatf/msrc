@@ -2,7 +2,11 @@
 
 volatile bool EscCastle::castleTelemetryReceived = false;
 #ifdef SIM_SENSORS
-volatile uint16_t EscCastle::castleTelemetry[12] = {2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 0, 1000};
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+volatile uint16_t EscCastle::castleTelemetry[12] = {(uint16_t)CASTLE_MS_TO_COMP(32), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), 0, (uint16_t)(0.5 * CASTLE_MS_TO_COMP(32))};
+#else
+volatile uint16_t EscCastle::castleTelemetry[12] = {(uint16_t)CASTLE_MS_TO_COMP(8), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), 0, (uint16_t)(0.5 * CASTLE_MS_TO_COMP(8))};
+#endif
 #else
 volatile uint16_t EscCastle::castleTelemetry[12] = {0};
 #endif
@@ -13,6 +17,7 @@ volatile uint16_t EscCastle::castleCompsPerMilli = 1 * CASTLE_MS_TO_COMP(8);
 #endif
 volatile uint8_t EscCastle::castleCont = 0;
 volatile uint16_t EscCastle::castlePwmRx = 0;
+volatile bool EscCastle::castleUpdated = true;
 
 EscCastle::EscCastle(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
 
@@ -69,6 +74,7 @@ void EscCastle::INT0_handler() // READ TELEMETRY
     {
         castleCont++;
         castleTelemetryReceived = true;
+        castleUpdated = true;
     }
 }
 
@@ -124,7 +130,7 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         }
         OCR4B = ICR1 - ts;
         castlePwmRx = OCR4B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
-        TCNT1 = 0; // RESET COUNTER
+        TCNT1 = 0;           // RESET COUNTER
 #ifdef DEBUG_ESC_RX
         DEBUG_SERIAL.println(castlePwmRx);
 #endif
@@ -163,6 +169,7 @@ void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
     {
         castleCont++;
         castleTelemetryReceived = true;
+        castleUpdated = true;
     }
 }
 
@@ -245,6 +252,7 @@ void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
     {
         castleCont++;
         castleTelemetryReceived = true;
+        castleUpdated = true;
     }
 }
 
@@ -286,7 +294,7 @@ void EscCastle::TIMER3_CAPT_handler() // RX INPUT
         }
         OCR1B = ICR3 - ts;
         castlePwmRx = OCR1B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
-        TCNT3 = 0; // RESET COUNTER
+        TCNT3 = 0;           // RESET COUNTER
 #ifdef DEBUG_ESC_RX
         DEBUG_SERIAL.println(castlePwmRx);
 #endif
@@ -325,6 +333,7 @@ void EscCastle::TIMER1_CAPT_handler() // READ TELEMETRY
     {
         castleCont++;
         castleTelemetryReceived = true;
+        castleUpdated = true;
     }
 }
 
@@ -409,6 +418,7 @@ void EscCastle::FTM0_IRQ_handler()
         castleTelemetry[castleCont] = FTM0_C4V - castlePwmRx;
         castleCont++;
         castleTelemetryReceived = true;
+        castleUpdated = true;
         FTM0_C4SC |= FTM_CSC_CHF; // CLEAR FLAG CH1
     }
     if (FTM0_C2SC & FTM_CSC_CHF) // CH2 INTERRUPT (TOGGLE CH0 TO OUTPUT)
@@ -584,50 +594,98 @@ void EscCastle::begin()
 #endif
 }
 
-float EscCastle::read(uint8_t index)
+void EscCastle::update()
 {
-    float value;
     if (cellCount_ == 255)
     {
         if (millis() > 10000)
         {
-            cellCount_ = setCellCount(((float)castleTelemetry[CASTLE_VOLTAGE] / castleCompsPerMilli - 0.5) * scaler[CASTLE_VOLTAGE]);
+            cellCount_ = setCellCount(voltage_);
         }
     }
-    switch (index)
+    if (castleUpdated)
     {
-    case 0 ... 8:
-        value = ((float)castleTelemetry[index] / castleCompsPerMilli - 0.5) * scaler[index];
-        break;
-    case 9:
+        voltage_ = ((float)castleTelemetry[1] / castleCompsPerMilli - 0.5) * scaler[1];
+        if (voltage_ < 0)
+            voltage_ = 0;
+        rippleVoltage_ = ((float)castleTelemetry[2] / castleCompsPerMilli - 0.5) * scaler[2];
+        if (rippleVoltage_ < 0)
+            rippleVoltage_ = 0;
+        current_ = ((float)castleTelemetry[3] / castleCompsPerMilli - 0.5) * scaler[3];
+        if (current_ < 0)
+            current_ = 0;
+        thr_ = ((float)castleTelemetry[4] / castleCompsPerMilli - 0.5) * scaler[4];
+        if (thr_ < 0)
+            thr_ = 0;
+        output_ = ((float)castleTelemetry[5] / castleCompsPerMilli - 0.5) * scaler[5];
+        if (output_ < 0)
+            output_ = 0;
+        rpm_ = ((float)castleTelemetry[6] / castleCompsPerMilli - 0.5) * scaler[6];
+        if (rpm_ < 0)
+            rpm_ = 0;
+        becVoltage_ = ((float)castleTelemetry[7] / castleCompsPerMilli - 0.5) * scaler[7];
+        if (becVoltage_ < 0)
+            becVoltage_ = 0;
+        becCurrent_ = ((float)castleTelemetry[8] / castleCompsPerMilli - 0.5) * scaler[8];
+        if (becCurrent_ < 0)
+            becCurrent_ = 0;
         if (castleTelemetry[9] > castleTelemetry[10])
         {
-            value = ((float)castleTelemetry[index] / castleCompsPerMilli - 0.5) * scaler[index];
+            temperature_ = ((float)castleTelemetry[9] / castleCompsPerMilli - 0.5) * scaler[9];
         }
         else
         {
-            value = 0;
+            float ntc_value = ((float)castleTelemetry[10] / castleCompsPerMilli - 0.5) * scaler[10];
+            temperature_ = 1 / (log(ntc_value * CASTLE_R2 / (255.0F - ntc_value) / CASTLE_R0) / CASTLE_B + 1 / 298.0F) - 273.0F;
         }
-        break;
-    case 10:
-        if (castleTelemetry[10] > castleTelemetry[9])
-        {
-            float ntc_value = ((float)castleTelemetry[index] / castleCompsPerMilli - 0.5) * scaler[index];
-            value = 1 / (log(ntc_value * CASTLE_R2 / (255.0F - ntc_value) / CASTLE_R0) / CASTLE_B + 1 / 298.0F) - 273.0F;
-        }
-        else
-        {
-            value = 0;
-        }
-        break;
-    case 11:
-        value = (((float)castleTelemetry[1] / castleCompsPerMilli - 0.5) * scaler[1]) / cellCount_;
-        break;
-    default:
-        value = 0;
-        break;
+        if (temperature_ < 0)
+            temperature_ = 0;
+        cellVoltage_ = voltage_ / cellCount_;
+        castleUpdated = false;
     }
-    if (value < 0)
-        return 0;
-    return value;
+}
+
+float *EscCastle::voltageP()
+{
+    return &voltage_;
+}
+
+float *EscCastle::rippleVoltageP()
+{
+    return &rippleVoltage_;
+}
+
+float *EscCastle::currentP()
+{
+    return &current_;
+}
+
+float *EscCastle::thrP()
+{
+    return &thr_;
+}
+
+float *EscCastle::outputP()
+{
+    return &output_;
+}
+
+float *EscCastle::rpmP()
+{
+    return &rpm_;
+}
+
+float *EscCastle::becVoltageP()
+{
+    return &becVoltage_;
+}
+
+float *EscCastle::becCurrentP()
+{
+    return &becCurrent_;
+}
+
+float *EscCastle::temperatureP()
+{
+    return &temperature_;
 }

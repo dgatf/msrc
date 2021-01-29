@@ -43,7 +43,8 @@ protected:
 public:
     EscPWM(uint8_t alphaRpm);
     void begin();
-    float read(uint8_t index);
+    virtual void update();
+    float *rpmP();
 };
 
 #endif

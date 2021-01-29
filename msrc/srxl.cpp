@@ -11,7 +11,6 @@ void Srxl::begin()
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     ESC_SERIAL.begin(19200);
     ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
-    esc.begin();
     cont++;
     list[cont] = XBUS_ESC;
 #endif

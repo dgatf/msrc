@@ -306,7 +306,7 @@ void initConfig(Config &config)
         EscPWM *esc;
         esc = new EscPWM(config.alpha.rpm);
         esc->begin();
-        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
+        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), config.refresh.rpm, esc);
         smartport.addSensor(sensorP);
     }
     if (config.protocol == PROTOCOL_HW_V3)
@@ -316,9 +316,8 @@ void initConfig(Config &config)
         esc = new EscHW3(ESC_SERIAL, config.alpha.rpm);
         ESC_SERIAL.begin(19200);
         ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
-        esc->begin();
-        rpmPwmoutP = esc->rpmP;
-        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, config.refresh.rpm, esc);
+        rpmPwmoutP = esc->rpmP();
+        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), config.refresh.rpm, esc);
         smartport.addSensor(sensorP);
     }
     if (config.protocol >= PROTOCOL_HW_V4_LV && config.protocol <= PROTOCOL_HW_V5_HV)
@@ -328,17 +327,16 @@ void initConfig(Config &config)
         ESC_SERIAL.begin(19200);
         ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         esc = new EscHW4(ESC_SERIAL, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp, config.protocol - PROTOCOL_HW_V4_LV);
-        esc->begin();
-        rpmPwmoutP = esc->rpmP;
-        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, ESCHW4_RPM, config.refresh.rpm, esc);
+        rpmPwmoutP = esc->rpmP();
+        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), config.refresh.rpm, esc);
         smartport.addSensor(sensorP);
-        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, ESCHW4_CURRENT, ESCHW4_VOLTAGE, config.refresh.volt, esc);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->currentP(), esc->voltageP(), config.refresh.volt, esc);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, ESCHW4_TEMPFET, config.refresh.temp, esc);
+        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, esc->tempFetP(), config.refresh.temp, esc);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID + 1, ESCHW4_TEMPBEC, config.refresh.temp, esc);
+        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID + 1, esc->tempBecP(), config.refresh.temp, esc);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(VFAS_FIRST_ID, ESCHW4_CELL_VOLTAGE, config.refresh.volt, esc);
+        sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         smartport.addSensor(sensorP);
     }
     if (config.protocol == PROTOCOL_CASTLE)
@@ -347,19 +345,17 @@ void initConfig(Config &config)
         EscCastle *esc;
         esc = new EscCastle(config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp);
         esc->begin();
-        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, CASTLE_RPM, config.refresh.rpm, esc);
+        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID,  esc->rpmP(), config.refresh.rpm, esc);
         smartport.addSensor(sensorP);
-        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, CASTLE_CURRENT, CASTLE_VOLTAGE, config.refresh.volt, esc);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->currentP(), esc->voltageP(), config.refresh.volt, esc);
         smartport.addSensor(sensorP);
-        sensorP = new SensorDouble(SBEC_POWER_FIRST_ID, CASTLE_BEC_CURRENT, CASTLE_BEC_VOLTAGE, config.refresh.volt, esc);
+        sensorP = new SensorDouble(SBEC_POWER_FIRST_ID, esc->becCurrentP(), esc->becVoltageP(), config.refresh.volt, esc);
         smartport.addSensor(sensorP);
-        sensorP = new SensorDouble(ESC_POWER_FIRST_ID + 1, 0xFF, CASTLE_RIPPLE_VOLTAGE, config.refresh.volt, esc);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID + 1, NULL, esc->rippleVoltageP(), config.refresh.volt, esc);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, CASTLE_TEMP, config.refresh.temp, esc);
+        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, esc->temperatureP(), config.refresh.temp, esc);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID + 1, CASTLE_TEMP_NTC, config.refresh.temp, esc);
-        smartport.addSensor(sensorP);
-        sensorP = new Sensor(VFAS_FIRST_ID, CASTLE_CELL_VOLTAGE, config.refresh.volt, esc);
+        sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         smartport.addSensor(sensorP);
     }
     if (config.gps == true)
@@ -369,15 +365,15 @@ void initConfig(Config &config)
         GPS_SERIAL.begin(9600);
         GPS_SERIAL.setTimeout(BN220_TIMEOUT);
         gps = new Bn220(GPS_SERIAL);
-        sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, BN220_LON, BN220_LAT, config.refresh.def, gps);
+        sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, gps->lonP(), gps->latP(), config.refresh.def, gps);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(GPS_ALT_FIRST_ID, BN220_ALT, config.refresh.def, gps);
+        sensorP = new Sensor(GPS_ALT_FIRST_ID, gps->altP(), config.refresh.def, gps);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(GPS_SPEED_FIRST_ID, BN220_SPD, config.refresh.def, gps);
+        sensorP = new Sensor(GPS_SPEED_FIRST_ID, gps->spdP(), config.refresh.def, gps);
         smartport.addSensor(sensorP);
-        sensorP = new Sensor(GPS_COURS_FIRST_ID, BN220_COG, config.refresh.def, gps);
+        sensorP = new Sensor(GPS_COURS_FIRST_ID, gps->cogP(), config.refresh.def, gps);
         smartport.addSensor(sensorP);
-        sensorP = new SensorDateTime(GPS_TIME_DATE_FIRST_ID, BN220_TIME, BN220_DATE, config.refresh.def, gps);
+        sensorP = new SensorDateTime(GPS_TIME_DATE_FIRST_ID, gps->timeP(), gps->dateP(), config.refresh.def, gps);
         smartport.addSensor(sensorP);
     }
     if (config.airspeed == true)
@@ -385,7 +381,7 @@ void initConfig(Config &config)
         Sensor *sensorP;
         Pressure *pressure;
         pressure = new Pressure(PIN_PRESSURE, config.alpha.volt);
-        sensorP = new Sensor(AIR_SPEED_FIRST_ID, config.refresh.volt, pressure);
+        sensorP = new Sensor(AIR_SPEED_FIRST_ID, pressure->valueP(), config.refresh.volt, pressure);
         smartport.addSensor(sensorP);
     }
     if (config.voltage1 == true)
@@ -393,7 +389,7 @@ void initConfig(Config &config)
         Sensor *sensorP;
         Voltage *voltage;
         voltage = new Voltage(PIN_VOLTAGE1, config.alpha.volt);
-        sensorP = new Sensor(A3_FIRST_ID, config.refresh.volt, voltage);
+        sensorP = new Sensor(A3_FIRST_ID, voltage->valueP(), config.refresh.volt, voltage);
         smartport.addSensor(sensorP);
     }
     if (config.voltage2 == true)
@@ -401,15 +397,15 @@ void initConfig(Config &config)
         Sensor *sensorP;
         Voltage *voltage;
         voltage = new Voltage(PIN_VOLTAGE2, config.alpha.volt);
-        sensorP = new Sensor(A4_FIRST_ID, config.refresh.volt, voltage);
+        sensorP = new Sensor(A4_FIRST_ID, voltage->valueP(), config.refresh.volt, voltage);
         smartport.addSensor(sensorP);
     }
     if (config.current == true)
     {
         Sensor *sensorP;
-        Voltage *voltage;
-        voltage = new Voltage(PIN_CURRENT, config.alpha.curr);
-        sensorP = new Sensor(CURR_FIRST_ID, config.refresh.curr, voltage);
+        Voltage *current;
+        current = new Voltage(PIN_CURRENT, config.alpha.curr);
+        sensorP = new Sensor(CURR_FIRST_ID, current->valueP(), config.refresh.curr, current);
         smartport.addSensor(sensorP);
     }
     if (config.ntc1 == true)
@@ -417,7 +413,7 @@ void initConfig(Config &config)
         Sensor *sensorP;
         Ntc *ntc;
         ntc = new Ntc(PIN_NTC1, config.alpha.temp);
-        sensorP = new Sensor(T1_FIRST_ID, config.refresh.temp, ntc);
+        sensorP = new Sensor(T1_FIRST_ID, ntc->valueP(), config.refresh.temp, ntc);
         smartport.addSensor(sensorP);
     }
     if (config.ntc2 == true)
@@ -425,7 +421,7 @@ void initConfig(Config &config)
         Sensor *sensorP;
         Ntc *ntc;
         ntc = new Ntc(PIN_NTC2, config.alpha.temp);
-        sensorP = new Sensor(T2_FIRST_ID, config.refresh.temp, ntc);
+        sensorP = new Sensor(T2_FIRST_ID, ntc->valueP(), config.refresh.temp, ntc);
         smartport.addSensor(sensorP);
     }
     for (uint8_t i = 0; i < 2; i++)
@@ -436,9 +432,9 @@ void initConfig(Config &config)
             Bmp280 *bmp;
             bmp = new Bmp280(config.deviceI2C[i].address, config.alpha.temp, config.alpha.def);
             bmp->begin();
-            sensorP = new Sensor(T1_FIRST_ID + 2, BMP_TEMPERATURE, config.refresh.temp, bmp);
+            sensorP = new Sensor(T1_FIRST_ID + 2, bmp->temperatureP(), config.refresh.temp, bmp);
             smartport.addSensor(sensorP);
-            sensorP = new Sensor(ALT_FIRST_ID + 2, BMP_ALTITUDE, config.refresh.def, bmp);
+            sensorP = new Sensor(ALT_FIRST_ID + 2, bmp->altitudeP(), config.refresh.def, bmp);
             smartport.addSensor(sensorP);
         }
     }

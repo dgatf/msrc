@@ -51,17 +51,20 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include "device.h"
 #include "i2c.h"
-#include "bmp.h"
 
-class Bmp280 : public Bmp
+class Bmp280 : public AbstractDevice, public I2C
 {
 private:
     uint16_t T1_, P1_;
     int16_t T2_, T3_, P2_, P3_, P4_, P5_, P6_, P7_, P8_, P9_;
     uint32_t t_fine_;
-    float readTemperature();
-    float readPressure();
+    float temperature_ = 0, pressure_ = 0, P0_ = -1000, altitude_ = 0;
+    uint8_t device_, alphaTemp_, alphaDef_;
+    void readTemperature();
+    void readPressure();
+    float calcAltitude(float pressure, float P0);
 
 public:
     enum sensor_sampling
@@ -75,7 +78,10 @@ public:
     };
     Bmp280(uint8_t device, uint8_t alphaTemp, uint8_t alphaDef);
     void begin();
-    float read(uint8_t index);
+    virtual void update();
+    float *temperatureP();
+    float *pressureP();
+    float *altitudeP();
 };
 
 #endif

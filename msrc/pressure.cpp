@@ -2,30 +2,24 @@
 
 Pressure::Pressure(uint8_t pin, uint8_t alpha) : Voltage(pin, alpha) {}
 
-float Pressure::read(uint8_t index)
+void Pressure::update()
 {
-#ifdef SIM_SENSORS
-    if (index == 0)
-        return 25;
-    return 0;
-#endif
-    if (index == 0)
+    if (millis() > 2000 && voltageOffset == 0)
     {
-        if (millis() > 2000 && voltageOffset == 0)
+        for (int i = 0; i < 10; i++)
         {
-            for (int i = 0; i < 10; i++)
-            {
-                voltageOffset += readVoltage();
-                delay(2);
-            }
-            voltageOffset = voltageOffset / 10;
+            voltageOffset += readVoltage();
+            delay(2);
         }
-        float pressure = 1000 * (readVoltage() / (TRANSFER_SLOPE * TRANSFER_VCC) - voltageOffset);
-        if (pressure < 0)
-            pressure = 0;
-        float airSpeed = sqrt(2 * pressure / AIR_DENS) / KNOT_TO_MS;
-        value_ = calcAverage(alpha_ / 100.0F, value_, airSpeed);
-        return value_;
+        voltageOffset = voltageOffset / 10;
     }
-    return 0;
+    float pressure = 1000 * (readVoltage() / (TRANSFER_SLOPE * TRANSFER_VCC) - voltageOffset);
+    if (pressure < 0)
+        pressure = 0;
+    float airSpeed = sqrt(2 * pressure / AIR_DENS) / KNOT_TO_MS;
+    value_ = calcAverage(alpha_ / 100.0F, value_, airSpeed);
+
+#ifdef SIM_SENSORS
+    value_ = 123.45;
+#endif
 }

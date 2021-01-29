@@ -35,19 +35,25 @@ private:
                                        {{1, BN220_TIME}, {3, BN220_LAT}, {4, BN220_LAT_SIGN}, {5, BN220_LON}, {6, BN220_LON_SIGN}, {7, BN220_SPD}, {8, BN220_COG}, {9, BN220_DATE}, {0, 0}}, // RMC
                                        {{1, BN220_COG}, {7, BN220_KPH}, {0, 0}}};                                                                  // VTG
     float lat_, lon_, alt_, spd_, cog_, kph_;
-    int8_t latDir_ = 1;
-    int8_t lonDir_ = 1;
-    float value_[9] = {0};
-    uint32_t time_, date_;
+    int8_t latDir_ = 1, lonDir_ = 1;
+    float time_, date_;
     uint8_t contIndex_ = 0, contBuff_ = 0, sat_, nmeaCmd_ = 255;
     char buffer_[20] = {};
     Stream &serial_;
-    void update();
     void parser(uint8_t type, char *data);
 
 public:
     Bn220(Stream &serial);
-    float read(uint8_t index);
+    virtual void update();
+    float *latP();
+    float *lonP();
+    float *altP();
+    float *spdP();
+    float *cogP();
+    float *kphP();
+    uint8_t *satP();
+    float *dateP();
+    float *timeP();
 };
 
 #endif
