@@ -71,25 +71,22 @@ void EscPWM::FTM0_IRQ_handler()
         if (escPwmRunning)
             escPwmDuration = FTM0_CNT - ts;
         ts = FTM0_CNT;
-        FTM0_C4SC |= FTM_CSC_CHF;  // CLEAR FLAG
-        FTM1_C0SC |= FTM_CSC_CHF;  // CLEAR FLAG
-        FTM1_C0SC |= FTM_CSC_CHIE; // ENABLE FTM1 INTERRUPT
-        escPwmRunning = true;
+        FTM0_C4SC |= FTM_CSC_CHF; // CLEAR FLAG
+        FTM0_C0V = (uint16_t)((uint16_t)FTM0_CNT + (uint16_t)(12 * PWM_MS_TO_COMP(32)));
+        FTM0_C0SC |= FTM_CSC_CHF;  // CLEAR FLAG
+        FTM0_C0SC |= FTM_CSC_CHIE; // ENABLE CH0 INTERRUPT
         escPwmUpdate = true;
+        escPwmRunning = true;
 #ifdef DEBUG_ESC
         DEBUG_SERIAL.println(escPwmDuration);
 #endif
     }
-}
-
-void EscPWM::FTM1_IRQ_handler()
-{
-    if (FTM1_C0SC & FTM_CSC_CHF) // TIMER COMPARE INTERRUPT
+    if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH4
     {
+        FTM0_C0SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT
+        FTM0_C0SC |= FTM_CSC_CHF;   // CLEAR FLAG
         escPwmRunning = false;
         escPwmDuration = 0xFFFF;
-        FTM1_C0SC |= FTM_CSC_CHF;   // CLEAR FLAG
-        FTM1_C0SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT
 #ifdef DEBUG_ESC
         DEBUG_SERIAL.println("STOP");
 #endif
@@ -136,29 +133,22 @@ void EscPWM::begin()
     FTM0_CNT = 0;
     SIM_SCGC6 |= SIM_SCGC6_FTM0; // ENABLE CLOCK
     FTM0_MOD = 0xFFFF;
-    FTM0_SC = FTM_SC_PS(7);                     // PRESCALER 128
-    FTM0_SC |= FTM_SC_CLKS(1);                  // ENABLE COUNTER
-    FTM0_SC |= FTM_SC_TOIE;                     // ENABLE OVERFLOW INTERRUPT
+    FTM0_SC = FTM_SC_PS(7);    // PRESCALER 128
+    FTM0_SC |= FTM_SC_CLKS(1); // ENABLE COUNTER
+    FTM0_SC |= FTM_SC_TOIE;    // ENABLE OVERFLOW INTERRUPT
+
     FTM0_C4SC = 0;                              // DISABLE CHANNEL
     delayMicroseconds(1);                       //
     FTM0_C4SC = FTM_CSC_ELSA;                   // CAPTURE RISING CH4
     FTM0_C4SC |= FTM_CSC_CHIE;                  // ENABLE INTERRUPT CH4
     PORTD_PCR4 = PORT_PCR_MUX(4) | PORT_PCR_PE; // TPM0_CH4 MUX 4 -> PTD4 -> 6
+
+    FTM0_C0SC = 0;           // DISABLE CHANNEL
+    delayMicroseconds(1);    //
+    FTM0_C0SC = FTM_CSC_MSA; // SOFTWARE CH0
+
     NVIC_ENABLE_IRQ(IRQ_FTM0);
 
-    // FTM1 (2 CH): MOTOR STOP
-    FTM1_IRQ_handlerP = FTM1_IRQ_handler;
-    FTM1_SC = 0;
-    delayMicroseconds(1);
-    FTM1_CNT = 0;
-    FTM1_MOD = 0xFFFF;
-    SIM_SCGC6 |= SIM_SCGC6_FTM1;             // ENABLE CLOCK
-    FTM1_SC = FTM_SC_PS(5) | FTM_SC_CLKS(1); // PRESCALER 32 | ENABLE COUNTER
-    // CH0: SOFTWARE
-    FTM1_C0SC = 0;
-    delayMicroseconds(1);
-    FTM1_C0SC = FTM_CSC_MSA; // SOFTWARE INTERRUPT
-    FTM1_C0V = 12 * PWM_MS_TO_COMP(32);
 #endif
 }
 

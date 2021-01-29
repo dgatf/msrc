@@ -17,7 +17,6 @@ extern void (*TIMER2_COMPA_handlerP)();
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
 extern void (*FTM0_IRQ_handlerP)();
-extern void (*FTM1_IRQ_handlerP)();
 #endif
 
 class EscPWM : public AbstractDevice
@@ -38,7 +37,6 @@ private:
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
     static void FTM0_IRQ_handler();
-    static void FTM1_IRQ_handler();
 #endif
 
 protected:
