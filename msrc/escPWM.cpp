@@ -13,9 +13,9 @@ void EscPWM::TIMER1_CAPT_handler()
     if (escPwmRunning)
         escPwmDuration = ICR1 - ts;
     ts = ICR1;
-    TCNT2 = 0;
-    TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
-    TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
+    OCR1B = TCNT1 + 20 * PWM_MS_TO_COMP(8);
+    TIFR1 |= _BV(OCF1B);  // CLEAR TIMER1 OCRB CAPTURE FLAG
+    TIMSK1 |= _BV(OCIE1B); // ENABLE TIMER1 OCRB INTERRUPT
     escPwmRunning = true;
     escPwmUpdate = true;
 #ifdef DEBUG_ESC
@@ -23,11 +23,11 @@ void EscPWM::TIMER1_CAPT_handler()
 #endif
 }
 
-void EscPWM::TIMER2_COMPA_handler()
+void EscPWM::TIMER1_COMPB_handler()
 {
     escPwmRunning = false;
     escPwmDuration = 0xFFFF;
-    TIMSK2 ^= _BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
+    TIMSK1 ^= _BV(OCIE1B); // DISABLE TIMER1 OCRA INTERRUPT
 #ifdef DEBUG_ESC
     DEBUG_SERIAL.println("STOP");
 #endif
@@ -41,9 +41,9 @@ void EscPWM::TIMER4_CAPT_handler()
     if (escPwmRunning)
         escPwmDuration = ICR4 - ts;
     ts = ICR4;
-    TCNT2 = 0;
-    TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
-    TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
+    OCR4B = TCNT4 + 20 * PWM_MS_TO_COMP(8);
+    TIFR4 |= _BV(OCF4B);  // CLEAR TIMER4 OCRB CAPTURE FLAG
+    TIMSK4 |= _BV(OCIE4B); // ENABLE TIMER4 OCRB INTERRUPT
     escPwmRunning = true;
     escPwmUpdate = true;
 #ifdef DEBUG_ESC
@@ -51,11 +51,11 @@ void EscPWM::TIMER4_CAPT_handler()
 #endif
 }
 
-void EscPWM::TIMER2_COMPA_handler()
+void EscPWM::TIMER4_COMPB_handler()
 {
     escPwmRunning = false;
     escPwmDuration = 0xFFFF;
-    TIMSK2 ^= _BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
+    TIMSK4 ^= _BV(OCIE4B); // DISABLE TIMER4 OCRA INTERRUPT
 #ifdef DEBUG_ESC
     DEBUG_SERIAL.println("STOP");
 #endif
@@ -100,30 +100,20 @@ void EscPWM::begin()
     // TIMER1: MODE 0 (NORMAL), SCALER 8, CAPTURE AND OVERFLOW INTERRUPT. ICP1, PB0, PIN 8
     PORTB |= _BV(PB0); // PULL UP
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
-    TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
+    TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
     TCCR1A = 0;
     TCCR1B = _BV(CS11) | _BV(ICES1) | _BV(ICNC1);
     TIMSK1 = _BV(ICIE1) | _BV(TOIE1);
-
-    // TIMER 2: MOTOR STOP
-    TCCR2A = 0;                                 // NORMAL MODE
-    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * PWM_MS_TO_COMP(1024);          // 12ms
 #endif
 
 #if defined(__AVR_ATmega2560__)
     // TIMER4: MODE 0 (NORMAL), SCALER 8, CAPTURE AND OVERFLOW INTERRUPT. ICP4, PL0, PIN 49
     PORTL |= _BV(PL0); // PULL UP
     TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
-    TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
+    TIMER4_COMPB_handlerP = TIMER4_COMPB_handler;
     TCCR4A = 0;
     TCCR4B = _BV(CS41) | _BV(ICES4) | _BV(ICNC4);
     TIMSK4 = _BV(ICIE4) | _BV(TOIE4);
-
-    // TIMER 2: MOTOR STOP
-    TCCR2A = 0;                                 // NORMAL MODE
-    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * PWM_MS_TO_COMP(1024);          // 12ms
 #endif
 
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
