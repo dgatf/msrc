@@ -106,7 +106,14 @@
 //#define DEBUG
 //#define DEBUG_ESC
 //#define DEBUG_ESC_RX
-//#define DEBUG_PLOTTER rpm/60
+//#define DEBUG_EEPROM_WRITE
+//#define DEBUG_EEPROM_READ
+
+//#define DEBUG_ESC_HW_V3
+//#define DEBUG_ESC_HW_V4
+//#define DEBUG_ESC_PWM
+//#define DEBUG_ESC_CASTLE
+//#define DEBUG_ESC_KONTRONIK
 
 //#define SIM_RX
 //#define SIM_SENSORS
