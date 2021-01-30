@@ -93,7 +93,7 @@
 #endif
 
 // Lua config (only opentx)
-//#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
+#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
 
 
 /* Debug
