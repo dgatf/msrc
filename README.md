@@ -33,7 +33,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Allows to use hardware serial for Smartport  
-(3) Arduino Pro Micro requires hardware modification  
+(3) Arduino Micro is not supported
 (4) Teensy LC is not 5v tolerant. If using with Castle is preferred Teensy 3.2, which is 5v tolerant  
 (5) Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
 
