@@ -25,9 +25,7 @@ void EscHW4::update()
                         type_ = i;
                     }*/
 #ifdef DEBUG_ESC
-                DEBUG_SERIAL.print("ESC TYPE [");
-                DEBUG_SERIAL.print(type_);
-                DEBUG_SERIAL.print("]: ");
+                DEBUG_SERIAL.print("S:");
                 for (int i = 0; i < 12; i++)
                 {
                     DEBUG_SERIAL.print(data[i], HEX);
