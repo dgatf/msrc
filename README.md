@@ -9,7 +9,7 @@ Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4 and Teensy L
 Implemented sensors:
 
 - ESC
-  - ESCs with serial telemetry (Hobbywing V3/V4/V5)
+  - ESCs with serial telemetry (Hobbywing V3/V4/V5, Kontronik)
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
@@ -89,10 +89,7 @@ Depending on the receiver protocol connect to the Rx as follows
 
 #### Serial telemetry
 
-Compatible ESC serial protocols:
-
-- Hobbywing Platinum V3: RPM
-- Hobbywing Platinum V4, Hobbywing Flyfun V5: RPM, temperature (Mosfet and BEC), voltage and current
+Compatible ESC serial protocols: Hobbywing V3/V4/V5 and Kontronik
 
 Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry
 
@@ -122,6 +119,7 @@ If using ATmega328P telemetry values are not accurate all the time. Some reading
 | Hobbywing V3       | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      |             |           |             |             |               |               |             |
 | Hobbywing V4/V5<sup>(4)</sup> | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:         | :white_check_mark:<sup>(2)</sup>    |             |             | :white_check_mark: FET       | :white_check_mark: BEC       |             |
 | Castle Link        | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:         | :white_check_mark:       | :white_check_mark:<sup>(3)</sup>      | :white_check_mark:<sup>(3)</sup>      | :white_check_mark:           |               | :white_check_mark:         |
+| Kontronik        | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:         | :white_check_mark:       | :white_check_mark:      | :white_check_mark: | :white_check_mark: Power amp | :white_check_mark: BEC     |         |
 
 (1) Available but not forwarded to smartport  
 (2) For 80A models and higher  
@@ -415,6 +413,7 @@ Adjust constants in *pressure.h*:
 - Added Rx protocols XBUS and SRXL
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
+- Added support for Kontronic ESC
 
 [v0.7](https://github.com/dgatf/msrc/tree/v0.7)
 

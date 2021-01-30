@@ -358,6 +358,26 @@ void initConfig(Config &config)
         sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         smartport.addSensor(sensorP);
     }
+    if (config.protocol == PROTOCOL_KONTRONIK)
+    {
+        Sensor *sensorP;
+        EscKontronik *esc;
+        ESC_SERIAL.begin(115200);
+        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
+        esc = new EscKontronik(ESC_SERIAL, config.alpha.rpm, config.alpha.volt, config.alpha.curr, config.alpha.temp);
+        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID,  esc->rpmP(), config.refresh.rpm, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->currentP(), esc->voltageP(), config.refresh.volt, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new SensorDouble(SBEC_POWER_FIRST_ID, esc->becCurrentP(), esc->becVoltageP(), config.refresh.volt, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, esc->tempFetP(), config.refresh.temp, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID + 1, esc->tempBecP(), config.refresh.temp, esc);
+        smartport.addSensor(sensorP);
+        sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
+        smartport.addSensor(sensorP);
+    }
     if (config.gps == true)
     {
         Sensor *sensorP;
@@ -694,8 +714,7 @@ void setup()
     // Otherwise it is at 115200
     DEBUG_SERIAL.begin(115200);
     while (!DEBUG_SERIAL);
-    DEBUG_SERIAL.println("\nDEBUG");
-    DEBUG_SERIAL.print("V");
+    DEBUG_SERIAL.print("\nV");
     DEBUG_SERIAL.print(VERSION_MAJOR);
     DEBUG_SERIAL.print(".");
     DEBUG_SERIAL.print(VERSION_MINOR);

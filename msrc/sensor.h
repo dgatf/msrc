@@ -25,7 +25,6 @@ public:
     uint8_t refresh();
     void update();
     virtual uint32_t valueFormatted();
-    float valueL();
 };
 
 class SensorDouble : public Sensor
@@ -35,7 +34,6 @@ protected:
 
 public:
     SensorDouble(uint16_t dataId, float *valueLP, float *valueMP, uint8_t refresh, AbstractDevice *deviceP);
-    float valueM();
     virtual uint32_t valueFormatted();
 };
 

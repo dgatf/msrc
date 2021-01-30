@@ -17,11 +17,6 @@ uint32_t Sensor::valueFormatted()
     return formatData(dataId_, *valueLP_);
 }
 
-float Sensor::valueL()
-{
-    return *valueLP_;
-}
-
 uint16_t Sensor::timestamp()
 {
     return timestamp_;
@@ -56,11 +51,6 @@ uint32_t SensorDouble::valueFormatted()
     if (valueLP_ != NULL) valueLP = *valueLP_;
     if (valueMP_ != NULL) valueMP = *valueMP_;
     return formatData(dataId_, valueMP, valueLP);
-}
-
-float SensorDouble::valueM()
-{
-    return *valueMP_;
 }
 
 SensorLatLon::SensorLatLon(uint16_t dataId, float *lonP, float *latP, uint8_t refresh, AbstractDevice *device) : SensorDouble(dataId, lonP, latP, refresh, device) {}

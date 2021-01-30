@@ -382,8 +382,3 @@ bool Smartport::sendPacketReady()
     return true;
 }
 
-/*void Smartport::begin(uint32_t baudRate, uint8_t sensorId)
-{
-    sensorId = getSensorIdMatrix(sensorId);
-    //serial_.begin(baudRate);
-}*/
