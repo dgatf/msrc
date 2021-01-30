@@ -489,7 +489,7 @@ Config readConfig()
     {
         writeConfig(config);
     }
-#ifdef DEBUG
+#if defined(DEBUG_EEPROM_READ)
     DEBUG_SERIAL.println("RC");
     DEBUG_SERIAL.print("P:");
     DEBUG_SERIAL.println(config.protocol);
@@ -537,7 +537,7 @@ void writeConfig(Config &config)
 {
     EEPROM.put(0, (uint32_t)0x64616E69);
     EEPROM.put(4, config);
-#ifdef DEBUG
+#if defined(DEBUG_EEPROM_WRITE)
     DEBUG_SERIAL.println("WC");
     DEBUG_SERIAL.print("P:");
     DEBUG_SERIAL.println(config.protocol);
@@ -780,8 +780,5 @@ void loop()
 #if RX_PROTOCOL == RX_SRXL
     srxl.update();
     srxl.checkSerial();
-#endif
-#ifdef DEBUG_PLOTTER
-    DEBUG_SERIAL.println(DEBUG_PLOTTER);
 #endif
 }

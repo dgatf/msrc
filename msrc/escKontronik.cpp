@@ -31,7 +31,7 @@ void EscKontronik::update()
                     tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFet);
                     tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBec);
                     cellVoltage_ = voltage_ / cellCount_;
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_KONTRONIK) || defined(DEBUG_ESC)
                     DEBUG_SERIAL.print("R:");
                     DEBUG_SERIAL.print(rpm);
                     DEBUG_SERIAL.print(" V:");

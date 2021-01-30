@@ -16,8 +16,6 @@
     10      temp ntc (C) or calib 2 (500us)  63.8125
 */
 
-//#define DEBUG_CASTLE
-
 #define CASTLE_MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000.0))
 #define CASTLE_COMP_TO_MS(SCALER) ((SCALER * 1000.0) / F_CPU)
 #define RX_MAX_CYCLES 2 // minimum is 2
@@ -115,7 +113,8 @@ private:
     static void FTM0_IRQ_handler();
     static void FTM1_IRQ_handler();
 #endif
-
+    float getValue(uint8_t index);
+    
 protected:
 public:
     EscCastle(uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp);

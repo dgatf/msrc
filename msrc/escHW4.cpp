@@ -24,7 +24,7 @@ void EscHW4::update()
                     {
                         type_ = i;
                     }*/
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
                 DEBUG_SERIAL.print("S:");
                 for (int i = 0; i < 12; i++)
                 {
@@ -53,7 +53,7 @@ void EscHW4::update()
                     tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFET);
                     tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBEC);
                     cellVoltage_ = voltage_ / cellCount_;
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
                     uint32_t pn =
                         (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
                     DEBUG_SERIAL.print("N:");

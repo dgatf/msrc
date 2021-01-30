@@ -66,7 +66,7 @@ void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
 void EscCastle::INT0_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT1 - castlePwmRx;
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
 #endif
@@ -99,7 +99,7 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
     {
         //castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
         DEBUG_SERIAL.println();
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
@@ -161,7 +161,7 @@ void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
 void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT4 - castlePwmRx;
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
 #endif
@@ -182,7 +182,7 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
         DEBUG_SERIAL.println();
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
@@ -244,7 +244,7 @@ void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
 void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT5 - castlePwmRx;
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
 #endif
@@ -264,7 +264,7 @@ void EscCastle::TIMER5_COMPC_handler() // START OUTPUT STATE
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
         DEBUG_SERIAL.println();
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
@@ -325,7 +325,7 @@ void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
 void EscCastle::TIMER1_CAPT_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT1 - castlePwmRx;
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
 #endif
@@ -346,7 +346,7 @@ void EscCastle::TIMER1_COMPC_handler() // START OUTPUT STATE
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
         DEBUG_SERIAL.println();
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
@@ -594,6 +594,14 @@ void EscCastle::begin()
 #endif
 }
 
+float EscCastle::getValue(uint8_t index)
+{
+    float value = ((float)castleTelemetry[index] / castleCompsPerMilli - 0.5) * scaler[index];
+    if (value < 0)
+        value = 0;
+    return value;
+}
+
 void EscCastle::update()
 {
     if (cellCount_ == 255)
@@ -605,37 +613,21 @@ void EscCastle::update()
     }
     if (castleUpdated)
     {
-        voltage_ = ((float)castleTelemetry[1] / castleCompsPerMilli - 0.5) * scaler[1];
-        if (voltage_ < 0)
-            voltage_ = 0;
-        rippleVoltage_ = ((float)castleTelemetry[2] / castleCompsPerMilli - 0.5) * scaler[2];
-        if (rippleVoltage_ < 0)
-            rippleVoltage_ = 0;
-        current_ = ((float)castleTelemetry[3] / castleCompsPerMilli - 0.5) * scaler[3];
-        if (current_ < 0)
-            current_ = 0;
-        thr_ = ((float)castleTelemetry[4] / castleCompsPerMilli - 0.5) * scaler[4];
-        if (thr_ < 0)
-            thr_ = 0;
-        output_ = ((float)castleTelemetry[5] / castleCompsPerMilli - 0.5) * scaler[5];
-        if (output_ < 0)
-            output_ = 0;
-        rpm_ = ((float)castleTelemetry[6] / castleCompsPerMilli - 0.5) * scaler[6];
-        if (rpm_ < 0)
-            rpm_ = 0;
-        becVoltage_ = ((float)castleTelemetry[7] / castleCompsPerMilli - 0.5) * scaler[7];
-        if (becVoltage_ < 0)
-            becVoltage_ = 0;
-        becCurrent_ = ((float)castleTelemetry[8] / castleCompsPerMilli - 0.5) * scaler[8];
-        if (becCurrent_ < 0)
-            becCurrent_ = 0;
+        voltage_ = getValue(1);
+        rippleVoltage_ = getValue(2);
+        current_ = getValue(3);
+        thr_ = getValue(4);
+        output_ = getValue(5);
+        rpm_ = getValue(6);
+        becVoltage_ = getValue(7);
+        becCurrent_ = getValue(8);
         if (castleTelemetry[9] > castleTelemetry[10])
         {
-            temperature_ = ((float)castleTelemetry[9] / castleCompsPerMilli - 0.5) * scaler[9];
+            temperature_ = getValue(9);
         }
         else
         {
-            float ntc_value = ((float)castleTelemetry[10] / castleCompsPerMilli - 0.5) * scaler[10];
+            float ntc_value = getValue(10);
             temperature_ = 1 / (log(ntc_value * CASTLE_R2 / (255.0F - ntc_value) / CASTLE_R0) / CASTLE_B + 1 / 298.0F) - 273.0F;
         }
         if (temperature_ < 0)
