@@ -4,6 +4,8 @@ This is a DIY project to send sensors telemetry for a fraction of the weight and
 
 Compatible RX protocols: Smartport (FrSky), XBUS (Spektrum), SRXL v5 (Spektrum)
 
+Compatible ESCs: Hobbywing V3/V4/V5, Kontronik, Castle Link
+
 Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4 and Teensy LC/3.x
 
 Implemented sensors:
