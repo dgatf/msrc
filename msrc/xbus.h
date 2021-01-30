@@ -129,7 +129,7 @@ protected:
     Bn220 gps = Bn220(GPS_SERIAL);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM
-    EscPWM escPwm = EscPWM(CONFIG_ALPHA_RPM);
+    EscPWM escPWM = EscPWM(CONFIG_ALPHA_RPM);
 #endif
 #if CONFIG_VOLTAGE1
     Voltage volt1 = Voltage(PIN_VOLTAGE1, CONFIG_ALPHA_VOLT);

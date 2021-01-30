@@ -149,7 +149,7 @@ void Xbus::update()
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM
     escPWM.update();
-    xbusRpmVoltTemp1.microseconds = __builtin_bswap16(60000 / *escPwm.rpmP());
+    xbusRpmVoltTemp1.microseconds = __builtin_bswap16(60000 / *escPWM.rpmP());
 #endif
 #if CONFIG_VOLTAGE1
     volt1.update();
