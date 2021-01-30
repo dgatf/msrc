@@ -104,7 +104,7 @@
 */
 
 //#define DEBUG
-#define DEBUG_ESC
+//#define DEBUG_ESC
 //#define DEBUG_ESC_RX
 //#define DEBUG_PLOTTER rpm/60
 
