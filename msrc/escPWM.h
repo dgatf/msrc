@@ -13,7 +13,7 @@ extern void (*TIMER1_COMPB_handlerP)();
 #endif
 #if defined(__AVR_ATmega2560__)
 extern void (*TIMER4_CAPT_handlerP)();
-extern void (*TIMER2_COMPA_handlerP)();
+extern void (*TIMER4_COMPB_handlerP)();
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
 extern void (*FTM0_IRQ_handlerP)();
