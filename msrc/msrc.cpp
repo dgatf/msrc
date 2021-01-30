@@ -166,12 +166,6 @@ ISR(TIMER3_OVF_vect)
     if (TIMER3_OVF_handlerP)
         TIMER3_OVF_handlerP();
 }
-void (*TIMER2_COMPA_handlerP)() = NULL;
-ISR(TIMER2_COMPA_vect)
-{
-    if (TIMER2_COMPA_handlerP)
-        TIMER2_COMPA_handlerP();
-}
 #endif
 
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
