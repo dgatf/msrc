@@ -733,7 +733,7 @@ void setup()
 #if RX_PROTOCOL == RX_SRXL
     SMARTPORT_SRXL_SERIAL.begin(115200);
     SMARTPORT_SRXL_SERIAL.setTimeout(SRXLSERIAL_TIMEOUT);
-    srxl.begin(SMARTPORT_SRXL_SERIAL);
+    srxl.begin();
 #endif
 #if defined(CONFIG_LUA) && RX_PROTOCOL == RX_SMARTPORT
     Config config = readConfig();
