@@ -160,7 +160,7 @@ void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
 
 void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
 {
-    castleTelemetry[castleCont] = TCNT4 - castlePwmRx;
+    castleTelemetry[castleCont] = ICR4 - castlePwmRx;
 #if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
@@ -243,7 +243,7 @@ void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
 
 void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
 {
-    castleTelemetry[castleCont] = TCNT5 - castlePwmRx;
+    castleTelemetry[castleCont] = ICR5 - castlePwmRx;
 #if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
@@ -324,7 +324,7 @@ void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
 
 void EscCastle::TIMER1_CAPT_handler() // READ TELEMETRY
 {
-    castleTelemetry[castleCont] = TCNT1 - castlePwmRx;
+    castleTelemetry[castleCont] = ICR1 - castlePwmRx;
 #if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
     DEBUG_SERIAL.print(castleTelemetry[castleCont]);
     DEBUG_SERIAL.print(" ");
@@ -393,19 +393,11 @@ void EscCastle::FTM0_IRQ_handler()
 {
     if (FTM0_C0SC & FTM_CSC_CHF) // CH0 INTERRUPT (DISABLE CH0 PWM OUT)
     {
-        //FTM0_C0SC = 0;        // DISABLE CH0
-        //delayMicroseconds(1);
-        //FTM0_C0SC = FTM_CSC_CHF;  // CLEAR FLAG CH0
-
         PORTC_PCR1 = PORT_PCR_MUX(0); // PTC1 MUX 0 -> DISABLE
-        //GPIOC_PDDR |= PTC1;
-
         FTM0_C4SC |= FTM_CSC_CHF;  // CLEAR FLAG CH4
         FTM0_C4SC |= FTM_CSC_CHIE; // ENABLE INTERRUPT CH4
-
         FTM0_C2SC |= FTM_CSC_CHF;  // CLEAR FLAG CH2
         FTM0_C2SC |= FTM_CSC_CHIE; // ENABLE INTERRUPT CH2
-
         if (!castleTelemetryReceived)
         {
             castleCont = 0;
@@ -423,16 +415,8 @@ void EscCastle::FTM0_IRQ_handler()
     }
     if (FTM0_C2SC & FTM_CSC_CHF) // CH2 INTERRUPT (TOGGLE CH0 TO OUTPUT)
     {
-        //FTM0_C0SC = 0;        // DISABLE CH0
-        //delayMicroseconds(1);
-        //FTM0_C0SC |= FTM_CSC_MSB | FTM_CSC_ELSA;   // OUTPUT | LOW TRUE
-        //FTM0_C0SC |= FTM_CSC_CHF;   // CLEAR FLAG CH0
-        //FTM0_C0SC |= FTM_CSC_CHIE;  // ENABLE INTERRUPT CH0
-
         PORTC_PCR1 = PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8 (PWM OUT)
-
         FTM0_C4SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT CH4
-
         FTM0_C2SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT CH2
         FTM0_C2SC |= FTM_CSC_CHF;   // CLEAR FLAG CH2
     }
