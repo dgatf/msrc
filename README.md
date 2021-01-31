@@ -127,7 +127,7 @@ If using ATmega328P telemetry values are not accurate all the time. Some reading
 (2) For 80A models and higher  
 (3) Not available in all models  
 (4) Sensors varies depending on model and firmware. See [annex](#Hobbywing-V4-V5)  
-(5) Usually upgrade to latest firmware but note that some firmwares may not be sending telemetry. This has been reported with firmware PL-4.0.01-Vbar. If this is the case downgrade to previous firmware version
+(5) Upgrade to latest firmware version. But note VBAR versions of firmware are not compatible. Install a non VBAR version of the ESC firmware
 
 If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for correct cell count
 
