@@ -3,9 +3,9 @@
 volatile bool EscCastle::castleTelemetryReceived = false;
 #ifdef SIM_SENSORS
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-volatile uint16_t EscCastle::castleTelemetry[12] = {(uint16_t)CASTLE_MS_TO_COMP(32), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), 0, (uint16_t)(0.5 * CASTLE_MS_TO_COMP(32))};
+volatile uint16_t EscCastle::castleTelemetry[12] = {(uint16_t)CASTLE_MS_TO_COMP(32), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(0.5 * CASTLE_MS_TO_COMP(32)), (uint16_t)(0.5 * CASTLE_MS_TO_COMP(32))};
 #else
-volatile uint16_t EscCastle::castleTelemetry[12] = {(uint16_t)CASTLE_MS_TO_COMP(8), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), 0, (uint16_t)(0.5 * CASTLE_MS_TO_COMP(8))};
+volatile uint16_t EscCastle::castleTelemetry[12] = {(uint16_t)CASTLE_MS_TO_COMP(8), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(1.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(0.5 * CASTLE_MS_TO_COMP(8)), (uint16_t)(0.5 * CASTLE_MS_TO_COMP(8))};
 #endif
 #else
 volatile uint16_t EscCastle::castleTelemetry[12] = {0};
@@ -626,7 +626,7 @@ void EscCastle::update()
         if (temperature_ < 0)
             temperature_ = 0;
         if (cellCount_ == 255)
-            if (millis() > 10000)
+            if (millis() > 10000 && voltage_ > 1)
                 cellCount_ = setCellCount(voltage_);
         cellVoltage_ = voltage_ / cellCount_;
         castleUpdated = false;

@@ -53,7 +53,7 @@ void EscHW4::update()
                     tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFET);
                     tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBEC);
                     if (cellCount_ == 255)
-                        if (millis() > 10000)
+                        if (millis() > 10000 && voltage_ > 1)
                             cellCount_ = setCellCount(voltage_);
                     cellVoltage_ = voltage_ / cellCount_;
 #if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
