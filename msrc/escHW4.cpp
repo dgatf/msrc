@@ -52,6 +52,9 @@ void EscHW4::update()
                     current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
                     tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFET);
                     tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBEC);
+                    if (cellCount_ == 255)
+                        if (millis() > 10000)
+                            cellCount_ = setCellCount(voltage_);
                     cellVoltage_ = voltage_ / cellCount_;
 #if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
                     uint32_t pn =
@@ -67,7 +70,9 @@ void EscHW4::update()
                     DEBUG_SERIAL.print(" TF:");
                     DEBUG_SERIAL.print(tempFET);
                     DEBUG_SERIAL.print(" TB:");
-                    DEBUG_SERIAL.println(tempBEC);
+                    DEBUG_SERIAL.print(tempBEC);
+                    DEBUG_SERIAL.print(" VC:");
+                    DEBUG_SERIAL.println(cellVoltage_);
 #endif
                 }
             }
@@ -139,4 +144,3 @@ float *EscHW4::tempBecP()
 {
     return &tempBec_;
 }
-

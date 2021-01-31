@@ -604,13 +604,6 @@ float EscCastle::getValue(uint8_t index)
 
 void EscCastle::update()
 {
-    if (cellCount_ == 255)
-    {
-        if (millis() > 10000)
-        {
-            cellCount_ = setCellCount(voltage_);
-        }
-    }
     if (castleUpdated)
     {
         voltage_ = getValue(1);
@@ -632,6 +625,9 @@ void EscCastle::update()
         }
         if (temperature_ < 0)
             temperature_ = 0;
+        if (cellCount_ == 255)
+            if (millis() > 10000)
+                cellCount_ = setCellCount(voltage_);
         cellVoltage_ = voltage_ / cellCount_;
         castleUpdated = false;
     }

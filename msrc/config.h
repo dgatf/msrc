@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 // Select RX protocol
-#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_JETI
+#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL
 
 // Select SRLX valriant (only for SRXL)
 #define SRXL_VARIANT SRXL_V5 // Only implemented SRXL_V5 (SPEKTRUM)

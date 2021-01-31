@@ -30,6 +30,9 @@ void EscKontronik::update()
                     becCurrent_ = calcAverage(alphaCurr_ / 100.0F, becCurrent_, becCurrent);
                     tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFet);
                     tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBec);
+                    if (cellCount_ == 255)
+                        if (millis() > 10000)
+                            cellCount_ = setCellCount(voltage_);
                     cellVoltage_ = voltage_ / cellCount_;
 #if defined(DEBUG_ESC_KONTRONIK) || defined(DEBUG_ESC)
                     DEBUG_SERIAL.print("R:");
@@ -45,7 +48,9 @@ void EscKontronik::update()
                     DEBUG_SERIAL.print(" TF:");
                     DEBUG_SERIAL.print(tempFet);
                     DEBUG_SERIAL.print(" TB:");
-                    DEBUG_SERIAL.println(tempBec);
+                    DEBUG_SERIAL.print(tempBec);
+                    DEBUG_SERIAL.print(" VC:");
+                    DEBUG_SERIAL.println(cellVoltage_);
 #endif
                 }
             }
