@@ -88,7 +88,7 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
         OCR1B = 0;
         TIMSK1 &= ~_BV(OCIE1B); // DISABLE PIN
 #ifdef DEBUG_ESC_RX
-        DEBUG_SERIAL.println("STOP");
+        DEBUG_SERIAL.println("X");
 #endif
     }
     else
@@ -229,7 +229,7 @@ void EscCastle::TIMER4_OVF_handler() // NO RX INPUT
     TCCR4B |= _BV(ICES4);  // RISING EDGE
     TIMSK4 &= ~_BV(TOIE4); // DISABLE OVERFLOW INTERRUPT
 #ifdef DEBUG_ESC_RX
-    DEBUG_SERIAL.println("STOP");
+    DEBUG_SERIAL.println("X");
 #endif
 }
 
@@ -310,7 +310,7 @@ void EscCastle::TIMER3_OVF_handler() // NO RX INPUT
     TCCR3B |= _BV(ICES3);  // RISING EDGE
     TIMSK3 &= ~_BV(TOIE3); // DISABLE OVERFLOW INTERRUPT
 #ifdef DEBUG_ESC_RX
-    DEBUG_SERIAL.println("STOP");
+    DEBUG_SERIAL.println("X");
 #endif
 }
 
@@ -384,7 +384,7 @@ void EscCastle::FTM1_IRQ_handler()
         PORTC_PCR1 = PORT_PCR_MUX(0); // PTC1 MUX 0 -> DISABLE
         FTM1_SC |= FTM_SC_TOF;        // CLEAR FLAG
 #ifdef DEBUG_ESC_RX
-        DEBUG_SERIAL.println("STOP");
+        DEBUG_SERIAL.println("X");
 #endif
     }
 }
