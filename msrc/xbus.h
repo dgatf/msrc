@@ -21,6 +21,7 @@
 #include "escHW4.h"
 #include "escPWM.h"
 #include "escCastle.h"
+#include "escKontronik.h"
 #include "voltage.h"
 #include "ntc.h"
 #include "pressure.h"
@@ -154,6 +155,12 @@ protected:
     SoftwareSerial softSerial = SoftwareSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
 #endif
     EscHW4 esc = EscHW4(ESC_SERIAL, CONFIG_ALPHA_RPM, CONFIG_ALPHA_VOLT, CONFIG_ALPHA_CURR, CONFIG_ALPHA_TEMP, CONFIG_ESC_PROTOCOL - PROTOCOL_HW_V4_LV);
+#endif
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK
+#ifdef SOFTWARE_SERIAL
+    SoftwareSerial softSerial = SoftwareSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+#endif
+    EscKontronik esc = EscKontronik(ESC_SERIAL, CONFIG_ALPHA_RPM, CONFIG_ALPHA_VOLT, CONFIG_ALPHA_CURR, CONFIG_ALPHA_TEMP);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
     EscCastle esc = EscCastle(CONFIG_ALPHA_RPM, CONFIG_ALPHA_VOLT, CONFIG_ALPHA_CURR, CONFIG_ALPHA_TEMP);

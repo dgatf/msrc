@@ -18,15 +18,15 @@ void EscHW3::update()
                 uint16_t rpmCycle = (uint16_t)data[7] << 8 | data[8];
                 if (rpmCycle <= 0)
                     rpmCycle = 1;
-                float rpm = (float)60000000UL / rpmCycle;
+                float rpm = 60000000.0 / rpmCycle;
                 rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
                 tsEsc_ = millis();
-#ifdef DEBUG_ESC
+#if defined(DEBUG_ESC_HW_V3) || defined(DEBUG_ESC)
                 uint32_t pn =
                     (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
-                DEBUG_SERIAL.print("PN: ");
+                DEBUG_SERIAL.print("N:");
                 DEBUG_SERIAL.print(pn);
-                DEBUG_SERIAL.print(" RPM: ");
+                DEBUG_SERIAL.print(" R:");
                 DEBUG_SERIAL.println(rpm);
 #endif
             }

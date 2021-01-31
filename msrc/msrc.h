@@ -72,6 +72,7 @@
 #include "escHW4.h"
 #include "escPWM.h"
 #include "escCastle.h"
+#include "escKontronik.h"
 #include "voltage.h"
 #include "ntc.h"
 #include "pressure.h"

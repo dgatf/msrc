@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 // Select RX protocol
-#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL
+#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_JETI
 
 // Select SRLX valriant (only for SRXL)
 #define SRXL_VARIANT SRXL_V5 // Only implemented SRXL_V5 (SPEKTRUM)
@@ -106,7 +106,14 @@
 //#define DEBUG
 //#define DEBUG_ESC
 //#define DEBUG_ESC_RX
-//#define DEBUG_PLOTTER rpm/60
+//#define DEBUG_EEPROM_WRITE
+//#define DEBUG_EEPROM_READ
+
+//#define DEBUG_ESC_HW_V3
+//#define DEBUG_ESC_HW_V4
+//#define DEBUG_ESC_PWM
+//#define DEBUG_ESC_CASTLE
+//#define DEBUG_ESC_KONTRONIK
 
 //#define SIM_RX
 //#define SIM_SENSORS
@@ -114,7 +121,7 @@
 // --------------------------- Do not change config below if using lua script ---------------------------
 
 // Select sensors
-#define CONFIG_ESC_PROTOCOL PROTOCOL_NONE // PROTOCOL_NONE PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V4_HV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE
+#define CONFIG_ESC_PROTOCOL PROTOCOL_NONE // PROTOCOL_NONE, PROTOCOL_HW_V3, PROTOCOL_HW_V4_LV, PROTOCOL_HW_V4_HV, PROTOCOL_HW_V5_LV, PROTOCOL_HW_V5_HV, PROTOCOL_PWM, PROTOCOL_CASTLE, PROTOCOL_KONTRONIK
 #define CONFIG_AIRSPEED false
 #define CONFIG_GPS false
 #define CONFIG_VOLTAGE1 false
@@ -125,7 +132,7 @@
 #define CONFIG_PWMOUT false
 
 // Refresh rate in 0.1s (1 = 100ms)
-#define CONFIG_REFRESH_RPM 2
+#define CONFIG_REFRESH_RPM 10
 #define CONFIG_REFRESH_VOLT 10
 #define CONFIG_REFRESH_CURR 10
 #define CONFIG_REFRESH_TEMP 10
@@ -163,6 +170,7 @@
 #define PROTOCOL_HW_V5_HV 5
 #define PROTOCOL_PWM 6
 #define PROTOCOL_CASTLE 7
+#define PROTOCOL_KONTRONIK 8
 
 //#define SRXL_V1 0x01
 //#define SRXL_V2 0x02

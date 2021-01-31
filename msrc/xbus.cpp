@@ -138,6 +138,16 @@ void Xbus::update()
     xbusEsc.currentMotor = __builtin_bswap16(*esc.currentP() * 100);
     xbusEsc.tempBEC = __builtin_bswap16(*esc.tempBecP() * 10);
 #endif
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK
+    esc.update();
+    xbusEsc.RPM = __builtin_bswap16(*esc.rpmP() / 10);
+    xbusEsc.voltsInput = __builtin_bswap16(*esc.voltageP() * 100);
+    xbusEsc.tempFET = __builtin_bswap16(*esc.tempFetP() * 10);
+    xbusEsc.currentMotor = __builtin_bswap16(*esc.currentP() * 100);
+    xbusEsc.tempBEC = __builtin_bswap16(*esc.tempBecP() * 10);
+    xbusEsc.currentBEC = __builtin_bswap16(*esc.becCurrentP() * 10);
+    xbusEsc.voltsBEC = __builtin_bswap16(*esc.becVoltageP() * 20);
+#endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
     esc.update();
     xbusEsc.RPM = __builtin_bswap16(*esc.rpmP() / 10);

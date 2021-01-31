@@ -6,9 +6,8 @@ void EscHW4::update()
 {
     while (serial_.available() >= 13)
     {
-        uint8_t header = serial_.read();
         uint8_t cont;
-        if (header == 0x9B)
+        if (serial_.read() == 0x9B)
         {
             uint8_t data[18];
             if (serial_.peek() == 0x9B) // esc signature
@@ -25,10 +24,8 @@ void EscHW4::update()
                     {
                         type_ = i;
                     }*/
-#ifdef DEBUG_ESC
-                DEBUG_SERIAL.print("ESC TYPE [");
-                DEBUG_SERIAL.print(type_);
-                DEBUG_SERIAL.print("]: ");
+#if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
+                DEBUG_SERIAL.print("S:");
                 for (int i = 0; i < 12; i++)
                 {
                     DEBUG_SERIAL.print(data[i], HEX);
@@ -55,28 +52,22 @@ void EscHW4::update()
                     current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
                     tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFET);
                     tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBEC);
-                    cellVoltage_ = cellVoltage_ / cellCount_;
-#ifdef DEBUG_ESC
+                    cellVoltage_ = voltage_ / cellCount_;
+#if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
                     uint32_t pn =
                         (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
-                    DEBUG_SERIAL.print("PN: ");
+                    DEBUG_SERIAL.print("N:");
                     DEBUG_SERIAL.print(pn);
-                    DEBUG_SERIAL.print(" RPM: ");
+                    DEBUG_SERIAL.print(" R:");
                     DEBUG_SERIAL.print(rpm);
-                    DEBUG_SERIAL.print(" Volt: ");
+                    DEBUG_SERIAL.print(" V:");
                     DEBUG_SERIAL.print(voltage);
-                    DEBUG_SERIAL.print(" Curr: ");
+                    DEBUG_SERIAL.print(" C:");
                     DEBUG_SERIAL.print(current);
-                    DEBUG_SERIAL.print(" tempFET: ");
+                    DEBUG_SERIAL.print(" TF:");
                     DEBUG_SERIAL.print(tempFET);
-                    DEBUG_SERIAL.print(" tempBEC: ");
-                    DEBUG_SERIAL.print(tempBEC);
-                    /*DEBUG_SERIAL.print(" ");
-                //for (uint8_t i = 0; i < cont; i++) {
-                DEBUG_SERIAL.print(data[i], HEX);
-                DEBUG_SERIAL.print(" ");
-                }*/
-                    DEBUG_SERIAL.println();
+                    DEBUG_SERIAL.print(" TB:");
+                    DEBUG_SERIAL.println(tempBEC);
 #endif
                 }
             }

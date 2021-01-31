@@ -23,8 +23,7 @@ class EscPWM : public AbstractDevice
 {
 private:
     static volatile uint16_t escPwmDuration;
-    static volatile bool escPwmRunning;
-    static volatile bool escPwmUpdate;
+    static volatile bool escPwmRunning, escPwmUpdate;
     uint8_t alphaRpm_;
     float rpm_;
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)

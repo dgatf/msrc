@@ -4,7 +4,7 @@
 -- License https://www.gnu.org/licenses/gpl-3.0.en.html
 --
 
-local scriptVersion = "0.7"
+local scriptVersion = "0.8"
 local tsReadConfig = 0
 local tsSendConfig = 0
 local state = {
@@ -25,9 +25,9 @@ local sensorIdTx = 17 -- sensorId 18
 local config = {
     firmwareVersion = "",
     protocol = {
-        selected = 9,
-        list = {"NONE", "HW V3", "HW V4 LV", "HW V4 HV", "HW V5 LV", "HW V5 HV", "PWM", "CASTLE", ""},
-        elements = 8
+        selected = 10,
+        list = {"NONE", "HW V3", "HW V4 LV", "HW V4 HV", "HW V5 LV", "HW V5 HV", "PWM", "CASTLE", "KONTRONIK", ""},
+        elements = 9
     },
     voltage1 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     voltage2 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
@@ -190,7 +190,7 @@ local function readConfig()
                 if bit32.extract(value, 20, 4) >= 1 and bit32.extract(value, 20, 4) <= 16 then
                     config.queueTemp.selected = bit32.extract(value, 20, 4) -- bits 21-24
                 end
-                if bit32.extract(value, 24, 8) >= 0 and bit32.extract(value, 24, 8) <= 7 then
+                if bit32.extract(value, 24, 8) >= 0 and bit32.extract(value, 24, 8) <= 8 then
                     config.protocol.selected = bit32.extract(value, 24, 8) + 1 -- bits 25-32
                 end
                 readConfigState = state["PACKET_3"]
