@@ -29,13 +29,13 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 | ATmega328P | Arduino Pro Mini<sup>(5)</sup> | Unstable| 1 | :x: |
 | ATmega328PB | Pololu ATmega328PB<sup>(5)</sup> | :white_check_mark: | 2 | :x: |
 | ATmega2560 | ATmega2560 Pro Mini | :white_check_mark: | 4 | :x: |
-| ATmega32U4 | Teensy 2 | :white_check_mark:<sup>(3)</sup> | 1 | :x: |
+| ATmega32U4<sup>(3)</sup> | Teensy 2 | :white_check_mark: | 1 | :x: |
 | ARM CortexM0+ | Teensy LC<sup>(4)</sup> | :white_check_mark: | 3 | :white_check_mark: |
 | ARM CortexM4 | Teensy 3.2 | :white_check_mark: | 3 | :white_check_mark: |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Allows to use hardware serial for Smartport  
-(3) Arduino Micro is not supported
+(3) Arduino Micro is not supported  
 (4) Teensy LC is not 5v tolerant. If using with Castle is preferred Teensy 3.2, which is 5v tolerant  
 (5) Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
 
