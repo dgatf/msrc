@@ -31,7 +31,7 @@ void EscKontronik::update()
                     tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFet);
                     tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBec);
                     if (cellCount_ == 255)
-                        if (millis() > 10000)
+                        if (millis() > 10000 && voltage_ > 1)
                             cellCount_ = setCellCount(voltage_);
                     cellVoltage_ = voltage_ / cellCount_;
 #if defined(DEBUG_ESC_KONTRONIK) || defined(DEBUG_ESC)
