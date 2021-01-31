@@ -26,7 +26,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 | MCU | Recommended board | Castle telemetry | UART<sup>(1)</sup> | Inverted UART<sup>(2)</sup> |
 | :---: | :---: | :---: | :---: | :---: |
-| ATmega328P | Arduino Pro Mini<sup>(5)</sup> | Unstable| 1 | :x: |
+| ATmega328P | Arduino Pro Mini<sup>(5)</sup> | Innacurate | 1 | :x: |
 | ATmega328PB | Pololu ATmega328PB<sup>(5)</sup> | :white_check_mark: | 2 | :x: |
 | ATmega2560 | ATmega2560 Pro Mini | :white_check_mark: | 4 | :x: |
 | ATmega32U4<sup>(3)</sup> | Teensy 2 | :white_check_mark: | 1 | :x: |
