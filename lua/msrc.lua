@@ -5,6 +5,7 @@
 --
 
 local scriptVersion = "0.8"
+local dataIdSensor = 0x5000
 local tsReadConfig = 0
 local tsSendConfig = 0
 local state = {
@@ -121,7 +122,7 @@ local function readConfig()
                 readConfigState = state["MAINTENANCE_ON"]
             end
         elseif readConfigState == state["MAINTENANCE_ON"] then
-            if sportTelemetryPush(sensorIdTx, 0x30, 0x5000, 0) then
+            if sportTelemetryPush(sensorIdTx, 0x30, dataIdSensor, 0) then
                 readConfigState = state["CONFIG_REQUESTED"]
             end
         elseif readConfigState == state["PACKET_4"] then
@@ -131,7 +132,7 @@ local function readConfig()
             end
         end
         local physicalId, primId, dataId, value = sportTelemetryPop()
-        if primId == 0x32 and dataId == 0x5000 then
+        if primId == 0x32 and dataId == dataIdSensor then
             if bit32.extract(value, 0, 8) == 0xF1 and readConfigState == state["CONFIG_REQUESTED"] then
                 config.firmwareVersion =
                     bit32.extract(value, 24, 8) ..
@@ -239,7 +240,7 @@ local function sendConfig()
             value = bit32.bor(value, bit32.lshift(config.refreshVolt.selected - 1, 20)) -- bits 21-24
             value = bit32.bor(value, bit32.lshift(config.refreshCurr.selected - 1, 24)) -- bits 25-28
             value = bit32.bor(value, bit32.lshift(config.refreshTemp.selected - 1, 28)) -- bits 29-32
-            if sportTelemetryPush(sensorIdTx, 0x31, 0x5000, value) then
+            if sportTelemetryPush(sensorIdTx, 0x31, dataIdSensor, value) then
                 sendConfigState = state["PACKET_1"]
             end
         elseif sendConfigState == state["PACKET_1"] then
@@ -249,7 +250,7 @@ local function sendConfig()
             value = bit32.bor(value, bit32.lshift(config.queueCurr.selected, 16)) -- bits 17-20
             value = bit32.bor(value, bit32.lshift(config.queueTemp.selected, 20)) -- bits 21-24
             value = bit32.bor(value, bit32.lshift(config.protocol.selected - 1, 24)) -- bits 25-32
-            if sportTelemetryPush(sensorIdTx, 0x31, 0x5000, value) then
+            if sportTelemetryPush(sensorIdTx, 0x31, dataIdSensor, value) then
                 sendConfigState = state["PACKET_2"]
             end
         elseif sendConfigState == state["PACKET_2"] then
@@ -258,12 +259,12 @@ local function sendConfig()
             value = bit32.bor(value, bit32.lshift(config.i2c2.selected - 1, 12)) -- bits 13-16
             value = bit32.bor(value, bit32.lshift(config.i2c1Address.selected - 1, 16)) -- bits 17-24
             value = bit32.bor(value, bit32.lshift(config.i2c2Address.selected - 1, 24)) -- bits 25-32
-            if sportTelemetryPush(sensorIdTx, 0x31, 0x5000, value) then
+            if sportTelemetryPush(sensorIdTx, 0x31, dataIdSensor, value) then
                 sendConfigState = state["PACKET_3"]
             end
         elseif sendConfigState == state["PACKET_3"] then
             local physicalId, primId, dataId, value = sportTelemetryPop()
-            if primId == 0x32 and dataId == 0x5000 and value == 0xFF then
+            if primId == 0x32 and dataId == dataIdSensor and value == 0xFF then
                 if sportTelemetryPush(sensorIdTx, 0x20, 0xFFFF, 0x80) then
                     sendConfigState = state["MAINTENANCE_OFF"]
                     lcdChange = true

@@ -54,13 +54,47 @@
 #define SENT_SENSOR_ID 9
 #define CHANGED_SENSOR_ID 10
 
+
+// Config
+
+// byte 1: command
+
+// packet 1: byte 2 version patch, byte 3 version minor, byte 4 version major
+
+// packet 2: 
+
+
+// i2c
+#define I2C_NONE 0
+#define I2C_BMP280 1
+#define WIRE_TIMEOUT 3
+
+// opentx
+#define DATA_ID 0x5000 // DataId (sensor type)
+
 #include <Arduino.h>
 #include "sensor.h"
 #include "config.h"
 
-class Smartport : public FormatData
+#include "escHW3.h"
+#include "escHW4.h"
+#include "escPWM.h"
+#include "escCastle.h"
+#include "escKontronik.h"
+#include "voltage.h"
+#include "ntc.h"
+#include "pressure.h"
+#include "bmp280.h"
+#include "bn220.h"
+#include "config.h"
+#include "configeeprom.h"
+#include "pwmout.h"
+
+class Smartport : public FormatData, public ConfigEeprom
 {
 private:
+    static const uint8_t sensorIdMatrix[29];
+
     struct Packet
     {
         uint8_t frameId;
@@ -71,34 +105,31 @@ private:
     Sensor *sensorP = NULL;
     Packet *packetP = NULL;
     uint8_t sensorId_ = 0;
-    uint16_t dataId_ = 0;
+    uint16_t dataId_ = DATA_ID;
     bool maintenanceMode_ = false;
     void sendByte(uint8_t c, uint16_t *crcp);
 
 public:
     Smartport(Stream &serial);
     ~Smartport();
+    void begin();
     uint8_t idToCrc(uint8_t sensorId);
     uint8_t crcToId(uint8_t sensorIdCrc);
-    uint8_t available();
     uint8_t read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, uint32_t &value);
     void sendData(uint16_t dataId, uint32_t val);
     void sendData(uint8_t frameId, uint16_t dataId, uint32_t val);
     void sendVoid();
-
-    void setDataId(uint16_t dataId);
     uint8_t sensorId();
     void setSensorId(uint8_t sensorId);
-    void setSensorIdTx(uint8_t sensorIdTx);
-    uint8_t maintenanceMode();
-    void setMaintenanceMode(uint8_t maintenanceMode);
     void addSensor(Sensor *newSensorP);
     bool addPacket(uint16_t dataId, uint32_t value);
     bool addPacket(uint8_t frameId, uint16_t dataId, uint32_t value);
     void deleteSensors();
-    uint8_t update(uint8_t &frameId, uint16_t &dataId, uint32_t &value);
     uint8_t update();
-    bool sendPacketReady();
+    bool isSendPacketReady();
+    void setConfig(Config &config);
+    void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value);
+
 };
 
 #endif
