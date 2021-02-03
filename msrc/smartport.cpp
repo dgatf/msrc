@@ -13,10 +13,14 @@ const uint8_t Smartport::sensorIdMatrix[29] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x4
 
 void Smartport::begin()
 {
+    Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, 
+    {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, 
+    {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, 
+    CONFIG_ESC_PROTOCOL, 
+    {{0, 0}, {0, 0}}, 
+    SENSOR_ID};
 #if defined(CONFIG_LUA) && RX_PROTOCOL == RX_SMARTPORT
-    Config config = readConfig();
-#else
-    Config config;
+    config = readConfig();
 #endif
     delay(100);
     setConfig(config);
@@ -329,13 +333,12 @@ bool Smartport::isSendPacketReady()
 void Smartport::setConfig(Config &config)
 {
     deleteSensors();
-
     setSensorId(idToCrc(config.sensorId));
     if (config.protocol == PROTOCOL_PWM)
     {
         Sensor *sensorP;
         EscPWM *esc;
-        esc = new EscPWM(config.average.rpm);
+        esc = new EscPWM(ALPHA(config.average.rpm));
         esc->begin();
         sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), config.refresh.rpm, esc);
         addSensor(sensorP);

@@ -10,37 +10,39 @@
 #ifndef SMARTPORT_H
 #define SMARTPORT_H
 
-#define LED_SMARTPORT LED_BUILTIN
 #define SMARTPORT_TIMEOUT 3
 
-#define SENSOR_ID_1 0x00 // VARIO 0x100 (0 in opentx lua: id - 1)
-#define SENSOR_ID_2 0xA1 // FLVSS 0x300
-#define SENSOR_ID_3 0x22 // FAS40-S 0x200
-#define SENSOR_ID_4 0x83 // GPS 0x800
-#define SENSOR_ID_5 0xE4 // RPM 0x500
-#define SENSOR_ID_6 0x45 // UART
-#define SENSOR_ID_7 0xC6 // UART
-#define SENSOR_ID_8 0x67
-#define SENSOR_ID_9 0x48
-#define SENSOR_ID_10 0xE9
-#define SENSOR_ID_11 0x6A
-#define SENSOR_ID_12 0xCB
-#define SENSOR_ID_13 0xAC
-#define SENSOR_ID_14 0xD
-#define SENSOR_ID_15 0x8E
-#define SENSOR_ID_16 0x2F
-#define SENSOR_ID_17 0xD0
-#define SENSOR_ID_18 0x71
-#define SENSOR_ID_19 0xF2
-#define SENSOR_ID_20 0x53
-#define SENSOR_ID_21 0x34
-#define SENSOR_ID_22 0x95
-#define SENSOR_ID_23 0x16
-#define SENSOR_ID_24 0xB7 // Accel 0x700
-#define SENSOR_ID_25 0x98
-#define SENSOR_ID_26 0x39 // Power box
-#define SENSOR_ID_27 0xBA // Temp
-#define SENSOR_ID_28 0x1B // Fuel 0x600
+/* Sensor id (lua_id = id - 1)
+
+1 0x00 // VARIO 0x100 
+2 0xA1 // FLVSS 0x300
+3 0x22 // FAS40-S 0x200
+4 0x83 // GPS 0x800
+5 0xE4 // RPM 0x500
+6 0x45 // UART
+7 0xC6 // UART
+8 0x67
+9 0x48
+10 0xE9
+11 0x6A
+12 0xCB
+13 0xAC
+14 0xD
+15 0x8E
+16 0x2F
+17 0xD0
+18 0x71
+19 0xF2
+20 0x53
+21 0x34
+22 0x95
+23 0x16
+24 0xB7 // Accel 0x700
+25 0x98
+26 0x39 // Power box
+27 0xBA // Temp
+28 0x1B // Fuel 0x600
+*/
 
 #define RECEIVED_NONE 0
 #define RECEIVED_POLL 1
