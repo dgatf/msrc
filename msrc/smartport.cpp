@@ -13,12 +13,7 @@ const uint8_t Smartport::sensorIdMatrix[29] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x4
 
 void Smartport::begin()
 {
-    Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, 
-    {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, 
-    {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, 
-    CONFIG_ESC_PROTOCOL, 
-    {{0, 0}, {0, 0}}, 
-    SENSOR_ID};
+    Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, 0, 0, 0, 0, SENSOR_ID};
 #if defined(CONFIG_LUA) && RX_PROTOCOL == RX_SMARTPORT
     config = readConfig();
 #endif
@@ -123,22 +118,24 @@ void Smartport::addSensor(Sensor *newSensorP)
     prevSensorP = newSensorP;
 }
 
-bool Smartport::addPacket(uint16_t dataId, uint32_t value)
+void Smartport::addPacket(uint16_t dataId, uint32_t value)
 {
     return addPacket(0x10, dataId, value);
 }
 
-bool Smartport::addPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
+void Smartport::addPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
 {
+    static Packet *lastPacketP = NULL;
+    Packet *newPacketP;
+    newPacketP = new Packet;
+    newPacketP->frameId = frameId;
+    newPacketP->dataId = dataId;
+    newPacketP->value = value;
     if (packetP == NULL)
-    {
-        packetP = new Packet;
-        packetP->frameId = frameId;
-        packetP->dataId = dataId;
-        packetP->value = value;
-        return true;
-    }
-    return false;
+        packetP = newPacketP;
+    else
+        lastPacketP->nextP = newPacketP;
+    lastPacketP = newPacketP;
 }
 
 void Smartport::deleteSensors()
@@ -229,7 +226,42 @@ uint8_t Smartport::update()
     uint8_t frameId;
     uint16_t dataId;
     uint32_t value;
-#ifdef SIM_RX
+#if defined(SIM_LUA_SEND)
+    if (true)
+    {
+        uint8_t sensorId = sensorId_;
+        uint8_t packetType = RECEIVED_PACKET;
+        maintenanceMode_ = true;
+        frameId = 0x30;
+        dataId = DATA_ID;
+        value = 0;
+        if (packetP != NULL)
+            packetType = RECEIVED_POLL;
+        else
+            delay(2000);
+#elif defined(SIM_LUA_RECEIVE)
+    if (true)
+    {
+        uint8_t sensorId = sensorId_;
+        uint8_t packetType = RECEIVED_PACKET;
+        maintenanceMode_ = true;
+        frameId = 0x31;
+        dataId = DATA_ID;
+        static uint8_t contPacket = 0;
+        if (contPacket == 0)
+            value = 0xAAAA55F1;
+        if (contPacket == 1)
+            value = 0x3333F2;
+        if (contPacket == 2)
+            value = 0x043021F3;
+        if (contPacket == 3)
+        {
+            contPacket = 0;
+            delay(2000);
+        }
+        contPacket++;
+
+#elif defined(SIM_RX)
     if (true)
     {
         static uint16_t ts = 0;
@@ -259,10 +291,10 @@ uint8_t Smartport::update()
                 DEBUG_SERIAL.print(" V:");
                 DEBUG_SERIAL.println(packetP->value, HEX);
 #endif
-                dataId = packetP->dataId;
-                value = packetP->value;
-                delete packetP;
-                packetP = NULL;
+                Packet *oldPacketP;
+                oldPacketP = packetP;
+                packetP = packetP->nextP;
+                delete oldPacketP;
                 return SENT_PACKET;
             }
             if (sensorP != NULL && !maintenanceMode_) // else send telemetry
@@ -321,13 +353,6 @@ uint8_t Smartport::update()
         sensorP = sensorP->nextP;
     }
     return SENT_NONE;
-}
-
-bool Smartport::isSendPacketReady()
-{
-    if (packetP != NULL)
-        return false;
-    return true;
 }
 
 void Smartport::setConfig(Config &config)
@@ -482,19 +507,16 @@ void Smartport::setConfig(Config &config)
         sensorP = new Sensor(T2_FIRST_ID, ntc->valueP(), config.refresh.temp, ntc);
         addSensor(sensorP);
     }
-    for (uint8_t i = 0; i < 2; i++)
+    if (config.deviceI2C1Type == I2C_BMP280)
     {
-        if (config.deviceI2C[i].type == I2C_BMP280)
-        {
-            Sensor *sensorP;
-            Bmp280 *bmp;
-            bmp = new Bmp280(config.deviceI2C[i].address, ALPHA(config.average.temp), 10);
-            bmp->begin();
-            sensorP = new Sensor(T1_FIRST_ID + 2, bmp->temperatureP(), config.refresh.temp, bmp);
-            addSensor(sensorP);
-            sensorP = new Sensor(ALT_FIRST_ID + 2, bmp->altitudeP(), 10, bmp);
-            addSensor(sensorP);
-        }
+        Sensor *sensorP;
+        Bmp280 *bmp;
+        bmp = new Bmp280(config.deviceI2C1Address, ALPHA(config.average.temp), 10);
+        bmp->begin();
+        sensorP = new Sensor(T1_FIRST_ID + 2, bmp->temperatureP(), config.refresh.temp, bmp);
+        addSensor(sensorP);
+        sensorP = new Sensor(ALT_FIRST_ID + 2, bmp->altitudeP(), 10, bmp);
+        addSensor(sensorP);
     }
 }
 
@@ -555,48 +577,33 @@ void Smartport::processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         value |= (uint32_t)VERSION_PATCH << 8;
         value |= (uint32_t)VERSION_MINOR << 16;
         value |= (uint32_t)VERSION_MAJOR << 24;
-        while (!isSendPacketReady())
-            update();
         addPacket(0x32, DATA_ID, value);
         // packet 2, 3 & 4
         for (uint8_t i = 0; i < 3; i++)
         {
             value = 0xF2 + i;
-            memcpy(&value + 1, (uint8_t *)&config + 3 * i, 3);
-            while (!isSendPacketReady())
-                update();
+            memcpy((uint8_t *)&value + 1, (uint8_t *)&config + 3 * i, 3);
             addPacket(0x32, DATA_ID, value);
         }
         return;
     }
 
     // receive config
-    if (maintenanceMode_ && frameId == 0x31 && dataId == DATA_ID && (uint8_t)(value) == 0xF1)
+    if (maintenanceMode_ && frameId == 0x31 && dataId == DATA_ID && ((uint8_t)(value) == 0xF1 || (uint8_t)(value) == 0xF2 || (uint8_t)(value) == 0xF3))
     {
-
-        Config config;
-        for (uint8_t i = 0; i < 3; i++)
-        {
-#ifdef DEBUG
-            DEBUG_SERIAL.print(i + 1);
-            DEBUG_SERIAL.print(":");
-            DEBUG_SERIAL.println(value);
-#endif
-            memcpy(&config + 3 * i, (uint8_t *)&value + 1, 3);
-            while (frameId != 0x31 || dataId != DATA_ID || (uint8_t)(value) != 0xF1 + i)
-                read(sensorId_, frameId, dataId, value);
-        }
-        while (!isSendPacketReady())
-            update();
-        addPacket(0x32, DATA_ID, 0xFF);
-        while (!isSendPacketReady())
-            update();
-        PwmOut pwmOut;
-        if (config.pwmOut)
-            pwmOut.enable();
-        else
-            pwmOut.disable();
+        Config config = readConfig();
+        uint8_t i = value - 0xF1;
+        memcpy((uint8_t *)&config + 3 * i, (uint8_t *)&value + 1, 3);
         writeConfig(config);
-        setConfig(config);
+        if (value == 0xF3)
+        {
+            addPacket(0x32, DATA_ID, 0xFF);
+            setConfig(config);
+            PwmOut pwmOut;
+            if (config.pwmOut)
+                pwmOut.enable();
+            else
+                pwmOut.disable();
+        }
     }
 }
