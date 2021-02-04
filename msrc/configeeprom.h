@@ -1,6 +1,8 @@
 #ifndef CONFIGEEPROM_H
 #define CONFIGEEPROM_H
 
+#define EEPROM_VERSION 1
+
 #include <Arduino.h>
 #include <EEPROM.h>
 #include "config.h"

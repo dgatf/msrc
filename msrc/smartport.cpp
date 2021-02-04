@@ -329,7 +329,6 @@ uint8_t Smartport::update()
         }
         else if (packetType == RECEIVED_PACKET)
         {
-            processPacket(frameId, dataId, value);
 #ifdef DEBUG
             DEBUG_SERIAL.print("<F:");
             DEBUG_SERIAL.print(frameId, HEX);
@@ -338,6 +337,7 @@ uint8_t Smartport::update()
             DEBUG_SERIAL.print(" V:");
             DEBUG_SERIAL.println(value, HEX);
 #endif
+            processPacket(frameId, dataId, value);
             return RECEIVED_PACKET;
         }
     }
