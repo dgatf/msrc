@@ -101,6 +101,8 @@
 // Lua config (only opentx)
 #define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
 
+// Force eeprom write
+//#define FORCE_EEPROM_WRITE // Uncomment to force write eeprom as defined in config.h. Useful when using lua and eeprom is messed up. Reflash againg with line commented or config will be reset at power up 
 
 /* Debug
    Disconnect Vcc from the RC model to the Arduino

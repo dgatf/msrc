@@ -317,16 +317,11 @@ uint8_t Smartport::update()
                     DEBUG_SERIAL.println(spSensorP->timestamp());
 #endif
                     spSensorP->setTimestamp(millis());
-                    dataId = spSensorP->dataId();
-                    frameId = 0;
-                    value = 0;
                     spSensorP = spSensorP->nextP;
                     return SENT_TELEMETRY;
                 }
                 else
                 {
-                    dataId = 0;
-                    value = 0;
                     sendVoid();
                     return SENT_VOID;
                 }
@@ -595,7 +590,7 @@ void Smartport::processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         uint8_t i = value - 0xF1;
         memcpy((uint8_t *)&config + 3 * i, (uint8_t *)&value + 1, 3);
         writeConfig(config);
-        if (value == 0xF3)
+        if ((uint8_t)value == 0xF3)
         {
             addPacket(0x32, DATA_ID, 0xFF);
             setConfig(config);

@@ -6,6 +6,9 @@ Config ConfigEeprom::readConfig()
 {
     Config config;
     uint32_t chk;
+#if defined(FORCE_EEPROM_WRITE)
+    EEPROM.put(0, (uint32_t)0);
+#endif
     EEPROM.get(0, chk);
     if (chk == 0x64616E69)
     {
@@ -13,6 +16,7 @@ Config ConfigEeprom::readConfig()
     }
     else
     {
+        config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, 0, 0, 0, 0, SENSOR_ID};
         writeConfig(config);
     }
 #if defined(DEBUG_EEPROM_READ)
