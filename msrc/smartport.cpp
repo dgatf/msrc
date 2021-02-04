@@ -262,7 +262,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
                 DEBUG_SERIAL.print(" D:");
                 DEBUG_SERIAL.print(packetP->dataId, HEX);
                 DEBUG_SERIAL.print(" V:");
-                DEBUG_SERIAL.println(packetP->value);
+                DEBUG_SERIAL.println(packetP->value, HEX);
 #endif
                 dataId = packetP->dataId;
                 value = packetP->value;
@@ -351,7 +351,7 @@ uint8_t Smartport::update(uint8_t &frameId, uint16_t &dataId, uint32_t &value)
             DEBUG_SERIAL.print(" D:");
             DEBUG_SERIAL.print(dataId, HEX);
             DEBUG_SERIAL.print(" V:");
-            DEBUG_SERIAL.println(value);
+            DEBUG_SERIAL.println(value, HEX);
 #endif
             return RECEIVED_PACKET;
         }
