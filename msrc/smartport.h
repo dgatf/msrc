@@ -56,24 +56,6 @@
 #define SENT_SENSOR_ID 9
 #define CHANGED_SENSOR_ID 10
 
-
-// Config
-
-// byte 1: command
-
-// packet 1: byte 2 version patch, byte 3 version minor, byte 4 version major
-
-// packet 2: 
-
-
-// i2c
-#define I2C_NONE 0
-#define I2C_BMP280 1
-#define WIRE_TIMEOUT 3
-
-// opentx
-#define DATA_ID 0x5000 // DataId (sensor type)
-
 #include <Arduino.h>
 #include "sensor.h"
 #include "config.h"

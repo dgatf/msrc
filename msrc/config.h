@@ -177,6 +177,14 @@
 #define PROTOCOL_CASTLE 7
 #define PROTOCOL_KONTRONIK 8
 
+// i2c
+#define I2C_NONE 0
+#define I2C_BMP280 1
+#define WIRE_TIMEOUT 3
+
+// opentx
+#define DATA_ID 0x5000 // DataId (sensor type)
+
 //#define SRXL_V1 0x01
 //#define SRXL_V2 0x02
 #define SRXL_V5 0x05

@@ -37,9 +37,6 @@ class Srxl : public Xbus
 private:
     Stream &serial_;
     uint8_t list[7] = {0};
-#ifdef SOFTWARE_SERIAL
-    SoftwareSerial softSerial = SoftwareSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
-#endif
     uint16_t getCrc(uint8_t *buffer, uint8_t lenght);
     uint16_t byteCrc(uint16_t crc, uint8_t new_byte);
 
