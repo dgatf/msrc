@@ -13,7 +13,7 @@ void EscPWM::TIMER1_CAPT_handler()
     if (escPwmRunning)
         escPwmDuration = ICR1 - ts;
     ts = ICR1;
-    OCR1B = TCNT1 + 20 * PWM_MS_TO_COMP(8);
+    OCR1B = TCNT1 + 20 * MS_TO_COMP(8);
     TIFR1 |= _BV(OCF1B);  // CLEAR TIMER1 OCRB CAPTURE FLAG
     TIMSK1 |= _BV(OCIE1B); // ENABLE TIMER1 OCRB INTERRUPT
     escPwmRunning = true;
@@ -41,7 +41,7 @@ void EscPWM::TIMER4_CAPT_handler()
     if (escPwmRunning)
         escPwmDuration = ICR4 - ts;
     ts = ICR4;
-    OCR4B = TCNT4 + 20 * PWM_MS_TO_COMP(8);
+    OCR4B = TCNT4 + 20 * MS_TO_COMP(8);
     TIFR4 |= _BV(OCF4B);  // CLEAR TIMER4 OCRB CAPTURE FLAG
     TIMSK4 |= _BV(OCIE4B); // ENABLE TIMER4 OCRB INTERRUPT
     escPwmRunning = true;
@@ -72,7 +72,7 @@ void EscPWM::FTM0_IRQ_handler()
             escPwmDuration = FTM0_CNT - ts;
         ts = FTM0_CNT;
         FTM0_C4SC |= FTM_CSC_CHF; // CLEAR FLAG
-        FTM0_C0V = (uint16_t)((uint16_t)FTM0_CNT + (uint16_t)(12 * PWM_MS_TO_COMP(32)));
+        FTM0_C0V = (uint16_t)((uint16_t)FTM0_CNT + (uint16_t)(12 * MS_TO_COMP(32)));
         FTM0_C0SC |= FTM_CSC_CHF;  // CLEAR FLAG
         FTM0_C0SC |= FTM_CSC_CHIE; // ENABLE CH0 INTERRUPT
         escPwmUpdate = true;
@@ -149,9 +149,9 @@ void EscPWM::update()
         if (escPwmUpdate)
         {
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-            float rpm = 60000UL / (escPwmDuration * PWM_COMP_TO_MS(32));
+            float rpm = 60000UL / (escPwmDuration * COMP_TO_MS(32));
 #else
-            float rpm = 60000UL / (escPwmDuration * PWM_COMP_TO_MS(8));
+            float rpm = 60000UL / (escPwmDuration * COMP_TO_MS(8));
 #endif
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
             escPwmUpdate = false;

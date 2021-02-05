@@ -1,6 +1,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+// Version
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 8
+#define VERSION_PATCH 0
+
+
 // Select RX protocol
 #define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL
 
@@ -95,6 +101,8 @@
 // Lua config (only opentx)
 #define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
 
+// Force eeprom write
+//#define FORCE_EEPROM_WRITE // Uncomment to force write eeprom as defined in config.h. Useful when using lua and eeprom is messed up. Reflash againg with line commented or config will be reset at power up 
 
 /* Debug
    Disconnect Vcc from the RC model to the Arduino
@@ -108,6 +116,7 @@
 //#define DEBUG_ESC_RX
 //#define DEBUG_EEPROM_WRITE
 //#define DEBUG_EEPROM_READ
+//#define DEBUG_GPS
 
 //#define DEBUG_ESC_HW_V3
 //#define DEBUG_ESC_HW_V4
@@ -117,6 +126,8 @@
 
 //#define SIM_RX
 //#define SIM_SENSORS
+//#define SIM_LUA_SEND
+//#define SIM_LUA_RECEIVE
 
 // --------------------------- Do not change config below if using lua script ---------------------------
 
@@ -149,12 +160,6 @@
 
 #define DEBUG_SERIAL Serial
 
-#define CONFIG_ALPHA_RPM N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
-#define CONFIG_ALPHA_VOLT N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
-#define CONFIG_ALPHA_CURR N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
-#define CONFIG_ALPHA_TEMP N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
-#define CONFIG_ALPHA_DEF N_TO_ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM)
-
 #define N_TO_ALPHA(VALUE) (2.0 / (1 + VALUE) * 100)
 
 #define RX_SMARTPORT 1
@@ -175,5 +180,9 @@
 //#define SRXL_V1 0x01
 //#define SRXL_V2 0x02
 #define SRXL_V5 0x05
+
+#define ALPHA(ELEMENTS) (uint8_t)(2.0 / (ELEMENTS + 1) * 100)
+#define MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000.0))
+#define COMP_TO_MS(SCALER) ((SCALER * 1000.0) / F_CPU)
 
 #endif

@@ -1,9 +1,6 @@
 #ifndef ESCPWM_H
 #define ESCPWM_H
 
-#define PWM_COMP_TO_MS(SCALER) (SCALER * 1000.0 / F_CPU)
-#define PWM_MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000UL))
-
 #include <Arduino.h>
 #include "device.h"
 

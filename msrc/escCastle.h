@@ -16,8 +16,6 @@
     10      temp ntc (C) or calib 2 (500us)  63.8125
 */
 
-#define CASTLE_MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000.0))
-#define CASTLE_COMP_TO_MS(SCALER) ((SCALER * 1000.0) / F_CPU)
 #define RX_MAX_CYCLES 2 // minimum is 2
 
 #define CASTLE_VOLTAGE 1
