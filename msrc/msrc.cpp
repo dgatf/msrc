@@ -234,7 +234,6 @@ void loop()
 #if RX_PROTOCOL == RX_SMARTPORT
     smartport.update();
 #endif
-    pwmOut.update();
 #if RX_PROTOCOL == RX_XBUS
     xbus.update();
 #endif
@@ -242,4 +241,5 @@ void loop()
     srxl.update();
     srxl.checkSerial();
 #endif
+    pwmOut.update();
 }
