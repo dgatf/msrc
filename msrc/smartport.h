@@ -118,6 +118,7 @@ public:
     void begin();
     uint8_t idToCrc(uint8_t sensorId);
     uint8_t crcToId(uint8_t sensorIdCrc);
+    uint8_t getCrc(uint8_t *data);
     uint8_t read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, uint32_t &value);
     void sendData(uint16_t dataId, uint32_t val);
     void sendData(uint8_t frameId, uint16_t dataId, uint32_t val);

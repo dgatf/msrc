@@ -13,11 +13,11 @@ const uint8_t Smartport::sensorIdMatrix[29] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x4
 
 void Smartport::begin()
 {
+    pinMode(LED_BUILTIN, OUTPUT);
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, 0, 0, 0, 0, SENSOR_ID};
 #if defined(CONFIG_LUA) && RX_PROTOCOL == RX_SMARTPORT
     config = readConfig();
 #endif
-    delay(100);
     setConfig(config);
 }
 
@@ -80,6 +80,7 @@ void Smartport::sendData(uint16_t dataId, uint32_t val)
 
 void Smartport::sendData(uint8_t typeId, uint16_t dataId, uint32_t val)
 {
+    digitalWrite(LED_BUILTIN, HIGH);
     uint16_t crc = 0;
     uint8_t *u8p;
     // typeId
@@ -96,6 +97,7 @@ void Smartport::sendData(uint8_t typeId, uint16_t dataId, uint32_t val)
     sendByte(u8p[3], &crc);
     // crc
     sendByte(0xFF - (uint8_t)crc, NULL);
+    digitalWrite(LED_BUILTIN, LOW);
 }
 
 void Smartport::sendVoid()
@@ -160,6 +162,18 @@ void Smartport::deleteSensors()
     }
 }
 
+uint8_t Smartport::getCrc(uint8_t *data)
+{
+    uint16_t crc = 0;
+    for (uint8_t i = 1; i < 8; i++)
+    {
+        crc += data[i];
+        crc += crc >> 8;
+        crc &= 0x00FF;
+    }
+    return 0xFF - (uint8_t)crc;
+}
+
 uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, uint32_t &value)
 {
     if (serial_.available())
@@ -191,14 +205,7 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
                 }
                 if (cont == 9)
                 {
-                    uint16_t crc = 0;
-                    for (uint8_t i = 1; i < 8; i++)
-                    {
-                        crc += data[i];
-                        crc += crc >> 8;
-                        crc &= 0x00FF;
-                    }
-                    crc = 0xFF - (uint8_t)crc;
+                    uint8_t crc = getCrc(data);
                     if (crc == data[8] && data[1] != 0x00 && data[1] != 0x10)
                     {
                         sensorId = data[0];
