@@ -101,6 +101,7 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
         castleCont = 0;
 #if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
         DEBUG_SERIAL.println();
+        DEBUG_SERIAL.print("1 ");
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
 #endif
@@ -184,6 +185,7 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
         castleCont = 0;
 #if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
         DEBUG_SERIAL.println();
+        DEBUG_SERIAL.print("2 ");
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
 #endif
@@ -266,6 +268,7 @@ void EscCastle::TIMER5_COMPC_handler() // START OUTPUT STATE
         castleCont = 0;
 #if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
         DEBUG_SERIAL.println();
+        DEBUG_SERIAL.print("3 ");
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
 #endif
@@ -348,6 +351,7 @@ void EscCastle::TIMER1_COMPC_handler() // START OUTPUT STATE
         castleCont = 0;
 #if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
         DEBUG_SERIAL.println();
+        DEBUG_SERIAL.print("4 ");
         DEBUG_SERIAL.print(millis());
         DEBUG_SERIAL.print(" ");
 #endif
@@ -394,15 +398,21 @@ void EscCastle::FTM0_IRQ_handler()
     if (FTM0_C0SC & FTM_CSC_CHF) // CH0 INTERRUPT (DISABLE CH0 PWM OUT)
     {
         PORTC_PCR1 = PORT_PCR_MUX(0); // PTC1 MUX 0 -> DISABLE
-        FTM0_C4SC |= FTM_CSC_CHF;  // CLEAR FLAG CH4
-        FTM0_C4SC |= FTM_CSC_CHIE; // ENABLE INTERRUPT CH4
-        FTM0_C2SC |= FTM_CSC_CHF;  // CLEAR FLAG CH2
-        FTM0_C2SC |= FTM_CSC_CHIE; // ENABLE INTERRUPT CH2
+        FTM0_C4SC |= FTM_CSC_CHF;     // CLEAR FLAG CH4
+        FTM0_C4SC |= FTM_CSC_CHIE;    // ENABLE INTERRUPT CH4
+        FTM0_C2SC |= FTM_CSC_CHF;     // CLEAR FLAG CH2
+        FTM0_C2SC |= FTM_CSC_CHIE;    // ENABLE INTERRUPT CH2
         if (!castleTelemetryReceived)
         {
             castleCont = 0;
             castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
             castleTelemetryReceived = false;
+#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
+            DEBUG_SERIAL.println();
+            DEBUG_SERIAL.print("5 ");
+            DEBUG_SERIAL.print(millis());
+            DEBUG_SERIAL.print(" ");
+#endif
         }
     }
     if (FTM0_C4SC & FTM_CSC_CHF) // CH4 INTERRUPT (CAPTURE TELEMETRY)
@@ -412,13 +422,17 @@ void EscCastle::FTM0_IRQ_handler()
         castleTelemetryReceived = true;
         castleUpdated = true;
         FTM0_C4SC |= FTM_CSC_CHF; // CLEAR FLAG CH1
+#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
+        DEBUG_SERIAL.print(castleTelemetry[castleCont]);
+        DEBUG_SERIAL.print(" ");
+#endif
     }
     if (FTM0_C2SC & FTM_CSC_CHF) // CH2 INTERRUPT (TOGGLE CH0 TO OUTPUT)
     {
         PORTC_PCR1 = PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8 (PWM OUT)
-        FTM0_C4SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT CH4
-        FTM0_C2SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT CH2
-        FTM0_C2SC |= FTM_CSC_CHF;   // CLEAR FLAG CH2
+        FTM0_C4SC &= ~FTM_CSC_CHIE;   // DISABLE INTERRUPT CH4
+        FTM0_C2SC &= ~FTM_CSC_CHIE;   // DISABLE INTERRUPT CH2
+        FTM0_C2SC |= FTM_CSC_CHF;     // CLEAR FLAG CH2
     }
 }
 #endif
@@ -440,7 +454,7 @@ void EscCastle::begin()
     TCCR1B |= _BV(ICES1);                // RISING EDGE
     TCCR1B |= _BV(CS11);                 // SCALER 8
     TIMSK1 = _BV(ICIE1);                 // CAPTURE INTERRUPT
-    OCR1A = 20 * MS_TO_COMP(8);   // 50Hz = 20ms
+    OCR1A = 20 * MS_TO_COMP(8);          // 50Hz = 20ms
 
     // INT0. TELEMETRY INPUT (PD2, PIN2)
     EICRA = _BV(ISC01); // FALLING EDGE
@@ -448,7 +462,7 @@ void EscCastle::begin()
     // TIMER 2. TOGGLE OC1B INPUT/OUTPUT
     TCCR2A = 0;                                 // NORMAL MODE
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * MS_TO_COMP(1024);       // 12ms
+    OCR2A = 12 * MS_TO_COMP(1024);              // 12ms
 #endif
 
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
@@ -472,12 +486,12 @@ void EscCastle::begin()
     TCCR4A |= _BV(COM4B1) | _BV(COM4B0); // TOGGLE OC4B ON OCR4B (INVERTING)
     TCCR4B &= ~_BV(ICES4);               // FALLING EDGE
     TCCR4B |= _BV(CS41);                 // SCALER 8
-    OCR4A = 20 * MS_TO_COMP(8);   // 50Hz = 20ms
+    OCR4A = 20 * MS_TO_COMP(8);          // 50Hz = 20ms
 
     // TIMER 2. TOGGLE OC4B INPUT/OUTPUT
     TCCR2A = 0;                                 // NORMAL MODE
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * MS_TO_COMP(1024);       // 12ms
+    OCR2A = 12 * MS_TO_COMP(1024);              // 12ms
 #endif
 
 #if defined(__AVR_ATmega2560__)
@@ -501,8 +515,8 @@ void EscCastle::begin()
     TCCR5A |= _BV(COM5B1) | _BV(COM5B0); // TOGGLE OC5B ON OCR5B (INVERTING)
     TCCR5B &= ~_BV(ICES5);               // FALLING EDGE
     TCCR5B |= _BV(CS51);                 // SCALER 8
-    OCR5A = 20 * MS_TO_COMP(8);   // 50Hz = 20ms
-    OCR5C = 12 * MS_TO_COMP(8);   // TOGGLE OC5B OUTPUT
+    OCR5A = 20 * MS_TO_COMP(8);          // 50Hz = 20ms
+    OCR5C = 12 * MS_TO_COMP(8);          // TOGGLE OC5B OUTPUT
 #endif
 
 #if defined(__AVR_ATmega32U4__)
@@ -526,8 +540,8 @@ void EscCastle::begin()
     TCCR1A |= _BV(COM4B1) | _BV(COM4B0); // TOGGLE OC4B ON OCR4B (INVERTING)
     TCCR1B &= ~_BV(ICES1);               // FALLING EDGE
     TCCR1B |= _BV(CS11);                 // SCALER 8
-    OCR1A = 20 * MS_TO_COMP(8);   // 50Hz = 20ms
-    OCR1C = 12 * MS_TO_COMP(8);   // TOGGLE OC1B OUTPUT
+    OCR1A = 20 * MS_TO_COMP(8);          // 50Hz = 20ms
+    OCR1C = 12 * MS_TO_COMP(8);          // TOGGLE OC1B OUTPUT
 #endif
 
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
@@ -554,8 +568,8 @@ void EscCastle::begin()
     FTM0_SC = 0;
     delayMicroseconds(1);
     FTM0_CNT = 0;
-    SIM_SCGC6 |= SIM_SCGC6_FTM0;           // ENABLE CLOCK
-    FTM0_SC = FTM_SC_PS(5);                // PRESCALER 32
+    SIM_SCGC6 |= SIM_SCGC6_FTM0;    // ENABLE CLOCK
+    FTM0_SC = FTM_SC_PS(5);         // PRESCALER 32
     FTM0_MOD = 20 * MS_TO_COMP(32); // 20ms (100HZ)
     // CH0: PWM OUTPUT (ESC CONTROL)
     FTM0_C0SC = 0;
@@ -568,7 +582,7 @@ void EscCastle::begin()
     // CH2: TOGGLE CH0 TO OUTPUT
     FTM0_C2SC = 0;
     delayMicroseconds(1);
-    FTM0_C2SC = FTM_CSC_MSA;               // SOFTWARE COMPARE
+    FTM0_C2SC = FTM_CSC_MSA;        // SOFTWARE COMPARE
     FTM0_C2V = 12 * MS_TO_COMP(32); // 12ms TOGGLE CH0 TO OUTPUT
     // SET PINS
     PORTC_PCR1 = PORT_PCR_MUX(4);               // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8 (PWM OUT)
