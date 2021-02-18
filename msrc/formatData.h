@@ -25,7 +25,7 @@
 #define ACCY_LAST_ID 0x071f
 #define ACCZ_FIRST_ID 0x0720 // 100 g
 #define ACCZ_LAST_ID 0x072f
-#define GPS_LONG_LATI_FIRST_ID 0x0800 // bit32(1<<31)=1=LON:=0=LAT, bit31(1<<30)=1=-:=0=+, escaler: 5/3? 60000?
+#define GPS_LONG_LATI_FIRST_ID 0x0800 // bit32(1<<31)=1=LON:=0=LAT, bit31(1<<30)=1=-:=0=+, escaler: 10000
 #define GPS_LONG_LATI_LAST_ID 0x080f
 #define GPS_ALT_FIRST_ID 0x0820 // 100 m
 #define GPS_ALT_LAST_ID 0x082f

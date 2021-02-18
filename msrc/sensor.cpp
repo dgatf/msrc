@@ -57,7 +57,7 @@ SensorLatLon::SensorLatLon(uint16_t dataId, float *lonP, float *latP, uint8_t re
 
 uint32_t SensorLatLon::valueFormatted()
 {
-    if (!type_)
+    if (type_ == TYPE_LAT)
     {
         type_ = !type_;
         return formatLatLon(TYPE_LAT, *valueLP_);
