@@ -99,7 +99,7 @@ void Xbus::begin()
 #if CONFIG_GPS
     addressMask |= XBUS_GPS_LOC;
     addressMask |= XBUS_GPS_STAT;
-    GPS_SERIAL.begin(9600);
+    GPS_SERIAL.begin(GPS_BAUD_RATE);
     GPS_SERIAL.setTimeout(BN220_TIMEOUT);
 #endif
 #if CONFIG_CURRENT

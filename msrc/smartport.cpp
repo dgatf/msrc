@@ -447,7 +447,7 @@ void Smartport::setConfig(Config &config)
     {
         Sensor *sensorP;
         Bn220 *gps;
-        GPS_SERIAL.begin(9600);
+        GPS_SERIAL.begin(GPS_BAUD_RATE);
         GPS_SERIAL.setTimeout(BN220_TIMEOUT);
         gps = new Bn220(GPS_SERIAL);
         sensorP = new SensorLatLon(GPS_LONG_LATI_FIRST_ID, gps->lonP(), gps->latP(), 10, gps);

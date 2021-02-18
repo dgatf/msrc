@@ -19,6 +19,9 @@
 // Pwm out
 #define PWMOUT_DUTY 0.5 // 0.5 = 50%
 
+// Esc serial
+#define GPS_BAUD_RATE 9600
+
 // Pins & Serial ports
 
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB) // ATmega328P

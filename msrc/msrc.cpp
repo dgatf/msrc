@@ -188,7 +188,7 @@ void setup()
 #if defined(DEBUG) || defined(DEBUG_ESC) || defined(DEBUG_ESC_RX) || defined(DEBUG_PLOTTER) || defined(DEBUG_GPS)
     // DEBUG is on Serial
     // Baud rate depends on whats connected to Serial
-    // For boards with 1 UART: If is an ESC serial it will be changed to 19600. If it is a GPS, to 9600
+    // For boards with 1 UART: If is an ESC serial it will be changed to 19600. If it is a GPS, to 9600 (default)
     // Otherwise it is at 115200
     DEBUG_SERIAL.begin(115200);
     while (!DEBUG_SERIAL)

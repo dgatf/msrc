@@ -21,7 +21,7 @@ void Srxl::begin()
     list[cont] = XBUS_AIRSPEED;
 #endif
 #if CONFIG_GPS
-    GPS_SERIAL.begin(9600);
+    GPS_SERIAL.begin(GPS_BAUD_RATE);
     GPS_SERIAL.setTimeout(BN220_TIMEOUT);
     cont++;
     list[cont] = XBUS_GPS_LOC;
