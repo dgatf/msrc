@@ -144,16 +144,13 @@ void Bn220::parser(uint8_t type, char *data)
         {
             (data[0] == 'E') ? lonDir_ = 1 : lonDir_ = -1;
         }
-
 #ifdef DEBUG_GPS
         DEBUG_SERIAL.print(contIndex_);
         DEBUG_SERIAL.print("(");
         DEBUG_SERIAL.print(type);
-        DEBUG_SERIAL.print(",");
+        DEBUG_SERIAL.print(")");
         DEBUG_SERIAL.print(data);
         DEBUG_SERIAL.print(",");
-        DEBUG_SERIAL.print(value_[type]);
-        DEBUG_SERIAL.print(") ");
 #endif
     }
 }
