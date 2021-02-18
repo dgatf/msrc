@@ -144,6 +144,8 @@
 #define CONFIG_NTC1 false
 #define CONFIG_NTC2 false
 #define CONFIG_PWMOUT false
+#define CONFIG_I2C1_TYPE I2C_NONE // I2C_NONE, I2C_BMP280
+#define CONFIG_I2C1_ADDRESS 0
 
 // Refresh rate in 0.1s (1 = 100ms)
 #define CONFIG_REFRESH_RPM 10

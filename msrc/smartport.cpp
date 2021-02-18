@@ -14,7 +14,7 @@ const uint8_t Smartport::sensorIdMatrix[29] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x4
 void Smartport::begin()
 {
     pinMode(LED_BUILTIN, OUTPUT);
-    Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, 0, 0, 0, 0, SENSOR_ID};
+    Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
 #if defined(CONFIG_LUA) && RX_PROTOCOL == RX_SMARTPORT
     config = readConfig();
 #endif
@@ -515,9 +515,9 @@ void Smartport::setConfig(Config &config)
         Bmp280 *bmp;
         bmp = new Bmp280(config.deviceI2C1Address, ALPHA(config.average.temp), 10);
         bmp->begin();
-        sensorP = new Sensor(T1_FIRST_ID + 2, bmp->temperatureP(), config.refresh.temp, bmp);
+        sensorP = new Sensor(T1_FIRST_ID + 1, bmp->temperatureP(), config.refresh.temp, bmp);
         addSensor(sensorP);
-        sensorP = new Sensor(ALT_FIRST_ID + 2, bmp->altitudeP(), 10, bmp);
+        sensorP = new Sensor(ALT_FIRST_ID, bmp->altitudeP(), 10, bmp);
         addSensor(sensorP);
     }
 }
