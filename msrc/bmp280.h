@@ -60,7 +60,7 @@ private:
     uint16_t T1_, P1_;
     int16_t T2_, T3_, P2_, P3_, P4_, P5_, P6_, P7_, P8_, P9_;
     uint32_t t_fine_;
-    float temperature_ = 0, pressure_ = 0, P0_ = -1000, altitude_ = 0;
+    float temperature_ = 0, pressure_ = 0, P0_ = 0, altitude_ = 0;
     uint8_t device_, alphaTemp_, alphaDef_;
     void readTemperature();
     void readPressure();

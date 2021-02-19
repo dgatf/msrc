@@ -67,13 +67,13 @@ void Bmp280::readPressure()
 
 float Bmp280::calcAltitude(float pressure, float P0)
 {
-    if (P0 == -1000 && millis() > 2000)
+    if (P0 == 0 && millis() > 5000)
 #ifdef SIM_SENSORS
         P0 = 600;
 #else
         P0 = pressure_;
 #endif
-    if (P0 == -1000)
+    if (P0 == 0)
         return 0;
     return 44330.0 * (1 - pow(pressure_ / P0, 1 / 5.255));
 }
