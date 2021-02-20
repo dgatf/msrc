@@ -64,7 +64,7 @@ private:
     uint8_t device_, alphaTemp_, alphaDef_;
     void readTemperature();
     void readPressure();
-    float calcAltitude(float pressure, float P0);
+    float calcAltitude(float pressure);
 
 public:
     enum sensor_sampling

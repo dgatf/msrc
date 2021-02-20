@@ -65,17 +65,17 @@ void Bmp280::readPressure()
     }
 }
 
-float Bmp280::calcAltitude(float pressure, float P0)
+float Bmp280::calcAltitude(float pressure)
 {
-    if (P0 == 0 && millis() > 5000)
+    if (P0_ == 0 && millis() > 5000)
 #ifdef SIM_SENSORS
         P0 = 600;
 #else
-        P0 = pressure_;
+        P0_ = pressure_;
 #endif
-    if (P0 == 0)
+    if (P0_ == 0)
         return 0;
-    return 44330.0 * (1 - pow(pressure_ / P0, 1 / 5.255));
+    return 44330.0 * (1 - pow(pressure_ / P0_, 1 / 5.255));
 }
 
 void Bmp280::update()
@@ -86,7 +86,7 @@ void Bmp280::update()
 #else
     readPressure();
 #endif
-    altitude_ = calcAltitude(pressure_, P0_);
+    altitude_ = calcAltitude(pressure_);
     if (altitude_ < 0)
         altitude_ = 0;
 }
