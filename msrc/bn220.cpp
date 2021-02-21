@@ -115,6 +115,8 @@ void Bn220::parser(uint8_t type, char *data)
         else if (type == BN220_ALT)
         {
             alt_ = atof(data);
+            if (alt_ < 0)
+                alt_ = 0;
         }
         else if (type == BN220_SPD)
         {
