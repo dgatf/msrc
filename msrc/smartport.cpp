@@ -320,6 +320,7 @@ uint8_t Smartport::update()
                     DEBUG_SERIAL.print(spSensorP->dataId(), HEX);
                     DEBUG_SERIAL.print(" V:");
                     DEBUG_SERIAL.print(spSensorP->valueFormatted());
+                    spSensorP->valueFormatted(); // toggle type if date/time or lat/lon sensor
                     DEBUG_SERIAL.print(" T:");
                     DEBUG_SERIAL.println(spSensorP->timestamp());
 #endif
