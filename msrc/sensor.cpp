@@ -60,12 +60,12 @@ uint32_t SensorLatLon::valueFormatted()
     if (type_ == TYPE_LAT)
     {
         type_ = !type_;
-        return formatLatLon(TYPE_LAT, *valueLP_);
+        return formatLatLon(TYPE_LAT, *valueMP_);
     }
     else
     {
         type_ = !type_;
-        return formatLatLon(TYPE_LON, *valueMP_);
+        return formatLatLon(TYPE_LON, *valueLP_);
     }
 }
 
@@ -76,12 +76,12 @@ uint32_t SensorDateTime::valueFormatted()
     if (!type_)
     {
         type_ = !type_;
-        return formatDateTime(TYPE_DATE, *valueLP_);
+        return formatDateTime(TYPE_DATE, *valueMP_);
     }
     else
     {
         type_ = !type_;
-        return formatDateTime(TYPE_TIME, *valueMP_);
+        return formatDateTime(TYPE_TIME, *valueLP_);
     }
 }
 
