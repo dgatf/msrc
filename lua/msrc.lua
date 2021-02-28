@@ -200,11 +200,11 @@ local function readConfig()
                 if bit32.extract(value, 8, 4) >= 0 and bit32.extract(value, 8, 4) <= 2 then
                     config.i2c1.selected = bit32.extract(value, 8, 4) + 1 -- bits 9-12
                 end
-                if bit32.extract(value, 12, 4) >= 0 and bit32.extract(value, 12, 4) <= 2 then
-                    config.i2c2.selected = bit32.extract(value, 12, 4) + 1 -- bits 13-16
+                if bit32.extract(value, 12, 8) >= 0 and bit32.extract(value, 12, 8) <= 127 then
+                    config.i2c1Address.selected = bit32.extract(value, 12, 8) + 1 -- bits 13-20
                 end
-                if bit32.extract(value, 16, 8) >= 0 and bit32.extract(value, 16, 8) <= 127 then
-                    config.i2c1Address.selected = bit32.extract(value, 16, 8) + 1 -- bits 17-24
+                if bit32.extract(value, 20, 4) >= 0 and bit32.extract(value, 20, 4) <= 2 then
+                    config.i2c2.selected = bit32.extract(value, 20, 4) + 1 -- bits 21-24
                 end
                 if bit32.extract(value, 24, 8) >= 0 and bit32.extract(value, 24, 8) <= 127 then
                     config.i2c2Address.selected = bit32.extract(value, 24, 8) + 1 -- bits 25-32
@@ -256,8 +256,8 @@ local function sendConfig()
         elseif sendConfigState == state["PACKET_2"] then
             local value = 0xF3 -- bits 1-8
             value = bit32.bor(value, bit32.lshift(config.i2c1.selected - 1, 8)) -- bits 9-12
-            value = bit32.bor(value, bit32.lshift(config.i2c2.selected - 1, 12)) -- bits 13-16
-            value = bit32.bor(value, bit32.lshift(config.i2c1Address.selected - 1, 16)) -- bits 17-24
+            value = bit32.bor(value, bit32.lshift(config.i2c1Address.selected - 1, 12)) -- bits 13-20
+            value = bit32.bor(value, bit32.lshift(config.i2c2.selected - 1, 20)) -- bits 21-24
             value = bit32.bor(value, bit32.lshift(config.i2c2Address.selected - 1, 24)) -- bits 25-32
             if sportTelemetryPush(sensorIdTx, 0x31, dataIdSensor, value) then
                 sendConfigState = state["PACKET_3"]
