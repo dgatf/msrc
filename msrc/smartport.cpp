@@ -122,7 +122,7 @@ void Smartport::addSensor(Sensor *newSensorP)
 
 void Smartport::addPacket(uint16_t dataId, uint32_t value)
 {
-    return addPacket(0x10, dataId, value);
+    addPacket(0x10, dataId, value);
 }
 
 void Smartport::addPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
@@ -600,8 +600,8 @@ void Smartport::processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         writeConfig(config);
         if ((uint8_t)value == 0xF3)
         {
-            addPacket(0x32, DATA_ID, 0xFF);
             setConfig(config);
+            addPacket(0x32, DATA_ID, 0xFF);
             PwmOut pwmOut;
             if (config.pwmOut)
                 pwmOut.enable();
