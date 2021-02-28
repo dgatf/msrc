@@ -48,13 +48,13 @@ Config ConfigEeprom::readConfig()
     DEBUG_SERIAL.print("rT:");
     DEBUG_SERIAL.println(config.refresh.temp);
     DEBUG_SERIAL.print("aR:");
-    DEBUG_SERIAL.println(config.alpha.rpm);
+    DEBUG_SERIAL.println(config.average.rpm);
     DEBUG_SERIAL.print("aV:");
-    DEBUG_SERIAL.println(config.alpha.volt);
+    DEBUG_SERIAL.println(config.average.volt);
     DEBUG_SERIAL.print("aC:");
-    DEBUG_SERIAL.println(config.alpha.curr);
+    DEBUG_SERIAL.println(config.average.curr);
     DEBUG_SERIAL.print("aT:");
-    DEBUG_SERIAL.println(config.alpha.temp);
+    DEBUG_SERIAL.println(config.average.temp);
     DEBUG_SERIAL.print("I1:");
     DEBUG_SERIAL.println(config.deviceI2C1Type);
     DEBUG_SERIAL.print("A1:");
