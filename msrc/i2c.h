@@ -13,7 +13,6 @@ private:
 protected:
 public:
     I2C();
-    //uint8_t scan(uint8_t *devices);
     int16_t readInt(uint8_t device, uint8_t reg, uint8_t endian);
     uint16_t readUInt(uint8_t device, uint8_t reg, uint8_t endian);
     uint8_t readBytes(uint8_t device, uint8_t reg, uint8_t *data, uint8_t length);

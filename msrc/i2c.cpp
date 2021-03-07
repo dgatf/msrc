@@ -43,21 +43,3 @@ uint8_t I2C::writeBytes(uint8_t device, uint8_t reg, uint8_t *data, uint8_t leng
     Wire.write(data, lenght);
     return Wire.endTransmission();
 }
-
-/*uint8_t I2C::scan(uint8_t *devices)
-{
-    uint8_t error, address;
-    uint8_t cont = 0;
-    _wire.setTimeout(1);
-    for (address = 1; address < 127; address++)
-    {
-        _wire.beginTransmission(address);
-        error = _wire.endTransmission(true);
-        if (error == 0)
-        {
-            devices[cont] = address;
-            cont++;   
-        }
-    }
-    return cont;
-}*/
