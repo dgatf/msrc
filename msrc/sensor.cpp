@@ -4,7 +4,6 @@ Sensor::Sensor(uint16_t dataId, float *valueLP, uint8_t refresh, AbstractDevice 
 
 Sensor::~Sensor()
 {
-    delete deviceP_;
 }
 
 void Sensor::update()

@@ -144,22 +144,38 @@ void Smartport::deleteSensors()
 {
     if (sensorP != NULL)
     {
-        Sensor *firstSensorP;
+        Sensor *firstSensorP, *nextSensorP;
         firstSensorP = sensorP;
-        Sensor *nextSensorP;
+        uint8_t cont = 0;
+        AbstractDevice *deviceP[20];
         do
         {
             nextSensorP = sensorP->nextP;
+            boolean deleteDevice = true;
+            for (uint8_t i = 0; i < cont; i++)
+            {
+                if (deviceP[i] == sensorP->deviceP_)
+                {
+                    deleteDevice = false;
+                    break;
+                }
+            }
+            if (deleteDevice)
+            {
+                deviceP[cont] = sensorP->deviceP_;
+                delete sensorP->deviceP_;
+                cont++;
+            }
             delete sensorP;
             sensorP = nextSensorP;
         } while (sensorP != firstSensorP);
         sensorP = NULL;
     }
-    if (packetP != NULL)
+    /*if (packetP != NULL)
     {
         delete packetP;
         packetP = NULL;
-    }
+    }*/
 }
 
 uint8_t Smartport::getCrc(uint8_t *data)

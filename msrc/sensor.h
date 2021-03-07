@@ -12,9 +12,9 @@ protected:
     float *valueLP_;
     uint32_t value_;
     uint8_t refresh_;
-    AbstractDevice *deviceP_;
 
 public:
+    AbstractDevice *deviceP_;
     Sensor(uint16_t dataId, float *valueLP, uint8_t refresh, AbstractDevice *deviceP);
     virtual ~Sensor();
     Sensor *nextP = NULL;
