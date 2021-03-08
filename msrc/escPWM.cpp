@@ -97,7 +97,7 @@ void EscPWM::FTM0_IRQ_handler()
 void EscPWM::begin()
 {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
-    // TIMER1: MODE 0 (NORMAL), SCALER 8, CAPTURE AND OVERFLOW INTERRUPT. ICP1, PB0, PIN 8
+    // TIMER1: MODE 0 (NORMAL), SCALER 1, CAPTURE AND OVERFLOW INTERRUPT. ICP1, PB0, PIN 8
     PORTB |= _BV(PB0); // PULL UP
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
     TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
@@ -107,7 +107,7 @@ void EscPWM::begin()
 #endif
 
 #if defined(__AVR_ATmega2560__)
-    // TIMER4: MODE 0 (NORMAL), SCALER 8, CAPTURE AND OVERFLOW INTERRUPT. ICP4, PL0, PIN 49
+    // TIMER4: MODE 0 (NORMAL), SCALER 1, CAPTURE AND OVERFLOW INTERRUPT. ICP4, PL0, PIN 49
     PORTL |= _BV(PL0); // PULL UP
     TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
     TIMER4_COMPB_handlerP = TIMER4_COMPB_handler;
