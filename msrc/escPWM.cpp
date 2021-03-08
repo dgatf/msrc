@@ -13,7 +13,7 @@ void EscPWM::TIMER1_CAPT_handler()
     if (escPwmRunning)
         escPwmDuration = ICR1 - ts;
     ts = ICR1;
-    OCR1B = TCNT1 + 20 * MS_TO_COMP(8);
+    OCR1B = TCNT1 + 10 * MS_TO_COMP(8);
     TIFR1 |= _BV(OCF1B);  // CLEAR TIMER1 OCRB CAPTURE FLAG
     TIMSK1 |= _BV(OCIE1B); // ENABLE TIMER1 OCRB INTERRUPT
     escPwmRunning = true;
