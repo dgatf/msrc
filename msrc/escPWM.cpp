@@ -13,7 +13,7 @@ void EscPWM::TIMER1_CAPT_handler()
     if (escPwmRunning)
         escPwmDuration = ICR1 - ts;
     ts = ICR1;
-    OCR1B = TCNT1 + 15 * MS_TO_COMP(8);
+    OCR1B = TCNT1 -1;
     TIFR1 |= _BV(OCF1B);  // CLEAR TIMER1 OCRB CAPTURE FLAG
     TIMSK1 |= _BV(OCIE1B); // ENABLE TIMER1 OCRB INTERRUPT
     escPwmRunning = true;
@@ -41,7 +41,7 @@ void EscPWM::TIMER4_CAPT_handler()
     if (escPwmRunning)
         escPwmDuration = ICR4 - ts;
     ts = ICR4;
-    OCR4B = TCNT4 + 20 * MS_TO_COMP(8);
+    OCR4B = TCNT4 - 1;
     TIFR4 |= _BV(OCF4B);  // CLEAR TIMER4 OCRB CAPTURE FLAG
     TIMSK4 |= _BV(OCIE4B); // ENABLE TIMER4 OCRB INTERRUPT
     escPwmRunning = true;
@@ -102,7 +102,7 @@ void EscPWM::begin()
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
     TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
     TCCR1A = 0;
-    TCCR1B = _BV(CS11) | _BV(ICES1) | _BV(ICNC1);
+    TCCR1B = _BV(CS10) | _BV(ICES1) | _BV(ICNC1);
     TIMSK1 = _BV(ICIE1) | _BV(TOIE1);
 #endif
 
@@ -112,7 +112,7 @@ void EscPWM::begin()
     TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
     TIMER4_COMPB_handlerP = TIMER4_COMPB_handler;
     TCCR4A = 0;
-    TCCR4B = _BV(CS41) | _BV(ICES4) | _BV(ICNC4);
+    TCCR4B = _BV(CS40) | _BV(ICES4) | _BV(ICNC4);
     TIMSK4 = _BV(ICIE4) | _BV(TOIE4);
 #endif
 
@@ -146,12 +146,12 @@ void EscPWM::update()
     noInterrupts();
     if (escPwmRunning)
     {
-        if (escPwmUpdate)
+        if (escPwmUpdate && escPwmDuration > 1)
         {
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-            float rpm = 60000UL / (escPwmDuration * COMP_TO_MS(32));
+            float rpm = 60000.0 / (escPwmDuration * COMP_TO_MS(32));
 #else
-            float rpm = 60000UL / (escPwmDuration * COMP_TO_MS(8));
+            float rpm = 60000.0 / (escPwmDuration * COMP_TO_MS(8));
 #endif
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
             escPwmUpdate = false;
