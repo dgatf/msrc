@@ -151,7 +151,7 @@ void EscPWM::update()
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
             float rpm = 60000.0 / (escPwmDuration * COMP_TO_MS(32));
 #else
-            float rpm = 60000.0 / (escPwmDuration * COMP_TO_MS(8));
+            float rpm = 60000.0 / (escPwmDuration * COMP_TO_MS(1));
 #endif
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
             escPwmUpdate = false;
