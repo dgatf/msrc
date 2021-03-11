@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include <Wire.h>
 
 void setup() {
@@ -17,6 +16,7 @@ void setup() {
       Serial.println(address, HEX);
     }
   }
+  Serial.println("Done");
   
 }
 
