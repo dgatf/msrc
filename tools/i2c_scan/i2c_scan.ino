@@ -3,10 +3,12 @@
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("I2C scanner");
   Wire.begin();
   Wire.setTimeout(1);
+}
 
+void loop() {
+  Serial.println("I2C scanner");
   uint8_t error, address;
   for (address = 1; address < 127; address++)
   {
@@ -18,9 +20,6 @@ void setup() {
     }
   }
   Serial.println("Done");
-  
-}
-
-void loop() {
-  
+  Serial.println();
+  delay(3000);
 }
