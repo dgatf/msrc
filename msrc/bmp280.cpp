@@ -69,7 +69,7 @@ float Bmp280::calcAltitude(float pressure)
 {
     if (P0_ == 0 && millis() > 5000)
 #ifdef SIM_SENSORS
-        P0 = 600;
+        P0_ = 600;
 #else
         P0_ = pressure_;
 #endif
