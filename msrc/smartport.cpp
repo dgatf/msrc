@@ -384,7 +384,7 @@ void Smartport::setConfig(Config &config)
         EscPWM *esc;
         esc = new EscPWM(ALPHA(config.average.rpm));
         esc->begin();
-        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), config.refresh.rpm, esc);
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
         addSensor(sensorP);
     }
     if (config.protocol == PROTOCOL_HW_V3)
@@ -394,9 +394,9 @@ void Smartport::setConfig(Config &config)
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
         ESC_SERIAL.begin(19200);
         ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
-        PwmOut pwmOut;
-        pwmOut.setRpmP(esc->rpmP());
-        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), config.refresh.rpm, esc);
+        //PwmOut pwmOut;
+        //pwmOut.setRpmP(esc->rpmP());
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
         addSensor(sensorP);
     }
     if (config.protocol >= PROTOCOL_HW_V4_LV && config.protocol <= PROTOCOL_HW_V5_HV)
@@ -408,9 +408,9 @@ void Smartport::setConfig(Config &config)
         esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
-        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), config.refresh.rpm, esc);
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
         addSensor(sensorP);
-        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->currentP(), esc->voltageP(), config.refresh.volt, esc);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->voltageP(), esc->currentP(), config.refresh.volt, esc);
         addSensor(sensorP);
         sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, esc->tempFetP(), config.refresh.temp, esc);
         addSensor(sensorP);
@@ -425,11 +425,11 @@ void Smartport::setConfig(Config &config)
         EscCastle *esc;
         esc = new EscCastle(ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
         esc->begin();
-        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), config.refresh.rpm, esc);
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
         addSensor(sensorP);
-        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->currentP(), esc->voltageP(), config.refresh.volt, esc);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->voltageP(), esc->currentP(), config.refresh.volt, esc);
         addSensor(sensorP);
-        sensorP = new SensorDouble(SBEC_POWER_FIRST_ID, esc->becCurrentP(), esc->becVoltageP(), config.refresh.volt, esc);
+        sensorP = new SensorDouble(SBEC_POWER_FIRST_ID, esc->becVoltageP(), esc->becCurrentP(), config.refresh.volt, esc);
         addSensor(sensorP);
         sensorP = new SensorDouble(ESC_POWER_FIRST_ID + 1, NULL, esc->rippleVoltageP(), config.refresh.volt, esc);
         addSensor(sensorP);
@@ -447,11 +447,11 @@ void Smartport::setConfig(Config &config)
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());
-        sensorP = new Sensor(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), config.refresh.rpm, esc);
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
         addSensor(sensorP);
-        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->currentP(), esc->voltageP(), config.refresh.volt, esc);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->voltageP(), esc->currentP(), config.refresh.volt, esc);
         addSensor(sensorP);
-        sensorP = new SensorDouble(SBEC_POWER_FIRST_ID, esc->becCurrentP(), esc->becVoltageP(), config.refresh.volt, esc);
+        sensorP = new SensorDouble(SBEC_POWER_FIRST_ID, esc->becVoltageP(), esc->becCurrentP(), config.refresh.volt, esc);
         addSensor(sensorP);
         sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, esc->tempFetP(), config.refresh.temp, esc);
         addSensor(sensorP);

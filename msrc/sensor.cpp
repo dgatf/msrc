@@ -49,7 +49,7 @@ uint32_t SensorDouble::valueFormatted()
     float valueMP = 0;
     if (valueLP_ != NULL) valueLP = *valueLP_;
     if (valueMP_ != NULL) valueMP = *valueMP_;
-    return formatData(dataId_, valueMP, valueLP);
+    return formatData(dataId_, valueLP, valueMP);
 }
 
 SensorLatLon::SensorLatLon(uint16_t dataId, float *lonP, float *latP, uint8_t refresh, AbstractDevice *device) : SensorDouble(dataId, lonP, latP, refresh, device) {}

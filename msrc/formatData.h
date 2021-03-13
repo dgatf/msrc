@@ -105,7 +105,7 @@
 class FormatData
 {
 protected:
-    uint32_t formatData(uint16_t dataId, float valueM, float valueL);
+    uint32_t formatData(uint16_t dataId, float valueL, float valueM);
     uint32_t formatData(uint16_t dataId, float valueL);
     uint32_t formatLatLon(uint8_t type, float value);
     uint32_t formatDateTime(uint8_t type, uint32_t value);
