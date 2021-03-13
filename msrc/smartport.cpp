@@ -431,7 +431,7 @@ void Smartport::setConfig(Config &config)
         addSensor(sensorP);
         sensorP = new SensorDouble(SBEC_POWER_FIRST_ID, esc->becVoltageP(), esc->becCurrentP(), config.refresh.volt, esc);
         addSensor(sensorP);
-        sensorP = new SensorDouble(ESC_POWER_FIRST_ID + 1, NULL, esc->rippleVoltageP(), config.refresh.volt, esc);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID + 1, esc->rippleVoltageP(), NULL, config.refresh.volt, esc);
         addSensor(sensorP);
         sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, esc->temperatureP(), config.refresh.temp, esc);
         addSensor(sensorP);
