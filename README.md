@@ -58,7 +58,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 22 & 6 |
-| Smartport or SRXL | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 0 & 1<sup>(2)</sup> |
+| Frsky D, Smartport or SRXL | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 0 & 1<sup>(2)</sup> |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18 |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19 |
 
@@ -69,16 +69,17 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 
 The following Rx protocols are supported:
 
-- Smartport (Frsky): inverted serial, 57200 bps
-- SRXL v5 (Spektrum): serial, 115200 bps
-- XBUS (Spektrum): I2C
+- Frsky Smartport : inverted serial, 57200 bps
+- Frsky D : inverted serial, 9200 bps
+- Spektrum SRXL V5: serial, 115200 bps
+- Spektrum XBUS: I2C
 
 Depending on the receiver protocol connect to the Rx as follows
 
-### Smartport and SRXL
+### Frsky D, Smartport and SRXL
 
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
-  <i>Smartport or SRXL</i><br><br></p>
+  <i>Frsky D, Smartport or SRXL</i><br><br></p>
 
 ### XBUS
 
@@ -413,7 +414,7 @@ Adjust constants in *pressure.h*:
 
 0.8
 
-- Added Rx protocols Frsky D, Spektrum XBUS, SpektrumSRXL V5
+- Added Rx protocols Frsky D, Spektrum XBUS, Spektrum SRXL V5
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
 - Added support for Kontronik ESC
