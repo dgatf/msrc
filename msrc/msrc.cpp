@@ -213,9 +213,9 @@ void setup()
 #endif
 #if RX_PROTOCOL == RX_SMARTPORT
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-    SMARTPORT_SRXL_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV);
+    SMARTPORT_SRXL_FRSKY_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV);
 #else
-    SMARTPORT_SRXL_SERIAL.begin(57600);
+    SMARTPORT_SRXL_FRSKY_SERIAL.begin(57600);
 #endif
     smartport.begin();
 #endif
@@ -223,9 +223,17 @@ void setup()
     xbus.begin();
 #endif
 #if RX_PROTOCOL == RX_SRXL
-    SMARTPORT_SRXL_SERIAL.begin(115200);
-    SMARTPORT_SRXL_SERIAL.setTimeout(SRXLSERIAL_TIMEOUT);
+    SMARTPORT_SRXL_FRSKY_SERIAL.begin(115200);
+    SMARTPORT_SRXL_FRSKY_SERIAL.setTimeout(SRXLSERIAL_TIMEOUT);
     srxl.begin();
+#endif
+#if RX_PROTOCOL == RX_FRSKYD
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    SMARTPORT_SRXL_FRSKY_SERIAL.begin(9600, SERIAL_8N1_RXINV_TXINV);
+#else
+    SMARTPORT_SRXL_FRSKY_SERIAL.begin(9600);
+#endif
+    frsky.begin();
 #endif
 }
 
@@ -240,6 +248,9 @@ void loop()
 #if RX_PROTOCOL == RX_SRXL
     srxl.update();
     srxl.checkSerial();
+#endif
+#if RX_PROTOCOL == RX_FRSKYD
+    frsky.update();
 #endif
     pwmOut.update();
 }

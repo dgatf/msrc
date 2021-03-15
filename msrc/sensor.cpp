@@ -90,3 +90,40 @@ uint32_t SensorCell::valueFormatted()
 {
     return formatCell(cellIndex_, *valueMP_, *valueLP_);
 }
+
+
+Sensord::Sensord(uint8_t dataId, float *valueP, uint8_t refresh, AbstractDevice *deviceP) : dataId_(dataId), valueP_(valueP), refresh_(refresh), deviceP_(deviceP) {}
+
+Sensord::~Sensord()
+{
+}
+
+void Sensord::update()
+{
+    deviceP_->update();
+}
+
+uint16_t Sensord::valueFormatted()
+{
+    return formatData(dataId_, *valueP_);
+}
+
+uint16_t Sensord::timestamp()
+{
+    return timestamp_;
+}
+
+void Sensord::setTimestamp(uint16_t timestamp)
+{
+    timestamp_ = timestamp;
+}
+
+uint8_t Sensord::dataId()
+{
+    return dataId_;
+}
+
+uint8_t Sensord::refresh()
+{
+    return refresh_;
+}

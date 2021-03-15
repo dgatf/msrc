@@ -1,6 +1,7 @@
 #ifndef FORMATDATA_H
 #define FORMATDATA_H
 
+// FrSky Smartport DATA IDs (2 bytes)
 #define ALT_FIRST_ID 0x0100 // 100 m
 #define ALT_LAST_ID 0x010f
 #define VARIO_FIRST_ID 0x0110 // 100 m/s
@@ -95,6 +96,43 @@
 #define FUEL_QTY_FIRST_ID 0x0a10 // 100 ml
 #define FUEL_QTY_LAST_ID 0x0a1f
 
+// FrSky D DATA IDs (1 byte)
+#define GPS_ALT_BP_ID             0x01
+#define TEMP1_ID                  0x02
+#define RPM_ID                    0x03
+#define FUEL_ID                   0x04
+#define TEMP2_ID                  0x05
+#define CELL_VOLT_ID              0x06
+#define GPS_ALT_AP_ID             0x09
+#define BARO_ALT_BP_ID            0x10
+#define GPS_SPEED_BP_ID           0x11
+#define GPS_LONG_BP_ID            0x12
+#define GPS_LAT_BP_ID             0x13
+#define GPS_COURS_BP_ID           0x14
+#define GPS_DAY_MONTH_ID          0x15
+#define GPS_YEAR_ID               0x16
+#define GPS_HOUR_MIN_ID           0x17
+#define GPS_SEC_ID                0x18
+#define GPS_SPEED_AP_ID           0x19
+#define GPS_LONG_AP_ID            0x1A
+#define GPS_LAT_AP_ID             0x1B
+#define GPS_COURS_AP_ID           0x1C
+#define BARO_ALT_AP_ID            0x21
+#define GPS_LONG_EW_ID            0x22
+#define GPS_LAT_NS_ID             0x23
+#define ACCEL_X_ID                0x24
+#define ACCEL_Y_ID                0x25
+#define ACCEL_Z_ID                0x26
+#define CURRENT_ID                0x28
+#define VARIO_ID                  0x30
+#define VFAS_ID                   0x39
+#define VOLTS_BP_ID               0x3A
+#define VOLTS_AP_ID               0x3B
+#define FRSKY_LAST_ID             0x3F
+#define D_RSSI_ID                 0xF0
+#define D_A1_ID                   0xF1
+#define D_A2_ID                   0xF2
+
 #define TYPE_LAT 0
 #define TYPE_LON 1
 #define TYPE_DATE 0
@@ -110,6 +148,7 @@ protected:
     uint32_t formatLatLon(uint8_t type, float value);
     uint32_t formatDateTime(uint8_t type, uint32_t value);
     uint32_t formatCell(uint8_t cellIndex, float value1, float value2);
+    uint16_t formatData(uint8_t dataId, float valueL);
 };
 
 #endif

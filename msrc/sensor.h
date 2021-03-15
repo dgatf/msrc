@@ -67,4 +67,25 @@ public:
     uint32_t valueFormatted();
 };
 
+class Sensord : public FormatData
+{
+protected:
+    uint16_t timestamp_ = 0, value_;
+    uint8_t dataId_;
+    float *valueP_;
+    uint8_t refresh_;
+
+public:
+    AbstractDevice *deviceP_;
+    Sensord(uint8_t dataId, float *value, uint8_t refresh, AbstractDevice *deviceP);
+    ~Sensord();
+    Sensord *nextP = NULL;
+    uint16_t timestamp();
+    void setTimestamp(uint16_t dataId);
+    uint8_t dataId();
+    uint8_t refresh();
+    void update();
+    uint16_t valueFormatted();
+};
+
 #endif

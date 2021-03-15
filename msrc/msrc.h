@@ -36,14 +36,17 @@
 #if RX_PROTOCOL == RX_SRXL
 #include "srxl.h"
 #endif
+#if RX_PROTOCOL == RX_FRSKYD
+#include "frsky_d.h"
+#endif
 
 PwmOut pwmOut;
 
 #if RX_PROTOCOL == RX_SMARTPORT
 #ifdef SOFTWARE_SERIAL
-SoftwareSerial SMARTPORT_SRXL_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX, true);
+SoftwareSerial SMARTPORT_SRXL_FRSKY_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX, true);
 #endif
-Smartport smartport(SMARTPORT_SRXL_SERIAL);
+Smartport smartport(SMARTPORT_SRXL_FRSKY_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_XBUS
@@ -54,7 +57,14 @@ Xbus xbus;
 #ifdef SOFTWARE_SERIAL
 SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
 #endif
-Srxl srxl(SMARTPORT_SRXL_SERIAL);
+Srxl srxl(SMARTPORT_SRXL_FRSKY_SERIAL);
+#endif
+
+#if RX_PROTOCOL == RX_FRSKYD
+#ifdef SOFTWARE_SERIAL
+SoftwareSerial SMARTPORT_SRXL_FRSKY_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX, true);
+#endif
+Frsky frsky(SMARTPORT_SRXL_FRSKY_SERIAL);
 #endif
 
 void setup();
