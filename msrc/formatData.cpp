@@ -46,9 +46,10 @@ uint32_t FormatData::formatCell(uint8_t cellIndex, float value1, float value2)
 uint32_t FormatData::formatLatLon(uint8_t type, float value)
 {
     uint32_t data = 0;
-    if (value < 0) 
+    if (value < 0)
         data |= (uint32_t)1 << 30;
-    if (type == TYPE_LON) {
+    if (type == TYPE_LON)
+    {
         data |= (uint32_t)1 << 31;
     }
     data |= (uint32_t)abs(round(value * 10000));
@@ -60,8 +61,66 @@ uint32_t FormatData::formatDateTime(uint8_t type, uint32_t value)
     uint8_t dayHour = value / 10000;
     uint8_t monthMin = value / 100 - dayHour * 100;
     uint8_t yearSec = value - (value / 100) * 100;
-    if (type == TYPE_DATE) {
+    if (type == TYPE_DATE)
+    {
         return (uint32_t)yearSec << 24 | (uint32_t)monthMin << 16 | dayHour << 8 | 0xFF;
     }
     return (uint32_t)dayHour << 24 | (uint32_t)monthMin << 16 | yearSec << 8;
+}
+
+uint16_t FormatData::formatData(uint8_t dataId, float value)
+{
+    if (dataId == GPS_ALT_BP_ID ||
+        dataId == BARO_ALT_BP_ID ||
+        dataId == GPS_SPEED_BP_ID ||
+        dataId == GPS_COURS_BP_ID)
+        return value;
+
+    if (dataId == GPS_ALT_AP_ID ||
+        dataId == BARO_ALT_AP_ID ||
+        dataId == GPS_SPEED_AP_ID ||
+        dataId == GPS_LONG_AP_ID ||
+        dataId == GPS_LAT_AP_ID ||
+        dataId == GPS_COURS_AP_ID)
+        return (value - (int16_t)value) * 10000;
+
+    if (dataId == VOLTS_BP_ID)
+        return value * 2;
+
+    if (dataId == VOLTS_AP_ID)
+        return ((value * 2) - (int16_t)(value * 2)) * 10000;
+
+    if (dataId == GPS_LONG_BP_ID || dataId == GPS_LAT_BP_ID)
+    {
+        uint8_t deg = value / 60;
+        uint8_t min = (int)value % 60;
+        char buf[6];
+        sprintf(buf, "%d%d", deg, min);
+        return atoi(buf);
+    }
+
+    if (dataId == GPS_YEAR_ID)
+    {
+        return value / 10000;
+    }
+
+    if (dataId == GPS_DAY_MONTH_ID)
+    {
+        return value - (int16_t)(value / 10000);
+    }
+
+    if (dataId == GPS_HOUR_MIN_ID)
+    {
+        return value / 100;
+    }
+
+    if (dataId == GPS_SEC_ID)
+    {
+        return value - (int16_t)(value / 100);
+    } 
+
+    if (dataId == CURRENT_ID || dataId == VFAS_ID)
+        return round(value * 10);
+
+    return round(value);
 }
