@@ -79,7 +79,7 @@ Depending on the receiver protocol connect to the Rx as follows
 ### Frsky D, Smartport and SRXL
 
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
-  <i>Frsky D, Smartport or SRXL</i><br><br></p>
+  <i>Frsky D (Signal = Rx), Smartport or SRXL</i><br><br></p>
 
 ### XBUS
 
@@ -189,7 +189,7 @@ Options:
 
 Configuration is done in *config.h*
 
-## 6. OpenTx sensors
+## 6. OpenTx sensors (Smartport)
 
 The default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
 
