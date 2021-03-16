@@ -74,7 +74,7 @@ uint16_t FormatData::formatData(uint8_t dataId, float value)
         dataId == BARO_ALT_BP_ID ||
         dataId == GPS_SPEED_BP_ID ||
         dataId == GPS_COURS_BP_ID)
-        return value;
+        return (int16_t)value;
 
     if (dataId == GPS_ALT_AP_ID ||
         dataId == BARO_ALT_AP_ID ||
@@ -82,7 +82,7 @@ uint16_t FormatData::formatData(uint8_t dataId, float value)
         dataId == GPS_LONG_AP_ID ||
         dataId == GPS_LAT_AP_ID ||
         dataId == GPS_COURS_AP_ID)
-        return (value - (int16_t)value) * 10000;
+        return (abs(value) - (int16_t)abs(value)) * 10000;
 
     if (dataId == VOLTS_BP_ID)
         return value * 2;
@@ -92,11 +92,24 @@ uint16_t FormatData::formatData(uint8_t dataId, float value)
 
     if (dataId == GPS_LONG_BP_ID || dataId == GPS_LAT_BP_ID)
     {
+        value = abs(value);
         uint8_t deg = value / 60;
         uint8_t min = (int)value % 60;
         char buf[6];
         sprintf(buf, "%d%d", deg, min);
         return atoi(buf);
+    }
+
+    if (dataId == GPS_LONG_EW_ID)
+    {
+        if (value >= 0) return 'E';
+        return 'O';
+    }
+
+    if (dataId == GPS_LAT_NS_ID)
+    {
+        if (value >= 0) return 'N';
+        return 'S';
     }
 
     if (dataId == GPS_YEAR_ID)
@@ -106,7 +119,7 @@ uint16_t FormatData::formatData(uint8_t dataId, float value)
 
     if (dataId == GPS_DAY_MONTH_ID)
     {
-        return value - (int16_t)(value / 10000);
+        return value - (uint32_t)(value / 10000) * 10000;
     }
 
     if (dataId == GPS_HOUR_MIN_ID)
@@ -116,7 +129,7 @@ uint16_t FormatData::formatData(uint8_t dataId, float value)
 
     if (dataId == GPS_SEC_ID)
     {
-        return value - (int16_t)(value / 100);
+        return value - (uint32_t)(value / 100) * 100;
     } 
 
     if (dataId == CURRENT_ID || dataId == VFAS_ID)
