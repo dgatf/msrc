@@ -102,13 +102,15 @@ uint16_t FormatData::formatData(uint8_t dataId, float value)
 
     if (dataId == GPS_LONG_EW_ID)
     {
-        if (value >= 0) return 'E';
+        if (value >= 0)
+            return 'E';
         return 'O';
     }
 
     if (dataId == GPS_LAT_NS_ID)
     {
-        if (value >= 0) return 'N';
+        if (value >= 0)
+            return 'N';
         return 'S';
     }
 
@@ -130,10 +132,13 @@ uint16_t FormatData::formatData(uint8_t dataId, float value)
     if (dataId == GPS_SEC_ID)
     {
         return value - (uint32_t)(value / 100) * 100;
-    } 
+    }
 
     if (dataId == CURRENT_ID || dataId == VFAS_ID)
         return round(value * 10);
+
+    if (dataId == RPM_ID)
+        return value / 60;
 
     return round(value);
 }
