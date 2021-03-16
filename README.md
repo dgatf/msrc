@@ -69,7 +69,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 
 The following Rx protocols are supported:
 
-- Frsky Smartport : inverted serial, 57200 bps
+- Frsky Smartport : inverted serial, 57600 bps
 - Frsky D : inverted serial, 9200 bps
 - Spektrum SRXL V5: serial, 115200 bps
 - Spektrum XBUS: I2C
