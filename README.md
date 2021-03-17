@@ -94,7 +94,7 @@ Depending on the receiver protocol connect to the Rx as follows
 
 Compatible ESC serial protocols: Hobbywing V3/V4/V5 and Kontronik
 
-Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM value in serial telemetry
+Optionally a PWM signal can be generated from the RPM value in serial telemetry
 
 <p align="center"><img src="./images/serial.png" width="400"><br>
   <i>ESC serial</i><br><br></p>
