@@ -99,6 +99,11 @@ Optionally a PWM signal (PIN 10, 3.3V, 50% duty) can be generated from the RPM v
 <p align="center"><img src="./images/serial.png" width="400"><br>
   <i>ESC serial</i><br><br></p>
 
+Remark:
+ - In HW V3 the telemetry port is the program port. It is a servo male plug on the ESC
+ - In HW V4/V5 the telemetry port is a wired servo female plug. Don't confuse with RPM PWM signal connector or the program port
+ - For HW ESCs be sure the firmware installed is NOT VBAR version
+
 #### PWM signal
 
 If the ESC have a PWM signal or a phase sensor is installed, RPMs can be measured. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
