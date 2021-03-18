@@ -33,7 +33,13 @@ private:
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_, type_;
     uint16_t thr_ = 0,  pwm_ = 0;
     float rpm_ = 0, voltage_ = 0, current_ = 0, tempFet_ = 0, tempBec_ = 0;
-
+#ifdef ESC_SIGNATURE
+#ifdef SIM_SENSORS
+    uint8_t signature_[12] = {0x03, 0xE8, 0x01, 0x08, 0x5B, 0x00, 0x01, 0x00, 0x21, 0x21, 0x10, 0x20};
+#else
+    uint8_t signature_[12] = {0};
+#endif
+#endif
     float calcVolt(uint16_t voltRaw);
     float calcTemp(uint16_t tempRaw);
     float calcCurr(uint16_t currentRaw);
@@ -49,7 +55,10 @@ public:
     float *currentP();
     float *tempFetP();
     float *tempBecP();
-    
+#ifdef ESC_SIGNATURE
+    float *signatureP();   
+#endif
+
 };
 
 #endif

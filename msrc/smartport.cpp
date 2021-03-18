@@ -418,6 +418,14 @@ void Smartport::setConfig(Config &config)
         addSensor(sensorP);
         sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         addSensor(sensorP);
+#ifdef ESC_SIGNATURE
+        sensorP = new Sensor(DIY_FIRST_ID, esc->signatureP(), 20, esc);
+        addSensor(sensorP);
+        sensorP = new Sensor(DIY_FIRST_ID + 1, esc->signatureP() + 1, 20, esc);
+        addSensor(sensorP);
+        sensorP = new Sensor(DIY_FIRST_ID + 2, esc->signatureP() + 2, 20, esc);
+        addSensor(sensorP);
+#endif
     }
     if (config.protocol == PROTOCOL_CASTLE)
     {

@@ -8,7 +8,7 @@
 
 
 // Select RX protocol
-#define RX_PROTOCOL RX_FRSKYD // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_FRSKYD
+#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_FRSKYD
 
 // Select SRLX valriant (only for SRXL)
 #define SRXL_VARIANT SRXL_V5 // Only implemented SRXL_V5 (SPEKTRUM)
@@ -19,8 +19,11 @@
 // Pwm out
 #define PWMOUT_DUTY 0.5 // 0.5 = 50%
 
-// Esc serial
+// GPS serial
 #define GPS_BAUD_RATE 9600
+
+// HW signature
+#define ESC_SIGNATURE
 
 // Pins & Serial ports
 

@@ -13,6 +13,14 @@ void Sensor::update()
 
 uint32_t Sensor::valueFormatted()
 {
+#ifdef ESC_SIGNATURE
+    if (dataId_ > DIY_STREAM_FIRST_ID && dataId_  < DIY_LAST_ID)
+    {
+        uint32_t buffer;
+        memcpy(&buffer, valueLP_, 4);
+        return buffer;
+    }
+#endif
     return formatData(dataId_, *valueLP_);
 }
 

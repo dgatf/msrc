@@ -13,6 +13,9 @@ void EscHW4::update()
             if (serial_.peek() == 0x9B) // esc signature
             {
                 cont = serial_.readBytes(data, 12);
+#ifdef ESC_SIGNATURE
+            memcpy(&signature_[0], &data[1], 10);
+#endif
                 //if (type_ == ESCHW4_TYPE_V5_HV + 1)
                 //{
                 //    uint8_t i = 0;
@@ -56,6 +59,10 @@ void EscHW4::update()
                         if (millis() > 10000 && voltage_ > 1)
                             cellCount_ = setCellCount(voltage_);
                     cellVoltage_ = voltage_ / cellCount_;
+#ifdef ESC_SIGNATURE
+                    signature_[10] = data[13];
+                    signature_[11] = data[12];
+#endif
 #if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
                     uint32_t pn =
                         (uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2];
@@ -144,3 +151,10 @@ float *EscHW4::tempBecP()
 {
     return &tempBec_;
 }
+
+#ifdef ESC_SIGNATURE
+float *EscHW4::signatureP()
+{
+    return (float*)&signature_[0];
+}
+#endif
