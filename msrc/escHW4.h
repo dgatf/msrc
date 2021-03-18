@@ -23,10 +23,10 @@
 class EscHW4 : public AbstractDevice, public EscCell
 {
 private:
-    /*const uint8_t signature_[4][12] = {{0x9B, 0x03, 0xE8, 0x01, 0x08, 0x5B, 0x00, 0x01, 0x00, 0x21, 0x21, 0xB9},      // ESCHW4_TYPE_V4_LV
-                                       {0x9B, 0x03, 0xE8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x21, 0xB9},      // BYTES 5-9? ESCHW4_TYPE_V4_HV
-                                       {0x9B, 0x03, 0xE8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x21, 0xB9},      // BYTES 5-9? ESCHW4_TYPE_V5_LV
-                                       {0x9B, 0x03, 0xE8, 0x01, 0x0B, 0x41, 0x21, 0x44, 0xB9, 0x21, 0x21, 0xB9}};     // ESCHW4_TYPE_V5_HV*/
+    /*const uint32_t signatureMatrix_[4] =  {0x01005B08, // ESCHW4_TYPE_V4_LV
+                                           0x3D0A0D02, // ESCHW4_TYPE_V4_HV
+                                           0x00000000, // ESCHW4_TYPE_V5_LV
+                                           0x4421410B}; // ESCHW4_TYPE_V5_HV*/
     const float voltageDivisor_[4] = {11, 21, 11, 21};
     const float rawCurrentOffset_[4] = {15, 15, 660, 660};
     Stream &serial_;

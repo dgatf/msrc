@@ -13,20 +13,17 @@ void EscHW4::update()
             if (serial_.peek() == 0x9B) // esc signature
             {
                 cont = serial_.readBytes(data, 12);
-#ifdef ESC_SIGNATURE
-            memcpy(&signature_[0], &data[1], 10);
-#endif
-                //if (type_ == ESCHW4_TYPE_V5_HV + 1)
-                //{
-                //    uint8_t i = 0;
-                /*while (memcmp(data, signature_[i], 12) != 0 && i < 4)
-                    {
-                        i++;
-                    }
-                    if (memcmp(data, signature_[i], 12) == 0)
+
+                /*for (uint8_t i = 0; i < 4; i++)
+                    if (memcmp(&signatureMatrix_[i], data, 4) == 0)
                     {
                         type_ = i;
+                        break;
                     }*/
+
+#ifdef ESC_SIGNATURE
+                memcpy(&signature_[0], &data[1], 10);
+#endif
 #if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
                 DEBUG_SERIAL.print("S:");
                 for (int i = 0; i < 12; i++)
@@ -155,6 +152,6 @@ float *EscHW4::tempBecP()
 #ifdef ESC_SIGNATURE
 float *EscHW4::signatureP()
 {
-    return (float*)&signature_[0];
+    return (float *)&signature_[0];
 }
 #endif
