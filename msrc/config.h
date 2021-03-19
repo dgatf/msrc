@@ -8,7 +8,7 @@
 
 
 // Select RX protocol
-#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_FRSKYD
+#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_FRSKY
 
 // Select SRLX valriant (only for SRXL)
 #define SRXL_VARIANT SRXL_V5 // Only implemented SRXL_V5 (SPEKTRUM)
@@ -170,10 +170,12 @@
 
 #define N_TO_ALPHA(VALUE) (2.0 / (1 + VALUE) * 100)
 
-#define RX_SMARTPORT 1
-#define RX_XBUS 2
-#define RX_SRXL 3
-#define RX_IBUS 4
+#define RX_SMARTPORT 0
+#define RX_XBUS 1
+#define RX_SRXL 2
+#define RX_IBUS 3
+#define RX_FRSKY 4
+#define RX_BST 5
 
 #define PROTOCOL_NONE 0
 #define PROTOCOL_HW_V3 1

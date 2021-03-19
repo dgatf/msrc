@@ -36,7 +36,7 @@
 #if RX_PROTOCOL == RX_SRXL
 #include "srxl.h"
 #endif
-#if RX_PROTOCOL == RX_FRSKYD
+#if RX_PROTOCOL == RX_FRSKY
 #include "frsky_d.h"
 #endif
 
@@ -60,7 +60,7 @@ SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
 Srxl srxl(SMARTPORT_SRXL_FRSKY_SERIAL);
 #endif
 
-#if RX_PROTOCOL == RX_FRSKYD
+#if RX_PROTOCOL == RX_FRSKY
 #ifdef SOFTWARE_SERIAL
 SoftwareSerial SMARTPORT_SRXL_FRSKY_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX, true);
 #endif
