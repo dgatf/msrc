@@ -21,13 +21,9 @@ void Frsky::sendByte(uint8_t c, bool header)
     if ((c == 0x5D || c == 0x5E) && !header)
     {
         serial_.write(0x5D);
-        Serial.print("X");
         c ^= 0x60;
     }
     serial_.write(c);
-    Serial.print(c, HEX);
-    Serial.print(" ");
-
 }
 
 void Frsky::sendData(uint8_t dataId, uint16_t value)
@@ -44,7 +40,6 @@ void Frsky::sendData(uint8_t dataId, uint16_t value)
     sendByte(u8p[1], false);
     // footer
     sendByte(0x5E, true);
-    Serial.println();
 
     digitalWrite(LED_BUILTIN, LOW);
 }
@@ -173,7 +168,7 @@ void Frsky::setConfig(Config &config)
         addSensor(sensorP);
         sensorP = new Sensord(TEMP1_ID, esc->tempFetP(), config.refresh.temp, esc);
         addSensor(sensorP);
-        sensorP = new Sensord(TEMP2_ID + 1, esc->tempBecP(), config.refresh.temp, esc);
+        sensorP = new Sensord(TEMP2_ID, esc->tempBecP(), config.refresh.temp, esc);
         addSensor(sensorP);
         sensorP = new Sensord(VFAS_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         addSensor(sensorP);
