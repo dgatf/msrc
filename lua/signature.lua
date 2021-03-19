@@ -32,9 +32,9 @@ local function run_func(event)
         return 2
     end
 
-    local value1 = getValue(0x5100)
-    local value2 = getValue(0x5101)
-    local value3 = getValue(0x5102)
+    local value1 = getValue("5100")
+    local value2 = getValue("5101")
+    local value3 = getValue("5102")
 
     local bit1 = bit32.extract(value1, 0, 8)
     local bit2 = bit32.extract(value1, 8, 8)
