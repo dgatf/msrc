@@ -235,6 +235,11 @@ void setup()
 #endif
     frsky.begin();
 #endif
+#if RX_PROTOCOL == RX_IBUS
+    SMARTPORT_SRXL_FRSKY_SERIAL.begin(115200);
+    SMARTPORT_SRXL_FRSKY_SERIAL.setTimeout(IBUS_TIMEOUT);
+    ibus.begin();
+#endif
 }
 
 void loop()
