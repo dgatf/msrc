@@ -1,8 +1,8 @@
-# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL
+# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, Ibus
 
 This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors. It adds support for several ESC telemetry protocols
 
-Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5
+Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus
 
 Compatible ESCs: Hobbywing V3/V4/V5, Kontronik, Castle Link
 
@@ -76,10 +76,12 @@ The following Rx protocols are supported:
 
 Depending on the receiver protocol connect to the Rx as follows
 
-### Frsky D, Smartport and SRXL
+### Frsky D, Smartport, SRXL and Ibus
 
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
-  <i>Frsky D (Signal = Rx), Smartport or SRXL</i><br><br></p>
+  <i>Frsky D, Smartport or SRXL</i><br><br></p>
+
+  Frsky D, Ibus: Signal = Rx
 
 ### XBUS
 
@@ -423,7 +425,7 @@ Adjust constants in *pressure.h*:
 
 0.8
 
-- Added Rx protocols Frsky D, Spektrum XBUS, Spektrum SRXL V5
+- Added Rx protocols Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
 - Added support for Kontronik ESC
