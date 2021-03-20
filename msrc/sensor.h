@@ -88,4 +88,21 @@ public:
     uint16_t valueFormatted();
 };
 
+class SensorIbus : public FormatData
+{
+protected:
+    uint8_t dataId_;
+    uint8_t type_;
+    float *valueP_;
+
+public:
+    AbstractDevice *deviceP_;
+    SensorIbus(uint8_t dataId, uint8_t type, float *value, AbstractDevice *deviceP);
+    ~SensorIbus();
+    uint8_t dataId();
+    uint8_t type();
+    void update();
+    uint32_t valueFormatted();
+};
+
 #endif

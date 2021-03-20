@@ -97,41 +97,97 @@
 #define FUEL_QTY_LAST_ID 0x0a1f
 
 // FrSky D DATA IDs (1 byte)
-#define GPS_ALT_BP_ID             0x01
-#define TEMP1_ID                  0x02
-#define RPM_ID                    0x03
-#define FUEL_ID                   0x04
-#define TEMP2_ID                  0x05
-#define CELL_VOLT_ID              0x06
-#define GPS_ALT_AP_ID             0x09
-#define BARO_ALT_BP_ID            0x10
-#define GPS_SPEED_BP_ID           0x11
-#define GPS_LONG_BP_ID            0x12
-#define GPS_LAT_BP_ID             0x13
-#define GPS_COURS_BP_ID           0x14
-#define GPS_DAY_MONTH_ID          0x15
-#define GPS_YEAR_ID               0x16
-#define GPS_HOUR_MIN_ID           0x17
-#define GPS_SEC_ID                0x18
-#define GPS_SPEED_AP_ID           0x19
-#define GPS_LONG_AP_ID            0x1A
-#define GPS_LAT_AP_ID             0x1B
-#define GPS_COURS_AP_ID           0x1C
-#define BARO_ALT_AP_ID            0x21
-#define GPS_LONG_EW_ID            0x22
-#define GPS_LAT_NS_ID             0x23
-#define ACCEL_X_ID                0x24
-#define ACCEL_Y_ID                0x25
-#define ACCEL_Z_ID                0x26
-#define CURRENT_ID                0x28
-#define VARIO_ID                  0x30
-#define VFAS_ID                   0x39
-#define VOLTS_BP_ID               0x3A
-#define VOLTS_AP_ID               0x3B
-#define FRSKY_LAST_ID             0x3F
-#define D_RSSI_ID                 0xF0
-#define D_A1_ID                   0xF1
-#define D_A2_ID                   0xF2
+#define GPS_ALT_BP_ID 0x01
+#define TEMP1_ID 0x02
+#define RPM_ID 0x03
+#define FUEL_ID 0x04
+#define TEMP2_ID 0x05
+#define CELL_VOLT_ID 0x06
+#define GPS_ALT_AP_ID 0x09
+#define BARO_ALT_BP_ID 0x10
+#define GPS_SPEED_BP_ID 0x11
+#define GPS_LONG_BP_ID 0x12
+#define GPS_LAT_BP_ID 0x13
+#define GPS_COURS_BP_ID 0x14
+#define GPS_DAY_MONTH_ID 0x15
+#define GPS_YEAR_ID 0x16
+#define GPS_HOUR_MIN_ID 0x17
+#define GPS_SEC_ID 0x18
+#define GPS_SPEED_AP_ID 0x19
+#define GPS_LONG_AP_ID 0x1A
+#define GPS_LAT_AP_ID 0x1B
+#define GPS_COURS_AP_ID 0x1C
+#define BARO_ALT_AP_ID 0x21
+#define GPS_LONG_EW_ID 0x22
+#define GPS_LAT_NS_ID 0x23
+#define ACCEL_X_ID 0x24
+#define ACCEL_Y_ID 0x25
+#define ACCEL_Z_ID 0x26
+#define CURRENT_ID 0x28
+#define VARIO_ID 0x30
+#define VFAS_ID 0x39
+#define VOLTS_BP_ID 0x3A
+#define VOLTS_AP_ID 0x3B
+#define FRSKY_LAST_ID 0x3F
+#define D_RSSI_ID 0xF0
+#define D_A1_ID 0xF1
+#define D_A2_ID 0xF2
+
+// Flysky IBUS Data Id
+#define AFHDS2A_ID_VOLTAGE 0x00        // Internal Voltage
+#define AFHDS2A_ID_TEMPERATURE 0x01    // Temperature
+#define AFHDS2A_ID_MOT 0x02            // RPM
+#define AFHDS2A_ID_EXTV 0x03           // External Voltage
+#define AFHDS2A_ID_CELL_VOLTAGE 0x04   // Avg Cell voltage
+#define AFHDS2A_ID_BAT_CURR 0x05       // battery current A * 100
+#define AFHDS2A_ID_FUEL 0x06           // remaining battery percentage / mah drawn otherwise or fuel level no unit!
+#define AFHDS2A_ID_RPM 0x07            // throttle value / battery capacity
+#define AFHDS2A_ID_CMP_HEAD 0x08       // Heading  0..360 deg 0north 2bytes
+#define AFHDS2A_ID_CLIMB_RATE 0x09     // 2 bytes m/s *100 signed
+#define AFHDS2A_ID_COG 0x0A            // 2 bytes  Course over ground(NOT heading but direction of movement) in degrees * 100 0.0..359.99 degrees. unknown max uint
+#define AFHDS2A_ID_GPS_STATUS 0x0B     // 2 bytes
+#define AFHDS2A_ID_ACC_X 0x0C          // 2 bytes m/s *100 signed
+#define AFHDS2A_ID_ACC_Y 0x0D          // 2 bytes m/s *100 signed
+#define AFHDS2A_ID_ACC_Z 0x0E          // 2 bytes m/s *100 signed
+#define AFHDS2A_ID_ROLL 0x0F           // 2 bytes deg *100 signed
+#define AFHDS2A_ID_PITCH 0x10          // 2 bytes deg *100 signed
+#define AFHDS2A_ID_YAW 0x11            // 2 bytes deg *100 signed
+#define AFHDS2A_ID_VERTICAL_SPEED 0x12 // 2 bytes m/s *100 signed
+#define AFHDS2A_ID_GROUND_SPEED 0x13   // 2 bytes m/s *100 different unit than build-in sensor
+#define AFHDS2A_ID_GPS_DIST 0x14       // 2 bytes distance from home m unsigned
+#define AFHDS2A_ID_ARMED 0x15          // 2 bytes
+#define AFHDS2A_ID_FLIGHT_MODE 0x16    // 2 bytes
+#define AFHDS2A_ID_PRES 0x41           // Pressure
+#define AFHDS2A_ID_ODO1 0x7C           // Odometer1
+#define AFHDS2A_ID_ODO2 0x7D           // Odometer2
+#define AFHDS2A_ID_SPE 0x7E            // Speed 2 bytes km/h
+#define AFHDS2A_ID_TX_V 0x7F           // TX Voltage
+
+#define AFHDS2A_ID_GPS_LAT 0x80 // 4bytes signed WGS84 in degrees * 1E7
+#define AFHDS2A_ID_GPS_LON 0x81 // 4bytes signed WGS84 in degrees * 1E7
+#define AFHDS2A_ID_GPS_ALT 0x82 // 4bytes signed!!! GPS alt m*100
+#define AFHDS2A_ID_ALT 0x83     // 4bytes signed!!! Alt m*100
+#define AFHDS2A_ID_S84 0x84
+#define AFHDS2A_ID_S85 0x85
+#define AFHDS2A_ID_S86 0x86
+#define AFHDS2A_ID_S87 0x87
+#define AFHDS2A_ID_S88 0x88
+#define AFHDS2A_ID_S89 0x89
+#define AFHDS2A_ID_S8a 0x8A
+#define AFHDS2A_ID_RX_SIG_AFHDS3 0xF7 // SIG
+#define AFHDS2A_ID_RX_SNR_AFHDS3 0xF8 // SNR
+#define AFHDS2A_ID_ALT_FLYSKY 0xF9    // Altitude 2 bytes signed in m - used in FlySky native TX
+#define AFHDS2A_ID_RX_SNR 0xFA        // SNR
+#define AFHDS2A_ID_RX_NOISE 0xFB      // Noise
+#define AFHDS2A_ID_RX_RSSI 0xFC       // RSSI
+#define AFHDS2A_ID_RX_ERR_RATE 0xFE   // Error rate
+#define AFHDS2A_ID_END 0xFF
+
+// AC type telemetry with multiple values in one packet
+#define AFHDS2A_ID_GPS_FULL 0xFD
+#define AFHDS2A_ID_VOLT_FULL 0xF0
+#define AFHDS2A_ID_ACC_FULL 0xEF
+#define AFHDS2A_ID_TX_RSSI 0x200 // Pseudo id outside 1 byte range of FlySky sensors
 
 #define TYPE_LAT 0
 #define TYPE_LON 1
@@ -148,7 +204,8 @@ protected:
     uint32_t formatLatLon(uint8_t type, float value);
     uint32_t formatDateTime(uint8_t type, uint32_t value);
     uint32_t formatCell(uint8_t cellIndex, float value1, float value2);
-    uint16_t formatData(uint8_t dataId, float valueL);
+    uint16_t formatData(uint8_t dataId, float value);
+    uint16_t formatIbus(uint8_t dataId, float value);
 };
 
 #endif

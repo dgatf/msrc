@@ -142,3 +142,28 @@ uint16_t FormatData::formatData(uint8_t dataId, float value)
 
     return round(value);
 }
+
+uint16_t FormatData::formatIbus(uint8_t dataId, float value)
+{
+    
+    if (dataId == AFHDS2A_ID_TEMPERATURE)
+        return round(value * 10);
+
+    if (dataId == AFHDS2A_ID_EXTV ||
+        dataId == AFHDS2A_ID_CELL_VOLTAGE ||
+        dataId == AFHDS2A_ID_BAT_CURR ||
+        dataId == AFHDS2A_ID_CLIMB_RATE ||
+        dataId == AFHDS2A_ID_COG ||
+        dataId == AFHDS2A_ID_VERTICAL_SPEED ||
+        dataId == AFHDS2A_ID_GROUND_SPEED ||
+        dataId == AFHDS2A_ID_GPS_ALT ||
+        dataId == AFHDS2A_ID_PRES ||
+        dataId == AFHDS2A_ID_ALT)
+        return round(value * 100);
+
+    if (dataId == AFHDS2A_ID_GPS_LAT ||
+        dataId == AFHDS2A_ID_GPS_LON)
+        return round(value / 60 * 1E7);
+
+    return round(value);
+}

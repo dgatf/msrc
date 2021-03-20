@@ -135,3 +135,29 @@ uint8_t Sensord::refresh()
 {
     return refresh_;
 }
+
+SensorIbus::SensorIbus(uint8_t dataId, uint8_t type, float *valueP, AbstractDevice *deviceP) : dataId_(dataId), type_(type), valueP_(valueP), deviceP_(deviceP) {}
+
+SensorIbus::~SensorIbus()
+{
+}
+
+void SensorIbus::update()
+{
+    deviceP_->update();
+}
+
+uint32_t SensorIbus::valueFormatted()
+{
+    return formatIbus(dataId_, *valueP_);
+}
+
+uint8_t SensorIbus::dataId()
+{
+    return dataId_;
+}
+
+uint8_t SensorIbus::type()
+{
+    return type_;
+}
