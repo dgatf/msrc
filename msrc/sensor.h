@@ -92,8 +92,8 @@ class SensorIbus : public FormatData
 {
 protected:
     uint8_t dataId_;
-    float *valueP_;
     uint8_t type_;
+    float *valueP_;
 
 public:
     AbstractDevice *deviceP_;

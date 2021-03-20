@@ -25,13 +25,19 @@ void Ibus::sendByte(uint8_t c, uint16_t *crcP)
         *crcP = crc;
     }
     serial_.write(c);
+#ifdef DEBUG
+    DEBUG_SERIAL.print(c, HEX);
+    DEBUG_SERIAL.print(" ");
+#endif
 }
 
 void Ibus::sendData(uint8_t command, uint8_t address)
 {
     digitalWrite(LED_BUILTIN, HIGH);
+
     uint8_t *u8P;
     uint16_t crc = 0;
+    uint32_t value;
 
     // get value
     uint8_t lenght;
@@ -41,29 +47,17 @@ void Ibus::sendData(uint8_t command, uint8_t address)
         lenght = 0;
         break;
     case IBUS_COMMAND_TYPE:
-        u8P[0] = sensorIbusP[address]->dataId();
-        u8P[1] = 0x02;
+        value = 0x02 << 8 | sensorIbusP[address]->dataId();
+        u8P = (uint8_t *)&value;
         lenght = 2;
         break;
     case IBUS_COMMAND_MEASURE:
-        if (sensorIbusP[address]->type() == IBUS_TYPE_S16)
-        {
-            int16_t value = sensorIbusP[address]->valueFormatted();
-            u8P = (uint8_t *)&value;
+        value = sensorIbusP[address]->valueFormatted();
+        u8P = (uint8_t *)&value;
+        if (sensorIbusP[address]->type() == IBUS_TYPE_S16 || sensorIbusP[address]->type() == IBUS_TYPE_U16)
             lenght = 2;
-        }
-        else if (sensorIbusP[address]->type() == IBUS_TYPE_U16)
-        {
-            uint16_t value = sensorIbusP[address]->valueFormatted();
-            u8P = (uint8_t *)&value;
-            lenght = 2;
-        }
         else
-        {
-            int32_t value = sensorIbusP[address]->valueFormatted();
-            u8P = (uint8_t *)&value;
             lenght = 4;
-        }
         break;
     }
 
@@ -74,7 +68,7 @@ void Ibus::sendData(uint8_t command, uint8_t address)
     sendByte(command << 4 | address, &crc);
 
     //value
-    for (uint8_t i = 4 - lenght; i < 4; i++)
+    for (uint8_t i = 0; i < lenght; i++)
         sendByte(u8P[i], &crc);
 
     // crc
@@ -84,14 +78,21 @@ void Ibus::sendData(uint8_t command, uint8_t address)
     sendByte(u8P[1], NULL);
 
     digitalWrite(LED_BUILTIN, LOW);
+
+#ifdef DEBUG
+    DEBUG_SERIAL.println();
+#endif
 }
 
 void Ibus::addSensor(SensorIbus *newSensorIbusP)
 {
     for (uint8_t i = 0; i < 16; i++)
     {
-        if (sensorIbusP == NULL || sensorMask & 1 << i)
+        if (sensorIbusP[i] == NULL && sensorMask & 1 << i)
+        {
             sensorIbusP[i] = newSensorIbusP;
+            return;
+        }
     }
 }
 
@@ -134,35 +135,46 @@ uint8_t Ibus::read(uint8_t &command, uint8_t &address)
 
 void Ibus::update()
 {
-    uint8_t command;
-    uint8_t address;
 #if defined(SIM_RX)
+    static uint8_t command = IBUS_COMMAND_DISCOVER;
+    static uint8_t address = 0;
     if (true)
     {
         static uint16_t ts = 0;
-        uint8_t packetType = RECEIVED_NONE;
-        if (millis() - ts > 12)
+        uint8_t packetType = IBUS_RECEIVED_NONE;
+        if ((uint16_t)millis() - ts > 100)
         {
-            packetType = RECEIVED_POLL;
+            packetType = IBUS_RECEIVED_POLL;
+            address++;
             ts = millis();
+            if (address == 16)
+            {
+                address = 0;
+                if (command < IBUS_COMMAND_MEASURE)
+                    command++;
+            }
         }
 #else
+    uint8_t command;
+    uint8_t address;
     if (serial_.available())
     {
         uint8_t packetType = read(command, address);
 #endif
-        if (packetType == IBUS_RECEIVED_POLL && (sensorMask & 1 << address))
+        if (packetType == IBUS_RECEIVED_POLL && sensorIbusP[address])
         {
             sendData(command, address);
         }
     }
     // update sensor
     static uint8_t cont = 0;
-    if (sensorIbusP[cont] != NULL)
+    if (sensorIbusP[cont])
     {
         sensorIbusP[cont]->update();
     }
     cont++;
+    if (cont == 16)
+        cont = 0;
 }
 
 void Ibus::setConfig(Config &config)

@@ -39,7 +39,7 @@ class Ibus
 private:
     Stream &serial_;
     SensorIbus *sensorIbusP[16] = {NULL};
-    uint16_t sensorMask = 0B0111111111111111;
+    uint16_t sensorMask = 0B1111111111111110;
     void sendByte(uint8_t c, uint16_t *crcP);
 
 public:

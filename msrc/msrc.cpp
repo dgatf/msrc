@@ -257,5 +257,8 @@ void loop()
 #if RX_PROTOCOL == RX_FRSKY
     frsky.update();
 #endif
+#if RX_PROTOCOL == RX_IBUS
+    ibus.update();
+#endif
     pwmOut.update();
 }
