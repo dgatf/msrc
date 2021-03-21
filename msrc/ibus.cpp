@@ -120,14 +120,15 @@ uint8_t Ibus::read(uint8_t &command, uint8_t &address)
 {
     if (serial_.available())
     {
-        uint8_t data[9];
+        uint8_t data[40];
         data[0] = serial_.read();
         serial_.readBytes(&data[1], data[0]);
         if (checkCrc(data))
         {
             command = data[1] >> 4;
             address = data[1] & 0x0F;
-            return IBUS_RECEIVED_POLL;
+            if (command == IBUS_COMMAND_DISCOVER || command == IBUS_COMMAND_TYPE || IBUS_COMMAND_MEASURE)
+                return IBUS_RECEIVED_POLL;
         }
     }
     return IBUS_RECEIVED_NONE;
