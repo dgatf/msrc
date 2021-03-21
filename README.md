@@ -82,7 +82,8 @@ Depending on the receiver protocol connect to the Rx as follows
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
   <i>Frsky D, Smartport or SRXL</i><br><br></p>
 
-  Frsky D, Ibus: Signal = Rx
+  Frsky D: Signal = Rx
+  IBUS: Sens connector 
 
 ### XBUS
 
