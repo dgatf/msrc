@@ -1,4 +1,4 @@
-# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, Ibus
+# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, IBUS
 
 This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors. It adds support for several ESC telemetry protocols
 
@@ -77,10 +77,10 @@ The following Rx protocols are supported:
 
 Depending on the receiver protocol connect to the Rx as follows
 
-### Frsky D, Smartport, SRXL and Ibus
+### Frsky D, Smartport, SRXL and IBUS
 
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
-  <i>Frsky D, Smartport or SRXL</i><br><br></p>
+  <i>Frsky D, Smartport, SRXL or IBUS</i><br><br></p>
 
   Frsky D: Signal = Rx
 
