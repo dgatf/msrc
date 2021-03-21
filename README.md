@@ -73,6 +73,7 @@ The following Rx protocols are supported:
 - Frsky D : inverted serial, 9200 bps
 - Spektrum SRXL V5: serial, 115200 bps
 - Spektrum XBUS: I2C
+- Flysky IBUS: serial, 115200 bps
 
 Depending on the receiver protocol connect to the Rx as follows
 
