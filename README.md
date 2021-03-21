@@ -2,7 +2,7 @@
 
 This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors. It adds support for several ESC telemetry protocols
 
-Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus
+Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky IBUS
 
 Compatible ESCs: Hobbywing V3/V4/V5, Kontronik, Castle Link
 
