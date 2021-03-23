@@ -254,7 +254,7 @@ Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4
 
 ### 6.3. Adjust analog current sensor (Curr)
 
-If using a hall effect sensor, adjust the ratio: *1000 / output sensitivity (mV/A)*
+If using a hall effect sensor, adjust the ratio: *25.5 *1000 / output sensitivity (mV/A)*
 
 To calculate the battery consumption add a new sensor:
 
