@@ -101,6 +101,8 @@ float EscHW4::calcTemp(uint16_t tempRaw)
 {
     float voltage = tempRaw * ESCHW4_V_REF / ESCHW4_ADC_RES;
     float ntcR_Rref = (voltage * ESCHW4_NTC_R1 / (ESCHW4_V_REF - voltage)) / ESCHW4_NTC_R_REF;
+    if (ntcR_Rref < 1)
+        return 0;
     float temperature = 1 / (log(ntcR_Rref) / ESCHW4_NTC_BETA + 1 / 298.15) - 273.15;
     if (temperature < 0)
         return 0;
