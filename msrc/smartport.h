@@ -111,7 +111,7 @@ public:
     void addPacket(uint16_t dataId, uint32_t value);
     void addPacket(uint8_t frameId, uint16_t dataId, uint32_t value);
     void deleteSensors();
-    uint8_t update();
+    void update();
     void setConfig(Config &config);
     void processPacket(uint8_t frameId, uint16_t dataId, uint32_t value);
 

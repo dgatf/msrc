@@ -244,12 +244,11 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
     return RECEIVED_NONE;
 }
 
-uint8_t Smartport::update()
+void Smartport::update()
 {
     uint8_t frameId;
     uint16_t dataId;
     uint32_t value;
-    uint8_t sendStatus = SENT_NONE;
 #if defined(SIM_LUA_SEND)
     if (true)
     {
@@ -319,7 +318,6 @@ uint8_t Smartport::update()
                 oldPacketP = packetP;
                 packetP = packetP->nextP;
                 delete oldPacketP;
-                return SENT_PACKET;
             }
             if (sensorP != NULL && !maintenanceMode_) // else send telemetry
             {
@@ -343,12 +341,10 @@ uint8_t Smartport::update()
 #endif
                     spSensorP->setTimestamp(millis());
                     spSensorP = spSensorP->nextP;
-                    sendStatus = SENT_TELEMETRY;
                 }
                 else
                 {
                     sendVoid();
-                    sendStatus = SENT_VOID;
                 }
             }
         }
@@ -363,7 +359,6 @@ uint8_t Smartport::update()
             DEBUG_SERIAL.println(value, HEX);
 #endif
             processPacket(frameId, dataId, value);
-            return RECEIVED_PACKET;
         }
     }
     // update sensor
@@ -372,7 +367,6 @@ uint8_t Smartport::update()
         sensorP->update();
         sensorP = sensorP->nextP;
     }
-    return sendStatus;
 }
 
 void Smartport::setConfig(Config &config)
