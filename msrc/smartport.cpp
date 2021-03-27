@@ -249,6 +249,7 @@ uint8_t Smartport::update()
     uint8_t frameId;
     uint16_t dataId;
     uint32_t value;
+    uint8_t sendStatus = SENT_NONE;
 #if defined(SIM_LUA_SEND)
     if (true)
     {
@@ -342,12 +343,12 @@ uint8_t Smartport::update()
 #endif
                     spSensorP->setTimestamp(millis());
                     spSensorP = spSensorP->nextP;
-                    return SENT_TELEMETRY;
+                    sendStatus = SENT_TELEMETRY;
                 }
                 else
                 {
                     sendVoid();
-                    return SENT_VOID;
+                    sendStatus = SENT_VOID;
                 }
             }
         }
@@ -371,7 +372,7 @@ uint8_t Smartport::update()
         sensorP->update();
         sensorP = sensorP->nextP;
     }
-    return SENT_NONE;
+    return sendStatus;
 }
 
 void Smartport::setConfig(Config &config)
