@@ -47,7 +47,7 @@ void EscHW4::update()
                     float current = calcCurr((uint16_t)data[12] << 8 | data[13]);
                     float tempFET = calcTemp((uint16_t)data[14] << 8 | data[15]);
                     float tempBEC = calcTemp((uint16_t)data[16] << 8 | data[17]);
-                    if (thr_ > 1024 || pwm_ > 1024 || rpm > 200000 || voltage > 100 || current > 400 || tempFET == 0 || tempBEC == 0) // try to filter invalid data frames
+                    if (thr_ > 1024 || pwm_ > 1024 || rpm > 200000 || voltage > 100 || tempFET == 0 || tempBEC == 0) // try to filter invalid data frames
                         return;
                     rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
                     voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);
