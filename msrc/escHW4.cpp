@@ -43,6 +43,14 @@ void EscHW4::update()
                     thr_ = (uint16_t)data[3] << 8 | data[4]; // 0-1024
                     pwm_ = (uint16_t)data[5] << 8 | data[6]; // 0-1024
                     float rpm = (uint32_t)data[7] << 16 | (uint16_t)data[8] << 8 | data[9];
+                    if (thr_ > 1024 ||  // try to filter invalid data frames
+                        pwm_ > 1024 ||
+                        rpm > 200000 ||
+                        data[10] & 0xF0 || // for sensors, ADC is 12bits- > higher bits must be 0
+                        data[12] & 0xF0 ||
+                        data[14] & 0xF0 ||
+                        data[16] & 0xF0)
+                        return;
                     float voltage = calcVolt((uint16_t)data[10] << 8 | data[11]);
                     float current = calcCurr((uint16_t)data[12] << 8 | data[13]);
                     float tempFET = calcTemp((uint16_t)data[14] << 8 | data[15]);
