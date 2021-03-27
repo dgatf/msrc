@@ -185,7 +185,7 @@ void ftm1_isr()
 
 void setup()
 {
-#if defined(DEBUG) || defined(DEBUG_ESC) || defined(DEBUG_ESC_PWM) || defined(DEBUG_ESC_RX) || defined(DEBUG_PLOTTER) || defined(DEBUG_GPS) || defined(DEBUG_EEPROM_WRITE) || defined(DEBUG_EEPROM_READ)
+#if defined(DEBUG) || defined(DEBUG_ESC) || defined(DEBUG_ESC_PWM) || defined(DEBUG_ESC_RX) || defined(DEBUG_PLOTTER) || defined(DEBUG_GPS) || defined(DEBUG_EEPROM_WRITE) || defined(DEBUG_EEPROM_READ) || defined(DEBUG_P)
     // DEBUG is on Serial
     // Baud rate depends on whats connected to Serial
     // For boards with 1 UART: If is an ESC serial it will be changed to 19600. If it is a GPS, to 9600 (default)

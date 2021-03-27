@@ -306,7 +306,7 @@ void Smartport::update()
             if (packetP != NULL && maintenanceMode_) // if maintenance send packet
             {
                 sendData(packetP->frameId, packetP->dataId, packetP->value);
-#ifdef DEBUG
+#ifdef DEBUG_P
                 DEBUG_SERIAL.print(">F:");
                 DEBUG_SERIAL.print(packetP->frameId, HEX);
                 DEBUG_SERIAL.print(" D:");
@@ -350,7 +350,7 @@ void Smartport::update()
         }
         else if (packetType == RECEIVED_PACKET)
         {
-#ifdef DEBUG
+#ifdef DEBUG_P
             DEBUG_SERIAL.print("<F:");
             DEBUG_SERIAL.print(frameId, HEX);
             DEBUG_SERIAL.print(" D:");
