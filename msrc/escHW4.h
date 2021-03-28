@@ -28,7 +28,7 @@ private:
                                            0x00000000, // ESCHW4_TYPE_V5_LV
                                            0x4421410B}; // ESCHW4_TYPE_V5_HV*/
     const float voltageDivisor_[4] = {11, 21, 11, 21};
-    const float rawCurrentOffset_[4] = {15, 15, 660, 660};
+    float rawCurrentOffset_ = 0;
     Stream &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_, type_;
     uint16_t thr_ = 0,  pwm_ = 0;

@@ -43,7 +43,7 @@ void EscHW4::update()
                     thr_ = (uint16_t)data[3] << 8 | data[4]; // 0-1024
                     pwm_ = (uint16_t)data[5] << 8 | data[6]; // 0-1024
                     float rpm = (uint32_t)data[7] << 16 | (uint16_t)data[8] << 8 | data[9];
-                    if (thr_ > 1024 ||  // try to filter invalid data frames
+                    if (thr_ > 1024 || // try to filter invalid data frames
                         pwm_ > 1024 ||
                         rpm > 200000 ||
                         data[10] & 0xF0 || // for sensors, ADC is 12bits- > higher bits must be 0
@@ -51,6 +51,8 @@ void EscHW4::update()
                         data[14] & 0xF0 ||
                         data[16] & 0xF0)
                         return;
+                    if (thr_ == 0)
+                        rawCurrentOffset_ = (uint16_t)data[12] << 8 | data[13];
                     float voltage = calcVolt((uint16_t)data[10] << 8 | data[11]);
                     float current = calcCurr((uint16_t)data[12] << 8 | data[13]);
                     float tempFET = calcTemp((uint16_t)data[14] << 8 | data[15]);
@@ -119,9 +121,9 @@ float EscHW4::calcTemp(uint16_t tempRaw)
 
 float EscHW4::calcCurr(uint16_t currentRaw)
 {
-    if (thr_ < 128 || currentRaw - rawCurrentOffset_[type_] < 0)
+    if (currentRaw - rawCurrentOffset_ < 0)
         return 0;
-    return (currentRaw - rawCurrentOffset_[type_]) * ESCHW4_V_REF / (ESCHW4_DIFFAMP_GAIN * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
+    return (currentRaw - rawCurrentOffset_) * ESCHW4_V_REF / (ESCHW4_DIFFAMP_GAIN * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
 }
 
 uint16_t *EscHW4::thrP()
