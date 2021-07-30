@@ -393,7 +393,7 @@ void Smartport::setConfig(Config &config)
         esc->begin();
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
-        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), esc->consumptionP(), config.refresh.rpm, esc);
         addSensor(sensorP);
         sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->voltageP(), esc->currentP(), config.refresh.volt, esc);
         addSensor(sensorP);
@@ -418,7 +418,7 @@ void Smartport::setConfig(Config &config)
         EscCastle *esc;
         esc = new EscCastle(ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
         esc->begin();
-        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), esc->consumptionP(), config.refresh.rpm, esc);
         addSensor(sensorP);
         sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->voltageP(), esc->currentP(), config.refresh.volt, esc);
         addSensor(sensorP);
@@ -437,7 +437,7 @@ void Smartport::setConfig(Config &config)
         EscKontronik *esc;
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
         esc->begin();
-        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), esc->consumptionP(), config.refresh.rpm, esc);
         addSensor(sensorP);
         sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->voltageP(), esc->currentP(), config.refresh.volt, esc);
         addSensor(sensorP);
