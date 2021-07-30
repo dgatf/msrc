@@ -198,7 +198,7 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
         boolean header = false;
         uint8_t cont = 0;
         uint16_t tsRead = millis();
-        while ((uint16_t)millis() - tsRead < SMARTPORT_TIMEOUT)
+        while ((uint16_t)(millis() - tsRead) < SMARTPORT_TIMEOUT)
         {
             if (serial_.available())
             {

@@ -32,7 +32,7 @@ void EscHW3::update()
             }
         }
     }
-    if ((uint16_t)millis() - tsEsc_ > 150)
+    if ((uint16_t)(millis() - tsEsc_) > 150)
     {
         pwm_ = 0;
         thr_ = 0;

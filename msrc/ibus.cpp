@@ -178,7 +178,7 @@ void Ibus::update()
     {
         static uint16_t ts = 0;
         uint8_t packetType = IBUS_RECEIVED_NONE;
-        if ((uint16_t)millis() - ts > 100)
+        if ((uint16_t)(millis() - ts) > 100)
         {
             packetType = IBUS_RECEIVED_POLL;
             address++;
