@@ -25,6 +25,9 @@
 // HW signature
 #define ESC_SIGNATURE
 
+// Add init delay for FlyFun ESC. Uncomment if the ESC doesn't arm
+//#define ESC_INIT_DELAY 10000
+
 // Pins & Serial ports
 
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB) // ATmega328P
