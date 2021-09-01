@@ -211,6 +211,10 @@ void setup()
     Wire.begin();
     Wire.setTimeout(WIRE_TIMEOUT);
 #endif
+#if defined(ESC_INIT_DELAY)
+    while (millis() < ESC_INIT_DELAY)
+        ;
+#endif
 #if RX_PROTOCOL == RX_SMARTPORT
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
     SMARTPORT_SRXL_FRSKY_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV);
