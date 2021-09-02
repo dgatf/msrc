@@ -60,7 +60,9 @@ void Ibus::sendData(uint8_t command, uint8_t address)
             lenght = 4;
         break;
     }
-
+#ifdef DEBUG
+    DEBUG_SERIAL.print(">");
+#endif
     // lenght
     sendByte(4 + lenght, &crc);
 
@@ -123,13 +125,27 @@ uint8_t Ibus::read(uint8_t &command, uint8_t &address)
         uint8_t data[40];
         data[0] = serial_.read();
         serial_.readBytes(&data[1], data[0]);
+#ifdef DEBUG
+        DEBUG_SERIAL.print("<");
+        for (uint8_t i = 0; i < data[0]; i++)
+        {
+            DEBUG_SERIAL.print(data[i], HEX);
+            DEBUG_SERIAL.print(" ");
+        }
+#endif
         if (checkCrc(data))
         {
+#ifdef DEBUG
+            DEBUG_SERIAL.println("CRC OK");
+#endif
             command = data[1] >> 4;
             address = data[1] & 0x0F;
             if (command == IBUS_COMMAND_DISCOVER || command == IBUS_COMMAND_TYPE || IBUS_COMMAND_MEASURE)
                 return IBUS_RECEIVED_POLL;
         }
+#ifdef DEBUG
+        DEBUG_SERIAL.println("BAD CRC");
+#endif
     }
     return IBUS_RECEIVED_NONE;
 }
