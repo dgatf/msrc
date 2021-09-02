@@ -212,6 +212,22 @@ void setup()
     Wire.setTimeout(WIRE_TIMEOUT);
 #endif
 #if defined(ESC_INIT_DELAY)
+#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
+    pinMode(0, OUTPUT);
+    digitalWrite(0, LOW);
+#endif
+#if defined(__AVR_ATmega2560__)
+    pinMode(19, OUTPUT);
+    digitalWrite(19, LOW);
+#endif
+#if defined(__AVR_ATmega32U4__)
+    pinMode(PB0, OUTPUT);
+    digitalWrite(PB0, LOW);
+#endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    pinMode(9, OUTPUT);
+    digitalWrite(9, LOW);
+#endif
     while (millis() < ESC_INIT_DELAY)
         ;
 #endif
