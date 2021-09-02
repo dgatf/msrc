@@ -1,7 +1,6 @@
 #ifndef IBUS_H
 #define IBUS_H
 
-#define IBUS_TIMEOUT 3
 #define IBUS_TYPE_U16 0
 #define IBUS_TYPE_S16 1
 #define IBUS_TYPE_U32 2
