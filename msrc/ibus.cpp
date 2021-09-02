@@ -122,9 +122,18 @@ uint8_t Ibus::read(uint8_t &command, uint8_t &address)
 {
     if (serial_.available())
     {
-        uint8_t data[40];
+        uint8_t data[4];
         data[0] = serial_.read();
+        if (data[0] != 4) // not a poll, discard
+        {
+            while (serial_.available()) {
+                serial_.read();
+            }
+            return IBUS_RECEIVED_NONE;
+        }
         serial_.readBytes(&data[1], data[0]);
+        while (serial_.available())
+            serial_.read();
 #ifdef DEBUG
         DEBUG_SERIAL.print("<");
         for (uint8_t i = 0; i < data[0]; i++)
