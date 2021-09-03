@@ -22,7 +22,7 @@
 // GPS serial
 #define GPS_BAUD_RATE 9600
 
-// HW signature
+// HW V4 signature (only smartport). This outputs esc signature and raw current to sensors 5100, 5101 and 5102
 #define ESC_SIGNATURE
 
 // Add init delay for FlyFun ESC. Uncomment if the ESC doesn't arm

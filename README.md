@@ -11,7 +11,7 @@ Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4 and Teensy L
 Implemented sensors:
 
 - ESC
-  - ESCs with serial telemetry (Hobbywing V3/V4/V5, Kontronik)
+  - ESCs with serial telemetry (Hobbywing V3/V4/V5(1), Kontronik)
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
@@ -19,6 +19,8 @@ Implemented sensors:
 - Analog sensors: voltage, temperature, current, air speed
 
 All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration, with a lua script if using smartport or in config.h for the rest of Rx protocols 
+
+(1) HW V5 = HW FlyFun. If ESC doesn't arm, in config.h enable ESC_INIT_DELAY or connect arduino after the ESC is armed
 
 ## 1. Boards
 
@@ -218,6 +220,8 @@ ESC:
 - ESC ripple voltage: EscV (0x0b51)
 - ESC BEC voltage: BecV (0x0e50)
 - ESC BEC current: BecC (0x0e50)
+
+Only HW V4: Sensors 5100, 5101 and 5102 contains the ESC signature and raw current. To disable, comment ESC_SIGNATURE in config.h
 
 GPS:
 
