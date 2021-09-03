@@ -40,7 +40,7 @@ void Ibus::sendData(uint8_t command, uint8_t address)
     uint32_t value;
 
     // get value
-    uint8_t lenght;
+    uint8_t lenght = 0;
     switch (command)
     {
     case IBUS_COMMAND_DISCOVER:
@@ -61,7 +61,7 @@ void Ibus::sendData(uint8_t command, uint8_t address)
         break;
     }
 #ifdef DEBUG
-    DEBUG_SERIAL.print(">");
+    DEBUG_SERIAL.print("> ");
 #endif
     // lenght
     sendByte(4 + lenght, &crc);
@@ -126,16 +126,26 @@ uint8_t Ibus::read(uint8_t &command, uint8_t &address)
         data[0] = serial_.read();
         if (data[0] != 4) // not a poll, discard
         {
+#ifdef DEBUG
+            DEBUG_SERIAL.print("? ");
+            DEBUG_SERIAL.print(data[0], HEX);
+            DEBUG_SERIAL.print(" ");
             while (serial_.available()) {
-                serial_.read();
+                DEBUG_SERIAL.print(serial_.read(), HEX);
+                DEBUG_SERIAL.print(" ");
             }
+            DEBUG_SERIAL.println();
+#else
+            while (serial_.available())
+                serial_.read();
+            #endif
             return IBUS_RECEIVED_NONE;
         }
         serial_.readBytes(&data[1], data[0]);
         while (serial_.available())
             serial_.read();
 #ifdef DEBUG
-        DEBUG_SERIAL.print("<");
+        DEBUG_SERIAL.print("< ");
         for (uint8_t i = 0; i < data[0]; i++)
         {
             DEBUG_SERIAL.print(data[i], HEX);
