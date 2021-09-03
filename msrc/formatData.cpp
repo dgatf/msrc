@@ -2,16 +2,14 @@
 
 uint32_t FormatData::formatData(uint16_t dataId, float valueL, float valueM)
 {
-    if (dataId >= ESC_POWER_FIRST_ID && dataId <= ESC_POWER_LAST_ID)
+    if (dataId >= ESC_POWER_FIRST_ID && dataId <= ESC_POWER_LAST_ID ||
+        dataId >= SBEC_POWER_FIRST_ID && dataId <= SBEC_POWER_LAST_ID)
         return (uint32_t)round(valueM * 100) << 16 | (uint16_t)round(valueL * 100);
 
     if (dataId >= ESC_RPM_CONS_FIRST_ID && dataId <= ESC_RPM_CONS_LAST_ID)
     {
         return (uint32_t)round(valueM) << 16 | (uint16_t)round((valueL) / 100);
     }
-
-    if (dataId >= SBEC_POWER_FIRST_ID && dataId <= SBEC_POWER_LAST_ID)
-        return (uint32_t)round(valueM * 1000) << 16 | (uint16_t)round((valueL)*1000);
 
     //if (dataId >= CELLS_FIRST_ID && dataId <= CELLS_LAST_ID)
     return (uint16_t)round(valueM * 500) << 8 | (uint16_t)valueL;
