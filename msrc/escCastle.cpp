@@ -385,7 +385,7 @@ void EscCastle::FTM1_IRQ_handler()
         FTM0_C0SC &= ~FTM_CSC_CHIE;
         FTM0_C4SC &= ~FTM_CSC_CHIE;
         FTM0_C2SC &= ~FTM_CSC_CHIE;
-        PORTC_PCR1 = PORT_PCR_MUX(0); // PTC1 MUX 0 -> DISABLE
+        PORTD_PCR0 = PORT_PCR_MUX(0); // PTD0 MUX 0 -> DISABLE
         FTM1_SC |= FTM_SC_TOF;        // CLEAR FLAG
 #ifdef DEBUG_ESC_RX
         DEBUG_SERIAL.println("X");
@@ -397,16 +397,16 @@ void EscCastle::FTM0_IRQ_handler()
 {
     if (FTM0_C0SC & FTM_CSC_CHF) // CH0 INTERRUPT (DISABLE CH0 PWM OUT)
     {
-        PORTC_PCR1 = PORT_PCR_MUX(0); // PTC1 MUX 0 -> DISABLE
+        PORTD_PCR0 = PORT_PCR_MUX(0); // PTD0 MUX 0 -> DISABLE
         FTM0_C4SC |= FTM_CSC_CHF;     // CLEAR FLAG CH4
         FTM0_C4SC |= FTM_CSC_CHIE;    // ENABLE INTERRUPT CH4
         FTM0_C2SC |= FTM_CSC_CHF;     // CLEAR FLAG CH2
         FTM0_C2SC |= FTM_CSC_CHIE;    // ENABLE INTERRUPT CH2
+        FTM0_C0SC |= FTM_CSC_CHF;     // CLEAR FLAG CH0
         if (!castleTelemetryReceived)
         {
             castleCont = 0;
             castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
-            castleTelemetryReceived = false;
 #if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
             DEBUG_SERIAL.println();
             DEBUG_SERIAL.print("5 ");
@@ -414,22 +414,28 @@ void EscCastle::FTM0_IRQ_handler()
             DEBUG_SERIAL.print(" ");
 #endif
         }
+        castleTelemetryReceived = false;
     }
     if (FTM0_C4SC & FTM_CSC_CHF) // CH4 INTERRUPT (CAPTURE TELEMETRY)
     {
         castleTelemetry[castleCont] = FTM0_C4V - castlePwmRx;
-        castleCont++;
-        castleTelemetryReceived = true;
-        castleUpdated = true;
-        FTM0_C4SC |= FTM_CSC_CHF; // CLEAR FLAG CH1
 #if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
+        DEBUG_SERIAL.print(castleCont);
+        DEBUG_SERIAL.print("-");
         DEBUG_SERIAL.print(castleTelemetry[castleCont]);
         DEBUG_SERIAL.print(" ");
 #endif
+        if (castleCont < 11)
+        {
+            castleCont++;
+            castleTelemetryReceived = true;
+            castleUpdated = true;
+        }
+        FTM0_C4SC |= FTM_CSC_CHF; // CLEAR FLAG CH4
     }
     if (FTM0_C2SC & FTM_CSC_CHF) // CH2 INTERRUPT (TOGGLE CH0 TO OUTPUT)
     {
-        PORTC_PCR1 = PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8 (PWM OUT)
+        PORTD_PCR0 = PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTD0 -> 2(PWM OUT)
         FTM0_C4SC &= ~FTM_CSC_CHIE;   // DISABLE INTERRUPT CH4
         FTM0_C2SC &= ~FTM_CSC_CHIE;   // DISABLE INTERRUPT CH2
         FTM0_C2SC |= FTM_CSC_CHF;     // CLEAR FLAG CH2
@@ -568,9 +574,9 @@ void EscCastle::begin()
     FTM0_SC = 0;
     delayMicroseconds(1);
     FTM0_CNT = 0;
-    SIM_SCGC6 |= SIM_SCGC6_FTM0;    // ENABLE CLOCK
-    FTM0_SC = FTM_SC_PS(5);         // PRESCALER 32
-    FTM0_MOD = 20 * MS_TO_COMP(32); // 20ms (100HZ)
+    SIM_SCGC6 |= SIM_SCGC6_FTM0;             // ENABLE CLOCK
+    FTM0_SC = FTM_SC_PS(5) | FTM_SC_CLKS(1); // PRESCALER 32 | ENABLE COUNTER
+    FTM0_MOD = 20 * MS_TO_COMP(32);          // 20ms (100HZ)
     // CH0: PWM OUTPUT (ESC CONTROL)
     FTM0_C0SC = 0;
     delayMicroseconds(1);
@@ -585,7 +591,7 @@ void EscCastle::begin()
     FTM0_C2SC = FTM_CSC_MSA;        // SOFTWARE COMPARE
     FTM0_C2V = 12 * MS_TO_COMP(32); // 12ms TOGGLE CH0 TO OUTPUT
     // SET PINS
-    PORTC_PCR1 = PORT_PCR_MUX(4);               // TPM0_CH0 MUX 4 -> PTC1 -> 22/A8 (PWM OUT)
+    PORTD_PCR0 = PORT_PCR_MUX(4);               // TPM0_CH0 MUX 4 -> PTD0 -> 2 (PWM OUT)
     PORTD_PCR4 = PORT_PCR_MUX(4) | PORT_PCR_PE; // TPM0_CH4 MUX 4 -> PTD4 -> 6 (CAPTURE), PULLUP
 
     NVIC_ENABLE_IRQ(IRQ_FTM0);

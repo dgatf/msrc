@@ -57,7 +57,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | PWM in | 8 | 8 | 49 | D4(A6) | 6 |
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
-| ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 22 & 6 |
+| ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
 | Frsky D, Smartport or SRXL | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 0 & 1<sup>(2)</sup> |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18 |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19 |
