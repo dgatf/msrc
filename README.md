@@ -84,7 +84,7 @@ Depending on the receiver protocol connect to the Rx as follows
 ### Frsky D and Smartport
 
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
-  <i>Frsky D, Smartport, SRXL or IBUS</i><br><br></p>
+  <i>Frsky D, Smartport</i><br><br></p>
 
   Frsky D: Signal = Rx
 
