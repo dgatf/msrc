@@ -243,8 +243,8 @@ void setup()
     xbus.begin();
 #endif
 #if RX_PROTOCOL == RX_SRXL
-    SMARTPORT_SRXL_FRSKY_SERIAL.begin(115200);
-    SMARTPORT_SRXL_FRSKY_SERIAL.setTimeout(SRXLSERIAL_TIMEOUT);
+    SRXL_IBUS_SERIAL.begin(115200);
+    SRXL_IBUS_SERIAL.setTimeout(SRXLSERIAL_TIMEOUT);
     srxl.begin();
 #endif
 #if RX_PROTOCOL == RX_FRSKY
@@ -256,8 +256,8 @@ void setup()
     frsky.begin();
 #endif
 #if RX_PROTOCOL == RX_IBUS
-    SMARTPORT_SRXL_FRSKY_SERIAL.begin(115200);
-    SMARTPORT_SRXL_FRSKY_SERIAL.setTimeout(IBUS_TIMEOUT);
+    SRXL_IBUS_SERIAL.begin(115200);
+    SRXL_IBUS_SERIAL.setTimeout(IBUS_TIMEOUT);
     ibus.begin();
 #endif
 #if defined(ESC_INIT_DELAY)

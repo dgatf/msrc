@@ -42,6 +42,7 @@
 
 #define SOFTWARE_SERIAL
 #define SMARTPORT_SRXL_FRSKY_SERIAL softSerial
+#define SRXL_IBUS_SERIAL Serial
 #define ESC_SERIAL Serial
 #define GPS_SERIAL Serial
 #endif
@@ -58,6 +59,7 @@
 
 #define SOFTWARE_SERIAL
 #define SMARTPORT_SRXL_FRSKY_SERIAL softSerial
+#define SRXL_IBUS_SERIAL Serial1
 #define ESC_SERIAL Serial
 #define GPS_SERIAL Serial1
 #endif
@@ -74,6 +76,7 @@
 
 #define SOFTWARE_SERIAL
 #define SMARTPORT_SRXL_FRSKY_SERIAL softSerial
+#define SRXL_IBUS_SERIAL Serial3
 #define ESC_SERIAL Serial1
 #define GPS_SERIAL Serial2
 #endif
@@ -90,6 +93,7 @@
 
 #define SOFTWARE_SERIAL
 #define SMARTPORT_SRXL_FRSKY_SERIAL softSerial
+#define SRXL_IBUS_SERIAL Serial
 #define ESC_SERIAL Serial1
 #define GPS_SERIAL Serial1
 #endif
@@ -103,6 +107,7 @@
 #define PIN_PRESSURE 19
 
 #define SMARTPORT_SRXL_FRSKY_SERIAL Serial1
+#define SRXL_IBUS_SERIAL Serial3
 #define ESC_SERIAL Serial2
 #define GPS_SERIAL Serial3
 #endif
