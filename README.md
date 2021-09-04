@@ -11,7 +11,7 @@ Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4 and Teensy L
 Implemented sensors:
 
 - ESC
-  - ESCs with serial telemetry (Hobbywing V3/V4/V5(1), Kontronik)
+  - ESCs with serial telemetry (Hobbywing V3/V4/V5(1), Kontronik(2))
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
@@ -21,7 +21,8 @@ Implemented sensors:
 All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration, with a lua script if using smartport or in config.h for the rest of Rx protocols 
 
 (1) HW V5 = HW FlyFun. If ESC doesn't arm, in config.h enable ESC_INIT_DELAY or connect arduino after the ESC is armed
-
+(2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive
+ 
 ## 1. Boards
 
 ### 1.1 MCU
@@ -97,7 +98,7 @@ Depending on the receiver protocol connect to the Rx as follows
 
 #### Serial telemetry
 
-Compatible ESC serial protocols: Hobbywing V3/V4/V5 and Kontronik
+Compatible ESC serial protocols: Hobbywing V3/V4/V5 and Kontronik (Kosmic, Kolibri, JivePro)
 
 Optionally a PWM signal can be generated from the RPM value in serial telemetry
 
@@ -337,6 +338,12 @@ Examples:
 For best accuracy RX pulse input is captured with a timer interrupt and ESC pulse output is produced by hardware PWM. Maximum latency is 20ms
 
 See [Castle Link Live](https://dzf8vqv24eqhg.cloudfront.net/userfiles/4671/6540/ckfinder/files/Product%20Manuals/Accessories%20and%20replacement%20parts/castle_link_live_2_0.pdf?dc=201606221536-537)
+
+### 9.2. ESC protocol specifications Kontronik
+
+Supported models: Kosmic, Kolibri, JivePro. Protocol [specs](https://www.kontronik.com/fileadmin/kontronik-sobek/Public/Content/Images/Content/Downloads/Software/Kontronik_TelMe_V4.12_1.12_EN.pdf)
+
+Note that there is another protocol used by Kontronik Jive at 9600 that it is not supported. Info [here](https://www.helifreak.com/showthread.php?t=721180)
 
 ### 9.3. Output PWM signal for FBL
 
