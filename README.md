@@ -11,7 +11,7 @@ Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4 and Teensy L
 Implemented sensors:
 
 - ESC
-  - ESCs with serial telemetry (Hobbywing V3/V4/V5(1), Kontronik(2))
+  - ESCs with serial telemetry (Hobbywing V3/V4/V5<sup>(1)</sup>, Kontronik<sup>(2)</sup>)
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
@@ -22,7 +22,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 (1) HW V5 = HW FlyFun. If ESC doesn't arm, in config.h enable ESC_INIT_DELAY or connect arduino after the ESC is armed
 (2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive
- 
+
 ## 1. Boards
 
 ### 1.1 MCU
