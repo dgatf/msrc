@@ -81,7 +81,7 @@ The following Rx protocols are supported:
 
 Depending on the receiver protocol connect to the Rx as follows
 
-### Frsky D, Smartport, SRXL and IBUS
+### Frsky D and Smartport
 
 <p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
   <i>Frsky D, Smartport, SRXL or IBUS</i><br><br></p>
