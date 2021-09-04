@@ -61,7 +61,8 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
-| Frsky D, Smartport or SRXL | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 0 & 1<sup>(2)</sup> |
+| Frsky D, Smartport | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 0 & 1<sup>(2)</sup> |
+| SRXL or IBUS | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15 & 14<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 7 & 8<sup>(2)</sup> |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18 |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19 |
 
@@ -86,6 +87,11 @@ Depending on the receiver protocol connect to the Rx as follows
   <i>Frsky D, Smartport, SRXL or IBUS</i><br><br></p>
 
   Frsky D: Signal = Rx
+
+### SRXL and IBUS
+
+<p align="center"><img src="./images/srxl_ibus.png" width="350"><br>
+  <i>SRXL or IBUS</i><br><br></p>
 
 ### XBUS
 
