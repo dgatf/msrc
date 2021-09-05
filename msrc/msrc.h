@@ -45,10 +45,6 @@
 
 PwmOut pwmOut;
 
-#ifdef SOFTWARE_SERIAL
-SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
-#endif
-
 #if RX_PROTOCOL == RX_SMARTPORT
 #if !(defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__))
 SoftwareSerial SMARTPORT_FRSKY_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX, true);

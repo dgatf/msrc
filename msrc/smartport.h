@@ -87,6 +87,9 @@ private:
         Packet *nextP = NULL;
     };
     Stream &serial_;
+#ifdef SOFTWARE_SERIAL
+    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+#endif
     Sensor *sensorP = NULL;
     Packet *packetP = NULL;
     uint8_t sensorId_ = 0;
