@@ -40,6 +40,7 @@
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
 
+//#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
 #define SRXL_IBUS_SERIAL Serial
 
@@ -58,6 +59,7 @@
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
 
+//#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
 #define SRXL_IBUS_SERIAL Serial1
 
@@ -76,6 +78,7 @@
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
 
+//#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
 #define SRXL_IBUS_SERIAL Serial3
 
@@ -94,6 +97,7 @@
 #define PIN_CURRENT A9 // PB5
 #define PIN_PRESSURE A7 // PD7
 
+//#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
 #define SRXL_IBUS_SERIAL Serial
 

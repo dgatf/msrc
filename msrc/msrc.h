@@ -46,7 +46,7 @@
 PwmOut pwmOut;
 
 #if RX_PROTOCOL == RX_SMARTPORT
-#if !(defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__))
+#if !(defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) && !defined(SMARTPORT_FRSKY_HARDWARE_SERIAL))
 SoftwareSerial SMARTPORT_FRSKY_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX, true);
 #endif
 Smartport smartport(SMARTPORT_FRSKY_SERIAL);
@@ -61,7 +61,7 @@ Srxl srxl(SRXL_IBUS_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_FRSKY
-#if !(defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__))
+#if !(defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) && !defined(SMARTPORT_FRSKY_HARDWARE_SERIAL))
 SoftwareSerial SMARTPORT_FRSKY_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX, true);
 #endif
 Frsky frsky(SMARTPORT_FRSKY_SERIAL);
