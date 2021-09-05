@@ -50,13 +50,21 @@ void EscHW4::update()
                         data[12] & 0xF0 ||
                         data[14] & 0xF0 ||
                         data[16] & 0xF0)
+                    {
 #if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
                         DEBUG_SERIAL.println("BF");
 #endif
                         return;
+                    }
                     uint16_t rawCur = (uint16_t)data[12] << 8 | data[13];
-                    if (rawCurrentOffset_ == -1 && rawCur > 0 )
+                    if (rawCurrentOffset_ == -1 && rawCur > 0)
+                    {
                         rawCurrentOffset_ = rawCur;
+#if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
+                        DEBUG_SERIAL.print("CO: ");
+                        DEBUG_SERIAL.println(rawCurrentOffset_);
+#endif
+                    }
                     float voltage = calcVolt((uint16_t)data[10] << 8 | data[11]);
                     float current = calcCurr((uint16_t)data[12] << 8 | data[13]);
                     float tempFET = calcTemp((uint16_t)data[14] << 8 | data[15]);
