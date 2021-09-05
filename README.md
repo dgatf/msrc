@@ -281,11 +281,13 @@ To calculate the battery consumption add a new sensor:
 - Formula: Consumption
 - Sensor: Curr
 
-### 6.4 Calibrate current sensor HW V4/V5 (EscA)
+### 6.4 Calculate current consumption
 
-HW V4/V5 uses few different offsets to measure the current. It have been detected two types, V4 and V5, but there seems to be more types
+The battery consumption can be calculated by adding a calculated sensor in openTx:
 
-Current value should be close to 0 A without blades and throttle at 50%. If this is not the case you can calibrate the current sensor (EscA) in opentx (sensor->edit sensor->offset) by adjusting the offset with the value at this condition (no blades and 50% throttle)
+- Type: _Calculated_
+- Formula: _Consumption_
+- Sensor: _EscA_ or _Curr_
 
 ## 7. Images
 
