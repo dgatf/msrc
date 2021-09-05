@@ -260,10 +260,6 @@ void setup()
     SRXL_IBUS_SERIAL.setTimeout(IBUS_TIMEOUT);
     ibus.begin();
 #endif
-#if defined(ESC_INIT_DELAY)
-    SMARTPORT_FRSKY_SERIALDELAY)
-    SMARTPORT_FRSKY_SERIAL
-#endif
 }
 
 void loop()
