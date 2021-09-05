@@ -45,8 +45,12 @@
 
 PwmOut pwmOut;
 
-#if RX_PROTOCOL == RX_SMARTPORT
 #ifdef SOFTWARE_SERIAL
+SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+#endif
+
+#if RX_PROTOCOL == RX_SMARTPORT
+#if !(defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__))
 SoftwareSerial SMARTPORT_SRXL_FRSKY_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX, true);
 #endif
 Smartport smartport(SMARTPORT_SRXL_FRSKY_SERIAL);
@@ -57,24 +61,18 @@ Xbus xbus;
 #endif
 
 #if RX_PROTOCOL == RX_SRXL
-#ifdef SOFTWARE_SERIAL
-SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
-#endif
-Srxl srxl(SMARTPORT_SRXL_FRSKY_SERIAL);
+Srxl srxl(SRXL_IBUS_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_FRSKY
-#ifdef SOFTWARE_SERIAL
+#if !(defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__))
 SoftwareSerial SMARTPORT_SRXL_FRSKY_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX, true);
 #endif
 Frsky frsky(SMARTPORT_SRXL_FRSKY_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_IBUS
-#ifdef SOFTWARE_SERIAL
-SoftwareSerial SMARTPORT_SRXL_FRSKY_SERIAL(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
-#endif
-Ibus ibus(SMARTPORT_SRXL_FRSKY_SERIAL);
+Ibus ibus(SRXL_IBUS_SERIAL);
 #endif
 
 void setup();

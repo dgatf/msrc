@@ -8,7 +8,7 @@
 
 
 // Select RX protocol
-#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_FRSKY, RX_IBUS
+#define RX_PROTOCOL RX_IBUS // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_FRSKY, RX_IBUS
 
 // Select SRLX valriant (only for SRXL)
 #define SRXL_VARIANT SRXL_V5 // Only implemented SRXL_V5 (SPEKTRUM)
@@ -40,9 +40,10 @@
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
 
-#define SOFTWARE_SERIAL
 #define SMARTPORT_SRXL_FRSKY_SERIAL softSerial
 #define SRXL_IBUS_SERIAL Serial
+
+//#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial
 #define GPS_SERIAL Serial
 #endif
@@ -57,9 +58,10 @@
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
 
-#define SOFTWARE_SERIAL
 #define SMARTPORT_SRXL_FRSKY_SERIAL softSerial
 #define SRXL_IBUS_SERIAL Serial1
+
+//#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial
 #define GPS_SERIAL Serial1
 #endif
@@ -74,9 +76,10 @@
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
 
-#define SOFTWARE_SERIAL
 #define SMARTPORT_SRXL_FRSKY_SERIAL softSerial
 #define SRXL_IBUS_SERIAL Serial3
+
+//#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial1
 #define GPS_SERIAL Serial2
 #endif
@@ -91,9 +94,10 @@
 #define PIN_CURRENT A9 // PB5
 #define PIN_PRESSURE A7 // PD7
 
-#define SOFTWARE_SERIAL
 #define SMARTPORT_SRXL_FRSKY_SERIAL softSerial
 #define SRXL_IBUS_SERIAL Serial
+
+#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial1
 #define GPS_SERIAL Serial1
 #endif
@@ -108,6 +112,8 @@
 
 #define SMARTPORT_SRXL_FRSKY_SERIAL Serial1
 #define SRXL_IBUS_SERIAL Serial3
+
+//#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial2
 #define GPS_SERIAL Serial3
 #endif
