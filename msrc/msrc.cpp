@@ -233,9 +233,9 @@ void setup()
 #endif
 #if RX_PROTOCOL == RX_SMARTPORT
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-    SMARTPORT_SRXL_FRSKY_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV);
+    SMARTPORT_FRSKY_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV);
 #else
-    SMARTPORT_SRXL_FRSKY_SERIAL.begin(57600);
+    SMARTPORT_FRSKY_SERIAL.begin(57600);
 #endif
     smartport.begin();
 #endif
@@ -249,9 +249,9 @@ void setup()
 #endif
 #if RX_PROTOCOL == RX_FRSKY
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-    SMARTPORT_SRXL_FRSKY_SERIAL.begin(9600, SERIAL_8N1_RXINV_TXINV);
+    SMARTPORT_FRSKY_SERIAL.begin(9600, SERIAL_8N1_RXINV_TXINV);
 #else
-    SMARTPORT_SRXL_FRSKY_SERIAL.begin(9600);
+    SMARTPORT_FRSKY_SERIAL.begin(9600);
 #endif
     frsky.begin();
 #endif
@@ -261,8 +261,8 @@ void setup()
     ibus.begin();
 #endif
 #if defined(ESC_INIT_DELAY)
-    while (millis() < ESC_INIT_DELAY)
-        ;
+    SMARTPORT_FRSKY_SERIALDELAY)
+    SMARTPORT_FRSKY_SERIAL
 #endif
 }
 
