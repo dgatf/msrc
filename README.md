@@ -100,6 +100,14 @@ Depending on the receiver protocol connect to the Rx as follows
 
 ## 3. Sensors
 
+All sensors are available with Smartport protocol
+
+Other protocols may not have all of the sensors:
+
+- Ibus. Not available second voltage and second temperature
+- Frsky D. Not available second voltage
+- Xbus, SRXL. Not available second voltage analog and second temperature analog
+
 ### 3.1. ESC
 
 #### Serial telemetry
