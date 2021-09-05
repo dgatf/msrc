@@ -39,6 +39,9 @@ private:
     uint8_t list[7] = {0};
     uint16_t getCrc(uint8_t *buffer, uint8_t lenght);
     uint16_t byteCrc(uint16_t crc, uint8_t new_byte);
+#ifdef SOFTWARE_SERIAL
+    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+#endif
 
 public:
     Srxl(Stream &serial);

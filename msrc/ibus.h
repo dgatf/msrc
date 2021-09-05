@@ -40,6 +40,9 @@ private:
     SensorIbus *sensorIbusP[16] = {NULL};
     uint16_t sensorMask = 0B1111111111111110;
     void sendByte(uint8_t c, uint16_t *crcP);
+#ifdef SOFTWARE_SERIAL
+    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+#endif
 
 public:
     Ibus(Stream &serial);

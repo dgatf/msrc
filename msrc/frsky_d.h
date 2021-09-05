@@ -36,6 +36,9 @@ private:
     Stream &serial_;
     Sensord *sensorP = NULL;
     void sendByte(uint8_t c, bool header);
+#ifdef SOFTWARE_SERIAL
+    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
+#endif
 
 public:
     Frsky(Stream &serial);
