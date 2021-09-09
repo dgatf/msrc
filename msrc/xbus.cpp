@@ -205,7 +205,7 @@ void Xbus::update()
         lat *= -1;
     else
         xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_IS_NORTH_BIT;
-    bcd(&xbusGpsLoc.latitude, (uint16_t)(lat / 60) * 100 + fmod(lat, 60), 4);
+    xbusGpsLoc.latitude = __builtin_bswap32(bcd32((uint16_t)(lat / 60) * 100 + fmod(lat, 60), 4));
     float lon = *gps.lonP();
     if (lon < 0) // E=1,>0, W=0,<0
         lon *= -1;
@@ -216,10 +216,10 @@ void Xbus::update()
         xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
         lon -= 6000;
     }
-    bcd(&xbusGpsLoc.longitude, (uint16_t)(lon / 60) * 100 + fmod(lon, 60), 4);
-    bcd(&xbusGpsLoc.course, *gps.cogP(), 1);
-    bcd(&xbusGpsStat.speed, *gps.spdP(), 1);
-    bcd(&xbusGpsStat.UTC, *gps.timeP(), 1);
+    xbusGpsLoc.longitude = __builtin_bswap32(bcd32((uint16_t)(lon / 60) * 100 + fmod(lon, 60), 4));
+    xbusGpsLoc.course = __builtin_bswap16(bcd16( *gps.cogP(), 1));
+    xbusGpsStat.speed = __builtin_bswap16(bcd16(*gps.spdP(), 1));
+    xbusGpsStat.UTC = __builtin_bswap32((bcd32(*gps.timeP(), 1)));
     xbusGpsStat.numSats = *gps.satP();
 
     float alt = *gps.altP();
@@ -228,8 +228,8 @@ void Xbus::update()
         xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_NEGATIVE_ALT_BIT;
         alt *= -1;
     }
-    bcd(&xbusGpsLoc.altitudeLow, fmod(alt, 1000), 3);
-    bcd(&xbusGpsStat.altitudeHigh, (uint8_t)(alt / 1000), 0);
+    xbusGpsLoc.altitudeLow = __builtin_bswap16(bcd16(fmod(alt, 1000), 1));
+    xbusGpsStat.altitudeHigh = bcd8((uint8_t)(alt / 1000), 0);
 #endif
 #if defined(SIM_RX) && RX_PROTOCOL == RX_XBUS
     static uint32_t timestamp = 0;
@@ -241,37 +241,38 @@ void Xbus::update()
 #endif
 }
 
-void Xbus::bcd(uint8_t *output, float value, uint8_t precision)
+uint8_t Xbus::bcd8(float value, uint8_t precision)
 {
     char buf[10] = {0};
-    *output = 0;
+    uint8_t output = 0;
     for (int i = 0; i < precision; i++)
         value = value * 10;
     sprintf(buf, "%02i", (uint8_t)value);
     for (int i = 0; i < 2; i++)
-        *output |= (buf[i] - 48) << ((1 - i) * 4);
+        output |= (buf[i] - 48) << ((1 - i) * 4);
+    return output;
 }
 
-void Xbus::bcd(uint16_t *output, float value, uint8_t precision)
+uint16_t Xbus::bcd16(float value, uint8_t precision)
 {
     char buf[10] = {0};
-    *output = 0;
+    uint16_t output = 0;
     for (int i = 0; i < precision; i++)
         value = value * 10;
     sprintf(buf, "%04i", (uint16_t)value);
     for (int i = 0; i < 4; i++)
-        *output |= (uint16_t)(buf[i] - 48) << ((3 - i) * 4);
+        output |= (uint16_t)(buf[i] - 48) << ((3 - i) * 4);
+    return output;
 }
 
-void Xbus::bcd(uint32_t *output, float value, uint8_t precision)
+uint32_t Xbus::bcd32(float value, uint8_t precision)
 {
     char buf[10] = {0};
-    *output = 0;
+    uint32_t output = 0;
     for (int i = 0; i < precision; i++)
         value = value * 10;
     sprintf(buf, "%08li", (uint32_t)value);
     for (int i = 0; i < 8; i++)
-    {
-        *output |= (uint32_t)(buf[i] - 48) << ((7 - i) * 4);
-    }
+        output |= (uint32_t)(buf[i] - 48) << ((7 - i) * 4);
+    return output;
 }

@@ -166,9 +166,9 @@ public:
     Xbus();
     void begin();
     void update();
-    void bcd(uint8_t *output, float value, uint8_t precision);
-    void bcd(uint16_t *output, float value, uint8_t precision);
-    void bcd(uint32_t *output, float value, uint8_t precision);
+    uint8_t bcd8(float value, uint8_t precision);
+    uint16_t bcd16(float value, uint8_t precision);
+    uint32_t bcd32(float value, uint8_t precision);
 };
 
 #endif
