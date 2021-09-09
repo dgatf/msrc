@@ -128,6 +128,7 @@ void Xbus::begin()
 #else
     Wire.begin(XBUS_AIRSPEED);
     I2C0_RA = XBUS_RPM_VOLT_TEMP << 1;
+    I2C0_C2 = 1 << 3;
 #endif
     Wire.onRequest(i2c_request_handler);
 #endif
