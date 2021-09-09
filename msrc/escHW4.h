@@ -11,7 +11,6 @@
 #define ESCHW4_NTC_BETA 3950.0
 #define ESCHW4_NTC_R1 10000.0
 #define ESCHW4_NTC_R_REF 47000.0
-#define ESCHW4_DIFFAMP_GAIN 16.9 // 16.9, 13.6
 #define ESCHW4_DIFFAMP_SHUNT (0.25 / 1000)
 #define ESCHW4_V_REF 3.3
 #define ESCHW4_ADC_RES 4096.0
@@ -27,8 +26,9 @@ private:
                                            0x3D0A0D02, // ESCHW4_TYPE_V4_HV
                                            0x00000000, // ESCHW4_TYPE_V5_LV
                                            0x4421410B}; // ESCHW4_TYPE_V5_HV*/
-    const float voltageDivisor_[4] = {11, 21, 11, 21};
-    float rawCurrentOffset_ = -1;
+    const uint8_t voltageDivisor_[4] = {11, 21, 11, 21};
+    const float ampGain_[4] = {10, 16.9, 10, 16.9};
+    int16_t rawCurrentOffset_ = -1;
     Stream &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_, type_;
     uint16_t thr_ = 0,  pwm_ = 0;

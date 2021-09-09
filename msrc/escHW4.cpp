@@ -135,7 +135,7 @@ float EscHW4::calcCurr(uint16_t currentRaw)
 {
     if (currentRaw - rawCurrentOffset_ < 0)
         return 0;
-    return (currentRaw - rawCurrentOffset_) * ESCHW4_V_REF / (ESCHW4_DIFFAMP_GAIN * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
+    return (currentRaw - rawCurrentOffset_) * ESCHW4_V_REF / (ampGain_[type_] * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
 }
 
 uint16_t *EscHW4::thrP()
