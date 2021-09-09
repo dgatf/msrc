@@ -14,8 +14,13 @@
 #define GPS_INFO_FLAGS_LONG_GREATER_99_BIT 2
 #define GPS_INFO_FLAGS_NEGATIVE_ALT_BIT 7
 
+#include "config.h"
 #include <Arduino.h>
+#if (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
+#include <i2c_t3.h>
+#else
 #include <Wire.h>
+#endif
 #include <SoftwareSerial.h>
 #include "escHW3.h"
 #include "escHW4.h"
@@ -55,7 +60,7 @@ struct Xbus_RpmVoltTemp
 
 struct Xbus_Battery
 {
-    uint8_t id = 0x34;        // Source device = 0x34
+    uint8_t identifier = 0x34;// Source device = 0x34
     uint8_t sID = 0;          // Secondary ID
     int16_t current_A = 0;    // Instantaneous current, 0.1A (0-3276.8A)
     int16_t chargeUsed_A = 0; // Integrated mAh used, 1mAh (0-32.766Ah)

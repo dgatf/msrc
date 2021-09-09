@@ -8,11 +8,15 @@
  */
 
 
+#include "config.h"
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
+#if (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
+#include <i2c_t3.h>
+#else
 #include <Wire.h>
-
+#endif
 #include "escHW3.h"
 #include "escHW4.h"
 #include "escPWM.h"
@@ -23,7 +27,6 @@
 #include "pressure.h"
 #include "bmp280.h"
 #include "bn220.h"
-#include "config.h"
 #include "configeeprom.h"
 #include "pwmout.h"
 

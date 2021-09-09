@@ -50,7 +50,6 @@
 #define STANDBY_MS_4000 0x07
 
 #include <Arduino.h>
-#include <Wire.h>
 #include "device.h"
 #include "i2c.h"
 

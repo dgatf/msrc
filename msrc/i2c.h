@@ -1,8 +1,15 @@
 #ifndef I2C_H
 #define I2C_H
 
+#include "config.h"
 #include <Arduino.h>
+#if (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
+#include <i2c_t3.h>
+#define I2C_CHANNEL Wire1
+#else
 #include <Wire.h>
+#define I2C_CHANNEL Wire
+#endif
 
 #define I2C_BIG_ENDIAN 1
 #define I2C_LITTLE_ENDIAN 0

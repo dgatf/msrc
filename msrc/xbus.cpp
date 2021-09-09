@@ -115,9 +115,21 @@ void Xbus::begin()
     TWAMR = addressMask << 1;
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+#if CONFIG_GPS
+    GPS_SERIAL.begin(GPS_BAUD_RATE);
+    GPS_SERIAL.setTimeout(BN220_TIMEOUT);
+#endif
+#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM && CONFIG_ESC_PROTOCOL != PROTOCOL_CASTLE
+    ESC_SERIAL.begin(19200);
+    ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
+#endif
+#if defined(I2C_T3_TEENSY)
+    Wire.begin(I2C_SLAVE, XBUS_AIRSPEED, XBUS_RPM_VOLT_TEMP, I2C_PINS_18_19, I2C_PULLUP_EXT, 400000);
+#else
     Wire.begin(XBUS_AIRSPEED);
-    Wire.onRequest(i2c_request_handler);
     I2C0_RA = XBUS_RPM_VOLT_TEMP << 1;
+#endif
+    Wire.onRequest(i2c_request_handler);
 #endif
 #if CONFIG_VOLTAGE2 || CONFIG_NTC2
     xbusRpmVoltTemp2.sID = 1;

@@ -63,11 +63,12 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
 | Frsky D, Smartport | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 0 & 1<sup>(2)</sup> |
 | SRXL or IBUS | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15 & 14<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 7 & 8<sup>(2)</sup> |
-| XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18 |
-| XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19 |
+| XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
+| XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 
 (1) with pull up 3.3k  
-(2) with resistor 3.3k
+(2) with resistor 3.3k  
+(3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)
 
 ## 2. Receiver protocol
 
@@ -94,6 +95,8 @@ Depending on the receiver protocol connect to the Rx as follows
   <i>SRXL or IBUS</i><br><br></p>
 
 ### XBUS
+
+If using Teensy LC/3.x, it is feasible to use i2c_t3 library by enabling I2C_T3_TEENSY in config.h. This allows to use a second I2C port to use I2C sensors together with XBUS. Then I2C sensor to be connected to pins 23 (SDA1) and 22 (SCL1)
 
 <p align="center"><img src="./images/xbus.png" width="300"><br>
   <i>XBUS</i><br><br></p>

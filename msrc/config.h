@@ -25,6 +25,9 @@
 // HW V4 signature (only smartport). This outputs esc signature and raw current to sensors 5100, 5101 and 5102
 #define ESC_SIGNATURE
 
+// Use library I2C_T3 for Teensy LC/3.X
+#define I2C_T3_TEENSY
+
 // Add init delay for FlyFun ESC. Uncomment if the ESC doesn't arm
 //#define ESC_INIT_DELAY 10000
 
