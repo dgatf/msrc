@@ -175,13 +175,14 @@ The following analog sensors are supported:
 
 ### 3.4. I2C sensors
 
-I2C sensors not compatible with XBUS. The following I2C sensors are suported:
+The following I2C sensors are suported:
 
 - Barometer: BMP280
 
-Remark:
+Remarks:
 
-For BMP280 module there are two versions: 3.3V (6 pins, I2C/SPI) and 5V (4 pins, I2C). Note that  3.3V version is not 5V tolerant. Use module version accordingly to your board Vcc
+- For BMP280 module there are two versions: 3.3V (6 pins, I2C/SPI) and 5V (4 pins, I2C). Note that  3.3V version is not 5V tolerant. Use module version accordingly to your board Vcc
+- If using XBUS, use Teensy LC/3.x to be able to use I2C sensors
 
 <p align="center"><img src="./images/full.png" width="600"><br>
   <i>I2C and analog sensors with Smartport</i><br><br></p>
