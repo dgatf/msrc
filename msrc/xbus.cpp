@@ -214,7 +214,7 @@ void Xbus::update()
         xbusGpsLoc.GPSflags |= 1 << GPS_INFO_FLAGS_IS_NORTH_BIT;
     xbusGpsLoc.latitude = bcd32((uint16_t)(lat / 60) * 100 + fmod(lat, 60), 4);
     float lon = *gps.lonP();
-    if (lon < 0) // E=1,>0, W=0,<0
+    if (lon < 0) // E=1,+, W=0,-
         lon *= -1;
     else
         xbusGpsLoc.GPSflags |= 1 << GPS_INFO_FLAGS_IS_EAST_BIT;
