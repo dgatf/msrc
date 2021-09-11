@@ -206,35 +206,36 @@ void Xbus::update()
 #endif
 #if CONFIG_GPS
     gps.update();
+    xbusGpsLoc.GPSflags = 0;
     float lat = *gps.latP();
-    if (lat < 0) // N=1,>0, S=0,<0
+    if (lat < 0) // N=1,+, S=0,-
         lat *= -1;
     else
-        xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_IS_NORTH_BIT;
-    xbusGpsLoc.latitude = __builtin_bswap32(bcd32((uint16_t)(lat / 60) * 100 + fmod(lat, 60), 4));
+        xbusGpsLoc.GPSflags |= 1 << GPS_INFO_FLAGS_IS_NORTH_BIT;
+    xbusGpsLoc.latitude = bcd32((uint16_t)(lat / 60) * 100 + fmod(lat, 60), 4);
     float lon = *gps.lonP();
     if (lon < 0) // E=1,>0, W=0,<0
         lon *= -1;
     else
-        xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_IS_EAST_BIT;
+        xbusGpsLoc.GPSflags |= 1 << GPS_INFO_FLAGS_IS_EAST_BIT;
     if (lon >= 6000)
     {
-        xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
+        xbusGpsLoc.GPSflags |= 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
         lon -= 6000;
     }
-    xbusGpsLoc.longitude = __builtin_bswap32(bcd32((uint16_t)(lon / 60) * 100 + fmod(lon, 60), 4));
-    xbusGpsLoc.course = __builtin_bswap16(bcd16( *gps.cogP(), 1));
-    xbusGpsStat.speed = __builtin_bswap16(bcd16(*gps.spdP(), 1));
-    xbusGpsStat.UTC = __builtin_bswap32((bcd32(*gps.timeP(), 1)));
+    xbusGpsLoc.longitude = bcd32((uint16_t)(lon / 60) * 100 + fmod(lon, 60), 4);
+    xbusGpsLoc.course = bcd16( *gps.cogP(), 1);
+    xbusGpsStat.speed = bcd16(*gps.spdP(), 1);
+    xbusGpsStat.UTC = bcd32(*gps.timeP(), 1);
     xbusGpsStat.numSats = *gps.satP();
 
     float alt = *gps.altP();
     if (alt < 0)
     {
-        xbusGpsLoc.GPSflags = 1 << GPS_INFO_FLAGS_NEGATIVE_ALT_BIT;
+        xbusGpsLoc.GPSflags |= 1 << GPS_INFO_FLAGS_NEGATIVE_ALT_BIT;
         alt *= -1;
     }
-    xbusGpsLoc.altitudeLow = __builtin_bswap16(bcd16(fmod(alt, 1000), 1));
+    xbusGpsLoc.altitudeLow = bcd16(fmod(alt, 1000), 1);
     xbusGpsStat.altitudeHigh = bcd8((uint8_t)(alt / 1000), 0);
 #endif
 #if (CONFIG_I2C1_TYPE == I2C_BMP280) && (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
