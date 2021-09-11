@@ -32,16 +32,35 @@ void Sbus::deleteSensors()
 
 void Sbus::sendPacket(uint8_t telemetryPacket)
 {
-    for (uint8_t i = 0; i < telemetryPacket * 8; i++)
+#ifdef DEBUG
+    DEBUG_SERIAL.print("\nTP");
+    DEBUG_SERIAL.print(telemetryPacket);
+    DEBUG_SERIAL.print(": ");
+#endif
+    delayMicroseconds(2000);
+    for (uint8_t i = (telemetryPacket - 1) * 8; i < telemetryPacket * 8; i++)
     {
         if (sensorSbusP[i] != NULL)
+        {
             sendSlot(i);
-        delay(200);
+            delayMicroseconds(300);
+        }
     }
 }
 
 void Sbus::sendSlot(uint8_t number)
 {
+    SRXL_IBUS_SBUS_SERIAL.write(slotId[number]);
+    SRXL_IBUS_SBUS_SERIAL.write(sensorSbusP[number]->valueFormatted());
+#ifdef DEBUG
+    DEBUG_SERIAL.print("(");
+    DEBUG_SERIAL.print(number);
+    DEBUG_SERIAL.print(")");
+    DEBUG_SERIAL.print(slotId[number], HEX);
+    DEBUG_SERIAL.print(" ");
+    DEBUG_SERIAL.print(sensorSbusP[number]->valueFormatted(), HEX);
+    DEBUG_SERIAL.print("  ");
+#endif
 }
 
 void Sbus::update()
@@ -68,16 +87,16 @@ void Sbus::update()
     {
         uint8_t buff[25];
         uint8_t result = serial_.readBytes(buff, 25);
-        if (result == 25 && buff[24] == 0x0F && buff[24] == 0x04)
+        if (result == 25 && buff[0] == 0x0F && buff[24] == 0x04)
         {
             if (!mute)
             {
                 status = SBUS_SEND;
                 telemetryPacket++;
+                if (telemetryPacket == 5)
+                    telemetryPacket = 1;
             }
             mute = !mute;
-            if (telemetryPacket == 4)
-                telemetryPacket = 0;
         }
 
 #endif
@@ -91,7 +110,8 @@ void Sbus::update()
 static uint8_t cont = 0;
 if (sensorSbusP[cont])
 {
-    sensorSbusP[cont]->update();
+    if (sensorSbusP[cont]->valueP())
+        sensorSbusP[cont]->update();
 }
 cont++;
 if (cont == 32)
@@ -137,6 +157,8 @@ void Sbus::setConfig(Config &config)
         addSensor(8, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->voltageP(), esc);
         addSensor(9, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, NULL, NULL);
+        addSensor(10, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempFetP(), esc);
         addSensor(6, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempBecP(), esc);
@@ -156,12 +178,16 @@ void Sbus::setConfig(Config &config)
         addSensor(8, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->voltageP(), esc);
         addSensor(9, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, NULL, NULL);
+        addSensor(10, sensorSbusP);
         //sensorSbusP = new SensorSbus(FASST_POWER_CURR, esc->rippleVoltageP(), esc);
         //addSensor(11, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_CURR, esc->becCurrentP(), esc);
         addSensor(11, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->becVoltageP(), esc);
         addSensor(12, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, NULL, NULL);
+        addSensor(13, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_TEMP, esc->temperatureP(), esc);
         addSensor(6, sensorSbusP);
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
@@ -182,10 +208,14 @@ void Sbus::setConfig(Config &config)
         addSensor(8, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->voltageP(), esc);
         addSensor(9, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, NULL, NULL);
+        addSensor(10, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_CURR, esc->becCurrentP(), esc);
         addSensor(11, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->becVoltageP(), esc);
         addSensor(12, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, NULL, NULL);
+        addSensor(13, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempFetP(), esc);
         addSensor(6, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempFetP(), esc);
@@ -204,14 +234,12 @@ void Sbus::setConfig(Config &config)
         addSensor(16, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_GPS_ALTITUDE, gps->altP(), gps);
         addSensor(17, sensorSbusP);
-        sensorSbusP = new SensorSbus(FASST_GPS_COG, gps->cogP(), gps);
+        sensorSbusP = new SensorSbus(FASST_GPS_TIME, gps->timeP(), gps);
         addSensor(18, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_GPS_LATITUDE1, gps->latP(), gps);
         addSensor(19, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_GPS_LATITUDE2, gps->latP(), gps);
         addSensor(20, sensorSbusP);
-        sensorSbusP = new SensorSbus(FASST_GPS_LATITUDE3, gps->latP(), gps);
-        addSensor(21, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_GPS_LONGITUDE1, gps->lonP(), gps);
         addSensor(22, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_GPS_LONGITUDE2, gps->lonP(), gps);
@@ -224,6 +252,11 @@ void Sbus::setConfig(Config &config)
         pressure = new Pressure(PIN_PRESSURE, ALPHA(config.average.volt));
         sensorSbusP = new SensorSbus(FASST_VARIO_SPEED, pressure->valueP(), pressure);
         addSensor(4, sensorSbusP);
+        if (config.deviceI2C1Type == I2C_BMP280)
+        {
+            sensorSbusP = new SensorSbus(FASST_VARIO_ALT, NULL, NULL);
+            addSensor(5, sensorSbusP);
+        }
     }
     if (config.voltage1 == true)
     {
@@ -232,6 +265,11 @@ void Sbus::setConfig(Config &config)
         voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt));
         sensorSbusP = new SensorSbus(FASST_VOLT_V1, voltage->valueP(), voltage);
         addSensor(2, sensorSbusP);
+
+        if (config.voltage2 == false) {
+            sensorSbusP = new SensorSbus(FASST_VOLT_V2, NULL, NULL);
+            addSensor(3, sensorSbusP);
+        }
     }
     if (config.voltage2 == true)
     {
@@ -240,6 +278,10 @@ void Sbus::setConfig(Config &config)
         voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt));
         sensorSbusP = new SensorSbus(FASST_VOLT_V2, voltage->valueP(), voltage);
         addSensor(3, sensorSbusP);
+        if (config.voltage1 == false) {
+            sensorSbusP = new SensorSbus(FASST_VOLT_V1, NULL, NULL);
+            addSensor(2, sensorSbusP);
+        }
     }
     if (config.current == true)
     {
@@ -248,6 +290,10 @@ void Sbus::setConfig(Config &config)
         current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr));
         sensorSbusP = new SensorSbus(FASST_POWER_CURR, current->valueP(), current);
         addSensor(8, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_VOLT, NULL, NULL);
+        addSensor(9, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, NULL, NULL);
+        addSensor(10, sensorSbusP);
     }
     if (config.ntc1 == true)
     {
@@ -274,5 +320,11 @@ void Sbus::setConfig(Config &config)
         //sensorSbusP = new SensorSbus(TEMP1_ID, bmp->temperatureP(), bmp);
         sensorSbusP = new SensorSbus(FASST_VARIO_ALT, bmp->altitudeP(), bmp);
         addSensor(5, sensorSbusP);
+        if (config.airspeed == true)
+        {
+            sensorSbusP = new SensorSbus(FASST_VARIO_SPEED, NULL, NULL);
+            addSensor(4, sensorSbusP);
+        }
     }
 }
+

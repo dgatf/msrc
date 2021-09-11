@@ -143,7 +143,7 @@ uint16_t FormatData::formatData(uint8_t dataId, float value)
 
 uint16_t FormatData::formatIbus(uint8_t dataId, float value)
 {
-    
+
     if (dataId == AFHDS2A_ID_TEMPERATURE)
         return round(value * 10);
 
@@ -169,22 +169,88 @@ uint16_t FormatData::formatIbus(uint8_t dataId, float value)
 uint16_t FormatData::formatSbus(uint8_t dataId, float value)
 {
     if (dataId == FASST_RPM)
-        return __builtin_bswap16(round(value / 6));
-    if (dataId == FASST_TEMP)
-        return __builtin_bswap16(round(value) | 0X4000);
+        return __builtin_bswap16((uint16_t)round(value / 6));
+    if (dataId == FASST_TEMP || dataId == FASST_VARIO_ALT || dataId == FASST_GPS_SPEED || dataId == FASST_GPS_ALTITUDE)
+        return __builtin_bswap16((uint16_t)round(value) | 0X4000);
     if (dataId == FASST_VOLT_V1)
-        return __builtin_bswap16(round(value * 10) | 0x8000);
-    if (dataId == FASST_VOLT_V2)
-        return __builtin_bswap16(round(value * 10));
+        return __builtin_bswap16((uint16_t)round(value * 10) | 0x8000);
+    if (dataId == FASST_VOLT_V2 || dataId == FASST_VARIO_SPEED || dataId == FASST_GPS_VARIO_SPEED)
+        return __builtin_bswap16((uint16_t)round(value * 10));
     if (dataId == FASST_POWER_CURR)
-        return __builtin_bswap16(round(value * 100) | 0x4000);
-    if (dataId == FASST_POWER_VOLT)
-        return __builtin_bswap16(round(value * 100));
-    if (dataId == FASST_VARIO_SPEED)
-        return __builtin_bswap16(round(value * 100));
-    if (dataId == FASST_VARIO_ALT)
-        return __builtin_bswap16(round(value) | 0X4000);
-
+        return __builtin_bswap16((uint16_t)round(value * 100) | 0x4000);
+    if (dataId == FASST_POWER_VOLT || dataId == FASST_VARIO_SPEED)
+        return __builtin_bswap16((uint16_t)round(value * 100));
+    if (dataId == FASST_GPS_LATITUDE1)
+    {
+        float val = (uint16_t)(value / 60) * 100 + fmod(val, 60); // ddmm.m
+        bool latSouth = false;
+        if (val < 0)
+        {
+            latSouth = true;
+            val *= -1;
+        }
+        uint32_t val2 = round(val * 10000); // ddmm(mmmm), prec 4
+        uint32_t val3 = (val2 % 1000000);   // mm(mmmm)
+        uint16_t val4 = (uint8_t)(val3 >> 16);
+        if (latSouth)
+            val4 |= 0x1f; 
+        else
+            val4 |= 0x0f; 
+        val4 = (uint8_t)(val2/1000000) << 8;
+        return __builtin_bswap16(val4);
+    
+        return __builtin_bswap16((uint16_t)val3);
+    }
+    if (dataId == FASST_GPS_LATITUDE2)
+    {
+        float val = (uint16_t)(value / 60) * 100 + fmod(val, 60); // ddmm.m
+        bool latSouth = false;
+        if (val < 0)
+        {
+            latSouth = true;
+            val *= -1;
+        }
+        uint32_t val2 = round(val * 10000); // ddmm(mmmm), prec 4
+        uint32_t val3 = (val2 % 1000000);   // mm(mmmm)    
+        return __builtin_bswap16((uint16_t)val3);
+    }
+    if (dataId == FASST_GPS_LONGITUDE1)
+    {
+        float val = (uint16_t)(value / 60) * 100 + fmod(val, 60); // ddmm.m
+        bool latSouth = false;
+        if (val < 0)
+        {
+            latSouth = true;
+            val *= -1;
+        }
+        uint32_t val2 = round(val * 10000); // ddmm(mmmm), prec 4
+        uint32_t val3 = (val2 % 1000000);   // mm(mmmm)
+        uint16_t val4 = (uint8_t)(val3 >> 16);
+        if (latSouth)
+            val4 |= 0x1f; 
+        else
+            val4 |= 0x0f; 
+        val4 = (uint8_t)(val2/1000000) << 8;
+        return __builtin_bswap16(val4);
+    
+        return __builtin_bswap16((uint16_t)val3);
+    }
+    if (dataId == FASST_GPS_LONGITUDE2)
+    {
+        float val = (uint16_t)(value / 60) * 100 + fmod(val, 60); // ddmm.m
+        bool latSouth = false;
+        if (val < 0)
+        {
+            latSouth = true;
+            val *= -1;
+        }
+        uint32_t val2 = round(val * 10000); // ddmm(mmmm), prec 4
+        uint32_t val3 = (val2 % 1000000);   // mm(mmmm)    
+        return __builtin_bswap16((uint16_t)val3);
+    }
+    if (dataId == FASST_GPS_TIME)
+    {
+        return 0;
+    }
     return round(value);
-
 }

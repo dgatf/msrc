@@ -116,8 +116,9 @@ public:
     SensorSbus(uint8_t dataId, float *value, AbstractDevice *deviceP);
     ~SensorSbus();
     uint8_t dataId();
+    float *valueP();
     void update();
-    uint32_t valueFormatted();
+    uint16_t valueFormatted();
 };
 
 #endif

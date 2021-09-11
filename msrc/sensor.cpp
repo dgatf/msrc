@@ -173,12 +173,19 @@ void SensorSbus::update()
     deviceP_->update();
 }
 
-uint32_t SensorSbus::valueFormatted()
+uint16_t SensorSbus::valueFormatted()
 {
-    return formatSbus(dataId_, *valueP_);
+    if (valueP_)
+        return formatSbus(dataId_, *valueP_);
+    return formatSbus(dataId_, 0);
 }
 
 uint8_t SensorSbus::dataId()
 {
     return dataId_;
+}
+
+float *SensorSbus::valueP()
+{
+    return valueP_;
 }
