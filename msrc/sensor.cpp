@@ -161,3 +161,24 @@ uint8_t SensorIbus::type()
 {
     return type_;
 }
+
+SensorSbus::SensorSbus(uint8_t dataId, float *valueP, AbstractDevice *deviceP) : dataId_(dataId), valueP_(valueP), deviceP_(deviceP) {}
+
+SensorSbus::~SensorSbus()
+{
+}
+
+void SensorSbus::update()
+{
+    deviceP_->update();
+}
+
+uint32_t SensorSbus::valueFormatted()
+{
+    return formatSbus(dataId_, *valueP_);
+}
+
+uint8_t SensorSbus::dataId()
+{
+    return dataId_;
+}

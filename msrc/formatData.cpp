@@ -165,3 +165,26 @@ uint16_t FormatData::formatIbus(uint8_t dataId, float value)
 
     return round(value);
 }
+
+uint16_t FormatData::formatSbus(uint8_t dataId, float value)
+{
+    if (dataId == FASST_RPM)
+        return __builtin_bswap16(round(value / 6));
+    if (dataId == FASST_TEMP)
+        return __builtin_bswap16(round(value) | 0X4000);
+    if (dataId == FASST_VOLT_V1)
+        return __builtin_bswap16(round(value * 10) | 0x8000);
+    if (dataId == FASST_VOLT_V2)
+        return __builtin_bswap16(round(value * 10));
+    if (dataId == FASST_POWER_CURR)
+        return __builtin_bswap16(round(value * 100) | 0x4000);
+    if (dataId == FASST_POWER_VOLT)
+        return __builtin_bswap16(round(value * 100));
+    if (dataId == FASST_VARIO_SPEED)
+        return __builtin_bswap16(round(value * 100));
+    if (dataId == FASST_VARIO_ALT)
+        return __builtin_bswap16(round(value) | 0X4000);
+
+    return round(value);
+
+}

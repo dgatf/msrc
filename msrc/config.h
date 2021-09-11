@@ -8,7 +8,7 @@
 
 
 // Select RX protocol
-#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_FRSKY, RX_IBUS
+#define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_FRSKY, RX_IBUS, RX_SBUS
 
 // Select SRLX valriant (only for SRXL)
 #define SRXL_VARIANT SRXL_V5 // Only implemented SRXL_V5 (SPEKTRUM)
@@ -45,7 +45,7 @@
 
 //#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SERIAL Serial
+#define SRXL_IBUS_SBUS_SERIAL Serial
 
 //#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial
@@ -64,7 +64,7 @@
 
 //#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SERIAL Serial1
+#define SRXL_IBUS_SBUS_SERIAL Serial1
 
 //#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial
@@ -83,7 +83,7 @@
 
 //#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SERIAL Serial3
+#define SRXL_IBUS_SBUS_SERIAL Serial3
 
 //#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial1
@@ -102,7 +102,7 @@
 
 //#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SERIAL Serial
+#define SRXL_IBUS_SBUS_SERIAL Serial
 
 #define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial1
@@ -118,7 +118,7 @@
 #define PIN_PRESSURE 19
 
 #define SMARTPORT_FRSKY_SERIAL Serial1
-#define SRXL_IBUS_SERIAL Serial3
+#define SRXL_IBUS_SBUS_SERIAL Serial3
 
 //#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial2

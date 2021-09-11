@@ -189,6 +189,27 @@
 #define AFHDS2A_ID_ACC_FULL 0xEF
 #define AFHDS2A_ID_TX_RSSI 0x200 // Pseudo id outside 1 byte range of FlySky sensors
 
+// FASST Sbus
+#define FASST_TEMP 1
+#define FASST_VOLT_V1 2
+#define FASST_VOLT_V2 3
+#define FASST_RPM 4
+#define FASST_POWER_CURR 5
+#define FASST_POWER_VOLT 6
+#define FASST_POWER_CONS 7
+#define FASST_VARIO_ALT 8
+#define FASST_VARIO_SPEED 9
+#define FASST_GPS_SPEED 10
+#define FASST_GPS_ALTITUDE 11
+#define FASST_GPS_TIME 12
+#define FASST_GPS_COG 13
+#define FASST_GPS_LATITUDE1 14
+#define FASST_GPS_LATITUDE2 15
+#define FASST_GPS_LATITUDE3 16
+#define FASST_GPS_LONGITUDE1 17
+#define FASST_GPS_LONGITUDE2 18
+
+
 #define TYPE_LAT 0
 #define TYPE_LON 1
 #define TYPE_DATE 0
@@ -206,6 +227,7 @@ protected:
     uint32_t formatCell(uint8_t cellIndex, float value1, float value2);
     uint16_t formatData(uint8_t dataId, float value);
     uint16_t formatIbus(uint8_t dataId, float value);
+    uint16_t formatSbus(uint8_t dataId, float value);
 };
 
 #endif

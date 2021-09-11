@@ -105,4 +105,19 @@ public:
     uint32_t valueFormatted();
 };
 
+class SensorSbus : public FormatData
+{
+protected:
+    uint8_t dataId_;
+    float *valueP_;
+
+public:
+    AbstractDevice *deviceP_;
+    SensorSbus(uint8_t dataId, float *value, AbstractDevice *deviceP);
+    ~SensorSbus();
+    uint8_t dataId();
+    void update();
+    uint32_t valueFormatted();
+};
+
 #endif
