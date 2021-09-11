@@ -158,8 +158,8 @@ void Xbus::update()
     xbusEsc.tempFET = __builtin_bswap16(*esc.tempFetP() * 10);
     xbusEsc.currentMotor = __builtin_bswap16(*esc.currentP() * 100);
     xbusEsc.tempBEC = __builtin_bswap16(*esc.tempBecP() * 10);
-    xbusEsc.currentBEC = __builtin_bswap16(*esc.becCurrentP() * 10);
-    xbusEsc.voltsBEC = __builtin_bswap16(*esc.becVoltageP() * 20);
+    xbusEsc.currentBEC = *esc.becCurrentP() * 10;
+    xbusEsc.voltsBEC = *esc.becVoltageP() * 20;
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
     esc.update();
@@ -191,8 +191,14 @@ void Xbus::update()
     xbusRpmVoltTemp2.temperature = __builtin_bswap16(*ntc2.valueP());
 #endif
 #if CONFIG_AIRSPEED
+    static uint16_t maxAirspeed = 0;
     airspeed.update();
-    xbusAirspeed.airspeed = __builtin_bswap16(*airspeed.valueP());
+    uint16_t airSpeed = round(*airspeed.valueP());
+    xbusAirspeed.airspeed = __builtin_bswap16(airSpeed);
+    if (airSpeed > maxAirSpeed) {
+        maxAirSpeed = airSpeed;
+        xbusAirSpeed.maxAirSpeed = __builtin_bswap16(airSpeed)
+    }
 #endif
 #if CONFIG_CURRENT
     curr.update();
@@ -230,6 +236,16 @@ void Xbus::update()
     }
     xbusGpsLoc.altitudeLow = __builtin_bswap16(bcd16(fmod(alt, 1000), 1));
     xbusGpsStat.altitudeHigh = bcd8((uint8_t)(alt / 1000), 0);
+#endif
+#if (CONFIG_I2C1_TYPE == I2C_BMP280) && (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
+    static uint16_t maxAltitude = 0;
+    bmp.update();
+    uint16_t altitude = round(*bmp.altitudeP() * 10);
+    xbusAltitude.altitude = __builtin_bswap16(altitude);
+    if (altitude > maxAltitude && millis() > 7000) {
+        maxAltitude = altitude;
+        xbusAltitude.maxAltitude = __builtin_bswap16(altitude)
+    }
 #endif
 #if defined(SIM_RX) && RX_PROTOCOL == RX_XBUS
     static uint32_t timestamp = 0;
