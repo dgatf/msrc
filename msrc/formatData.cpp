@@ -186,7 +186,7 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
     }
     if (dataId == FASST_VARIO_SPEED)
     {
-        return __builtin_bswap16((uint16_t)round(value * 100));
+        return __builtin_bswap16((int16_t)round(value * 100));
     }
     if (dataId == FASST_VARIO_ALT)
     {
