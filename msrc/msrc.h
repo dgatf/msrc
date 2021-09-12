@@ -45,6 +45,9 @@
 #if RX_PROTOCOL == RX_IBUS
 #include "ibus.h"
 #endif
+#if RX_PROTOCOL == RX_SBUS
+#include "sbus.h"
+#endif
 
 PwmOut pwmOut;
 
@@ -60,7 +63,7 @@ Xbus xbus;
 #endif
 
 #if RX_PROTOCOL == RX_SRXL
-Srxl srxl(SRXL_IBUS_SERIAL);
+Srxl srxl(SRXL_IBUS_SBUS_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_FRSKY
@@ -71,7 +74,11 @@ Frsky frsky(SMARTPORT_FRSKY_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_IBUS
-Ibus ibus(SRXL_IBUS_SERIAL);
+Ibus ibus(SRXL_IBUS_SBUS_SERIAL);
+#endif
+
+#if RX_PROTOCOL == RX_SBUS
+Sbus sbus(SRXL_IBUS_SBUS_SERIAL);
 #endif
 
 void setup();

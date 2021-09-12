@@ -246,8 +246,8 @@ void setup()
     xbus.begin();
 #endif
 #if RX_PROTOCOL == RX_SRXL
-    SRXL_IBUS_SERIAL.begin(115200);
-    SRXL_IBUS_SERIAL.setTimeout(SRXLSERIAL_TIMEOUT);
+    SRXL_IBUS_SBUS_SERIAL.begin(115200);
+    SRXL_IBUS_SBUS_SERIAL.setTimeout(SRXLSERIAL_TIMEOUT);
     srxl.begin();
 #endif
 #if RX_PROTOCOL == RX_FRSKY
@@ -259,9 +259,18 @@ void setup()
     frsky.begin();
 #endif
 #if RX_PROTOCOL == RX_IBUS
-    SRXL_IBUS_SERIAL.begin(115200);
-    SRXL_IBUS_SERIAL.setTimeout(IBUS_TIMEOUT);
+    SRXL_IBUS_SBUS_SERIAL.begin(115200);
+    SRXL_IBUS_SBUS_SERIAL.setTimeout(IBUS_TIMEOUT);
     ibus.begin();
+#endif
+#if RX_PROTOCOL == RX_SBUS
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    SRXL_IBUS_SBUS_SERIAL.begin(100000, SERIAL_8N2_RXINV_TXINV);
+#else
+    SRXL_IBUS_SBUS_SERIAL.begin(100000, SERIAL_8N2);
+#endif
+    SRXL_IBUS_SBUS_SERIAL.setTimeout(SBUS_SERIAL_TIMEOUT);
+    sbus.begin();
 #endif
 }
 
@@ -282,6 +291,9 @@ void loop()
 #endif
 #if RX_PROTOCOL == RX_IBUS
     ibus.update();
+#endif
+#if RX_PROTOCOL == RX_SBUS
+    sbus.update();
 #endif
     pwmOut.update();
 }

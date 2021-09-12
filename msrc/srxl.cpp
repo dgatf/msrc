@@ -98,7 +98,7 @@ void Srxl::send()
     crc = __builtin_bswap16(getCrc(buffer, 19));  // all bytes including header
     //crc = __builtin_bswap16(getCrc(buffer + 3, 16));  // only 16bytes (xbus)
     memcpy(buffer + 19, &crc, 2);
-    SRXL_IBUS_SERIAL.write(buffer, 21);
+    SRXL_IBUS_SBUS_SERIAL.write(buffer, 21);
 #ifdef DEBUG
     DEBUG_SERIAL.print("TM send: ");
     DEBUG_SERIAL.println(millis());
@@ -124,12 +124,12 @@ void Srxl::checkSerial()
         timestamp = millis();
     }
 #else
-    if (SRXL_IBUS_SERIAL.available())
+    if (SRXL_IBUS_SBUS_SERIAL.available())
     {
         static uint32_t timestamp = 0;
         uint8_t buffer[SRXL_FRAMELEN];
         static bool mute = false;
-        uint8_t lenght = SRXL_IBUS_SERIAL.readBytes(buffer, SRXL_FRAMELEN);
+        uint8_t lenght = SRXL_IBUS_SBUS_SERIAL.readBytes(buffer, SRXL_FRAMELEN);
         if (lenght == SRXL_FRAMELEN && buffer[0] == SRXL_VARIANT && buffer[1] == 0x12)
         {
 #ifdef DEBUG
@@ -148,11 +148,11 @@ void Srxl::checkSerial()
             {
                 timestamp = millis();
                 delay(1);
-                while (SRXL_IBUS_SERIAL.available() && millis() - timestamp < 8000)
+                while (SRXL_IBUS_SBUS_SERIAL.available() && millis() - timestamp < 8000)
                 {
                     char buf[21];
-                    uint8_t lenght = SRXL_IBUS_SERIAL.readBytes(buf, 21);
-                    if (lenght == 21 && !SRXL_IBUS_SERIAL.available())
+                    uint8_t lenght = SRXL_IBUS_SBUS_SERIAL.readBytes(buf, 21);
+                    if (lenght == 21 && !SRXL_IBUS_SBUS_SERIAL.available())
                         delay(1);
                 }
                 send();
