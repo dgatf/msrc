@@ -37,7 +37,6 @@ void Sbus::sendPacket(uint8_t telemetryPacket)
     DEBUG_SERIAL.print(telemetryPacket);
     DEBUG_SERIAL.print(": ");
 #endif
-    delayMicroseconds(2000);
     for (uint8_t i = (telemetryPacket - 1) * 8; i < telemetryPacket * 8; i++)
     {
         if (sensorSbusP[i] != NULL)
@@ -65,6 +64,8 @@ void Sbus::sendSlot(uint8_t number)
 
 void Sbus::update()
 {
+    static uint16_t serialTs = 0;
+    static uint8_t serialCount = 0;
     uint8_t status = SBUS_WAIT;
     static uint8_t telemetryPacket = 0;
     static bool mute = true;
@@ -79,43 +80,50 @@ void Sbus::update()
         }
         mute = !mute;
         ts = millis();
-        if (telemetryPacket == 4)
-            telemetryPacket = 0;
+        if (telemetryPacket == 5)
+            telemetryPacket = 1;
     }
 #else
-    if (serial_.available())
+    if (serial_.available() > serialCount)
     {
-        uint8_t buff[25];
-        uint8_t result = serial_.readBytes(buff, 25);
-        if (result == 25 && buff[0] == 0x0F && buff[24] == 0x04)
+        serialCount = serial_.available();
+        serialTs = micros();
+    }
+    if (serialTs > SBUS_SERIAL_TIMEOUT)
+    {
+        if (serialCount == SBUS_PACKET_LENGHT)
         {
-            if (!mute)
+            uint8_t buff[SBUS_PACKET_LENGHT];
+            serial_.readBytes(buff, SBUS_PACKET_LENGHT);
+            if (buff[0] == 0x0F) // telemetry footer: 0x04, 0x14...? buff[SBUS_PACKET_LENGHT - 1] & 0x04
             {
-                status = SBUS_SEND;
-                telemetryPacket++;
-                if (telemetryPacket == 5)
-                    telemetryPacket = 1;
+                if (!mute)
+                {
+                    status = SBUS_SEND;
+                    telemetryPacket++;
+                    if (telemetryPacket == 5)
+                        telemetryPacket = 1;
+                }
+                mute = !mute;
             }
-            mute = !mute;
         }
-
+    }
 #endif
     if (status == SBUS_SEND)
     {
         sendPacket(telemetryPacket);
     }
-}
 
-// update sensor
-static uint8_t cont = 0;
-if (sensorSbusP[cont])
-{
-    if (sensorSbusP[cont]->valueP())
-        sensorSbusP[cont]->update();
-}
-cont++;
-if (cont == 32)
-    cont = 0;
+    // update sensor
+    static uint8_t cont = 0;
+    if (sensorSbusP[cont])
+    {
+        if (sensorSbusP[cont]->valueP())
+            sensorSbusP[cont]->update();
+    }
+    cont++;
+    if (cont == 32)
+        cont = 0;
 }
 
 void Sbus::setConfig(Config &config)
@@ -236,10 +244,12 @@ void Sbus::setConfig(Config &config)
         addSensor(17, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_GPS_TIME, gps->timeP(), gps);
         addSensor(18, sensorSbusP);
-        sensorSbusP = new SensorSbus(FASST_GPS_LATITUDE1, gps->latP(), gps);
+        sensorSbusP = new SensorSbus(FASST_GPS_VARIO_SPEED, NULL, NULL);
         addSensor(19, sensorSbusP);
-        sensorSbusP = new SensorSbus(FASST_GPS_LATITUDE2, gps->latP(), gps);
+        sensorSbusP = new SensorSbus(FASST_GPS_LATITUDE1, gps->latP(), gps);
         addSensor(20, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_GPS_LATITUDE2, gps->latP(), gps);
+        addSensor(21, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_GPS_LONGITUDE1, gps->lonP(), gps);
         addSensor(22, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_GPS_LONGITUDE2, gps->lonP(), gps);
@@ -266,7 +276,8 @@ void Sbus::setConfig(Config &config)
         sensorSbusP = new SensorSbus(FASST_VOLT_V1, voltage->valueP(), voltage);
         addSensor(2, sensorSbusP);
 
-        if (config.voltage2 == false) {
+        if (config.voltage2 == false)
+        {
             sensorSbusP = new SensorSbus(FASST_VOLT_V2, NULL, NULL);
             addSensor(3, sensorSbusP);
         }
@@ -278,7 +289,8 @@ void Sbus::setConfig(Config &config)
         voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt));
         sensorSbusP = new SensorSbus(FASST_VOLT_V2, voltage->valueP(), voltage);
         addSensor(3, sensorSbusP);
-        if (config.voltage1 == false) {
+        if (config.voltage1 == false)
+        {
             sensorSbusP = new SensorSbus(FASST_VOLT_V1, NULL, NULL);
             addSensor(2, sensorSbusP);
         }
@@ -327,4 +339,3 @@ void Sbus::setConfig(Config &config)
         }
     }
 }
-

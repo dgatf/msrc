@@ -19,7 +19,8 @@
 #include "configeeprom.h"
 #include "pwmout.h"
 
-#define SBUS_SERIAL_TIMEOUT 2
+#define SBUS_SERIAL_TIMEOUT 2000 // us
+#define SBUS_PACKET_LENGHT 25
 
 #define SBUS_WAIT 0
 #define SBUS_SEND 1
@@ -29,7 +30,7 @@
 Slot mapping
 
 ----
-0	    rx volt
+0	    rx volt (reserved)
 1	    rpm
 2-3	    volt (v1, v2)
 4-5	    vario (speed, alt)
@@ -41,7 +42,7 @@ Slot mapping
 14	
 15	
 ----
-16-23	gps (speed, altitude, cog, lat1, lat2, lat3, lon1, lon2)
+16-23	gps (speed, altitude, time, vario, lat1, lat2, lon1, lon2)
 ----
 24	
 25	

@@ -1,8 +1,8 @@
-# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, IBUS
+# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2
 
 This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors. It adds support for several ESC telemetry protocols
 
-Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky IBUS, Futaba SBUS
+Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky IBUS, Futaba SBUS2
 
 Compatible ESCs: Hobbywing V3/V4/V5, Kontronik, Castle Link
 
@@ -80,7 +80,7 @@ The following Rx protocols are supported:
 - Spektrum SRXL V5: serial, 115200 bps
 - Spektrum XBUS: I2C
 - Flysky IBUS: serial, 115200 bps
-- Futaba SBUS: inverted serial, 100000 bps
+- Futaba SBUS2: inverted serial, 100000 bps
 
 Depending on the receiver protocol connect to the Rx as follows
 
@@ -91,10 +91,10 @@ Depending on the receiver protocol connect to the Rx as follows
 
   Frsky D: Signal = Rx
 
-### SRXL, IBUS and SBUS
+### SRXL, IBUS and SBUS2<sup>(1)</sup>
 
 <p align="center"><img src="./images/srxl_ibus.png" width="350"><br>
-  <i>SRXL, IBUS or SBUS(1)</i><br><br></p>
+  <i>SRXL, IBUS or SBUS2</i><br><br></p>
 
 (1) If not using Teensy LC/3.x, it is needed a signal inverter
 
@@ -109,7 +109,7 @@ The sensors are mapped to slots as follows for Futaba radios:
 |7	  | Temperature 2 |
 |8-10 |	Power 1 (current, voltage, consumption) |
 |11-13|	Power 2 (current, voltage, consumption)	|
-|16-23|	GPS (speed, altitude, time, lat1, lat2, lon1, lon2) |
+|16-23|	GPS (speed, altitude, time, vario, lat1, lat2, lon1, lon2) |
 
 ### XBUS
 
@@ -474,10 +474,11 @@ Adjust constants in *pressure.h*:
 
 0.8
 
-- Added Rx protocols Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus
+- Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
 - Added support for Kontronik ESC
+- Improved current calculation for HW V4/V5
 
 [v0.7](https://github.com/dgatf/msrc/tree/v0.7)
 

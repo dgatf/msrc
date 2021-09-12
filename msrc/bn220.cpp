@@ -76,8 +76,8 @@ void Bn220::update()
         }
     }
 #ifdef SIM_SENSORS
-    lat_ = -630;   // 10º30" +E, -W
-    lon_ = -1250;  // 20º50" +N, -S
+    lat_ = -630;   // 10º30" +N, -S
+    lon_ = -1250;  // 20º50" +E, -W
     alt_ = 1283;   // m
     spd_ = 158;    // kts
     cog_ = 123.32; // º
