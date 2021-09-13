@@ -206,23 +206,24 @@ void Xbus::update()
 #endif
 #if CONFIG_GPS
     gps.update();
-    xbusGpsLoc.GPSflags = 0;
+    uint8_t gpsFlags = 0;
     float lat = *gps.latP();
     if (lat < 0) // N=1,+, S=0,-
         lat *= -1;
     else
-        xbusGpsLoc.GPSflags |= 1 << GPS_INFO_FLAGS_IS_NORTH_BIT;
+        gpsFlags |= 1 << GPS_INFO_FLAGS_IS_NORTH_BIT;
     xbusGpsLoc.latitude = bcd32((uint16_t)(lat / 60) * 100 + fmod(lat, 60), 4);
     float lon = *gps.lonP();
     if (lon < 0) // E=1,+, W=0,-
         lon *= -1;
     else
-        xbusGpsLoc.GPSflags |= 1 << GPS_INFO_FLAGS_IS_EAST_BIT;
+        gpsFlags |= 1 << GPS_INFO_FLAGS_IS_EAST_BIT;
     if (lon >= 6000)
     {
-        xbusGpsLoc.GPSflags |= 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
+        gpsFlags |= 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
         lon -= 6000;
     }
+    xbusGpsLoc.GPSflags = gpsFlags;
     xbusGpsLoc.longitude = bcd32((uint16_t)(lon / 60) * 100 + fmod(lon, 60), 4);
     xbusGpsLoc.course = bcd16( *gps.cogP(), 1);
     xbusGpsStat.speed = bcd16(*gps.spdP(), 1);
