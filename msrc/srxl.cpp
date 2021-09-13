@@ -58,7 +58,7 @@ void Srxl::send()
 {
     static uint8_t cont = 1;
     uint8_t buffer[21] = {0};
-    buffer[0] = 0x05; // = spektrum
+    buffer[0] = SRXL_HEADER;
     buffer[1] = 0x80;
     buffer[2] = 0x15;
     uint16_t crc;
@@ -95,13 +95,11 @@ void Srxl::send()
     default:
         return;
     }
-    crc = __builtin_bswap16(getCrc(buffer, 19));  // all bytes including header
+    crc = __builtin_bswap16(getCrc(buffer, 19)); // all bytes including header
     //crc = __builtin_bswap16(getCrc(buffer + 3, 16));  // only 16bytes (xbus)
     memcpy(buffer + 19, &crc, 2);
     SRXL_IBUS_SBUS_SERIAL.write(buffer, 21);
 #ifdef DEBUG
-    DEBUG_SERIAL.print("TM send: ");
-    DEBUG_SERIAL.println(millis());
     for (int i = 0; i < 21; i++)
     {
         DEBUG_SERIAL.print(buffer[i], HEX);
@@ -114,51 +112,52 @@ void Srxl::send()
         cont = 1;
 }
 
-void Srxl::checkSerial()
+void Srxl::updateSrxl()
 {
-#ifdef SIM_RX
-    static uint32_t timestamp = 0;
-    if (millis() - timestamp > 1000)
+    static uint16_t serialTs = 0;
+    static uint8_t serialCount = 0;
+    uint8_t status = SRXL_WAIT;
+    static bool mute = true;
+#if defined(SIM_RX)
+    static uint16_t ts = 0;
+    if ((uint16_t)millis() - ts > 100)
     {
-        send();
-        timestamp = millis();
+        if (!mute)
+        {
+            status = SRXL_SEND;
+        }
+        mute = !mute;
+        ts = millis();
     }
 #else
-    if (SRXL_IBUS_SBUS_SERIAL.available())
+    if (serial_.available() > serialCount)
     {
-        static uint32_t timestamp = 0;
-        uint8_t buffer[SRXL_FRAMELEN];
-        static bool mute = false;
-        uint8_t lenght = SRXL_IBUS_SBUS_SERIAL.readBytes(buffer, SRXL_FRAMELEN);
-        if (lenght == SRXL_FRAMELEN && buffer[0] == SRXL_VARIANT && buffer[1] == 0x12)
+        serialCount = serial_.available();
+        serialTs = micros();
+    }
+    if ((uint16_t)micros() - serialTs > SRXL_SERIAL_TIMEOUT && serialCount > 0)
+    {
+        if (serialCount == SRXL_FRAMELEN)
         {
-#ifdef DEBUG
-            DEBUG_SERIAL.print("RF received: ");
-            DEBUG_SERIAL.println(millis());
-        for (int i = 0; i < lenght; i++)
-        {
-            DEBUG_SERIAL.print(buffer[i], HEX);
-            DEBUG_SERIAL.print(" ");
-        }
-        DEBUG_SERIAL.println();
-#endif
-            if (mute)
-                mute = false;
-            else
+            uint8_t buff[SRXL_FRAMELEN];
+            serial_.readBytes(buff, SRXL_FRAMELEN);
+            if (buff[0] == SRXL_HEADER)
             {
-                timestamp = millis();
-                delay(1);
-                while (SRXL_IBUS_SBUS_SERIAL.available() && millis() - timestamp < 8000)
+                if (!mute)
                 {
-                    char buf[21];
-                    uint8_t lenght = SRXL_IBUS_SBUS_SERIAL.readBytes(buf, 21);
-                    if (lenght == 21 && !SRXL_IBUS_SBUS_SERIAL.available())
-                        delay(1);
+                    status = SRXL_SEND;
                 }
-                send();
-                mute = true;
+                mute = !mute;
             }
         }
+        while (serial_.available())
+            serial_.read();
+        serialCount = 0;
     }
 #endif
+    if (status == SRXL_SEND)
+    {
+        send();
+    }
+    update();
 }

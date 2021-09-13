@@ -247,7 +247,7 @@ void setup()
 #endif
 #if RX_PROTOCOL == RX_SRXL
     SRXL_IBUS_SBUS_SERIAL.begin(115200);
-    SRXL_IBUS_SBUS_SERIAL.setTimeout(SRXLSERIAL_TIMEOUT);
+    SRXL_IBUS_SBUS_SERIAL.setTimeout(SRXL_SERIAL_TIMEOUT);
     srxl.begin();
 #endif
 #if RX_PROTOCOL == RX_FRSKY
@@ -283,8 +283,7 @@ void loop()
     xbus.update();
 #endif
 #if RX_PROTOCOL == RX_SRXL
-    srxl.update();
-    srxl.checkSerial();
+    srxl.updateSrxl();
 #endif
 #if RX_PROTOCOL == RX_FRSKY
     frsky.update();

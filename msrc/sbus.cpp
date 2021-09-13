@@ -89,7 +89,7 @@ void Sbus::update()
         serialCount = serial_.available();
         serialTs = micros();
     }
-    if (serialTs > SBUS_SERIAL_TIMEOUT)
+    if ((uint16_t)micros() - serialTs > SBUS_SERIAL_TIMEOUT && serialCount > 0)
     {
         if (serialCount == SBUS_PACKET_LENGHT)
         {
@@ -109,6 +109,7 @@ void Sbus::update()
         }
         while (serial_.available())
             serial_.read();
+        serialCount = 0;
     }
 #endif
     if (status == SBUS_SEND)
