@@ -23,7 +23,7 @@ void Sbus::addSensor(uint8_t number, SensorSbus *newSensorSbusP)
 
 void Sbus::deleteSensors()
 {
-    for (uint8_t i = 0; i < 16; i++)
+    for (uint8_t i = 0; i < 32; i++)
     {
         if (sensorSbusP[i] != NULL)
             delete sensorSbusP[i];
@@ -107,6 +107,8 @@ void Sbus::update()
                 mute = !mute;
             }
         }
+        while (serial_.available())
+            serial_.read();
     }
 #endif
     if (status == SBUS_SEND)
