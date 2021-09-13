@@ -20,7 +20,7 @@ Implemented sensors:
 
 All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration, with a lua script if using smartport or in config.h for the rest of Rx protocols 
 
-(1) HW V5 = HW FlyFun. If ESC doesn't arm, in config.h enable ESC_INIT_DELAY or connect arduino after the ESC is armed
+(1) HW V5 = HW FlyFun. If ESC doesn't arm, in config.h enable ESC_INIT_DELAY or connect arduino after the ESC is armed  
 (2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive
 
 ## 1. Boards
