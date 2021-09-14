@@ -223,19 +223,18 @@ void Xbus::update()
         gpsFlags |= 1 << GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
         lon -= 6000;
     }
-    xbusGpsLoc.GPSflags = gpsFlags;
     xbusGpsLoc.longitude = bcd32((uint16_t)(lon / 60) * 100 + fmod(lon, 60), 4);
     xbusGpsLoc.course = bcd16( *gps.cogP(), 1);
     xbusGpsStat.speed = bcd16(*gps.spdP(), 1);
     xbusGpsStat.UTC = bcd32(*gps.timeP(), 1);
     xbusGpsStat.numSats = *gps.satP();
-
     float alt = *gps.altP();
     if (alt < 0)
     {
-        xbusGpsLoc.GPSflags |= 1 << GPS_INFO_FLAGS_NEGATIVE_ALT_BIT;
+        gpsFlags |= 1 << GPS_INFO_FLAGS_NEGATIVE_ALT_BIT;
         alt *= -1;
     }
+    xbusGpsLoc.GPSflags = gpsFlags;
     xbusGpsLoc.altitudeLow = bcd16(fmod(alt, 1000), 1);
     xbusGpsStat.altitudeHigh = bcd8((uint8_t)(alt / 1000), 0);
 #endif
