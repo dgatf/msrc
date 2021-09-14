@@ -191,13 +191,13 @@ void Xbus::update()
     xbusRpmVoltTemp2.temperature = __builtin_bswap16(*ntc2.valueP());
 #endif
 #if CONFIG_AIRSPEED
-    static uint16_t maxAirspeed = 0;
+    static uint16_t maxSpeed = 0;
     airspeed.update();
-    uint16_t airSpeed = round(*airspeed.valueP());
-    xbusAirspeed.airspeed = __builtin_bswap16(airSpeed);
-    if (airSpeed > maxAirSpeed) {
-        maxAirSpeed = airSpeed;
-        xbusAirSpeed.maxAirSpeed = __builtin_bswap16(airSpeed)
+    uint16_t speed = round(*airspeed.valueP());
+    xbusAirspeed.airspeed = __builtin_bswap16(speed);
+    if (speed > maxSpeed) {
+        maxSpeed = speed;
+        xbusAirspeed.maxAirspeed = __builtin_bswap16(speed);
     }
 #endif
 #if CONFIG_CURRENT
