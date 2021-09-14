@@ -211,6 +211,22 @@
 
 #define FASST_NEGATIVE_BIT 15
 #define FASST_SOUTH_WEST_BIT 4
+
+// MULTIPLEX FHSS
+#define FHSS_VOLTAGE 1
+#define FHSS_CURRENT 2
+#define FHSS_VARIO 3
+#define FHSS_SPEED 4
+#define FHSS_RPM 5
+#define FHSS_TEMP 6
+#define FHSS_COURSE 7
+#define FHSS_ALTITUDE 8
+#define FHSS_LEVEL 9
+#define FHSS_RSSI 10
+#define FHSS_CONSUMPTION 11
+#define FHSS_FLUID 12
+#define FHSS_DISTANCE 13
+
 #define TYPE_LAT 0
 #define TYPE_LON 1
 #define TYPE_DATE 0
@@ -229,6 +245,7 @@ protected:
     uint16_t formatData(uint8_t dataId, float value);
     uint16_t formatIbus(uint8_t dataId, float value);
     uint16_t formatSbus(uint8_t dataId, float value);
+    int16_t formatMultiplex(uint8_t dataId, float value);
 };
 
 #endif

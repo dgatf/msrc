@@ -248,3 +248,20 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
     }
     return __builtin_bswap16(round(value));
 }
+
+int16_t FormatData::formatMultiplex(uint8_t dataId, float value)
+{
+    if (dataId == FHSS_VOLTAGE ||
+        dataId == FHSS_CURRENT ||
+        dataId == FHSS_VARIO ||
+        dataId == FHSS_SPEED ||
+        dataId == FHSS_TEMP ||
+        dataId == FHSS_COURSE ||
+        dataId == FHSS_DISTANCE)
+        return round(value * 10);
+
+    if (dataId == FHSS_RPM)
+        return round(value / 10);
+
+    return round(value);
+}

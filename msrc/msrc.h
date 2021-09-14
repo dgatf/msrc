@@ -48,6 +48,9 @@
 #if RX_PROTOCOL == RX_SBUS
 #include "sbus.h"
 #endif
+#if RX_PROTOCOL == RX_MULTIPLEX
+#include "multiplex.h"
+#endif
 
 PwmOut pwmOut;
 
@@ -79,6 +82,10 @@ Ibus ibus(SRXL_IBUS_SBUS_SERIAL);
 
 #if RX_PROTOCOL == RX_SBUS
 Sbus sbus(SRXL_IBUS_SBUS_SERIAL);
+#endif
+
+#if RX_PROTOCOL == RX_MULTIPLEX
+Multiplex multiplex(SRXL_IBUS_SBUS_SERIAL);
 #endif
 
 void setup();
