@@ -32,7 +32,7 @@
 #include "pressure.h"
 #include "bmp280.h"
 #include "bn220.h"
-#include "config.h"
+#include "pwmout.h"
 
 struct Xbus_Esc
 {
