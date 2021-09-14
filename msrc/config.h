@@ -195,9 +195,10 @@
 #define RX_SMARTPORT 0
 #define RX_XBUS 1
 #define RX_SRXL 2
-#define RX_IBUS 3
-#define RX_FRSKY 4
-#define RX_BST 5
+#define RX_FRSKY 3
+#define RX_IBUS 4
+#define RX_SBUS 5
+#define RX_MULTIPLEX 6
 
 #define PROTOCOL_NONE 0
 #define PROTOCOL_HW_V3 1
@@ -217,9 +218,9 @@
 // opentx
 #define DATA_ID 0x5000 // DataId (sensor type)
 
-//#define SRXL_V1 0x01
-//#define SRXL_V2 0x02
-#define SRXL_V5 0x05
+#define SRXL_V1 1
+#define SRXL_V2 2
+#define SRXL_V5 5
 
 #define ALPHA(ELEMENTS) (uint8_t)(2.0 / (ELEMENTS + 1) * 100)
 #define MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000.0))

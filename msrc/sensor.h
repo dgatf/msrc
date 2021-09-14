@@ -121,4 +121,20 @@ public:
     uint16_t valueFormatted();
 };
 
+class SensorMultiplex : public FormatData
+{
+protected:
+    uint8_t dataId_;
+    float *valueP_;
+
+public:
+    AbstractDevice *deviceP_;
+    SensorMultiplex(uint8_t dataId, float *value, AbstractDevice *deviceP);
+    ~SensorMultiplex();
+    uint8_t dataId();
+    float *valueP();
+    void update();
+    uint16_t valueFormatted();
+};
+
 #endif

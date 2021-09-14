@@ -189,3 +189,29 @@ float *SensorSbus::valueP()
 {
     return valueP_;
 }
+
+SensorMultiplex::SensorMultiplex(uint8_t dataId, float *valueP, AbstractDevice *deviceP) : dataId_(dataId), valueP_(valueP), deviceP_(deviceP) {}
+
+SensorMultiplex::~SensorMultiplex()
+{
+}
+
+void SensorMultiplex::update()
+{
+    deviceP_->update();
+}
+
+uint16_t SensorMultiplex::valueFormatted()
+{
+    return formatMultiplex(dataId_, *valueP_);
+}
+
+uint8_t SensorMultiplex::dataId()
+{
+    return dataId_;
+}
+
+float *SensorMultiplex::valueP()
+{
+    return valueP_;
+}

@@ -272,6 +272,11 @@ void setup()
     SRXL_IBUS_SBUS_SERIAL.setTimeout(SBUS_SERIAL_TIMEOUT);
     sbus.begin();
 #endif
+#if RX_PROTOCOL == RX_MULTIPLEX
+    SRXL_IBUS_SBUS_SERIAL.begin(38400);
+    SRXL_IBUS_SBUS_SERIAL.setTimeout(MULTIPLEX_SERIAL_TIMEOUT);
+    multiplex.begin();
+#endif
 }
 
 void loop()
@@ -293,6 +298,9 @@ void loop()
 #endif
 #if RX_PROTOCOL == RX_SBUS
     sbus.update();
+#endif
+#if RX_PROTOCOL == RX_MULTIPLEX
+    multiplex.update();
 #endif
     pwmOut.update();
 }
