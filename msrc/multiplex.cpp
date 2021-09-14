@@ -19,8 +19,11 @@ void Multiplex::begin()
 void Multiplex::addSensor(SensorMultiplex *newSensorMultiplexP)
 {
     static uint8_t cont = 1;
-    sensorMultiplexP[cont] = newSensorMultiplexP;
-    cont++;
+    if (cont < 16)
+    {
+        sensorMultiplexP[cont] = newSensorMultiplexP;
+        cont++;
+    }
 }
 
 void Multiplex::deleteSensors()
@@ -81,7 +84,7 @@ void Multiplex::update()
         serialCount = serial_.available();
         serialTs = micros();
     }
-    
+
     if (((uint16_t)micros() - serialTs > MULTIPLEX_SERIAL_TIMEOUT) && serialCount > 0)
     {
         if (serialCount == 1)
@@ -112,7 +115,6 @@ void Multiplex::update()
     if (cont == 16)
         cont = 0;
 }
-
 
 void Multiplex::setConfig(Config &config)
 {
