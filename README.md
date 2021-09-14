@@ -37,7 +37,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 | ARM CortexM4 | Teensy 3.2 | :white_check_mark: | 3 | :white_check_mark: |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
-(2) Allows to use hardware serial for Smartport  
+(2) Allows to use hardware serial for Smartport and SBUS without signal inverter  
 (3) Arduino Micro is not supported  
 (4) Teensy LC is not 5v tolerant. If using with Castle is preferred Teensy 3.2, which is 5v tolerant  
 (5) Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
