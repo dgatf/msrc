@@ -1,8 +1,8 @@
-# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2
+# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus
 
 This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors. It adds support for several ESC telemetry protocols
 
-Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky IBUS, Futaba SBUS2
+Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky IBUS, Futaba SBUS2, Multiplex Sensor Bus
 
 Compatible ESCs: Hobbywing V3/V4/V5, Kontronik, Castle Link
 
@@ -62,7 +62,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
 | Frsky D, Smartport | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 0 & 1<sup>(2)</sup> |
-| SRXL, IBUS, SBUS<sup>(4)</sup> | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15 & 14<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 7 & 8<sup>(2)</sup> |
+| SRXL, IBUS, SBUS<sup>(4)</sup>, SB | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15 & 14<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 7 & 8<sup>(2)</sup> |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 
@@ -81,6 +81,7 @@ The following Rx protocols are supported:
 - Spektrum XBUS: I2C
 - Flysky IBUS: serial, 115200 bps
 - Futaba SBUS2: inverted serial, 100000 bps
+- Multiplex Sensor Bus: serial, 38400 bps
 
 Depending on the receiver protocol connect to the Rx as follows
 
@@ -91,10 +92,10 @@ Depending on the receiver protocol connect to the Rx as follows
 
   Frsky D: Signal = Rx
 
-### SRXL, IBUS and SBUS2<sup>(1)</sup>
+### SRXL, IBUS, SBUS2<sup>(1)</sup> and Multiplex Sensor Bus
 
-<p align="center"><img src="./images/srxl_ibus.png" width="350"><br>
-  <i>SRXL, IBUS or SBUS2</i><br><br></p>
+<p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="350"><br>
+  <i>SRXL, IBUS, SBUS2 or Multiplex Sensor Bus</i><br><br></p>
 
 (1) If not using Teensy LC/3.x, it is needed a signal inverter
 
@@ -474,7 +475,7 @@ Adjust constants in *pressure.h*:
 
 0.8
 
-- Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2
+- Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2, Multiplex Sensor Bus
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
 - Added support for Kontronik ESC
