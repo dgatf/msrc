@@ -16,7 +16,12 @@
 #include "config.h"
 #include "xbus.h"
 
+#define SRXL_V1 1
+#define SRXL_V2 2
+#define SRXL_V5 5
+
 #define SRXL_SERIAL_TIMEOUT 2000
+#define SRXL_VARIANT SRXL_V5 // Spektrum
 
 #if SRXL_VARIANT == SRXL_V1
 #define SRXL_HEADER 0xA1
