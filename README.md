@@ -213,17 +213,22 @@ Using Arduino IDE copy folder *msrc* and open *msrc.ino*. Select the board and f
 
 ### From PC - MSRC gui
 
-Use MSRC to generate config.h. Copy and paste the text to config.h and then flash
+Use MSRC to generate _config.h_. Copy and paste the text to config.h and then flash
 
 <p align="center"><img src="./images/msrc_gui.png" width="600"><br>
 
 To build msrc_gui:
 
+- Install QT
 - cd to msrc_gui
 - _qmake_
 - _make_
 
 Binaries [here](https://github.com/dgatf/msrc/tree/master/msrc_gui/binaries)
+
+### From PC - config.h
+
+Manually change _config.h_
 
 ### From transmitter (only Smartport)
 
