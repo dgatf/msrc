@@ -223,6 +223,8 @@ To build msrc_gui:
 - _qmake_
 - _make_
 
+Binaries [here](https://github.com/dgatf/msrc/tree/master/msrc_gui/binaries)
+
 ### From transmitter (only Smartport)
 
 The configuration is modified with a lua script (X7, X9, X-lite and Horus with openTx 2.2 or higher)
