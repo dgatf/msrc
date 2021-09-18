@@ -242,10 +242,6 @@ Options:
 - Refresh rate (ms): 0 to 1600
 - I2C (x2). Sensor type and address
 
-### Other RX protocols
-
-Configuration is done in *config.h*
-
 ## 6. OpenTx sensors (Smartport)
 
 The default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
