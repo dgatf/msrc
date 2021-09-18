@@ -217,6 +217,12 @@ Use MSRC to generate config.h. Copy and paste the text to config.h and then flas
 
 <p align="center"><img src="./images/msrc_gui.png" width="600"><br>
 
+To build msrc_gui:
+
+- cd to msrc_gui
+- _qmake_
+- _make_
+
 ### From transmitter (only Smartport)
 
 The configuration is modified with a lua script (X7, X9, X-lite and Horus with openTx 2.2 or higher)
