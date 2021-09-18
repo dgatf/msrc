@@ -62,23 +62,18 @@ void Multiplex::sendPacket(uint8_t address)
 
 void Multiplex::update()
 {
-    static uint16_t serialTs = 0;
-    static uint8_t serialCount = 0;
     uint8_t status = MULTIPLEX_WAIT;
     uint8_t address = 0;
 #if defined(SIM_RX)
     static uint16_t ts = 0;
     if ((uint16_t)millis() - ts > 100)
     {
-        if (!mute)
-        {
-            status = MULTIPLEX_SEND;
-            telemetryPacket++;
-        }
-        mute = !mute;
+        status = MULTIPLEX_SEND;
         ts = millis();
     }
 #else
+    static uint16_t serialTs = 0;
+    static uint8_t serialCount = 0;
     if (serial_.available() > serialCount)
     {
         serialCount = serial_.available();
