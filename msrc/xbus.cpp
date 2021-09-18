@@ -229,7 +229,7 @@ void Xbus::update()
     xbusGpsLoc.course = bcd16( *gps.cogP(), 1);
     xbusGpsStat.speed = bcd16(*gps.spdP(), 1);
     xbusGpsStat.UTC = bcd32(*gps.timeP(), 1);
-    xbusGpsStat.numSats = *gps.satP();
+    xbusGpsStat.numSats = bcd8(*gps.satP(),0);
     float alt = *gps.altP();
     if (alt < 0)
     {
