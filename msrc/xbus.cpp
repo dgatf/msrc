@@ -34,11 +34,12 @@ void Xbus::i2c_request_handler()
     if (cont > 5)
         cont = 0;
 #else
+    uint8_t address = 0;
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
-    uint8_t address = TWDR >> 1;
+    address = TWDR >> 1;
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-    uint8_t address = I2C0_D >> 1;
+    address = I2C0_D >> 1;
 #endif
 #endif
     uint8_t buffer[16] = {0};

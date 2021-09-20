@@ -168,7 +168,7 @@ ISR(TIMER3_OVF_vect)
 }
 #endif
 
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
 void (*FTM0_IRQ_handlerP)() = NULL;
 void ftm0_isr()
 {
@@ -227,7 +227,7 @@ void setup()
     pinMode(PB0, OUTPUT);
     digitalWrite(PB0, LOW);
 #endif
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
     pinMode(9, OUTPUT);
     digitalWrite(9, LOW);
 #endif
@@ -235,7 +235,7 @@ void setup()
         ;
 #endif
 #if RX_PROTOCOL == RX_SMARTPORT
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
     SMARTPORT_FRSKY_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV);
 #else
     SMARTPORT_FRSKY_SERIAL.begin(57600);
@@ -251,7 +251,7 @@ void setup()
     srxl.begin();
 #endif
 #if RX_PROTOCOL == RX_FRSKY
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
     SMARTPORT_FRSKY_SERIAL.begin(9600, SERIAL_8N1_RXINV_TXINV);
 #else
     SMARTPORT_FRSKY_SERIAL.begin(9600);
@@ -264,7 +264,7 @@ void setup()
     ibus.begin();
 #endif
 #if RX_PROTOCOL == RX_SBUS
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
     SRXL_IBUS_SBUS_SERIAL.begin(100000, SERIAL_8N2_RXINV_TXINV);
 #else
     SRXL_IBUS_SBUS_SERIAL.begin(100000, SERIAL_8N2);
