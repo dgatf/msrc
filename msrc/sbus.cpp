@@ -64,8 +64,6 @@ void Sbus::sendSlot(uint8_t number)
 
 void Sbus::update()
 {
-    static uint16_t serialTs = 0;
-    static uint8_t serialCount = 0;
     uint8_t status = SBUS_WAIT;
     static uint8_t telemetryPacket = 0;
     static bool mute = true;
@@ -84,6 +82,8 @@ void Sbus::update()
             telemetryPacket = 1;
     }
 #else
+    static uint16_t serialTs = 0;
+    static uint8_t serialCount = 0;
     if (serial_.available() > serialCount)
     {
         serialCount = serial_.available();
