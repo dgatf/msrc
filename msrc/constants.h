@@ -69,7 +69,7 @@
 #define PIN_PRESSURE A7 // PD7
 //#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SBUS_SERIAL Serial
+#define SRXL_IBUS_SBUS_SERIAL Serial1
 //#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial1
 #define GPS_SERIAL Serial1
@@ -83,7 +83,7 @@
 #define PIN_CURRENT 18
 #define PIN_PRESSURE 19
 #define SMARTPORT_FRSKY_SERIAL Serial1
-#define SRXL_IBUS_SBUS_SERIAL Serial3
+#define SRXL_IBUS_SBUS_SERIAL Serial1
 //#define SOFTWARE_SERIAL
 #define ESC_SERIAL Serial2
 #define GPS_SERIAL Serial3
