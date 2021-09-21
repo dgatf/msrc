@@ -41,6 +41,9 @@ void Xbus::i2c_request_handler()
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
     address = I2C0_D >> 1;
 #endif
+#if defined(__IMXRT1062__)
+    address = LPI2C1_SASR;
+#endif
 #endif
     uint8_t buffer[16] = {0};
     switch (address)
@@ -115,7 +118,7 @@ void Xbus::begin()
     Wire.onRequest(i2c_request_handler);
     TWAMR = addressMask << 1;
 #endif
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
 #if CONFIG_GPS
     GPS_SERIAL.begin(GPS_BAUD_RATE);
     GPS_SERIAL.setTimeout(BN220_TIMEOUT);
@@ -124,12 +127,18 @@ void Xbus::begin()
     ESC_SERIAL.begin(19200);
     ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
 #endif
-#if defined(I2C_T3_TEENSY)
+#if defined(I2C_T3_TEENSY) && !defined(__IMXRT1062__)
     Wire.begin(I2C_SLAVE, XBUS_AIRSPEED, XBUS_RPM_VOLT_TEMP, I2C_PINS_18_19, I2C_PULLUP_EXT, 400000);
-#else
+#endif
+#if !defined(I2C_T3_TEENSY) && !defined(__IMXRT1062__)
     Wire.begin(XBUS_AIRSPEED);
     I2C0_RA = XBUS_RPM_VOLT_TEMP << 1;
     I2C0_C2 = 1 << 3;
+#endif
+#if defined(__IMXRT1062__)
+    Wire.begin(XBUS_AIRSPEED);
+    LPI2C1_SCFGR1 |= LPI2C_SCFGR1_ADDRCFG(B110);
+    LPI2C1_SASR |= LPI2C_SAMR_ADDR1(XBUS_RPM_VOLT_TEMP);
 #endif
     Wire.onRequest(i2c_request_handler);
 #endif
