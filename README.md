@@ -68,7 +68,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 
 (1) with pull up 3.3k  
 (2) with resistor 3.3k  
-(3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)
+(3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)  
 (4) If not using Teensy LC/3.x, it is needed a signal inverter
 
 ## 2. Receiver protocol
