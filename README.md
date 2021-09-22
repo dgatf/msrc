@@ -37,7 +37,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 | ARM CortexM4 | Teensy 3.2 | :white_check_mark: | 3 | :white_check_mark: |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
-(2) Allows to use hardware serial for Smartport and SBUS without signal inverter  
+(2) Allows to use hardware serial for Smartport and SBUS without signal inverter. Also is half duplex capable  
 (3) Arduino Micro is not supported  
 (4) Teensy LC is not 5v tolerant. If using with Castle is preferred Teensy 3.2, which is 5v tolerant  
 (5) Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
@@ -61,8 +61,8 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
-| Frsky D, Smartport | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 0 & 1<sup>(2)</sup> |
-| SRXL, IBUS, SBUS<sup>(4)</sup>, SB | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15 & 14<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 0 & 1<sup>(2)</sup> |
+| Frsky D, Smartport | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 1 |
+| SRXL, IBUS, SBUS<sup>(4)</sup>, SB | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15 & 14<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 1 |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 
