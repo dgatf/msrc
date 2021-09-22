@@ -98,7 +98,7 @@ Depending on the receiver protocol connect to the Rx as follows
   <i>ATmega boards. SRXL, IBUS, SBUS2 or Multiplex Sensor Bus</i><br><br></p>
 
 <p align="center"><img src="./images/srxl_ibus_sbus_teensy.png" width="350"><br>
-  <i>AVR Cortex boards (Teensy LC/3.x/4.x). SRXL, IBUS, SBUS2 or Multiplex Sensor Bus</i><br><br></p>
+  <i>ARM Cortex boards (Teensy LC/3.x/4.x). SRXL, IBUS, SBUS2 or Multiplex Sensor Bus</i><br><br></p>
 
 (1) If not using Teensy LC/3.x, it is needed a signal inverter
 
