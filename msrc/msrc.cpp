@@ -236,7 +236,7 @@ void setup()
 #endif
 #if RX_PROTOCOL == RX_SMARTPORT
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
-    SMARTPORT_FRSKY_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV);
+    SMARTPORT_FRSKY_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV | SERIAL_HALF_DUPLEX);
 #else
     SMARTPORT_FRSKY_SERIAL.begin(57600);
 #endif
@@ -246,26 +246,34 @@ void setup()
     xbus.begin();
 #endif
 #if RX_PROTOCOL == RX_SRXL
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
+    SRXL_IBUS_SBUS_SERIAL.begin(115200, SERIAL_HALF_DUPLEX);
+#else
     SRXL_IBUS_SBUS_SERIAL.begin(115200);
+#endif
     SRXL_IBUS_SBUS_SERIAL.setTimeout(SRXL_SERIAL_TIMEOUT);
     srxl.begin();
 #endif
 #if RX_PROTOCOL == RX_FRSKY
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
-    SMARTPORT_FRSKY_SERIAL.begin(9600, SERIAL_8N1_RXINV_TXINV);
+    SMARTPORT_FRSKY_SERIAL.begin(9600, SERIAL_8N1_RXINV_TXINV | SERIAL_HALF_DUPLEX);
 #else
     SMARTPORT_FRSKY_SERIAL.begin(9600);
 #endif
     frsky.begin();
 #endif
 #if RX_PROTOCOL == RX_IBUS
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
+    SRXL_IBUS_SBUS_SERIAL.begin(115200, SERIAL_HALF_DUPLEX);
+#else
     SRXL_IBUS_SBUS_SERIAL.begin(115200);
+#endif
     SRXL_IBUS_SBUS_SERIAL.setTimeout(IBUS_TIMEOUT);
     ibus.begin();
 #endif
 #if RX_PROTOCOL == RX_SBUS
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
-    SRXL_IBUS_SBUS_SERIAL.begin(100000, SERIAL_8N2_RXINV_TXINV);
+    SRXL_IBUS_SBUS_SERIAL.begin(100000, SERIAL_8N2_RXINV_TXINV | SERIAL_HALF_DUPLEX);
 #else
     SRXL_IBUS_SBUS_SERIAL.begin(100000, SERIAL_8N2);
 #endif
@@ -273,7 +281,11 @@ void setup()
     sbus.begin();
 #endif
 #if RX_PROTOCOL == RX_MULTIPLEX
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
+    SRXL_IBUS_SBUS_SERIAL.begin(38400, SERIAL_HALF_DUPLEX);
+#else
     SRXL_IBUS_SBUS_SERIAL.begin(38400);
+#endif
     SRXL_IBUS_SBUS_SERIAL.setTimeout(MULTIPLEX_SERIAL_TIMEOUT);
     multiplex.begin();
 #endif
