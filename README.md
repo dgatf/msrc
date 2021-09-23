@@ -85,24 +85,21 @@ The following Rx protocols are supported:
 
 Depending on the receiver protocol connect to the Rx as follows
 
-### Frsky D and Smartport
+### ATmega boards
 
-<p align="center"><img src="./images/smartport_srxl.png" width="350"><br>
-  <i>Frsky D, Smartport</i><br><br></p>
-
-  Frsky D: Signal = Rx
-
-### SRXL, IBUS, SBUS2<sup>(1)</sup> and Multiplex Sensor Bus
+<p align="center"><img src="./images/frsky_smartport.png" width="350"><br>
+<i>Frsky D(Signal = Rx), Smartport</i><br><br></p>
 
 <p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="350"><br>
-  <i>ATmega boards. SRXL, IBUS, SBUS2 or Multiplex Sensor Bus</i><br><br></p>
+<i>SRXL, IBUS, SBUS2(it is needed a signal inverter) or Multiplex Sensor Bus</i><br><br></p>
 
-<p align="center"><img src="./images/srxl_ibus_sbus_teensy.png" width="350"><br>
-  <i>ARM Cortex boards (Teensy LC/3.x/4.x). SRXL, IBUS, SBUS2 or Multiplex Sensor Bus</i><br><br></p>
+### ARM Cortex boards
 
-(1) If not using Teensy LC/3.x, it is needed a signal inverter
+<p align="center"><img src="./images/frsky_srxl_ibus_sbus_teensy.png" width="350"><br>
 
-The sensors are mapped to slots as follows for Futaba radios:
+### SBUS 2
+
+Sensor mapping to slots for Futaba radios:
 
 |Slot |Sensor |
 | :---: | :---: |
