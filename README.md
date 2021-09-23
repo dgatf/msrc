@@ -95,7 +95,7 @@ Depending on the receiver protocol connect to the Rx as follows
 
 ### ARM Cortex boards
 
-<p align="center"><img src="./images/frsky_srxl_ibus_sbus_teensy.png" width="350"><br>
+<p align="center"><img src="./images/frsk_smartport_srxl_ibus_sbus_teensy.png" width="350"><br>
 
 ### SBUS 2
 
