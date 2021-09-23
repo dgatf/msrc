@@ -129,7 +129,6 @@ void Multiplex::setConfig(Config &config)
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
         ESC_SERIAL.begin(19200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());
         sensorMultiplexP = new SensorMultiplex(FHSS_RPM, esc->rpmP(), esc);
@@ -140,7 +139,6 @@ void Multiplex::setConfig(Config &config)
         SensorMultiplex *sensorMultiplexP;
         EscHW4 *esc;
         ESC_SERIAL.begin(19200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
@@ -184,8 +182,7 @@ void Multiplex::setConfig(Config &config)
     {
         SensorMultiplex *sensorMultiplexP;
         EscKontronik *esc;
-        ESC_SERIAL.begin(115200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
+        ESC_SERIAL.begin(115200, SERIAL_8E1);
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());

@@ -130,7 +130,8 @@ uint8_t Ibus::read(uint8_t &command, uint8_t &address)
             DEBUG_SERIAL.print("? ");
             DEBUG_SERIAL.print(data[0], HEX);
             DEBUG_SERIAL.print(" ");
-            while (serial_.available()) {
+            while (serial_.available())
+            {
                 DEBUG_SERIAL.print(serial_.read(), HEX);
                 DEBUG_SERIAL.print(" ");
             }
@@ -138,7 +139,7 @@ uint8_t Ibus::read(uint8_t &command, uint8_t &address)
 #else
             while (serial_.available())
                 serial_.read();
-            #endif
+#endif
             return IBUS_RECEIVED_NONE;
         }
         serial_.readBytes(&data[1], data[0]);
@@ -231,7 +232,6 @@ void Ibus::setConfig(Config &config)
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
         ESC_SERIAL.begin(19200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());
         sensorIbusP = new SensorIbus(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
@@ -242,7 +242,6 @@ void Ibus::setConfig(Config &config)
         SensorIbus *sensorIbusP;
         EscHW4 *esc;
         ESC_SERIAL.begin(19200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
@@ -284,8 +283,7 @@ void Ibus::setConfig(Config &config)
     {
         SensorIbus *sensorIbusP;
         EscKontronik *esc;
-        ESC_SERIAL.begin(115200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
+        ESC_SERIAL.begin(115200, SERIAL_8E1);
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());

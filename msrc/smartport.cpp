@@ -388,7 +388,6 @@ void Smartport::setConfig(Config &config)
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
         ESC_SERIAL.begin(19200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());
         sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
@@ -399,7 +398,6 @@ void Smartport::setConfig(Config &config)
         Sensor *sensorP;
         EscHW4 *esc;
         ESC_SERIAL.begin(19200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
@@ -445,8 +443,7 @@ void Smartport::setConfig(Config &config)
     {
         Sensor *sensorP;
         EscKontronik *esc;
-        ESC_SERIAL.begin(115200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
+        ESC_SERIAL.begin(115200, SERIAL_8E1);
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());

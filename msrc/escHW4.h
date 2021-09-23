@@ -1,12 +1,9 @@
 #ifndef ESCHW4_H
 #define ESCHW4_H
 
-#define ESCHW4_TYPE_V4_LV 0
-#define ESCHW4_TYPE_V4_HV 1
-#define ESCHW4_TYPE_V5_LV 2
-#define ESCHW4_TYPE_V5_HV 3
-
-#define ESCHW4_ESCSERIAL_TIMEOUT 3
+#define ESCHW4_ESCSERIAL_TIMEOUT 2000
+#define ESCHWV4_PACKET_LENGHT 19
+#define ESCHWV4_SIGNATURE_LENGHT 13
 
 #define ESCHW4_NTC_BETA 3950.0
 #define ESCHW4_NTC_R1 10000.0
@@ -22,16 +19,12 @@
 class EscHW4 : public AbstractDevice, public EscCell
 {
 private:
-    /*const uint32_t signatureMatrix_[4] =  {0x01005B08, // ESCHW4_TYPE_V4_LV
-                                           0x3D0A0D02, // ESCHW4_TYPE_V4_HV
-                                           0x00000000, // ESCHW4_TYPE_V5_LV
-                                           0x4421410B}; // ESCHW4_TYPE_V5_HV*/
     const uint8_t voltageDivisor_[4] = {11, 21, 11, 21};
     const float ampGain_[4] = {10, 16.9, 10, 16.9};
     int16_t rawCurrentOffset_ = -1;
     Stream &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_, type_;
-    uint16_t thr_ = 0,  pwm_ = 0;
+    uint16_t thr_ = 0, pwm_ = 0;
     float rpm_ = 0, voltage_ = 0, current_ = 0, tempFet_ = 0, tempBec_ = 0;
 #ifdef ESC_SIGNATURE
 #ifdef SIM_SENSORS
@@ -56,9 +49,8 @@ public:
     float *tempFetP();
     float *tempBecP();
 #ifdef ESC_SIGNATURE
-    float *signatureP();   
+    float *signatureP();
 #endif
-
 };
 
 #endif

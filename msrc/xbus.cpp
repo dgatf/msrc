@@ -31,7 +31,7 @@ void Xbus::i2c_request_handler()
     static uint8_t cont = 0;
     uint8_t address = list[cont];
     cont++;
-    if (cont > 5)
+    if (cont > sizeof(list))
         cont = 0;
 #else
     uint8_t address = 0;
@@ -109,10 +109,17 @@ void Xbus::begin()
 #if CONFIG_CURRENT
     addressMask |= XBUS_BATTERY;
 #endif
-#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM && CONFIG_ESC_PROTOCOL != PROTOCOL_CASTLE
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV  && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV
     addressMask |= XBUS_ESC;
     ESC_SERIAL.begin(19200);
-    ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
+#endif
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK
+    addressMask |= XBUS_ESC;
+    ESC_SERIAL.begin(115200, SERIAL_8E1);
 #endif
     Wire.begin(addressMask);
     Wire.onRequest(i2c_request_handler);
@@ -125,7 +132,6 @@ void Xbus::begin()
 #endif
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM && CONFIG_ESC_PROTOCOL != PROTOCOL_CASTLE
     ESC_SERIAL.begin(19200);
-    ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
 #endif
 #if defined(I2C_T3_TEENSY) && !defined(__IMXRT1062__)
     Wire.begin(I2C_SLAVE, XBUS_AIRSPEED, XBUS_RPM_VOLT_TEMP, I2C_PINS_18_19, I2C_PULLUP_EXT, 400000);
@@ -207,7 +213,8 @@ void Xbus::update()
     airspeed.update();
     uint16_t speed = round(*airspeed.valueP());
     xbusAirspeed.airspeed = __builtin_bswap16(speed);
-    if (speed > maxSpeed) {
+    if (speed > maxSpeed)
+    {
         maxSpeed = speed;
         xbusAirspeed.maxAirspeed = __builtin_bswap16(speed);
     }
@@ -236,10 +243,10 @@ void Xbus::update()
         lon -= 6000;
     }
     xbusGpsLoc.longitude = bcd32((uint16_t)(lon / 60) * 100 + fmod(lon, 60), 4);
-    xbusGpsLoc.course = bcd16( *gps.cogP(), 1);
+    xbusGpsLoc.course = bcd16(*gps.cogP(), 1);
     xbusGpsStat.speed = bcd16(*gps.spdP(), 1);
     xbusGpsStat.UTC = bcd32(*gps.timeP(), 1);
-    xbusGpsStat.numSats = bcd8(*gps.satP(),0);
+    xbusGpsStat.numSats = bcd8(*gps.satP(), 0);
     float alt = *gps.altP();
     if (alt < 0)
     {
@@ -255,14 +262,15 @@ void Xbus::update()
     bmp.update();
     uint16_t altitude = round(*bmp.altitudeP() * 10);
     xbusAltitude.altitude = __builtin_bswap16(altitude);
-    if (altitude > maxAltitude && millis() > 7000) {
+    if (altitude > maxAltitude && millis() > 7000)
+    {
         maxAltitude = altitude;
         xbusAltitude.maxAltitude = __builtin_bswap16(altitude)
     }
 #endif
 #if defined(SIM_RX) && RX_PROTOCOL == RX_XBUS
     static uint32_t timestamp = 0;
-    if (millis() - timestamp > 94)
+    if (millis() - timestamp > 44)
     {
         i2c_request_handler();
         timestamp = millis();

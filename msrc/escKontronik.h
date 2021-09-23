@@ -1,7 +1,8 @@
 #ifndef ESCKONTRONIK_H
 #define ESCKONTRONIK_H
 
-#define KONTRONIK_ESCSERIAL_TIMEOUT 3
+#define KONTRONIK_ESCSERIAL_TIMEOUT 2000
+#define KONTRONIK_PACKET_LENGHT 35
 
 #include <Arduino.h>
 #include "device.h"

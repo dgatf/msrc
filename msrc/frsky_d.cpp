@@ -143,7 +143,6 @@ void Frsky::setConfig(Config &config)
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
         ESC_SERIAL.begin(19200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());
         sensorP = new Sensord(RPM_ID, esc->rpmP(), config.refresh.rpm, esc);
@@ -154,7 +153,6 @@ void Frsky::setConfig(Config &config)
         Sensord *sensorP;
         EscHW4 *esc;
         ESC_SERIAL.begin(19200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
         esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
@@ -200,8 +198,7 @@ void Frsky::setConfig(Config &config)
     {
         Sensord *sensorP;
         EscKontronik *esc;
-        ESC_SERIAL.begin(115200);
-        ESC_SERIAL.setTimeout(ESCSERIAL_TIMEOUT);
+        ESC_SERIAL.begin(115200, SERIAL_8E1);
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());

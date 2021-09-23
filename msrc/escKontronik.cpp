@@ -4,57 +4,64 @@ EscKontronik::EscKontronik(Stream &serial, uint8_t alphaRpm, uint8_t alphaVolt, 
 
 void EscKontronik::update()
 {
-    while (serial_.available() >= 35)
+    static uint16_t serialTs = 0;
+    static uint8_t serialCount = 0;
+    if (serial_.available() > serialCount)
     {
-        if (serial_.read() == 0x4B)
+        serialCount = serial_.available();
+        serialTs = micros();
+    }
+    if (((uint16_t)micros() - serialTs > KONTRONIK_ESCSERIAL_TIMEOUT) && serialCount > 0)
+    {
+        if (serialCount == KONTRONIK_PACKET_LENGHT)
         {
-            if (serial_.peek() == 0x4F)
+            uint8_t data[KONTRONIK_PACKET_LENGHT];
+            serial_.readBytes(data, KONTRONIK_PACKET_LENGHT);
+            if (data[0] == 0x4B && data[1] == 0x4F &&data[2] == 0x44 && data[3] == 0x4C)
             {
-                uint8_t data[34];
-                uint8_t cont = serial_.readBytes(data, 34);
-                if (cont == 34 && data[1] == 0x44 && data[2] == 0x4C)
-                {
-                    float rpm = (uint32_t)data[6] << 24 | (uint32_t)data[5] << 16 | (uint16_t)data[4] << 8 | data[3];
-                    float voltage = ((uint16_t)data[8] << 8 | data[7]) / 100.0;
-                    float current = ((uint16_t)data[10] << 8 | data[9]) / 10.0;
-                    float becCurrent = ((uint16_t)data[18] << 8 | data[17]) / 1000.0;
-                    float becVoltage = ((uint16_t)data[20] << 8 | data[19]) / 1000.0;
-                    pwmIn_ = (uint16_t)data[22] << 8 | data[21];
-                    pwmOut_ = data[23];
-                    float tempFet = data[25];
-                    float tempBec = data[26];
-                    rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
-                    voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);
-                    current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
-                    becVoltage_ = calcAverage(alphaVolt_ / 100.0F, becVoltage_, becVoltage);
-                    becCurrent_ = calcAverage(alphaCurr_ / 100.0F, becCurrent_, becCurrent);
-                    tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFet);
-                    tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBec);
-                    if (cellCount_ == 255)
-                        if (millis() > 10000 && voltage_ > 1)
-                            cellCount_ = setCellCount(voltage_);
-                    cellVoltage_ = voltage_ / cellCount_;
+                float rpm = (uint32_t)data[7] << 24 | (uint32_t)data[6] << 16 | (uint16_t)data[5] << 8 | data[4];
+                float voltage = ((uint16_t)data[9] << 8 | data[8]) / 100.0;
+                float current = ((uint16_t)data[11] << 8 | data[10]) / 10.0;
+                float becCurrent = ((uint16_t)data[19] << 8 | data[18]) / 1000.0;
+                float becVoltage = ((uint16_t)data[21] << 8 | data[20]) / 1000.0;
+                pwmIn_ = (uint16_t)data[23] << 8 | data[22];
+                pwmOut_ = data[24];
+                float tempFet = data[26];
+                float tempBec = data[27];
+                rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+                voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);
+                current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
+                becVoltage_ = calcAverage(alphaVolt_ / 100.0F, becVoltage_, becVoltage);
+                becCurrent_ = calcAverage(alphaCurr_ / 100.0F, becCurrent_, becCurrent);
+                tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFet);
+                tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBec);
+                if (cellCount_ == 255)
+                    if (millis() > 10000 && voltage_ > 1)
+                        cellCount_ = setCellCount(voltage_);
+                cellVoltage_ = voltage_ / cellCount_;
 #if defined(DEBUG_ESC_KONTRONIK) || defined(DEBUG_ESC)
-                    DEBUG_SERIAL.print("R:");
-                    DEBUG_SERIAL.print(rpm);
-                    DEBUG_SERIAL.print(" V:");
-                    DEBUG_SERIAL.print(voltage);
-                    DEBUG_SERIAL.print(" C:");
-                    DEBUG_SERIAL.print(current);
-                    DEBUG_SERIAL.print(" VB:");
-                    DEBUG_SERIAL.print(becVoltage);
-                    DEBUG_SERIAL.print(" CB:");
-                    DEBUG_SERIAL.print(becCurrent);
-                    DEBUG_SERIAL.print(" TF:");
-                    DEBUG_SERIAL.print(tempFet);
-                    DEBUG_SERIAL.print(" TB:");
-                    DEBUG_SERIAL.print(tempBec);
-                    DEBUG_SERIAL.print(" VC:");
-                    DEBUG_SERIAL.println(cellVoltage_);
+                DEBUG_SERIAL.print("R:");
+                DEBUG_SERIAL.print(rpm);
+                DEBUG_SERIAL.print(" V:");
+                DEBUG_SERIAL.print(voltage);
+                DEBUG_SERIAL.print(" C:");
+                DEBUG_SERIAL.print(current);
+                DEBUG_SERIAL.print(" VB:");
+                DEBUG_SERIAL.print(becVoltage);
+                DEBUG_SERIAL.print(" CB:");
+                DEBUG_SERIAL.print(becCurrent);
+                DEBUG_SERIAL.print(" TF:");
+                DEBUG_SERIAL.print(tempFet);
+                DEBUG_SERIAL.print(" TB:");
+                DEBUG_SERIAL.print(tempBec);
+                DEBUG_SERIAL.print(" VC:");
+                DEBUG_SERIAL.println(cellVoltage_);
 #endif
-                }
             }
         }
+        while (serial_.available())
+            serial_.read();
+        serialCount = 0;
     }
 #ifdef SIM_SENSORS
     rpm_ = 12345.67;
