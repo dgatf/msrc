@@ -10,8 +10,6 @@
 #ifndef SMARTPORT_H
 #define SMARTPORT_H
 
-#define SMARTPORT_TIMEOUT 3
-
 /* Sensor id (lua_id = id - 1)
 
 1 0x00 // VARIO 0x100 
@@ -44,6 +42,7 @@
 28 0x1B // Fuel 0x600
 */
 
+#define SMARTPORT_TIMEOUT 2000
 #define RECEIVED_NONE 0
 #define RECEIVED_POLL 1
 #define RECEIVED_PACKET 2

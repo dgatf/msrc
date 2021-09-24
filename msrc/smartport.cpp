@@ -181,7 +181,7 @@ void Smartport::deleteSensors()
 uint8_t Smartport::getCrc(uint8_t *data)
 {
     uint16_t crc = 0;
-    for (uint8_t i = 1; i < 8; i++)
+    for (uint8_t i = 2; i < 9; i++)
     {
         crc += data[i];
         crc += crc >> 8;
@@ -192,54 +192,47 @@ uint8_t Smartport::getCrc(uint8_t *data)
 
 uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, uint32_t &value)
 {
-    if (serial_.available())
+    static uint16_t serialTs = 0;
+    static uint8_t serialCount = 0;
+    if (serial_.available() > serialCount)
     {
-        uint8_t data[9];
-        boolean header = false;
-        uint8_t cont = 0;
-        uint16_t tsRead = millis();
-        while ((uint16_t)millis() - tsRead < SMARTPORT_TIMEOUT)
+        serialCount = serial_.available();
+        serialTs = micros();
+    }
+    if (((uint16_t)micros() - serialTs > SMARTPORT_TIMEOUT) && serialCount > 0)
+    {
+        if (serialCount < 15)
         {
-            if (serial_.available())
+            uint8_t data[15]; // max 15
+            uint8_t i;
+            for (i = 0; i < serialCount; i++)
             {
-                tsRead = millis();
-                if (serial_.peek() == 0x7E)
+                data[i] = serial_.read();
+                if (data[i] == 0x7D)
+                    data[i] = serial_.read() ^ 0x20;
+            }
+            if (data[0] == 0x7E && i == 2)
+            {
+                sensorId = data[1];
+                return RECEIVED_POLL;
+            }
+            if (data[0] == 0x7E && i == 10)
+            {
+                uint8_t crc = getCrc(data);
+                if (crc == data[9] && data[2] != 0x00 && data[2] != 0x10)
                 {
-                    header = true;
-                    cont = 0;
-                    serial_.read();
-                }
-                else
-                {
-                    data[cont] = serial_.read();
-                    if (header)
-                    {
-                        if (data[cont] == 0x7D)
-                            data[cont] = serial_.read() ^ 0x20;
-                        cont++;
-                    }
-                }
-                if (cont == 9)
-                {
-                    uint8_t crc = getCrc(data);
-                    if (crc == data[8] && data[1] != 0x00 && data[1] != 0x10)
-                    {
-                        sensorId = data[0];
-                        frameId = data[1];
-                        dataId = (uint16_t)data[3] << 8 | data[2];
-                        value = (uint32_t)data[7] << 24 | (uint32_t)data[6] << 16 |
-                                (uint16_t)data[5] << 8 | data[4];
-                        return RECEIVED_PACKET;
-                    }
-                    cont = 0;
+                    sensorId = data[1];
+                    frameId = data[2];
+                    dataId = (uint16_t)data[4] << 8 | data[3];
+                    value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 |
+                            (uint16_t)data[6] << 8 | data[5];
+                    return RECEIVED_PACKET;
                 }
             }
         }
-        if (cont == 1)
-        {
-            sensorId = data[0];
-            return RECEIVED_POLL;
-        }
+        while (serial_.available())
+            serial_.read();
+        serialCount = 0;
     }
     return RECEIVED_NONE;
 }
@@ -250,116 +243,107 @@ void Smartport::update()
     uint16_t dataId;
     uint32_t value;
 #if defined(SIM_LUA_SEND)
-    if (true)
-    {
-        uint8_t sensorId = sensorId_;
-        uint8_t packetType = RECEIVED_PACKET;
-        maintenanceMode_ = true;
-        frameId = 0x30;
-        dataId = DATA_ID;
-        value = 0;
-        if (packetP != NULL)
-            packetType = RECEIVED_POLL;
-        else
-            delay(2000);
+    uint8_t sensorId = sensorId_;
+    uint8_t packetType = RECEIVED_PACKET;
+    maintenanceMode_ = true;
+    frameId = 0x30;
+    dataId = DATA_ID;
+    value = 0;
+    if (packetP != NULL)
+        packetType = RECEIVED_POLL;
+    else
+        delay(2000);
 #elif defined(SIM_LUA_RECEIVE)
-    if (true)
+    uint8_t sensorId = sensorId_;
+    uint8_t packetType = RECEIVED_PACKET;
+    maintenanceMode_ = true;
+    frameId = 0x31;
+    dataId = DATA_ID;
+    static uint8_t contPacket = 0;
+    if (contPacket == 0)
+        value = 0xAAAA55F1;
+    if (contPacket == 1)
+        value = 0x3333F2;
+    if (contPacket == 2)
+        value = 0x043021F3;
+    if (contPacket == 3)
     {
-        uint8_t sensorId = sensorId_;
-        uint8_t packetType = RECEIVED_PACKET;
-        maintenanceMode_ = true;
-        frameId = 0x31;
-        dataId = DATA_ID;
-        static uint8_t contPacket = 0;
-        if (contPacket == 0)
-            value = 0xAAAA55F1;
-        if (contPacket == 1)
-            value = 0x3333F2;
-        if (contPacket == 2)
-            value = 0x043021F3;
-        if (contPacket == 3)
-        {
-            contPacket = 0;
-            delay(2000);
-        }
-        contPacket++;
+        contPacket = 0;
+        delay(2000);
+    }
+    contPacket++;
 
 #elif defined(SIM_RX)
-    if (true)
+    static uint16_t ts = 0;
+    uint8_t sensorId = sensorId_;
+    uint8_t packetType = RECEIVED_NONE;
+    if (millis() - ts > 12)
     {
-        static uint16_t ts = 0;
-        uint8_t sensorId = sensorId_;
-        uint8_t packetType = RECEIVED_NONE;
-        if (millis() - ts > 12)
-        {
-            packetType = RECEIVED_POLL;
-            ts = millis();
-        }
+        packetType = RECEIVED_POLL;
+        ts = millis();
+    }
 #else
-    if (serial_.available())
+    uint8_t sensorId;
+    uint8_t packetType = read(sensorId, frameId, dataId, value);
+#endif
+    if (packetType == RECEIVED_POLL && sensorId == sensorId_)
     {
-        uint8_t sensorId;
-        uint8_t packetType = read(sensorId, frameId, dataId, value);
-#endif
-        if (packetType == RECEIVED_POLL && sensorId == sensorId_)
+        if (packetP != NULL && maintenanceMode_) // if maintenance send packet
         {
-            if (packetP != NULL && maintenanceMode_) // if maintenance send packet
-            {
-                sendData(packetP->frameId, packetP->dataId, packetP->value);
+            sendData(packetP->frameId, packetP->dataId, packetP->value);
 #ifdef DEBUG_P
-                DEBUG_SERIAL.print(">F:");
-                DEBUG_SERIAL.print(packetP->frameId, HEX);
-                DEBUG_SERIAL.print(" D:");
-                DEBUG_SERIAL.print(packetP->dataId, HEX);
-                DEBUG_SERIAL.print(" V:");
-                DEBUG_SERIAL.println(packetP->value, HEX);
-#endif
-                Packet *oldPacketP;
-                oldPacketP = packetP;
-                packetP = packetP->nextP;
-                delete oldPacketP;
-            }
-            if (sensorP != NULL && !maintenanceMode_) // else send telemetry
-            {
-                static Sensor *spSensorP = sensorP; // loop sensors until correct timestamp or 1 sensors cycle
-                Sensor *initialSensorP = spSensorP;
-                while (((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) <= (uint16_t)spSensorP->refresh() * 100) && spSensorP->nextP != initialSensorP)
-                {
-                    spSensorP = spSensorP->nextP;
-                }
-                if ((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) >= (uint16_t)spSensorP->refresh() * 100)
-                {
-                    sendData(spSensorP->frameId(), spSensorP->dataId(), spSensorP->valueFormatted());
-#ifdef DEBUG
-                    DEBUG_SERIAL.print("D:");
-                    DEBUG_SERIAL.print(spSensorP->dataId(), HEX);
-                    DEBUG_SERIAL.print(" V:");
-                    DEBUG_SERIAL.print(spSensorP->valueFormatted());
-                    spSensorP->valueFormatted(); // toggle type if date/time or lat/lon sensor
-                    DEBUG_SERIAL.print(" T:");
-                    DEBUG_SERIAL.println(spSensorP->timestamp());
-#endif
-                    spSensorP->setTimestamp(millis());
-                    spSensorP = spSensorP->nextP;
-                }
-                else
-                {
-                    sendVoid();
-                }
-            }
-        }
-        else if (packetType == RECEIVED_PACKET)
-        {
-#ifdef DEBUG_P
-            DEBUG_SERIAL.print("<F:");
-            DEBUG_SERIAL.print(frameId, HEX);
+            DEBUG_SERIAL.print(">F:");
+            DEBUG_SERIAL.print(packetP->frameId, HEX);
             DEBUG_SERIAL.print(" D:");
-            DEBUG_SERIAL.print(dataId, HEX);
+            DEBUG_SERIAL.print(packetP->dataId, HEX);
             DEBUG_SERIAL.print(" V:");
-            DEBUG_SERIAL.println(value, HEX);
+            DEBUG_SERIAL.println(packetP->value, HEX);
 #endif
-            processPacket(frameId, dataId, value);
+            Packet *oldPacketP;
+            oldPacketP = packetP;
+            packetP = packetP->nextP;
+            delete oldPacketP;
         }
+        if (sensorP != NULL && !maintenanceMode_) // else send telemetry
+        {
+            static Sensor *spSensorP = sensorP; // loop sensors until correct timestamp or 1 sensors cycle
+            Sensor *initialSensorP = spSensorP;
+            while (((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) <= (uint16_t)spSensorP->refresh() * 100) && spSensorP->nextP != initialSensorP)
+            {
+                spSensorP = spSensorP->nextP;
+            }
+            if ((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) >= (uint16_t)spSensorP->refresh() * 100)
+            {
+                sendData(spSensorP->frameId(), spSensorP->dataId(), spSensorP->valueFormatted());
+#ifdef DEBUG
+                DEBUG_SERIAL.print("D:");
+                DEBUG_SERIAL.print(spSensorP->dataId(), HEX);
+                DEBUG_SERIAL.print(" V:");
+                DEBUG_SERIAL.print(spSensorP->valueFormatted());
+                spSensorP->valueFormatted(); // toggle type if date/time or lat/lon sensor
+                DEBUG_SERIAL.print(" T:");
+                DEBUG_SERIAL.println(spSensorP->timestamp());
+#endif
+                spSensorP->setTimestamp(millis());
+                spSensorP = spSensorP->nextP;
+            }
+            else
+            {
+                sendVoid();
+            }
+        }
+    }
+    else if (packetType == RECEIVED_PACKET)
+    {
+#ifdef DEBUG_P
+        DEBUG_SERIAL.print("<F:");
+        DEBUG_SERIAL.print(frameId, HEX);
+        DEBUG_SERIAL.print(" D:");
+        DEBUG_SERIAL.print(dataId, HEX);
+        DEBUG_SERIAL.print(" V:");
+        DEBUG_SERIAL.println(value, HEX);
+#endif
+        processPacket(frameId, dataId, value);
     }
     // update sensor
     if (sensorP != NULL)
@@ -558,6 +542,7 @@ void Smartport::processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         DEBUG_SERIAL.println("M-");
 #endif
         maintenanceMode_ = false;
+        delay(5);
         return;
     }
 

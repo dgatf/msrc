@@ -13,7 +13,8 @@
 #define IBUS_COMMAND_TYPE 0x9
 #define IBUS_COMMAND_MEASURE 0xA
 
-#define IBUS_TIMEOUT 3
+#define IBUS_TIMEOUT 2000
+#define IBUS_PACKET_LENGHT 4
 
 #include <Arduino.h>
 #include "sensor.h"
