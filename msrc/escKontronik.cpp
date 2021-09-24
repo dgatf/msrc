@@ -24,8 +24,6 @@ void EscKontronik::update()
                 float current = ((uint16_t)data[11] << 8 | data[10]) / 10.0;
                 float becCurrent = ((uint16_t)data[19] << 8 | data[18]) / 1000.0;
                 float becVoltage = ((uint16_t)data[21] << 8 | data[20]) / 1000.0;
-                pwmIn_ = (uint16_t)data[23] << 8 | data[22];
-                pwmOut_ = data[24];
                 float tempFet = data[26];
                 float tempBec = data[27];
                 rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
@@ -71,16 +69,6 @@ void EscKontronik::update()
     tempBec_ = 12.34;
     cellVoltage_ = voltage_ / cellCount_;
 #endif
-}
-
-float *EscKontronik::pwmInP()
-{
-    return &pwmIn_;
-}
-
-float *EscKontronik::pwmOutP()
-{
-    return &pwmOut_;
 }
 
 float *EscKontronik::rpmP()

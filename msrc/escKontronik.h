@@ -13,7 +13,7 @@ class EscKontronik : public AbstractDevice, public EscCell
 private:
     Stream &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_;
-    float rpm_ = 0, voltage_ = 0, current_ = 0, becCurrent_ = 0, becVoltage_ = 0, pwmIn_ = 0, pwmOut_ = 0, tempFet_ = 0, tempBec_ = 0;
+    float rpm_ = 0, voltage_ = 0, current_ = 0, becCurrent_ = 0, becVoltage_ = 0, tempFet_ = 0, tempBec_ = 0;
 
 protected:
 public:
@@ -26,9 +26,6 @@ public:
     float *tempBecP();
     float *becVoltageP();
     float *becCurrentP();
-    float *pwmInP();
-    float *pwmOutP();
-    
 };
 
 #endif

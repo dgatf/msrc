@@ -19,8 +19,6 @@ void EscHW3::update()
             serial_.readBytes(data, ESCHWV3_PACKET_LENGHT);
             if (data[0] == 0x9B && data[4] == 0 && data[6] == 0)
             {
-                thr_ = data[5]; // 0-255
-                pwm_ = data[7]; // 0-255
                 uint16_t rpmCycle = (uint16_t)data[8] << 8 | data[9];
                 if (rpmCycle <= 0)
                     rpmCycle = 1;
@@ -40,24 +38,10 @@ void EscHW3::update()
         serialCount = 0;
     }
     if ((uint16_t)micros() - serialTs > 50000)
-    {
-        pwm_ = 0;
-        thr_ = 0;
         rpm_ = 0;
-    }
 #ifdef SIM_SENSORS
     rpm_ = 12345.67;
 #endif
-}
-
-uint8_t *EscHW3::thrP()
-{
-    return &thr_;
-}
-
-uint8_t *EscHW3::pwmP()
-{
-    return &pwm_;
 }
 
 float *EscHW3::rpmP()

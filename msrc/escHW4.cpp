@@ -133,16 +133,6 @@ float EscHW4::calcCurr(uint16_t currentRaw)
     return (currentRaw - rawCurrentOffset_) * ESCHW4_V_REF / (ampGain_[type_] * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
 }
 
-uint16_t *EscHW4::thrP()
-{
-    return &thr_;
-}
-
-uint16_t *EscHW4::pwmP()
-{
-    return &pwm_;
-}
-
 float *EscHW4::rpmP()
 {
     return &rpm_;
