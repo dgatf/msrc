@@ -61,7 +61,8 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
-| Frsky D, Smartport | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 1 |
+| Frsky Smartport | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 1 |
+| Frsky D | 12 | 23 | 15 | B4(8) | 1 |
 | SRXL, IBUS, SBUS<sup>(4)</sup>, SB | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15 & 14<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 1 |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
@@ -88,7 +89,10 @@ Depending on the receiver protocol connect to the Rx as follows
 ### ATmega boards
 
 <p align="center"><img src="./images/frsky_smartport.png" width="350"><br>
-<i>Frsky D(Signal = Rx), Smartport</i><br><br></p>
+<i>Frsky Smartport</i><br><br></p>
+
+<p align="center"><img src="./images/frsky_d.png" width="350"><br>
+<i>Frsky D</i><br><br></p>
 
 <p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="350"><br>
 <i>SRXL, IBUS, SBUS2(it is needed a signal inverter) or Multiplex Sensor Bus</i><br><br></p>
@@ -205,11 +209,7 @@ Remarks:
 <p align="center"><img src="./images/full.png" width="600"><br>
   <i>I2C and analog sensors with Smartport</i><br><br></p>
 
-## 4. Flash to Arduino
-
-Using Arduino IDE copy folder *msrc* and open *msrc.ino*. Select the board and flash
-
-## 5. Configuration
+## 4. Configuration
 
 ### From PC - MSRC gui
 
@@ -217,14 +217,14 @@ Use MSRC to generate _config.h_. Copy and paste the text to config.h and then fl
 
 <p align="center"><img src="./images/msrc_gui.png" width="600"><br>
 
-To build msrc_gui:
+Find the Binaries [here](https://github.com/dgatf/msrc/tree/master/msrc_gui/binaries)
+
+Or build msrc_gui:
 
 - Install QT
 - cd to msrc_gui
 - _qmake_
 - _make_
-
-Binaries [here](https://github.com/dgatf/msrc/tree/master/msrc_gui/binaries)
 
 ### From PC - config.h
 
@@ -254,6 +254,11 @@ Options:
 - Averaging queue size: 1 to 16
 - Refresh rate (ms): 0 to 1600
 - I2C (x2). Sensor type and address
+
+
+## 5. Flash to Arduino
+
+Using Arduino IDE copy folder *msrc* and open *msrc.ino*. Select the board and flash
 
 ## 6. OpenTx sensors (Smartport)
 

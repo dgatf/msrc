@@ -10,8 +10,6 @@
 #ifndef FRSKYD_H
 #define FRSKYD_H
 
-#define FRSKYD_TIMEOUT 3
-
 #include <Arduino.h>
 #include "sensor.h"
 #include "config.h"
