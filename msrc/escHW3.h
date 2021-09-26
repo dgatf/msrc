@@ -1,7 +1,7 @@
 #ifndef ESCHW3_H
 #define ESCHW3_H
 
-#define ESCHWV3_ESCSERIAL_TIMEOUT 2000
+#define ESCHWV3_ESCSERIAL_TIMEOUT 5000
 #define ESCHWV3_PACKET_LENGHT 10
 
 #include <Arduino.h>

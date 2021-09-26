@@ -128,34 +128,35 @@ uint8_t Ibus::read(uint8_t &command, uint8_t &address)
         serialCount = serial_.available();
         serialTs = micros();
     }
-    if (((uint16_t)micros() - serialTs > IBUS_TIMEOUT) && serialCount > 0)
+    if (serialCount == IBUS_PACKET_LENGHT)
     {
-        if (serialCount == IBUS_PACKET_LENGHT)
+        uint8_t data[IBUS_PACKET_LENGHT];
+        serial_.readBytes(data, IBUS_PACKET_LENGHT);
+        serialCount = 0;
+        if (data[0] == 4)
         {
-            uint8_t data[IBUS_PACKET_LENGHT];
-            serial_.readBytes(data, IBUS_PACKET_LENGHT);
-            if (data[0] == 4)
+#ifdef DEBUG
+            DEBUG_SERIAL.print("< ");
+            for (uint8_t i = 0; i < data[0]; i++)
+            {
+                DEBUG_SERIAL.print(data[i], HEX);
+                DEBUG_SERIAL.print(" ");
+            }
+#endif
+            if (checkCrc(data))
             {
 #ifdef DEBUG
-                DEBUG_SERIAL.print("< ");
-                for (uint8_t i = 0; i < data[0]; i++)
-                {
-                    DEBUG_SERIAL.print(data[i], HEX);
-                    DEBUG_SERIAL.print(" ");
-                }
+                DEBUG_SERIAL.println("CRC OK");
 #endif
-                if (checkCrc(data))
-                {
-#ifdef DEBUG
-                    DEBUG_SERIAL.println("CRC OK");
-#endif
-                    command = data[1] >> 4;
-                    address = data[1] & 0x0F;
-                    if (command == IBUS_COMMAND_DISCOVER || command == IBUS_COMMAND_TYPE || IBUS_COMMAND_MEASURE)
-                        packet = IBUS_RECEIVED_POLL;
-                }
+                command = data[1] >> 4;
+                address = data[1] & 0x0F;
+                if (command == IBUS_COMMAND_DISCOVER || command == IBUS_COMMAND_TYPE || IBUS_COMMAND_MEASURE)
+                    packet = IBUS_RECEIVED_POLL;
             }
         }
+    }
+    if (((uint16_t)micros() - serialTs > IBUS_TIMEOUT) && serialCount > 0)
+    {
         while (serial_.available())
             serial_.read();
         serialCount = 0;
@@ -190,13 +191,13 @@ void Ibus::update()
     if (packetType == IBUS_RECEIVED_POLL && sensorIbusP[address])
         sendData(command, address);
 
-// update sensor
-static uint8_t cont = 0;
-if (sensorIbusP[cont])
-    sensorIbusP[cont]->update();
-cont++;
-if (cont == 16)
-    cont = 0;
+    // update sensor
+    static uint8_t cont = 0;
+    if (sensorIbusP[cont])
+        sensorIbusP[cont]->update();
+    cont++;
+    if (cont == 16)
+        cont = 0;
 }
 
 void Ibus::setConfig(Config &config)
