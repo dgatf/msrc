@@ -75,6 +75,7 @@ void EscHW4::update()
     {
         uint8_t data[ESCHWV4_SIGNATURE_LENGHT];
         serial_.readBytes(data, ESCHWV4_SIGNATURE_LENGHT);
+        serialCount = 0;
         if (data[0] == 0x9B && data[1] == 0x9B)
         {
             memcpy(&signature_[0], &data[2], 10);
@@ -88,7 +89,6 @@ void EscHW4::update()
             DEBUG_SERIAL.println();
 #endif
         }
-        serialCount = 0;
     }
 #endif
     if (((uint16_t)micros() - serialTs > ESCHW4_ESCSERIAL_TIMEOUT) && serialCount > 0)
