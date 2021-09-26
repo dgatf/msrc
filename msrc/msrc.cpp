@@ -203,6 +203,7 @@ void setup()
     DEBUG_SERIAL.begin(115200);
     while (!DEBUG_SERIAL)
         ;
+    DEBUG_SERIAL.print("\nV");
     DEBUG_SERIAL.print(VERSION_MAJOR);
     DEBUG_SERIAL.print(VERSION_MINOR);
     DEBUG_SERIAL.println(VERSION_PATCH);

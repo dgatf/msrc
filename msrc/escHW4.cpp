@@ -57,15 +57,15 @@ void EscHW4::update()
             //uint32_t pn =
             //    (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
             //DEBUG_SERIAL.print(pn);
-            //DEBUG_SERIAL.print(" ");
+            DEBUG_SERIAL.print("R:");
             DEBUG_SERIAL.print(rpm);
-            DEBUG_SERIAL.print(" ");
+            DEBUG_SERIAL.print("V:");
             DEBUG_SERIAL.print(voltage);
-            DEBUG_SERIAL.print(" ");
+            DEBUG_SERIAL.print("C:");
             DEBUG_SERIAL.print(current);
-            DEBUG_SERIAL.print(" ");
+            DEBUG_SERIAL.print("TF:");
             DEBUG_SERIAL.print(tempFET);
-            DEBUG_SERIAL.print(" ");
+            DEBUG_SERIAL.print("TB:");
             DEBUG_SERIAL.println(tempBEC);
 #endif
         }
