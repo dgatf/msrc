@@ -192,6 +192,64 @@ uint8_t Smartport::getCrc(uint8_t *data)
 
 uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, uint32_t &value)
 {
+    if (serial_.available())
+    {
+        uint8_t data[9];
+        boolean header = false;
+        uint8_t cont = 0;
+        uint16_t tsRead = millis();
+        while ((uint16_t)millis() - tsRead < SMARTPORT_TIMEOUT)
+        {
+            if (serial_.available())
+            {
+                tsRead = millis();
+                if (serial_.peek() == 0x7E)
+                {
+                    header = true;
+                    cont = 0;
+                    serial_.read();
+                }
+                else
+                {
+                    data[cont] = serial_.read();
+                    if (header)
+                    {
+                        if (data[cont] == 0x7D)
+                            data[cont] = serial_.read() ^ 0x20;
+                        cont++;
+                    }
+                }
+                if (cont == 9)
+                {
+                    uint8_t crc = getCrc(data);
+                    if (crc == data[8] && data[1] != 0x00 && data[1] != 0x10)
+                    {
+                        sensorId = data[0];
+                        frameId = data[1];
+                        dataId = (uint16_t)data[3] << 8 | data[2];
+                        value = (uint32_t)data[7] << 24 | (uint32_t)data[6] << 16 |
+                                (uint16_t)data[5] << 8 | data[4];
+                        return RECEIVED_PACKET;
+                    }
+                    cont = 0;
+                }
+            }
+        }
+        if (cont == 1)
+        {
+            sensorId = data[0];
+            return RECEIVED_POLL;
+        }
+    }
+    return RECEIVED_NONE;
+}
+
+/*uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, uint32_t &value)
+{
+    static uint16_t ts = 0;
+    uint16_t dur = (uint16_t)micros()-ts;
+    if (dur > 100) Serial.println(dur);
+    ts = micros();
     static uint16_t serialTs = 0;
     static uint8_t serialCount = 0;
     if (serial_.available() > serialCount)
@@ -214,6 +272,7 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
             if (data[0] == 0x7E && i == 2)
             {
                 sensorId = data[1];
+                serialCount = 0;
                 return RECEIVED_POLL;
             }
             if (data[0] == 0x7E && i == 10)
@@ -226,6 +285,7 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
                     dataId = (uint16_t)data[4] << 8 | data[3];
                     value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 |
                             (uint16_t)data[6] << 8 | data[5];
+                    serialCount = 0;
                     return RECEIVED_PACKET;
                 }
             }
@@ -235,7 +295,7 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
         serialCount = 0;
     }
     return RECEIVED_NONE;
-}
+}*/
 
 void Smartport::update()
 {
