@@ -20,63 +20,58 @@ void EscHW4::update()
             thr_ = (uint16_t)data[4] << 8 | data[5]; // 0-1024
             pwm_ = (uint16_t)data[6] << 8 | data[7]; // 0-1024
             float rpm = (uint32_t)data[8] << 16 | (uint16_t)data[9] << 8 | data[10];
-            if (thr_ > 1024 || // try to filter invalid data frames
-                pwm_ > 1024 ||
-                rpm > 200000 ||
-                data[11] & 0xF0 || // for sensors, ADC is 12bits- > higher bits must be 0
-                data[13] & 0xF0 ||
-                data[15] & 0xF0 ||
-                data[17] & 0xF0)
+            if (thr_ < 1024 && // try to filter invalid data frames
+                pwm_ < 1024 &&
+                rpm < 200000 &&
+                data[11] <= 0xF && // for sensors, ADC is 12bits- > higher bits must be 0
+                data[13] <= 0xF &&
+                data[15] <= 0xF &&
+                data[17] <= 0xF)
             {
-#if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
-                DEBUG_SERIAL.println("BF");
-#endif
-                serialCount = 0;
-                return;
+                uint16_t rawCur = (uint16_t)data[13] << 8 | data[14];
+                if (rawCurrentOffset_ == -1 && rawCur > 0)
+                {
+                    rawCurrentOffset_ = rawCur;
+    #if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
+                    DEBUG_SERIAL.print("CO: ");
+                    DEBUG_SERIAL.println(rawCurrentOffset_);
+    #endif
+                }
+                float voltage = calcVolt((uint16_t)data[11] << 8 | data[12]);
+                float current = calcCurr((uint16_t)data[13] << 8 | data[14]);
+                float tempFET = calcTemp((uint16_t)data[15] << 8 | data[16]);
+                float tempBEC = calcTemp((uint16_t)data[17] << 8 | data[18]);
+                rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+                voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);
+                current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
+                tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFET);
+                tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBEC);
+                if (cellCount_ == 255)
+                    if (millis() > 10000 && voltage_ > 1)
+                        cellCount_ = setCellCount(voltage_);
+                cellVoltage_ = voltage_ / cellCount_;
+    #ifdef ESC_SIGNATURE
+                signature_[10] = data[14];
+                signature_[11] = data[13];
+    #endif
+    #if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
+                uint32_t pn =
+                    (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
+                DEBUG_SERIAL.print(pn);
+                DEBUG_SERIAL.print(" R:");
+                DEBUG_SERIAL.print(rpm);
+                DEBUG_SERIAL.print(" V:");
+                DEBUG_SERIAL.print(voltage);
+                DEBUG_SERIAL.print(" C:");
+                DEBUG_SERIAL.print(current);
+                DEBUG_SERIAL.print(" TF:");
+                DEBUG_SERIAL.print(tempFET);
+                DEBUG_SERIAL.print(" TB:");
+                DEBUG_SERIAL.println(tempBEC);
+    #endif
             }
-            uint16_t rawCur = (uint16_t)data[13] << 8 | data[14];
-            if (rawCurrentOffset_ == -1 && rawCur > 0)
-            {
-                rawCurrentOffset_ = rawCur;
-#if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
-                DEBUG_SERIAL.print("CO: ");
-                DEBUG_SERIAL.println(rawCurrentOffset_);
-#endif
-            }
-            float voltage = calcVolt((uint16_t)data[11] << 8 | data[12]);
-            float current = calcCurr((uint16_t)data[13] << 8 | data[14]);
-            float tempFET = calcTemp((uint16_t)data[15] << 8 | data[16]);
-            float tempBEC = calcTemp((uint16_t)data[17] << 8 | data[18]);
-            rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
-            voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);
-            current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
-            tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFET);
-            tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBEC);
-            if (cellCount_ == 255)
-                if (millis() > 10000 && voltage_ > 1)
-                    cellCount_ = setCellCount(voltage_);
-            cellVoltage_ = voltage_ / cellCount_;
-#ifdef ESC_SIGNATURE
-            signature_[10] = data[14];
-            signature_[11] = data[13];
-#endif
-#if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
-            uint32_t pn =
-                (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
-            DEBUG_SERIAL.print(pn);
-            DEBUG_SERIAL.print(" R:");
-            DEBUG_SERIAL.print(rpm);
-            DEBUG_SERIAL.print(" V:");
-            DEBUG_SERIAL.print(voltage);
-            DEBUG_SERIAL.print(" C:");
-            DEBUG_SERIAL.print(current);
-            DEBUG_SERIAL.print(" TF:");
-            DEBUG_SERIAL.print(tempFET);
-            DEBUG_SERIAL.print(" TB:");
-            DEBUG_SERIAL.println(tempBEC);
-#endif
         }
-#ifdef ESC_SIGNATURE
+    #ifdef ESC_SIGNATURE
         if (serialCount == ESCHWV4_SIGNATURE_LENGHT)
         {
             uint8_t data[ESCHWV4_SIGNATURE_LENGHT];
