@@ -3,13 +3,12 @@
 
 #include <Arduino.h>
 #include "config.h"
+#include "functions.h"
 
 class AbstractDevice
 {
 private:
 protected:
-    float calcAverage(float alpha, float value, float newValue);
-
 public:
     AbstractDevice();
     virtual ~AbstractDevice();

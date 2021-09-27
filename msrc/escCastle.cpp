@@ -681,3 +681,8 @@ float *EscCastle::temperatureP()
 {
     return &temperature_;
 }
+
+float *EscCastle::cellVoltageP()
+{
+    return &cellVoltage_;
+}

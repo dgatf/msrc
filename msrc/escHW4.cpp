@@ -138,7 +138,7 @@ void EscHW4::update()
             {
                 rawCurrentOffset_ = rawCur;
 #if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
-                DEBUG_SERIAL.print("X ");
+                DEBUG_SERIAL.print("CO:");
                 DEBUG_SERIAL.println(rawCurrentOffset_);
 #endif
             }
@@ -163,17 +163,16 @@ void EscHW4::update()
             //uint32_t pn =
             //    (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
             //DEBUG_SERIAL.println(pn);
-            //DEBUG_SERIAL.print(" ");
-            DEBUG_SERIAL.print(" R:");
+            DEBUG_SERIAL.print("R:");
             DEBUG_SERIAL.print(rpm);
             DEBUG_SERIAL.print(" V:");
             DEBUG_SERIAL.print(voltage);
             DEBUG_SERIAL.print(" C:");
             DEBUG_SERIAL.print(current);
-            DEBUG_SERIAL.print(" TF:");
+            DEBUG_SERIAL.print(" T:");
             DEBUG_SERIAL.print(tempFET);
-            DEBUG_SERIAL.print(" TB:");
-            DEBUG_SERIAL.println(tempBEC);
+            //DEBUG_SERIAL.print(" ");
+            //DEBUG_SERIAL.println(tempBEC);
 #endif
         }
     }
@@ -187,7 +186,7 @@ void EscHW4::update()
         {
             memcpy(&signature_[0], &data[2], 10);
 #if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
-            DEBUG_SERIAL.print("S");
+            DEBUG_SERIAL.print("S:");
             for (uint8_t i = 0; i < 12; i++)
             {
                 DEBUG_SERIAL.print(signature_[i], HEX);
@@ -262,6 +261,11 @@ float *EscHW4::tempFetP()
 float *EscHW4::tempBecP()
 {
     return &tempBec_;
+}
+
+float *EscHW4::cellVoltageP()
+{
+    return &cellVoltage_;
 }
 
 #ifdef ESC_SIGNATURE
