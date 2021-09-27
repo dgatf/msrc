@@ -47,10 +47,10 @@ void EscKontronik::update()
             DEBUG_SERIAL.print(becVoltage);
             DEBUG_SERIAL.print(" CB:");
             DEBUG_SERIAL.print(becCurrent);
-            //DEBUG_SERIAL.print(" TF:");
-            //DEBUG_SERIAL.print(tempFet);
-            //DEBUG_SERIAL.print(" TB:");
-            //DEBUG_SERIAL.print(tempBec);
+            DEBUG_SERIAL.print(" TF:");
+            DEBUG_SERIAL.print(tempFet);
+            DEBUG_SERIAL.print(" TB:");
+            DEBUG_SERIAL.println(tempBec);
 #endif
         }
     }

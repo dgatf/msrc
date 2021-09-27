@@ -138,7 +138,7 @@ void EscHW4::update()
             {
                 rawCurrentOffset_ = rawCur;
 #if defined(DEBUG_ESC_HW_V4) || defined(DEBUG_ESC)
-                DEBUG_SERIAL.print("CO:");
+                //DEBUG_SERIAL.print("CO:");
                 DEBUG_SERIAL.println(rawCurrentOffset_);
 #endif
             }
@@ -170,9 +170,9 @@ void EscHW4::update()
             DEBUG_SERIAL.print(" C:");
             DEBUG_SERIAL.print(current);
             DEBUG_SERIAL.print(" T:");
-            DEBUG_SERIAL.print(tempFET);
-            //DEBUG_SERIAL.print(" ");
-            //DEBUG_SERIAL.println(tempBEC);
+            DEBUG_SERIAL.println(tempFET);
+            DEBUG_SERIAL.print(" T:");
+            DEBUG_SERIAL.println(tempBEC);
 #endif
         }
     }
@@ -199,7 +199,6 @@ void EscHW4::update()
 #endif
     if (((uint16_t)micros() - serialTs > ESCHW4_ESCSERIAL_TIMEOUT) && serialCount > 0)
     {
-        DEBUG_SERIAL.println(serial_.available());
         while (serial_.available())
             serial_.read();
         serialCount = 0;
