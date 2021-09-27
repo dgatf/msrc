@@ -11,11 +11,11 @@ void EscKontronik::update()
         serialCount = serial_.available();
         serialTs = micros();
     }
-    if (serialCount == KONTRONIK_PACKET_LENGHT)
+    if (serialCount >= KONTRONIK_PACKET_LENGHT)
     {
         uint8_t data[KONTRONIK_PACKET_LENGHT];
         serial_.readBytes(data, KONTRONIK_PACKET_LENGHT);
-        serialCount = 0;
+        serialCount = serial_.available();
         if (data[0] == 0x4B && data[1] == 0x4F && data[2] == 0x44 && data[3] == 0x4C)
         {
             float rpm = (uint32_t)data[7] << 24 | (uint32_t)data[6] << 16 | (uint16_t)data[5] << 8 | data[4];
@@ -36,7 +36,6 @@ void EscKontronik::update()
                 if (millis() > 10000 && voltage_ > 1)
                     cellCount_ = setCellCount(voltage_);
             cellVoltage_ = voltage_ / cellCount_;
-            serialCount = 0;
 #if defined(DEBUG_ESC_KONTRONIK) || defined(DEBUG_ESC)
             DEBUG_SERIAL.print("R:");
             DEBUG_SERIAL.print(rpm);

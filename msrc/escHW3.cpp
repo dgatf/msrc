@@ -11,11 +11,11 @@ void EscHW3::update()
         serialCount = serial_.available();
         serialTs = micros();
     }
-    if (serialCount == ESCHWV3_PACKET_LENGHT)
+    if (serialCount >= ESCHWV3_PACKET_LENGHT)
     {
         uint8_t data[ESCHWV3_PACKET_LENGHT];
         serial_.readBytes(data, ESCHWV3_PACKET_LENGHT);
-        serialCount = 0;
+        serialCount = serial_.available();
         if (data[0] == 0x9B && data[4] == 0 && data[6] == 0)
         {
             uint16_t rpmCycle = (uint16_t)data[8] << 8 | data[9];
@@ -25,7 +25,6 @@ void EscHW3::update()
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
 #if defined(DEBUG_ESC_HW_V3) || defined(DEBUG_ESC)
             uint32_t pn = (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
-            DEBUG_SERIAL.print("N:");
             DEBUG_SERIAL.print(pn);
             DEBUG_SERIAL.print(" R:");
             DEBUG_SERIAL.println(rpm);

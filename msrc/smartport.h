@@ -77,6 +77,7 @@ class Smartport : public FormatData, public ConfigEeprom
 {
 private:
     static const uint8_t sensorIdMatrix[29];
+    Sensor *spSensorP;
 
     struct Packet
     {

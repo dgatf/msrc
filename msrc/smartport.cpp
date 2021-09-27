@@ -113,6 +113,7 @@ void Smartport::addSensor(Sensor *newSensorP)
     {
         prevSensorP = newSensorP;
         newSensorP->nextP = newSensorP;
+        spSensorP = newSensorP;
     }
     sensorP = newSensorP;
     sensorP->nextP = prevSensorP->nextP;
@@ -190,6 +191,7 @@ uint8_t Smartport::getCrc(uint8_t *data)
     return 0xFF - (uint8_t)crc;
 }
 
+/*
 uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, uint32_t &value)
 {
     if (serial_.available())
@@ -243,6 +245,56 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
         }
     }
     return RECEIVED_NONE;
+}
+*/
+
+uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, uint32_t &value)
+{
+    static uint16_t serialTs = 0;
+    static uint8_t serialCount = 0;
+    uint8_t packet = RECEIVED_NONE;
+    if (serial_.available() > serialCount)
+    {
+        serialCount = serial_.available();
+        serialTs = micros();
+    }
+    if (((uint16_t)micros() - serialTs > SMARTPORT_TIMEOUT) && serialCount > 0)
+    {
+        if (serialCount < 15)
+        {
+            uint8_t data[15]; // max 15
+            uint8_t i;
+            for (i = 0; i < serialCount; i++)
+            {
+
+                data[i] = serial_.read();
+                if (data[i] == 0x7D)
+                    data[i] = serial_.read() ^ 0x20;
+            }
+            if (data[0] == 0x7E && i == 2)
+            {
+                sensorId = data[1];
+                packet = RECEIVED_POLL;
+            }
+            if (data[0] == 0x7E && i == 10)
+            {
+                uint8_t crc = getCrc(data);
+                if (crc == data[9] && data[2] != 0x00 && data[2] != 0x10)
+                {
+                    sensorId = data[1];
+                    frameId = data[2];
+                    dataId = (uint16_t)data[4] << 8 | data[3];
+                    value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 |
+                            (uint16_t)data[6] << 8 | data[5];
+                    packet = RECEIVED_PACKET;
+                }
+            }
+        }
+        while (serial_.available())
+            serial_.read();
+        serialCount = 0;
+    }
+    return packet;
 }
 
 void Smartport::update()
@@ -314,7 +366,7 @@ void Smartport::update()
         }
         if (sensorP != NULL && !maintenanceMode_) // else send telemetry
         {
-            static Sensor *spSensorP = sensorP; // loop sensors until correct timestamp or 1 sensors cycle
+            // loop sensors until correct timestamp or 1 sensors cycle
             Sensor *initialSensorP = spSensorP;
             while (((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) <= (uint16_t)spSensorP->refresh() * 100) && spSensorP->nextP != initialSensorP)
             {
@@ -550,7 +602,6 @@ void Smartport::processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)
         DEBUG_SERIAL.println("M-");
 #endif
         maintenanceMode_ = false;
-        delay(5);
         return;
     }
 
