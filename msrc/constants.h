@@ -35,8 +35,6 @@
 #endif
 
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) // ATmega328PB
-#define PIN_SOFTSERIAL_RX 4
-#define PIN_SOFTSERIAL_TX 23
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
@@ -57,8 +55,6 @@
 #endif
 
 #if defined(__AVR_ATmega2560__) // ATmega2560
-#define PIN_SOFTSERIAL_RX 10
-#define PIN_SOFTSERIAL_TX 15
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
@@ -73,8 +69,6 @@
 #endif
 
 #if defined(__AVR_ATmega32U4__) // ATmega32U4 (Teensy 2.0 / Arduino Pro Micro)
-#define PIN_SOFTSERIAL_RX PB2   // 16
-#define PIN_SOFTSERIAL_TX PB4   // 8
 #define PIN_NTC1 A0             // PF7
 #define PIN_NTC2 A1             // PF6
 #define PIN_VOLTAGE1 A2         // PF5

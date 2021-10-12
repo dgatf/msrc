@@ -55,15 +55,15 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | Voltage 2 | A3 | A3 | A3 | F4(A2) | 17 |
 | Current | A6 | A6 | A6 | B5(A9) | 20 |
 | Airspeed | A7 | A7 | A7 | D7(A7) | 26 |
-| ESC serial | RX | RX0 | 19 | D2(RX1) | 9 |
-| GPS | RX | RX1 | 17 | D2(RX1) | 7 |
+| ESC serial | RX | RX0 | 19(RX1) | D2(RX1) | 9 |
+| GPS | RX | RX1 | 17(RX2) | D2(RX1) | 7 |
 | PWM in | 8 | 8 | 49 | D4(A6) | 6 |
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
 | Frsky Smartport | 7 & 12<sup>(2)</sup> | 7 & 12<sup>(2)</sup> | A15 & D10<sup>(2)</sup> | B3 & B4<sup>(2)</sup><br/>(15 & 16) | 1 |
 | Frsky D | 12 | 12 | D10 | B4(16) | 1 |
-| SRXL, IBUS, SBUS<sup>(4)</sup>, SB | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15 & 14<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 1 |
+| SRXL, IBUS, SBUS<sup>(4)</sup>, SB | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15(RX3) & 14(TX3)<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 1 |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 

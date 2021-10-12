@@ -130,7 +130,7 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     setPinLogic1;
 
     float comp = 1000.0 / baud * MS_TO_COMP(64);
-    for (uint8_t i = 0; i < 12; i++)
+    for (uint8_t i = 0; i < 12; i++) //100000: delta 0.96, deltarx 0.09, deltatx 0.27
         delta[i] = round(comp * (i + 1));
     initDeltaRx = round(0.0 * comp);
     initDeltaTx = round(0.3 * comp);
