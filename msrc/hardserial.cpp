@@ -59,8 +59,8 @@ ISR(USART3_UDRE_vect)
 
 void HardSerial::USART_UDRE_handler()
 {
-    if (buffTx.available())
-        *udr_ = buffTx.read();
+    if (availableTx())
+        *udr_ = readTx();
     else
         *ucsrb_ &= ~_BV(UDREx);
 }
@@ -71,10 +71,10 @@ void HardSerial::USART_RX_handler()
     {
         if ((uint16_t)micros() - ts > timeout_ * 1000)
         {
-            buffRx.reset();
+            reset();
         }
     }
-    buffRx.write(*udr_);
+    writeRx(*udr_);
     ts = micros();
 }
 
@@ -138,16 +138,16 @@ void HardSerial::UART_IRQ_handler()
         {
             if ((uint16_t)micros() - ts > timeout_ * 1000)
             {
-                buffRx.reset();
+                reset();
             }
         }
         uint8_t c = *uart_d_;
-        buffRx.write(c);
+        writeRx(c);
         ts = micros();
     }
     if (*uart_s1_ & UART_S1_TDRE) // Tx complete interrupt
     {
-        if (buffTx.available())
+        if (availableTx())
         {
             if (half_duplex_mode)
             {
@@ -157,7 +157,7 @@ void HardSerial::UART_IRQ_handler()
                 *uart_c3_ = reg;
                 __enable_irq();
             }
-            *uart_d_ = buffTx.read();
+            *uart_d_ = readTx();
         }
         else
         {

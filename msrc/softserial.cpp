@@ -20,8 +20,8 @@ void SoftSerial::PCINT2_handler()
     {
         if ((!bit_is_set(PINx, PINxn) && !inverted_) || (bit_is_set(PINx, PINxn) && inverted_))
         {
-            initVal = TCNT0;
-            OCR0A = initVal + delta[0] + initDeltaRx;
+            initVal = TCNT0 + initDeltaRx;
+            OCR0A = initVal + delta[0];
             TIFR0 |= _BV(OCF0A);
             TIMSK0 |= _BV(OCIE0A);
             PCMSKx &= ~_BV(PCINTxn);
@@ -29,7 +29,7 @@ void SoftSerial::PCINT2_handler()
             incomingByte = 0;
             status = SOFTSERIAL_RECEIVING;
             if ((uint16_t)micros() - ts > timeout_ * 1000)
-                buffRx.reset();
+                reset();
         }
     }
 }
@@ -42,36 +42,41 @@ void SoftSerial::TIMER0_COMPA_handler() // Rx, Tx
         {
             if ((bit_is_set(PINx, PINxn) && !inverted_) || (!bit_is_set(PINx, PINxn) && inverted_))
                 incomingByte |= _BV(bit - 1);
-            OCR0A = initVal + delta[bit] + initDeltaRx;
+            OCR0A = initVal + delta[bit];
             bit++;
         }
         else // end of transmission
         {
             PCMSKx |= _BV(PCINTxn);
             TIMSK0 &= ~_BV(OCIE0A);
-            buffRx.write(incomingByte);
+            writeRx(incomingByte);
             status = SOFTSERIAL_IDLE;
             ts = micros();
         }
     }
     else
     {
-        if (bit <= 8) // data
+        if (bit < 9) // data
         {
             if (bit_is_set(outgoingByte, bit - 1))
-                setPin(1);
+            {
+                setPinLogic1;
+            }
             else
-                setPin(0);
+                setPinLogic0;
         }
         else if (bit == 9) // stop bit
         {
-            setPin(1);
+            setPinLogic1;
         }
         else // end of transmission
         {
             status = SOFTSERIAL_IDLE;
-            if (buffTx.available())
+            if (availableTx())
+            {
                 initWrite();
+                return;
+            }
             else
             {
                 PCMSKx |= _BV(PCINTxn);
@@ -90,23 +95,15 @@ void SoftSerial::initWrite()
     if (status == SOFTSERIAL_IDLE)
     {
         PCMSKx &= ~_BV(PCINTxn);
-        initVal = TCNT0;
-        OCR0A = initVal + delta[0];
-        TIFR0 |= _BV(OCF0A);
-        TIMSK0 |= _BV(OCIE0A);
-        setPin(0);
         status = SOFTSERIAL_SENDING;
         bit = 1;
-        outgoingByte = buffTx.read();
+        outgoingByte = readTx();
+        initVal = TCNT0 - initDeltaTx;
+        OCR0A = initVal + delta[0];
+        setPinLogic0;
+        TIFR0 |= _BV(OCF0A);
+        TIMSK0 |= _BV(OCIE0A);
     }
-}
-
-inline void SoftSerial::setPin(uint8_t value)
-{
-    if ((!inverted_ && value) || (inverted_ && !value))
-        PORTB |= _BV(PORTB4);
-    else
-        PORTB &= ~_BV(PORTB4);
 }
 
 void SoftSerial::begin(uint32_t baud, uint8_t format)
@@ -122,20 +119,21 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     //     32U4:    PIN B4  (PB4)
 
     PORTx |= _BV(PORTxn);   // PULLUP
-    PCICR |= _BV(PCIEx);    // ENABLE PCINT 23-16
-    PCMSKx |= _BV(PCINTxn); // PCINT MASK 23
+    PCICR |= _BV(PCIEx);    // ENABLE PCINT
+    PCMSKx |= _BV(PCINTxn); // PCINT MASK
 
     DDRB |= _BV(DDB4);
 
     TCCR0A = 0;
 
-    inverted_ = format  & 0x40;
-    setPin(1);
+    inverted_ = format & 0x40;
+    setPinLogic1;
 
     float comp = 1000.0 / baud * MS_TO_COMP(64);
     for (uint8_t i = 0; i < 12; i++)
         delta[i] = round(comp * (i + 1));
     initDeltaRx = round(0.0 * comp);
+    initDeltaTx = round(0.3 * comp);
 }
 
 SoftSerial softSerial;
