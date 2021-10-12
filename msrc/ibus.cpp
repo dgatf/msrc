@@ -1,6 +1,6 @@
 #include "ibus.h"
 
-Ibus::Ibus(Stream &serial) : serial_(serial)
+Ibus::Ibus(AbstractSerial &serial) : serial_(serial)
 {
 }
 
@@ -11,6 +11,8 @@ Ibus::~Ibus()
 
 void Ibus::begin()
 {
+    serial_.begin(115200, SERIAL_8N1 | SERIAL_HALF_DUP);
+    serial_.setTimeout(2);
     pinMode(LED_BUILTIN, OUTPUT);
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
     setConfig(config);
@@ -26,8 +28,8 @@ void Ibus::sendByte(uint8_t c, uint16_t *crcP)
     }
     serial_.write(c);
 #ifdef DEBUG
-    DEBUG_SERIAL.print(c, HEX);
-    DEBUG_SERIAL.print(" ");
+    DEBUG_PRINT_HEX(c);
+    DEBUG_PRINT(" ");
 #endif
 }
 
@@ -61,7 +63,7 @@ void Ibus::sendData(uint8_t command, uint8_t address)
         break;
     }
 #ifdef DEBUG
-    DEBUG_SERIAL.print("> ");
+    DEBUG_PRINT("> ");
 #endif
     // lenght
     sendByte(4 + lenght, &crc);
@@ -80,9 +82,8 @@ void Ibus::sendData(uint8_t command, uint8_t address)
     sendByte(u8P[1], NULL);
 
     digitalWrite(LED_BUILTIN, LOW);
-
 #ifdef DEBUG
-    DEBUG_SERIAL.println();
+    DEBUG_PRINTLN();
 #endif
 }
 
@@ -120,48 +121,34 @@ bool Ibus::checkCrc(uint8_t *data)
 
 uint8_t Ibus::read(uint8_t &command, uint8_t &address)
 {
-    static uint16_t serialTs = 0;
-    static uint8_t serialCount = 0;
-    uint8_t packet = IBUS_RECEIVED_NONE;
-    if (serial_.available() > serialCount)
-    {
-        serialCount = serial_.available();
-        serialTs = micros();
-    }
-    if (serialCount == IBUS_PACKET_LENGHT)
+    if (serial_.availableTimeout() == IBUS_PACKET_LENGHT)
     {
         uint8_t data[IBUS_PACKET_LENGHT];
         serial_.readBytes(data, IBUS_PACKET_LENGHT);
-        serialCount = 0;
         if (data[0] == 4)
         {
 #ifdef DEBUG
-            DEBUG_SERIAL.print("< ");
+            DEBUG_PRINT("< ");
             for (uint8_t i = 0; i < data[0]; i++)
             {
-                DEBUG_SERIAL.print(data[i], HEX);
-                DEBUG_SERIAL.print(" ");
+                DEBUG_PRINT_HEX(data[i]);
+                DEBUG_PRINT(" ");
             }
 #endif
             if (checkCrc(data))
             {
 #ifdef DEBUG
-                DEBUG_SERIAL.println("CRC OK");
+                DEBUG_PRINT("+");
+                DEBUG_PRINTLN();
 #endif
                 command = data[1] >> 4;
                 address = data[1] & 0x0F;
                 if (command == IBUS_COMMAND_DISCOVER || command == IBUS_COMMAND_TYPE || IBUS_COMMAND_MEASURE)
-                    packet = IBUS_RECEIVED_POLL;
+                    return IBUS_RECEIVED_POLL;
             }
         }
     }
-    if (((uint16_t)micros() - serialTs > IBUS_TIMEOUT) && serialCount > 0)
-    {
-        while (serial_.available())
-            serial_.read();
-        serialCount = 0;
-    }
-    return packet;
+    return IBUS_RECEIVED_NONE;
 }
 
 void Ibus::update()
@@ -217,9 +204,7 @@ void Ibus::setConfig(Config &config)
         SensorIbus *sensorIbusP;
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
-        ESC_SERIAL.begin(19200);
-        //PwmOut pwmOut;
-        //pwmOut.setRpmP(esc->rpmP());
+        esc->begin();
         sensorIbusP = new SensorIbus(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
         addSensor(sensorIbusP);
     }
@@ -227,8 +212,8 @@ void Ibus::setConfig(Config &config)
     {
         SensorIbus *sensorIbusP;
         EscHW4 *esc;
-        ESC_SERIAL.begin(19200);
         esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
+        esc->begin();
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
         sensorIbusP = new SensorIbus(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
@@ -269,8 +254,8 @@ void Ibus::setConfig(Config &config)
     {
         SensorIbus *sensorIbusP;
         EscKontronik *esc;
-        ESC_SERIAL.begin(115200, SERIAL_8E1);
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());
         sensorIbusP = new SensorIbus(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
@@ -291,9 +276,8 @@ void Ibus::setConfig(Config &config)
     {
         SensorIbus *sensorIbusP;
         Bn220 *gps;
-        GPS_SERIAL.begin(GPS_BAUD_RATE);
-        GPS_SERIAL.setTimeout(BN220_TIMEOUT);
-        gps = new Bn220(GPS_SERIAL);
+        gps = new Bn220(GPS_SERIAL, GPS_BAUD_RATE);
+        gps->begin();
         sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_LAT, IBUS_TYPE_S32, gps->lonP(), gps);
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_LON, IBUS_TYPE_S32, gps->latP(), gps);

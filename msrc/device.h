@@ -2,8 +2,10 @@
 #define DEVICE_H
 
 #include <Arduino.h>
-#include "config.h"
+#include "constants.h"
 #include "functions.h"
+#include "softserial.h"
+#include "hardserial.h"
 
 class AbstractDevice
 {

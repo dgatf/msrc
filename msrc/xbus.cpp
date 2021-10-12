@@ -79,14 +79,16 @@ void Xbus::i2c_request_handler()
     default:
         return;
     }
+    digitalWrite(LED_BUILTIN, HIGH);
     Wire.write(buffer, 16);
+    digitalWrite(LED_BUILTIN, LOW);
 #ifdef DEBUG
     for (int i = 0; i < 16; i++)
     {
-        DEBUG_SERIAL.print(buffer[i], HEX);
-        DEBUG_SERIAL.print(" ");
+        DEBUG_PRINT_HEX(buffer[i]);
+        DEBUG_PRINT(" ");
     }
-    DEBUG_SERIAL.println();
+    DEBUG_PRINTLN();
 #endif
 }
 
@@ -103,8 +105,7 @@ void Xbus::begin()
 #if CONFIG_GPS
     addressMask |= XBUS_GPS_LOC;
     addressMask |= XBUS_GPS_STAT;
-    GPS_SERIAL.begin(GPS_BAUD_RATE);
-    GPS_SERIAL.setTimeout(BN220_TIMEOUT);
+    gps.begin();
 #endif
 #if CONFIG_CURRENT
     addressMask |= XBUS_BATTERY;
@@ -112,14 +113,12 @@ void Xbus::begin()
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 && \
     CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV && \
     CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV && \
-    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV  && \
-    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
     addressMask |= XBUS_ESC;
-    ESC_SERIAL.begin(19200);
-#endif
-#if CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK
-    addressMask |= XBUS_ESC;
-    ESC_SERIAL.begin(115200, SERIAL_8E1);
+    esc.begin();
 #endif
     Wire.begin(addressMask);
     Wire.onRequest(i2c_request_handler);
@@ -127,11 +126,16 @@ void Xbus::begin()
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
 #if CONFIG_GPS
-    GPS_SERIAL.begin(GPS_BAUD_RATE);
-    GPS_SERIAL.setTimeout(BN220_TIMEOUT);
+    gps.begin();
 #endif
-#if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM && CONFIG_ESC_PROTOCOL != PROTOCOL_CASTLE
-    ESC_SERIAL.begin(19200);
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
+    esc.begin();
 #endif
 #if defined(I2C_T3_TEENSY) && !defined(__IMXRT1062__)
     Wire.begin(I2C_SLAVE, XBUS_AIRSPEED, XBUS_RPM_VOLT_TEMP, I2C_PINS_18_19, I2C_PULLUP_EXT, 400000);

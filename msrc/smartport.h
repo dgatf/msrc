@@ -56,8 +56,11 @@
 #define CHANGED_SENSOR_ID 10
 
 #include <Arduino.h>
+#include "softserial.h"
+#include "hardserial.h"
 #include "sensor.h"
-#include "config.h"
+#include "constants.h"
+#include "serial.h"
 
 #include "escHW3.h"
 #include "escHW4.h"
@@ -69,7 +72,6 @@
 #include "pressure.h"
 #include "bmp280.h"
 #include "bn220.h"
-#include "config.h"
 #include "configeeprom.h"
 #include "pwmout.h"
 
@@ -86,10 +88,7 @@ private:
         uint32_t value;
         Packet *nextP = NULL;
     };
-    Stream &serial_;
-#ifdef SOFTWARE_SERIAL
-    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
-#endif
+    AbstractSerial &serial_;
     Sensor *sensorP = NULL;
     Packet *packetP = NULL;
     uint8_t sensorId_ = 0;
@@ -98,7 +97,7 @@ private:
     void sendByte(uint8_t c, uint16_t *crcp);
 
 public:
-    Smartport(Stream &serial);
+    Smartport(AbstractSerial &serial);
     ~Smartport();
     void begin();
     uint8_t idToCrc(uint8_t sensorId);

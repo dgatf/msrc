@@ -1,22 +1,21 @@
 #include "srxl.h"
 
-Srxl::Srxl(Stream &serial) : serial_(serial) {}
+Srxl::Srxl(AbstractSerial &serial) : serial_(serial) {}
 
 void Srxl::begin()
 {
+    serial_.begin(115200, SERIAL_8N1 | SERIAL_HALF_DUP);
+    serial_.setTimeout(2);
     pinMode(LED_BUILTIN, OUTPUT);
     uint8_t cont = 0;
-#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 && \
-    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV && \
-    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV && \
-    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV  && \
-    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV
-    ESC_SERIAL.begin(19200);
-    cont++;
-    list[cont] = XBUS_ESC;
-#endif
-#if CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK
-    ESC_SERIAL.begin(115200, SERIAL_8E1);
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 &&     \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV &&  \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV &&  \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV &&  \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV &&  \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK && \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
+    esc.begin();
     cont++;
     list[cont] = XBUS_ESC;
 #endif
@@ -29,8 +28,7 @@ void Srxl::begin()
     list[cont] = XBUS_AIRSPEED;
 #endif
 #if CONFIG_GPS
-    GPS_SERIAL.begin(GPS_BAUD_RATE);
-    GPS_SERIAL.setTimeout(BN220_TIMEOUT);
+    gps.begin();
     cont++;
     list[cont] = XBUS_GPS_LOC;
     cont++;
@@ -106,14 +104,16 @@ void Srxl::send()
     crc = __builtin_bswap16(getCrc(buffer, 19)); // all bytes including header
     //crc = __builtin_bswap16(getCrc(buffer + 3, 16));  // only 16bytes (xbus)
     memcpy(buffer + 19, &crc, 2);
-    SRXL_IBUS_SBUS_SERIAL.write(buffer, 21);
+    digitalWrite(LED_BUILTIN, HIGH);
+    serial_.writeBytes(buffer, 21);
+    digitalWrite(LED_BUILTIN, LOW);
 #ifdef DEBUG
     for (int i = 0; i < 21; i++)
     {
-        DEBUG_SERIAL.print(buffer[i], HEX);
-        DEBUG_SERIAL.print(" ");
+        DEBUG_PRINT_HEX(buffer[i]);
+        DEBUG_PRINT(" ");
     }
-    DEBUG_SERIAL.println();
+    DEBUG_PRINTLN();
 #endif
     cont++;
     if (cont > list[0])
@@ -122,8 +122,6 @@ void Srxl::send()
 
 void Srxl::updateSrxl()
 {
-    static uint16_t serialTs = 0;
-    static uint8_t serialCount = 0;
     uint8_t status = SRXL_WAIT;
     static bool mute = true;
 #if defined(SIM_RX)
@@ -138,29 +136,19 @@ void Srxl::updateSrxl()
         ts = millis();
     }
 #else
-    if (serial_.available() > serialCount)
+
+    if (serial_.availableTimeout() == SRXL_FRAMELEN)
     {
-        serialCount = serial_.available();
-        serialTs = micros();
-    }
-    if ((uint16_t)micros() - serialTs > SRXL_SERIAL_TIMEOUT && serialCount > 0)
-    {
-        if (serialCount == SRXL_FRAMELEN)
+        uint8_t buff[SRXL_FRAMELEN];
+        serial_.readBytes(buff, SRXL_FRAMELEN);
+        if (buff[0] == SRXL_HEADER)
         {
-            uint8_t buff[SRXL_FRAMELEN];
-            serial_.readBytes(buff, SRXL_FRAMELEN);
-            if (buff[0] == SRXL_HEADER)
+            if (!mute)
             {
-                if (!mute)
-                {
-                    status = SRXL_SEND;
-                }
-                mute = !mute;
+                status = SRXL_SEND;
             }
+            mute = !mute;
         }
-        while (serial_.available())
-            serial_.read();
-        serialCount = 0;
     }
 #endif
     if (status == SRXL_SEND)

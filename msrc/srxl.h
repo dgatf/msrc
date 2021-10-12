@@ -2,7 +2,8 @@
 #define SRXL_H
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
+#include "softserial.h"
+#include "hardserial.h"
 #include "escHW3.h"
 #include "escHW4.h"
 #include "escPWM.h"
@@ -13,7 +14,7 @@
 #include "pressure.h"
 #include "bmp280.h"
 #include "bn220.h"
-#include "config.h"
+#include "constants.h"
 #include "xbus.h"
 
 #define SRXL_V1 1
@@ -47,16 +48,13 @@
 class Srxl : public Xbus
 {
 private:
-    Stream &serial_;
+    AbstractSerial &serial_;
     uint8_t list[7] = {0};
     uint16_t getCrc(uint8_t *buffer, uint8_t lenght);
     uint16_t byteCrc(uint16_t crc, uint8_t new_byte);
-#ifdef SOFTWARE_SERIAL
-    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
-#endif
 
 public:
-    Srxl(Stream &serial);
+    Srxl(AbstractSerial &serial);
     void begin();
     void updateSrxl();
     void send();

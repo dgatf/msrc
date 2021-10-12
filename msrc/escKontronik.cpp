@@ -1,21 +1,21 @@
 #include "escKontronik.h"
 
-EscKontronik::EscKontronik(Stream &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp) {}
+EscKontronik::EscKontronik(AbstractSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp) : serial_(serial), alphaRpm_(alphaRpm), alphaVolt_(alphaVolt), alphaCurr_(alphaCurr), alphaTemp_(alphaTemp)
+{
+}
+
+void EscKontronik::begin()
+{
+    serial_.begin(115200, SERIAL_8E1);
+    serial_.setTimeout(2);
+}
 
 void EscKontronik::update()
 {
-    static uint16_t serialTs = 0;
-    static uint8_t serialCount = 0;
-    if (serial_.available() > serialCount)
-    {
-        serialCount = serial_.available();
-        serialTs = micros();
-    }
-    if (serialCount >= KONTRONIK_PACKET_LENGHT)
+    if (serial_.availableTimeout() == KONTRONIK_PACKET_LENGHT)
     {
         uint8_t data[KONTRONIK_PACKET_LENGHT];
         serial_.readBytes(data, KONTRONIK_PACKET_LENGHT);
-        serialCount = serial_.available();
         if (data[0] == 0x4B && data[1] == 0x4F && data[2] == 0x44 && data[3] == 0x4C)
         {
             float rpm = (uint32_t)data[7] << 24 | (uint32_t)data[6] << 16 | (uint16_t)data[5] << 8 | data[4];
@@ -36,29 +36,24 @@ void EscKontronik::update()
                 if (millis() > 10000 && voltage_ > 1)
                     cellCount_ = setCellCount(voltage_);
             cellVoltage_ = voltage_ / cellCount_;
-#if defined(DEBUG_ESC_KONTRONIK) || defined(DEBUG_ESC)
-            DEBUG_SERIAL.print("R:");
-            DEBUG_SERIAL.print(rpm);
-            DEBUG_SERIAL.print(" V:");
-            DEBUG_SERIAL.print(voltage);
-            DEBUG_SERIAL.print(" C:");
-            DEBUG_SERIAL.print(current);
-            DEBUG_SERIAL.print(" VB:");
-            DEBUG_SERIAL.print(becVoltage);
-            DEBUG_SERIAL.print(" CB:");
-            DEBUG_SERIAL.print(becCurrent);
-            DEBUG_SERIAL.print(" TF:");
-            DEBUG_SERIAL.print(tempFet);
-            DEBUG_SERIAL.print(" TB:");
-            DEBUG_SERIAL.println(tempBec);
+#ifdef DEBUG_KONTRONIK
+            DEBUG_PRINT("R:");
+            DEBUG_PRINT(rpm);
+            DEBUG_PRINT(" V:");
+            DEBUG_PRINT(voltage);
+            DEBUG_PRINT(" C:");
+            DEBUG_PRINT(current);
+            DEBUG_PRINT(" VB:");
+            DEBUG_PRINT(becVoltage);
+            DEBUG_PRINT(" CB:");
+            DEBUG_PRINT(becCurrent);
+            DEBUG_PRINT(" TF:");
+            DEBUG_PRINT(tempFet);
+            DEBUG_PRINT(" TB:");
+            DEBUG_PRINT(tempBec);
+            DEBUG_PRINTLN();
 #endif
         }
-    }
-    if (((uint16_t)micros() - serialTs > KONTRONIK_ESCSERIAL_TIMEOUT) && serialCount > 0)
-    {
-        while (serial_.available())
-            serial_.read();
-        serialCount = 0;
     }
 #ifdef SIM_SENSORS
     rpm_ = 12345.67;

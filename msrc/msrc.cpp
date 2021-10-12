@@ -185,28 +185,14 @@ void ftm1_isr()
 
 void setup()
 {
-#if defined(DEBUG) || \
-    defined(DEBUG_ESC) || \
-    defined(DEBUG_ESC_PWM) || \
-    defined(DEBUG_ESC_RX) || \
-    defined(DEBUG_PLOTTER) || \
-    defined(DEBUG_GPS) || \
-    defined(DEBUG_EEPROM_WRITE) || \
-    defined(DEBUG_EEPROM_READ) || \
-    defined(DEBUG_P) || \
-    defined(DEBUG_ESC_CASTLE) || \
-    defined(DEBUG_ESC_KONTRONIK) || \
-    defined(DEBUG_ESC_HW_V4) || \
-    defined(DEBUG_ESC_HW_V3)
     // DEBUG is on Serial. Default baud rate is 115200
     // For boards with 1 UART, baud rate will be changed to ESC or GPS baud rate if enabled
-    DEBUG_SERIAL.begin(115200);
-    while (!DEBUG_SERIAL)
-        ;
-    DEBUG_SERIAL.print("\nV");
-    DEBUG_SERIAL.print(VERSION_MAJOR);
-    DEBUG_SERIAL.print(VERSION_MINOR);
-    DEBUG_SERIAL.println(VERSION_PATCH);
+#ifdef DEBUG_INIT
+    delay(200);
+    DEBUG_INIT;
+    DEBUG_PRINT("\nV");
+    DEBUG_PRINT(VERSION_MAJOR * 10000 + VERSION_MINOR * 100 + VERSION_PATCH);
+    DEBUG_PRINT("\n");
 #endif
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
 #if defined(CONFIG_LUA)
@@ -242,59 +228,26 @@ void setup()
     while (millis() < ESC_INIT_DELAY)
         ;
 #endif
+
 #if RX_PROTOCOL == RX_SMARTPORT
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
-    SMARTPORT_FRSKY_SERIAL.begin(57600, SERIAL_8N1_RXINV_TXINV | SERIAL_HALF_DUPLEX);
-#else
-    SMARTPORT_FRSKY_SERIAL.begin(57600);
-#endif
     smartport.begin();
 #endif
 #if RX_PROTOCOL == RX_XBUS
     xbus.begin();
 #endif
 #if RX_PROTOCOL == RX_SRXL
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
-    SRXL_IBUS_SBUS_SERIAL.begin(115200, SERIAL_HALF_DUPLEX);
-#else
-    SRXL_IBUS_SBUS_SERIAL.begin(115200);
-#endif
-    SRXL_IBUS_SBUS_SERIAL.setTimeout(SRXL_SERIAL_TIMEOUT);
     srxl.begin();
 #endif
 #if RX_PROTOCOL == RX_FRSKY
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
-    SMARTPORT_FRSKY_SERIAL.begin(9600, SERIAL_8N1_RXINV_TXINV | SERIAL_HALF_DUPLEX);
-#else
-    SMARTPORT_FRSKY_SERIAL.begin(9600);
-#endif
     frsky.begin();
 #endif
 #if RX_PROTOCOL == RX_IBUS
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
-    SRXL_IBUS_SBUS_SERIAL.begin(115200, SERIAL_HALF_DUPLEX);
-#else
-    SRXL_IBUS_SBUS_SERIAL.begin(115200);
-#endif
-    SRXL_IBUS_SBUS_SERIAL.setTimeout(IBUS_TIMEOUT);
     ibus.begin();
 #endif
 #if RX_PROTOCOL == RX_SBUS
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
-    SRXL_IBUS_SBUS_SERIAL.begin(100000, SERIAL_8N2_RXINV_TXINV | SERIAL_HALF_DUPLEX);
-#else
-    SRXL_IBUS_SBUS_SERIAL.begin(100000, SERIAL_8N2);
-#endif
-    SRXL_IBUS_SBUS_SERIAL.setTimeout(SBUS_SERIAL_TIMEOUT);
     sbus.begin();
 #endif
 #if RX_PROTOCOL == RX_MULTIPLEX
-#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
-    SRXL_IBUS_SBUS_SERIAL.begin(38400, SERIAL_HALF_DUPLEX);
-#else
-    SRXL_IBUS_SBUS_SERIAL.begin(38400);
-#endif
-    SRXL_IBUS_SBUS_SERIAL.setTimeout(MULTIPLEX_SERIAL_TIMEOUT);
     multiplex.begin();
 #endif
 }

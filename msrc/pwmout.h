@@ -2,7 +2,7 @@
 #define PWMOUT_H
 
 #include <Arduino.h>
-#include "config.h"
+#include "constants.h"
 
 class PwmOut
 {

@@ -1,8 +1,6 @@
 #ifndef BN220_H
 #define BN220_H
 
-//#define DEBUG_GPS
-
 #define BN220_UNK 0
 #define BN220_GGA 1
 #define BN220_GLL 2
@@ -37,14 +35,16 @@ private:
     float lat_ = 0, lon_ = 0, alt_ = 0, spd_ = 0, cog_ = 0, kph_ = 0;
     int8_t latDir_ = 1, lonDir_ = 1;
     float time_ = 0, date_ = 0;
-    uint8_t contIndex_ = 0, contBuff_ = 0, sat_ = 0, nmeaCmd_ = 255;
+    uint8_t sat_ = 0, nmeaCmd_ = 255;
     char buffer_[20] = {};
-    Stream &serial_;
+    AbstractSerial &serial_;
+    uint32_t baud_;
     void parser(uint8_t type, char *data);
 
 public:
-    Bn220(Stream &serial);
-    virtual void update();
+    Bn220(AbstractSerial &serial, uint32_t baud);
+    void begin();
+    void update();
     float *latP();
     float *lonP();
     float *altP();
