@@ -110,11 +110,11 @@ void Ibus::deleteSensors()
 
 bool Ibus::checkCrc(uint8_t *data)
 {
-    uint16_t crc = 0;
+    uint16_t crc = 0xFFFF;
     uint8_t lenght = data[0];
     for (uint8_t i = 0; i < lenght - 2; i++)
-        crc += data[i];
-    if (crc == (uint16_t)data[lenght - 1] << 8 || data[lenght])
+        crc -= data[i];
+    if ( crc == (uint16_t)data[lenght - 1] << 8 || data[lenght] )
         return true;
     return false;
 }
@@ -125,7 +125,7 @@ uint8_t Ibus::read(uint8_t &command, uint8_t &address)
     {
         uint8_t data[IBUS_PACKET_LENGHT];
         serial_.readBytes(data, IBUS_PACKET_LENGHT);
-        if (data[0] == 4)
+        if (data[0] == IBUS_PACKET_LENGHT)
         {
 #ifdef DEBUG
             DEBUG_PRINT("< ");
@@ -146,6 +146,9 @@ uint8_t Ibus::read(uint8_t &command, uint8_t &address)
                 if (command == IBUS_COMMAND_DISCOVER || command == IBUS_COMMAND_TYPE || IBUS_COMMAND_MEASURE)
                     return IBUS_RECEIVED_POLL;
             }
+#ifdef DEBUG
+            DEBUG_PRINTLN();
+#endif
         }
     }
     return IBUS_RECEIVED_NONE;
