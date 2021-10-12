@@ -10,21 +10,6 @@
 #define COMP_TO_MS(SCALER) ((SCALER * 1000.0) / F_CPU)
 #define FIFO_SIZE 64
 
-class Fifo
-{
-private:
-    volatile uint8_t fifo[FIFO_SIZE];
-    volatile uint8_t writePos = 0;
-    volatile uint8_t readPos = 0;
-
-public:
-    Fifo();
-    void write(uint8_t value);
-    uint8_t read();
-    uint8_t available();
-    void reset();
-};
-
 class AbstractSerial
 {
 protected:
@@ -33,8 +18,17 @@ protected:
 public:
     AbstractSerial();
     ~AbstractSerial();
-    Fifo buffTx;
-    Fifo buffRx;
+    volatile uint8_t buffRx[FIFO_SIZE];
+    volatile uint8_t writePosRx = 0;
+    volatile uint8_t readPosRx = 0;
+    volatile uint8_t buffTx[FIFO_SIZE];
+    volatile uint8_t writePosTx = 0;
+    volatile uint8_t readPosTx = 0;
+
+    void writeRx(uint8_t value);
+    void reset();
+    uint8_t readTx();
+
     volatile uint16_t ts;
     virtual void begin(uint32_t baud, uint8_t format) = 0;
     virtual void initWrite() = 0;
@@ -44,6 +38,7 @@ public:
     virtual void readBytes(uint8_t *buff, uint8_t size);
     virtual uint8_t readFrame(uint8_t *buff);
     virtual uint8_t available();
+    uint8_t availableTx();
     virtual uint8_t availableTimeout();
     virtual uint16_t getTimestamp();
     virtual void setTimeout(uint8_t timeout);
