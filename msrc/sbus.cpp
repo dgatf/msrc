@@ -1,6 +1,6 @@
 #include "sbus.h"
 
-Sbus::Sbus(Stream &serial) : serial_(serial)
+Sbus::Sbus(AbstractSerial &serial) : serial_(serial)
 {
 }
 
@@ -11,6 +11,8 @@ Sbus::~Sbus()
 
 void Sbus::begin()
 {
+    serial_.begin(100000, SERIAL_8N1_RXINV_TXINV);
+    serial_.setTimeout(2);
     pinMode(LED_BUILTIN, OUTPUT);
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
     setConfig(config);
@@ -33,10 +35,11 @@ void Sbus::deleteSensors()
 void Sbus::sendPacket(uint8_t telemetryPacket)
 {
 #ifdef DEBUG
-    DEBUG_SERIAL.print("\nTP");
-    DEBUG_SERIAL.print(telemetryPacket);
-    DEBUG_SERIAL.print(": ");
+    DEBUG_PRINT("\nTP");
+    DEBUG_PRINT(telemetryPacket);
+    DEBUG_PRINT(": ");
 #endif
+    digitalWrite(LED_BUILTIN, HIGH);
     for (uint8_t i = (telemetryPacket - 1) * 8; i < telemetryPacket * 8; i++)
     {
         if (sensorSbusP[i] != NULL)
@@ -45,20 +48,22 @@ void Sbus::sendPacket(uint8_t telemetryPacket)
             delayMicroseconds(300);
         }
     }
+    digitalWrite(LED_BUILTIN, LOW);
 }
 
 void Sbus::sendSlot(uint8_t number)
 {
-    SRXL_IBUS_SBUS_SERIAL.write(slotId[number]);
-    SRXL_IBUS_SBUS_SERIAL.write(sensorSbusP[number]->valueFormatted());
+    serial_.write(slotId[number]);
+    serial_.write(sensorSbusP[number]->valueFormatted());
 #ifdef DEBUG
-    DEBUG_SERIAL.print("(");
-    DEBUG_SERIAL.print(number);
-    DEBUG_SERIAL.print(")");
-    DEBUG_SERIAL.print(slotId[number], HEX);
-    DEBUG_SERIAL.print(" ");
-    DEBUG_SERIAL.print(sensorSbusP[number]->valueFormatted(), HEX);
-    DEBUG_SERIAL.print("  ");
+
+    DEBUG_PRINT("(");
+    DEBUG_PRINT(number);
+    DEBUG_PRINT(")");
+    DEBUG_PRINT_HEX(slotId[number]);
+    DEBUG_PRINT(" ");
+    DEBUG_PRINT_HEX(sensorSbusP[number]->valueFormatted());
+    DEBUG_PRINT("  ");
 #endif
 }
 
@@ -82,34 +87,21 @@ void Sbus::update()
             telemetryPacket = 1;
     }
 #else
-    static uint16_t serialTs = 0;
-    static uint8_t serialCount = 0;
-    if (serial_.available() > serialCount)
+    if (serial_.availableTimeout() == SBUS_PACKET_LENGHT)
     {
-        serialCount = serial_.available();
-        serialTs = micros();
-    }
-    if ((uint16_t)micros() - serialTs > SBUS_SERIAL_TIMEOUT && serialCount > 0)
-    {
-        if (serialCount == SBUS_PACKET_LENGHT)
+        uint8_t buff[SBUS_PACKET_LENGHT];
+        serial_.readBytes(buff, SBUS_PACKET_LENGHT);
+        if (buff[0] == 0x0F) // telemetry footer? 0x04, 0x14...
         {
-            uint8_t buff[SBUS_PACKET_LENGHT];
-            serial_.readBytes(buff, SBUS_PACKET_LENGHT);
-            if (buff[0] == 0x0F) // telemetry footer: 0x04, 0x14...? buff[SBUS_PACKET_LENGHT - 1] & 0x04
+            if (!mute)
             {
-                if (!mute)
-                {
-                    status = SBUS_SEND;
-                    telemetryPacket++;
-                    if (telemetryPacket == 5)
-                        telemetryPacket = 1;
-                }
-                mute = !mute;
+                status = SBUS_SEND;
+                telemetryPacket++;
+                if (telemetryPacket == 5)
+                    telemetryPacket = 1;
             }
+            mute = !mute;
         }
-        while (serial_.available())
-            serial_.read();
-        serialCount = 0;
     }
 #endif
     if (status == SBUS_SEND)
@@ -146,9 +138,7 @@ void Sbus::setConfig(Config &config)
         SensorSbus *sensorSbusP;
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
-        ESC_SERIAL.begin(19200);
-        //PwmOut pwmOut;
-        //pwmOut.setRpmP(esc->rpmP());
+        esc->begin();
         sensorSbusP = new SensorSbus(FASST_RPM, esc->rpmP(), esc);
         addSensor(1, sensorSbusP);
     }
@@ -156,8 +146,8 @@ void Sbus::setConfig(Config &config)
     {
         SensorSbus *sensorSbusP;
         EscHW4 *esc;
-        ESC_SERIAL.begin(19200);
         esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
+        esc->begin();
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
         sensorSbusP = new SensorSbus(FASST_RPM, esc->rpmP(), esc);
@@ -206,8 +196,8 @@ void Sbus::setConfig(Config &config)
     {
         SensorSbus *sensorSbusP;
         EscKontronik *esc;
-        ESC_SERIAL.begin(115200, SERIAL_8E1);
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());
         sensorSbusP = new SensorSbus(FASST_RPM, esc->rpmP(), esc);
@@ -235,9 +225,8 @@ void Sbus::setConfig(Config &config)
     {
         SensorSbus *sensorSbusP;
         Bn220 *gps;
-        GPS_SERIAL.begin(GPS_BAUD_RATE);
-        GPS_SERIAL.setTimeout(BN220_TIMEOUT);
-        gps = new Bn220(GPS_SERIAL);
+        gps = new Bn220(GPS_SERIAL, GPS_BAUD_RATE);
+        gps->begin();
         sensorSbusP = new SensorSbus(FASST_GPS_SPEED, gps->spdP(), gps);
         addSensor(16, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_GPS_ALTITUDE, gps->altP(), gps);

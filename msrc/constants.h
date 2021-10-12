@@ -1,27 +1,37 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include "config.h"
+
 // Version
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 8
 #define VERSION_PATCH 0
 
+// Init debug port
+#if (defined(DEBUG) || defined(DEBUG_PACKET) || defined(DEBUG_EEPROM_WRITE) || defined(DEBUG_EEPROM_READ) || defined(DEBUG_GPS) || defined(DEBUG_HW3) || defined(DEBUG_HW4) || defined(DEBUG_PWM) || defined(DEBUG_CASTLE) || defined(DEBUG_CASTLE_RX) || defined(DEBUG_KONTRONIK))
+#define DEBUG_INIT DEBUG_SERIAL.begin(115200);
+#endif
+
 // Pins & Serial ports
 #if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB) // ATmega328P
-#define PIN_SOFTSERIAL_RX 7
-#define PIN_SOFTSERIAL_TX 12
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
-//#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SBUS_SERIAL Serial
-//#define SOFTWARE_SERIAL
-#define ESC_SERIAL Serial
-#define GPS_SERIAL Serial
+#define SRXL_IBUS_SBUS_SERIAL hardSerial0
+#define ESC_SERIAL hardSerial0
+#define GPS_SERIAL hardSerial0
+#define DEBUG_SERIAL hardSerial0
+#if defined(DEBUG_INIT) && !defined(DEBUG_GPS) 
+#define DISABLE_GPS
+#endif
+#if defined(DEBUG_INIT) && !defined(DEBUG_HW4) 
+#define DISABLE_HW4
+#endif
 #endif
 
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) // ATmega328PB
@@ -33,12 +43,17 @@
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
-//#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SBUS_SERIAL Serial1
-//#define SOFTWARE_SERIAL
-#define ESC_SERIAL Serial
-#define GPS_SERIAL Serial1
+#define SRXL_IBUS_SBUS_SERIAL hardSerial1
+#define ESC_SERIAL hardSerial0
+#define GPS_SERIAL hardSerial1
+#define DEBUG_SERIAL hardSerial0
+#if defined(DEBUG_INIT) && !defined(DEBUG_GPS) 
+#define DISABLE_GPS
+#endif
+#if defined(DEBUG_INIT) && !defined(DEBUG_HW4) 
+#define DISABLE_HW4
+#endif
 #endif
 
 #if defined(__AVR_ATmega2560__) // ATmega2560
@@ -50,29 +65,27 @@
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
-//#define SMARTPORT_FRSKY_HARDWARE_SERIAL
 #define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SBUS_SERIAL Serial3
-//#define SOFTWARE_SERIAL
-#define ESC_SERIAL Serial1
-#define GPS_SERIAL Serial2
+#define SRXL_IBUS_SBUS_SERIAL hardSerial3
+#define ESC_SERIAL hardSerial1
+#define GPS_SERIAL hardSerial2
+#define DEBUG_SERIAL hardSerial0
 #endif
 
 #if defined(__AVR_ATmega32U4__) // ATmega32U4 (Teensy 2.0 / Arduino Pro Micro)
-#define PIN_SOFTSERIAL_RX PB2 // 16
-#define PIN_SOFTSERIAL_TX PB4 // 8
-#define PIN_NTC1 A0 // PF7
-#define PIN_NTC2 A1 // PF6
-#define PIN_VOLTAGE1 A2 // PF5
-#define PIN_VOLTAGE2 A3 // PF4
-#define PIN_CURRENT A9 // PB5
-#define PIN_PRESSURE A7 // PD7
-//#define SMARTPORT_FRSKY_HARDWARE_SERIAL
+#define PIN_SOFTSERIAL_RX PB2   // 16
+#define PIN_SOFTSERIAL_TX PB4   // 8
+#define PIN_NTC1 A0             // PF7
+#define PIN_NTC2 A1             // PF6
+#define PIN_VOLTAGE1 A2         // PF5
+#define PIN_VOLTAGE2 A3         // PF4
+#define PIN_CURRENT A9          // PB5
+#define PIN_PRESSURE A7         // PD7
 #define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SBUS_SERIAL Serial1
-//#define SOFTWARE_SERIAL
-#define ESC_SERIAL Serial1
-#define GPS_SERIAL Serial1
+#define SRXL_IBUS_SBUS_SERIAL hardSerial1
+#define ESC_SERIAL hardSerial1
+#define GPS_SERIAL hardSerial1
+#define DEBUG_SERIAL Serial
 #endif
 
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
@@ -82,11 +95,11 @@
 #define PIN_VOLTAGE2 17
 #define PIN_CURRENT 18
 #define PIN_PRESSURE 19
-#define SMARTPORT_FRSKY_SERIAL Serial1
-#define SRXL_IBUS_SBUS_SERIAL Serial1
-//#define SOFTWARE_SERIAL
-#define ESC_SERIAL Serial2
-#define GPS_SERIAL Serial3
+#define SMARTPORT_FRSKY_SERIAL hardSerial0
+#define SRXL_IBUS_SBUS_SERIAL hardSerial0
+#define ESC_SERIAL hardSerial1
+#define GPS_SERIAL hardSerial2
+#define DEBUG_SERIAL Serial
 #endif
 
 #define N_TO_ALPHA(VALUE) (2.0 / (1 + VALUE) * 100)
@@ -117,5 +130,9 @@
 #define ALPHA(ELEMENTS) (uint8_t)(2.0 / (ELEMENTS + 1) * 100)
 #define MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000.0))
 #define COMP_TO_MS(SCALER) ((SCALER * 1000.0) / F_CPU)
+
+#define DEBUG_PRINT(VALUE) DEBUG_SERIAL.print(VALUE)
+#define DEBUG_PRINT_HEX(VALUE) DEBUG_SERIAL.print(VALUE, HEX)
+#define DEBUG_PRINTLN() DEBUG_SERIAL.print("\n")
 
 #endif

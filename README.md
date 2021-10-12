@@ -61,8 +61,8 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
-| Frsky Smartport | 7 & 12<sup>(2)</sup> | 4 & 23<sup>(2)</sup> | 10 & 15<sup>(2)</sup> | B2 & B4<sup>(2)</sup><br/>(16 & 8) | 1 |
-| Frsky D | 12 | 23 | 15 | B4(8) | 1 |
+| Frsky Smartport | 7 & 12<sup>(2)</sup> | 7 & 12<sup>(2)</sup> | A15 & D10<sup>(2)</sup> | B3 & B4<sup>(2)</sup><br/>(15 & 16) | 1 |
+| Frsky D | 12 | 12 | D10 | B4(16) | 1 |
 | SRXL, IBUS, SBUS<sup>(4)</sup>, SB | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15 & 14<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 1 |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
@@ -495,6 +495,7 @@ Adjust constants in *pressure.h*:
 
 0.8
 
+- Added drivers for hardware serial and software serial
 - Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2, Multiplex Sensor Bus
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement

@@ -21,7 +21,7 @@ private:
     const uint8_t voltageDivisor_[4] = {11, 21, 11, 21};
     const float ampGain_[4] = {10, 16.9, 10, 16.9};
     int16_t rawCurrentOffset_ = -1;
-    Stream &serial_;
+    AbstractSerial &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_, type_, cellCount_ = 255;
     uint16_t thr_ = 0, pwm_ = 0;
     float rpm_ = 0, voltage_ = 0, current_ = 0, tempFet_ = 0, tempBec_ = 0, cellVoltage_ = 0;
@@ -38,8 +38,9 @@ private:
 
 protected:
 public:
-    EscHW4(Stream &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type);
-    virtual void update();
+    EscHW4(AbstractSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp, uint8_t type);
+    void begin();
+    void update();
     float *rpmP();
     float *voltageP();
     float *currentP();

@@ -77,7 +77,7 @@ public:
     };
     Bmp280(uint8_t device, uint8_t alphaTemp, uint8_t alphaDef);
     void begin();
-    virtual void update();
+    void update();
     float *temperatureP();
     float *pressureP();
     float *altitudeP();

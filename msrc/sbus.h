@@ -2,8 +2,10 @@
 #define SBUS_H
 
 #include <Arduino.h>
+#include "softserial.h"
+#include "hardserial.h"
 #include "sensor.h"
-#include "config.h"
+#include "constants.h"
 
 #include "escHW3.h"
 #include "escHW4.h"
@@ -15,7 +17,6 @@
 #include "pressure.h"
 #include "bmp280.h"
 #include "bn220.h"
-#include "config.h"
 #include "configeeprom.h"
 #include "pwmout.h"
 
@@ -58,18 +59,15 @@ Slot mapping
 class Sbus
 {
 private:
-    Stream &serial_;
+    AbstractSerial &serial_;
     SensorSbus *sensorSbusP[32] = {NULL};
     const uint8_t slotId[32] = {0x03, 0x83, 0x43, 0xC3, 0x23, 0xA3, 0x63, 0xE3,
                                 0x13, 0x93, 0x53, 0xD3, 0x33, 0xB3, 0x73, 0xF3,
                                 0x0B, 0x8B, 0x4B, 0xCB, 0x2B, 0xAB, 0x6B, 0xEB,
                                 0x1B, 0x9B, 0x5B, 0xDB, 0x3B, 0xBB, 0x7B, 0xFB};
-#ifdef SOFTWARE_SERIAL
-    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
-#endif
 
 public:
-    Sbus(Stream &serial);
+    Sbus(AbstractSerial &serial);
     ~Sbus();
     void begin();
     void sendPacket(uint8_t telemetryPacket);

@@ -17,8 +17,10 @@
 #define IBUS_PACKET_LENGHT 4
 
 #include <Arduino.h>
+#include "softserial.h"
+#include "hardserial.h"
 #include "sensor.h"
-#include "config.h"
+#include "constants.h"
 
 #include "escHW3.h"
 #include "escHW4.h"
@@ -30,23 +32,19 @@
 #include "pressure.h"
 #include "bmp280.h"
 #include "bn220.h"
-#include "config.h"
 #include "configeeprom.h"
 #include "pwmout.h"
 
 class Ibus
 {
 private:
-    Stream &serial_;
+    AbstractSerial &serial_;
     SensorIbus *sensorIbusP[16] = {NULL};
     uint16_t sensorMask = 0B1111111111111110;
     void sendByte(uint8_t c, uint16_t *crcP);
-#ifdef SOFTWARE_SERIAL
-    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
-#endif
 
 public:
-    Ibus(Stream &serial);
+    Ibus(AbstractSerial &serial);
     ~Ibus();
     void begin();
     void sendData(uint8_t command, uint8_t address);

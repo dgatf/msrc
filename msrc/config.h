@@ -1,8 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "constants.h"
-
 /* Receiver protocol */
 #define RX_PROTOCOL RX_SMARTPORT // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_FRSKY, RX_IBUS, RX_SBUS, RX_MULTIPLEX
 
@@ -57,21 +55,18 @@
    Connect arduino Rx to TTL Tx for flashing, then if applicabe connect arduino Rx to esc or gps
 */
 
-#define DEBUG_SERIAL Serial
-
 //#define DEBUG
-//#define DEBUG_P
-//#define DEBUG_ESC
-//#define DEBUG_ESC_RX
+//#define DEBUG_PACKET
 //#define DEBUG_EEPROM_WRITE
 //#define DEBUG_EEPROM_READ
-//#define DEBUG_GPS
 
-//#define DEBUG_ESC_HW_V3
-//#define DEBUG_ESC_HW_V4
-//#define DEBUG_ESC_PWM
-//#define DEBUG_ESC_CASTLE
-//#define DEBUG_ESC_KONTRONIK
+//#define DEBUG_HW3
+//#define DEBUG_HW4
+//#define DEBUG_KONTRONIK
+//#define DEBUG_GPS
+//#define DEBUG_PWM
+//#define DEBUG_CASTLE
+//#define DEBUG_CASTLE_RX
 
 //#define SIM_RX
 //#define SIM_SENSORS

@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 #include <EEPROM.h>
-#include "config.h"
+#include "constants.h"
 
 struct Level
 {

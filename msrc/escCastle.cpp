@@ -45,8 +45,9 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         castlePwmRx = OCR1B;
         TIMSK1 |= _BV(OCIE1B);
         castleRxLastReceived = 0;
-#ifdef DEBUG_ESC_RX
-        DEBUG_SERIAL.println(castlePwmRx);
+#ifdef DEBUG_CASTLE_RX
+        DEBUG_PRINT(castlePwmRx);
+        DEBUG_PRINTLN();
 #endif
     }
     TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 DIRECTION
@@ -66,9 +67,9 @@ void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
 void EscCastle::INT0_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = TCNT1 - castlePwmRx;
-#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
-    DEBUG_SERIAL.print(castleTelemetry[castleCont]);
-    DEBUG_SERIAL.print(" ");
+#ifdef DEBUG_CASTLE
+    DEBUG_PRINT(castleTelemetry[castleCont]);
+    DEBUG_PRINT(" ");
 #endif
     if (castleCont < 11)
     {
@@ -87,8 +88,9 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
     {
         OCR1B = 0;
         TIMSK1 &= ~_BV(OCIE1B); // DISABLE PIN
-#ifdef DEBUG_ESC_RX
-        DEBUG_SERIAL.println("X");
+#ifdef DEBUG_CASTLE_RX
+        DEBUG_PRINT("X");
+        DEBUG_PRINTLN();
 #endif
     }
     else
@@ -99,11 +101,11 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
     {
         //castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
-#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
-        DEBUG_SERIAL.println();
-        DEBUG_SERIAL.print("1 ");
-        DEBUG_SERIAL.print(millis());
-        DEBUG_SERIAL.print(" ");
+#ifdef DEBUG_CASTLE
+        DEBUG_PRINTLN();
+        DEBUG_PRINT("1 ");
+        DEBUG_PRINT(millis());
+        DEBUG_PRINT(" ");
 #endif
     }
     castleTelemetryReceived = false;
@@ -132,8 +134,9 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         OCR4B = ICR1 - ts;
         castlePwmRx = OCR4B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
         TCNT1 = 0;           // RESET COUNTER
-#ifdef DEBUG_ESC_RX
-        DEBUG_SERIAL.println(castlePwmRx);
+#ifdef DEBUG_CASTLE_RX
+        DEBUG_PRINT(castlePwmRx);
+        DEBUG_PRINT();
 #endif
     }
     TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 EDGE
@@ -162,9 +165,9 @@ void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
 void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = ICR4 - castlePwmRx;
-#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
-    DEBUG_SERIAL.print(castleTelemetry[castleCont]);
-    DEBUG_SERIAL.print(" ");
+#ifdef DEBUG_CASTLE
+    DEBUG_PRINT(castleTelemetry[castleCont]);
+    DEBUG_PRINT(" ");
 #endif
     if (castleCont < 11)
     {
@@ -183,11 +186,11 @@ void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
-#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
-        DEBUG_SERIAL.println();
-        DEBUG_SERIAL.print("2 ");
-        DEBUG_SERIAL.print(millis());
-        DEBUG_SERIAL.print(" ");
+#ifdef DEBUG_CASTLE
+        DEBUG_PRINTLN();
+        DEBUG_PRINT("2 ");
+        DEBUG_PRINT(millis());
+        DEBUG_PRINT(" ");
 #endif
     }
     castleTelemetryReceived = false;
@@ -216,8 +219,9 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
         OCR5B = ICR4 - ts;
         castlePwmRx = OCR5B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
         TCNT4 = 0;           // RESET COUNTER
-#ifdef DEBUG_ESC_RX
-        DEBUG_SERIAL.println(castlePwmRx);
+#ifdef DEBUG_CASTLE_RX
+        DEBUG_PRINT(castlePwmRx);
+        DEBUG_PRINT();
 #endif
     }
     TCCR4B ^= _BV(ICES4); // TOGGLE ICP4 EDGE
@@ -230,8 +234,9 @@ void EscCastle::TIMER4_OVF_handler() // NO RX INPUT
     TIMSK5 = 0;            // DISABLE INTERRUPTS
     TCCR4B |= _BV(ICES4);  // RISING EDGE
     TIMSK4 &= ~_BV(TOIE4); // DISABLE OVERFLOW INTERRUPT
-#ifdef DEBUG_ESC_RX
-    DEBUG_SERIAL.println("X");
+#ifdef DEBUG_CASTLE_RX
+    DEBUG_PRINT("X");
+    DEBUG_PRINTLN();
 #endif
 }
 
@@ -246,9 +251,9 @@ void EscCastle::TIMER5_COMPB_handler() // START INPUT STATE
 void EscCastle::TIMER5_CAPT_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = ICR5 - castlePwmRx;
-#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
-    DEBUG_SERIAL.print(castleTelemetry[castleCont]);
-    DEBUG_SERIAL.print(" ");
+#ifdef DEBUG_CASTLE
+    DEBUG_PRINT(castleTelemetry[castleCont]);
+    DEBUG_PRINT(" ");
 #endif
     if (castleCont < 11)
     {
@@ -266,11 +271,11 @@ void EscCastle::TIMER5_COMPC_handler() // START OUTPUT STATE
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
-#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
-        DEBUG_SERIAL.println();
-        DEBUG_SERIAL.print("3 ");
-        DEBUG_SERIAL.print(millis());
-        DEBUG_SERIAL.print(" ");
+#ifdef DEBUG_CASTLE
+        DEBUG_PRINTLN();
+        DEBUG_PRINT("3 ");
+        DEBUG_PRINT(millis());
+        DEBUG_PRINT(" ");
 #endif
     }
     castleTelemetryReceived = false;
@@ -298,8 +303,9 @@ void EscCastle::TIMER3_CAPT_handler() // RX INPUT
         OCR1B = ICR3 - ts;
         castlePwmRx = OCR1B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
         TCNT3 = 0;           // RESET COUNTER
-#ifdef DEBUG_ESC_RX
-        DEBUG_SERIAL.println(castlePwmRx);
+#ifdef DEBUG_CASTLE_RX
+        DEBUG_PRINT(castlePwmRx);
+        DEBUG_PRINTLN();
 #endif
     }
     TCCR3B ^= _BV(ICES3); // TOGGLE ICP3 EDGE
@@ -312,8 +318,9 @@ void EscCastle::TIMER3_OVF_handler() // NO RX INPUT
     TIMSK1 = 0;            // DISABLE INTERRUPTS
     TCCR3B |= _BV(ICES3);  // RISING EDGE
     TIMSK3 &= ~_BV(TOIE3); // DISABLE OVERFLOW INTERRUPT
-#ifdef DEBUG_ESC_RX
-    DEBUG_SERIAL.println("X");
+#ifdef DEBUG_CASTLE_RX
+    DEBUG_PRINT("X");
+    DEBUG_PRINTLN();
 #endif
 }
 
@@ -328,9 +335,9 @@ void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
 void EscCastle::TIMER1_CAPT_handler() // READ TELEMETRY
 {
     castleTelemetry[castleCont] = ICR1 - castlePwmRx;
-#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
-    DEBUG_SERIAL.print(castleTelemetry[castleCont]);
-    DEBUG_SERIAL.print(" ");
+#ifdef DEBUG_CASTLE
+    DEBUG_PRINT(castleTelemetry[castleCont]);
+    DEBUG_PRINT(" ");
 #endif
     if (castleCont < 11)
     {
@@ -349,11 +356,11 @@ void EscCastle::TIMER1_COMPC_handler() // START OUTPUT STATE
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
         castleCont = 0;
-#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
-        DEBUG_SERIAL.println();
-        DEBUG_SERIAL.print("4 ");
-        DEBUG_SERIAL.print(millis());
-        DEBUG_SERIAL.print(" ");
+#ifdef DEBUG_CASTLE
+        DEBUG_PRINTLN();
+        DEBUG_PRINT("4 ");
+        DEBUG_PRINT(millis());
+        DEBUG_PRINT(" ");
 #endif
     }
     castleTelemetryReceived = false;
@@ -372,8 +379,9 @@ void EscCastle::FTM1_IRQ_handler()
             FTM0_C0SC |= FTM_CSC_CHIE;
             castlePwmRx = FTM0_C0V; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
             FTM1_CNT = 0;
-#ifdef DEBUG_ESC_RX
-            DEBUG_SERIAL.println(castlePwmRx);
+#ifdef DEBUG_CASTLE_RX
+            DEBUG_PRINT(castlePwmRx);
+            DEBUG_PRINTLN();
 #endif
         }
         ts = FTM1_C0V;
@@ -387,8 +395,9 @@ void EscCastle::FTM1_IRQ_handler()
         FTM0_C2SC &= ~FTM_CSC_CHIE;
         PORTD_PCR0 = PORT_PCR_MUX(0); // PTD0 MUX 0 -> DISABLE
         FTM1_SC |= FTM_SC_TOF;        // CLEAR FLAG
-#ifdef DEBUG_ESC_RX
-        DEBUG_SERIAL.println("X");
+#ifdef DEBUG_CASTLE_RX
+        DEBUG_PRINT("X");
+        DEBUG_PRINTLN();
 #endif
     }
 }
@@ -407,11 +416,11 @@ void EscCastle::FTM0_IRQ_handler()
         {
             castleCont = 0;
             castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
-#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
-            DEBUG_SERIAL.println();
-            DEBUG_SERIAL.print("5 ");
-            DEBUG_SERIAL.print(millis());
-            DEBUG_SERIAL.print(" ");
+#ifdef DEBUG_CASTLE
+            DEBUG_PRINTLN();
+            DEBUG_PRINT("3 ");
+            DEBUG_PRINT(millis());
+            DEBUG_PRINT(" ");
 #endif
         }
         castleTelemetryReceived = false;
@@ -419,11 +428,9 @@ void EscCastle::FTM0_IRQ_handler()
     if (FTM0_C4SC & FTM_CSC_CHF) // CH4 INTERRUPT (CAPTURE TELEMETRY)
     {
         castleTelemetry[castleCont] = FTM0_C4V - castlePwmRx;
-#if defined(DEBUG_ESC_CASTLE) || defined(DEBUG_ESC)
-        DEBUG_SERIAL.print(castleCont);
-        DEBUG_SERIAL.print("-");
-        DEBUG_SERIAL.print(castleTelemetry[castleCont]);
-        DEBUG_SERIAL.print(" ");
+#ifdef DEBUG_CASTLE
+        DEBUG_PRINT(castleTelemetry[castleCont]);
+        DEBUG_PRINT(" ");
 #endif
         if (castleCont < 11)
         {
@@ -449,7 +456,7 @@ void EscCastle::begin()
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
     TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
     INT0_handlerP = INT0_handler;
-    TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
+    //TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
 
     // TIMER 1, ESC: PWM OUTPUT, RX INPUT. ICP1 (PB0, PIN 8). OC1B (PB2 PIN 10) -> OUTPUT/INPUT PULL UP
     DDRB |= _BV(DDB2);                   // OUTPUT OC1B PB2 (PIN 10)

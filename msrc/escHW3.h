@@ -12,12 +12,13 @@ class EscHW3 : public AbstractDevice
 private:
     uint8_t alphaRpm_;
     float rpm_;
-    Stream &serial_;
+    AbstractSerial &serial_;
 
 protected:
 public:
-    EscHW3(Stream &serial, uint8_t alphaRpm);
-    virtual void update();
+    EscHW3(AbstractSerial &serial, uint8_t alphaRpm);
+    void begin();
+    void update();
     float *rpmP();
 };
 

@@ -2,8 +2,10 @@
 #define MULTIPLEX_H
 
 #include <Arduino.h>
+#include "softserial.h"
+#include "hardserial.h"
 #include "sensor.h"
-#include "config.h"
+#include "constants.h"
 
 #include "escHW3.h"
 #include "escHW4.h"
@@ -15,7 +17,6 @@
 #include "pressure.h"
 #include "bmp280.h"
 #include "bn220.h"
-#include "config.h"
 #include "configeeprom.h"
 #include "pwmout.h"
 
@@ -24,18 +25,14 @@
 #define MULTIPLEX_WAIT 0
 #define MULTIPLEX_SEND 1
 
-
 class Multiplex
 {
 private:
-    Stream &serial_;
+    AbstractSerial &serial_;
     SensorMultiplex *sensorMultiplexP[16] = {NULL};
-#ifdef SOFTWARE_SERIAL
-    SoftwareSerial softSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
-#endif
 
 public:
-    Multiplex(Stream &serial);
+    Multiplex(AbstractSerial &serial);
     ~Multiplex();
     void begin();
     void sendPacket(uint8_t address);

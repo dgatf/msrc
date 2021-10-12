@@ -14,14 +14,15 @@
 #define GPS_INFO_FLAGS_LONG_GREATER_99_BIT 2
 #define GPS_INFO_FLAGS_NEGATIVE_ALT_BIT 7
 
-#include "config.h"
+#include "constants.h"
 #include <Arduino.h>
+#include "softserial.h"
+#include "hardserial.h"
 #if (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
 #include <i2c_t3.h>
 #else
 #include <Wire.h>
 #endif
-#include <SoftwareSerial.h>
 #include "escHW3.h"
 #include "escHW4.h"
 #include "escPWM.h"
@@ -117,9 +118,6 @@ private:
     static void i2c_request_handler();
 
 protected:
-#ifdef SOFTWARE_SERIAL
-    SoftwareSerial softSerial = SoftwareSerial(PIN_SOFTSERIAL_RX, PIN_SOFTSERIAL_TX);
-#endif
 #if CONFIG_ESC_PROTOCOL != PROTOCOL_NONE && CONFIG_ESC_PROTOCOL != PROTOCOL_PWM
     static Xbus_Esc xbusEsc;
 #endif
@@ -140,7 +138,7 @@ protected:
 #if CONFIG_GPS
     static Xbus_Gps_Loc xbusGpsLoc;
     static Xbus_Gps_Stat xbusGpsStat;
-    Bn220 gps = Bn220(GPS_SERIAL);
+    Bn220 gps = Bn220(GPS_SERIAL, GPS_BAUD_RATE);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM
     EscPWM escPWM = EscPWM(ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM));

@@ -1,6 +1,6 @@
 #include "multiplex.h"
 
-Multiplex::Multiplex(Stream &serial) : serial_(serial)
+Multiplex::Multiplex(AbstractSerial &serial) : serial_(serial)
 {
 }
 
@@ -11,6 +11,8 @@ Multiplex::~Multiplex()
 
 void Multiplex::begin()
 {
+    serial_.begin(38400, SERIAL_8N1 | SERIAL_HALF_DUP);
+    serial_.setTimeout(2);
     pinMode(LED_BUILTIN, OUTPUT);
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
     setConfig(config);
@@ -39,6 +41,7 @@ void Multiplex::sendPacket(uint8_t address)
 {
     if (!sensorMultiplexP[address])
         return;
+    digitalWrite(LED_BUILTIN, HIGH);
     bool isNegative = false;
     serial_.write(address << 4 | sensorMultiplexP[address]->dataId());
     int16_t value = sensorMultiplexP[address]->valueFormatted();
@@ -53,10 +56,12 @@ void Multiplex::sendPacket(uint8_t address)
     if (isNegative)
         value |= 1 << 15;
     serial_.write(value);
+    digitalWrite(LED_BUILTIN, LOW);
 #ifdef DEBUG
-    DEBUG_SERIAL.print(address << 4 | sensorMultiplexP[address]->dataId(), HEX);
-    DEBUG_SERIAL.print(" ");
-    DEBUG_SERIAL.println(value, HEX);
+    DEBUG_PRINT_HEX((uint8_t)(address << 4 | sensorMultiplexP[address]->dataId()));
+    DEBUG_PRINT(" ");
+    DEBUG_PRINT_HEX((uint16_t)value);
+    DEBUG_PRINTLN();
 #endif
 }
 
@@ -72,27 +77,13 @@ void Multiplex::update()
         ts = millis();
     }
 #else
-    static uint16_t serialTs = 0;
-    static uint8_t serialCount = 0;
-    if (serial_.available() > serialCount)
+    if (serial_.availableTimeout() == 1)
     {
-        serialCount = serial_.available();
-        serialTs = micros();
-    }
-
-    if (((uint16_t)micros() - serialTs > MULTIPLEX_SERIAL_TIMEOUT) && serialCount > 0)
-    {
-        if (serialCount == 1)
+        address = serial_.read();
+        if (address < 16)
         {
-            address = serial_.read();
-            if (address <= 16)
-            {
-                status = MULTIPLEX_SEND;
-            }
+            status = MULTIPLEX_SEND;
         }
-        while (serial_.available())
-            serial_.read();
-        serialCount = 0;
     }
 #endif
     if (status == MULTIPLEX_SEND)
@@ -128,9 +119,7 @@ void Multiplex::setConfig(Config &config)
         SensorMultiplex *sensorMultiplexP;
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
-        ESC_SERIAL.begin(19200);
-        //PwmOut pwmOut;
-        //pwmOut.setRpmP(esc->rpmP());
+        esc->begin();
         sensorMultiplexP = new SensorMultiplex(FHSS_RPM, esc->rpmP(), esc);
         addSensor(sensorMultiplexP);
     }
@@ -138,8 +127,8 @@ void Multiplex::setConfig(Config &config)
     {
         SensorMultiplex *sensorMultiplexP;
         EscHW4 *esc;
-        ESC_SERIAL.begin(19200);
         esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
+        esc->begin();
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
         sensorMultiplexP = new SensorMultiplex(FHSS_RPM, esc->rpmP(), esc);
@@ -182,8 +171,8 @@ void Multiplex::setConfig(Config &config)
     {
         SensorMultiplex *sensorMultiplexP;
         EscKontronik *esc;
-        ESC_SERIAL.begin(115200, SERIAL_8E1);
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());
         sensorMultiplexP = new SensorMultiplex(FHSS_RPM, esc->rpmP(), esc);
@@ -207,9 +196,8 @@ void Multiplex::setConfig(Config &config)
     {
         SensorMultiplex *sensorMultiplexP;
         Bn220 *gps;
-        GPS_SERIAL.begin(GPS_BAUD_RATE);
-        GPS_SERIAL.setTimeout(BN220_TIMEOUT);
-        gps = new Bn220(GPS_SERIAL);
+        gps = new Bn220(GPS_SERIAL, GPS_BAUD_RATE);
+        gps->begin();
         sensorMultiplexP = new SensorMultiplex(FHSS_SPEED, gps->spdP(), gps);
         addSensor(sensorMultiplexP);
         sensorMultiplexP = new SensorMultiplex(FHSS_ALTITUDE, gps->altP(), gps);

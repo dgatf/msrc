@@ -1,6 +1,6 @@
 #include "frsky_d.h"
 
-Frsky::Frsky(Stream &serial) : serial_(serial)
+Frsky::Frsky(AbstractSerial &serial) : serial_(serial)
 {
 }
 
@@ -11,6 +11,7 @@ Frsky::~Frsky()
 
 void Frsky::begin()
 {
+    serial_.begin(9600, SERIAL_8N1_RXINV_TXINV | SERIAL_HALF_DUP);
     pinMode(LED_BUILTIN, OUTPUT);
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
     setConfig(config);
@@ -105,13 +106,14 @@ void Frsky::update()
         {
             sendData(spSensorP->dataId(), spSensorP->valueFormatted());
 #ifdef DEBUG
-            DEBUG_SERIAL.print("D:");
-            DEBUG_SERIAL.print(spSensorP->dataId(), HEX);
-            DEBUG_SERIAL.print(" V:");
-            DEBUG_SERIAL.print(spSensorP->valueFormatted());
+            DEBUG_PRINT("D:");
+            DEBUG_PRINT_HEX(spSensorP->dataId());
+            DEBUG_PRINT(" V:");
+            DEBUG_PRINT(spSensorP->valueFormatted());
             spSensorP->valueFormatted(); // toggle type if date/time or lat/lon sensor
-            DEBUG_SERIAL.print(" T:");
-            DEBUG_SERIAL.println(spSensorP->timestamp());
+            DEBUG_PRINT(" T:");
+            DEBUG_PRINT(spSensorP->timestamp());
+            DEBUG_PRINTLN();
 #endif
             spSensorP->setTimestamp(millis());
             spSensorP = spSensorP->nextP;
@@ -142,9 +144,7 @@ void Frsky::setConfig(Config &config)
         Sensord *sensorP;
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
-        ESC_SERIAL.begin(19200);
-        //PwmOut pwmOut;
-        //pwmOut.setRpmP(esc->rpmP());
+        esc->begin();
         sensorP = new Sensord(RPM_ID, esc->rpmP(), config.refresh.rpm, esc);
         addSensor(sensorP);
     }
@@ -152,8 +152,8 @@ void Frsky::setConfig(Config &config)
     {
         Sensord *sensorP;
         EscHW4 *esc;
-        ESC_SERIAL.begin(19200);
         esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
+        esc->begin();
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
         sensorP = new Sensord(RPM_ID, esc->rpmP(), config.refresh.rpm, esc);
@@ -198,10 +198,8 @@ void Frsky::setConfig(Config &config)
     {
         Sensord *sensorP;
         EscKontronik *esc;
-        ESC_SERIAL.begin(115200, SERIAL_8E1);
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
-        //PwmOut pwmOut;
-        //pwmOut.setRpmP(esc->rpmP());
+        esc->begin();
         sensorP = new Sensord(RPM_ID, esc->rpmP(), config.refresh.rpm, esc);
         addSensor(sensorP);
         sensorP = new Sensord(VOLTS_BP_ID, esc->voltageP(), config.refresh.volt, esc);
@@ -223,9 +221,8 @@ void Frsky::setConfig(Config &config)
     {
         Sensord *sensorP;
         Bn220 *gps;
-        GPS_SERIAL.begin(GPS_BAUD_RATE);
-        GPS_SERIAL.setTimeout(BN220_TIMEOUT);
-        gps = new Bn220(GPS_SERIAL);
+        gps = new Bn220(GPS_SERIAL, GPS_BAUD_RATE);
+        gps->begin();
         sensorP = new Sensord(GPS_LONG_BP_ID, gps->lonP(), 10, gps);
         addSensor(sensorP);
         sensorP = new Sensord(GPS_LONG_AP_ID, gps->lonP(), 10, gps);

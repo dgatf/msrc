@@ -13,13 +13,14 @@ void EscPWM::TIMER1_CAPT_handler()
     if (escPwmRunning)
         escPwmDuration = ICR1 - ts;
     ts = ICR1;
-    OCR1B = TCNT1 -1;
-    TIFR1 |= _BV(OCF1B);  // CLEAR TIMER1 OCRB CAPTURE FLAG
+    OCR1B = TCNT1 - 1;
+    TIFR1 |= _BV(OCF1B);   // CLEAR TIMER1 OCRB CAPTURE FLAG
     TIMSK1 |= _BV(OCIE1B); // ENABLE TIMER1 OCRB INTERRUPT
     escPwmRunning = true;
     escPwmUpdate = true;
-#if defined(DEBUG_ESC_PWM) || defined(DEBUG_ESC)
-    DEBUG_SERIAL.println(escPwmDuration);
+#ifdef DEBUG_PWM
+    DEBUG_PRINT(escPwmDuration);
+    DEBUG_PRINTLN();
 #endif
 }
 
@@ -28,8 +29,9 @@ void EscPWM::TIMER1_COMPB_handler()
     escPwmRunning = false;
     escPwmDuration = 0xFFFF;
     TIMSK1 ^= _BV(OCIE1B); // DISABLE TIMER1 OCRA INTERRUPT
-#if defined(DEBUG_ESC_PWM) || defined(DEBUG_ESC)
-    DEBUG_SERIAL.println("X");
+#ifdef DEBUG_PWM
+    DEBUG_PRINT("X");
+    DEBUG_PRINTLN();
 #endif
 }
 #endif
@@ -42,12 +44,13 @@ void EscPWM::TIMER4_CAPT_handler()
         escPwmDuration = ICR4 - ts;
     ts = ICR4;
     OCR4B = TCNT4 - 1;
-    TIFR4 |= _BV(OCF4B);  // CLEAR TIMER4 OCRB CAPTURE FLAG
+    TIFR4 |= _BV(OCF4B);   // CLEAR TIMER4 OCRB CAPTURE FLAG
     TIMSK4 |= _BV(OCIE4B); // ENABLE TIMER4 OCRB INTERRUPT
     escPwmRunning = true;
     escPwmUpdate = true;
-#if defined(DEBUG_ESC_PWM) || defined(DEBUG_ESC)
-    DEBUG_SERIAL.println(escPwmDuration);
+#ifdef DEBUG_PWM
+    DEBUG_PWM_PRINT(escPwmDuration);
+    DEBUG_PRINTLN();
 #endif
 }
 
@@ -56,8 +59,9 @@ void EscPWM::TIMER4_COMPB_handler()
     escPwmRunning = false;
     escPwmDuration = 0xFFFF;
     TIMSK4 ^= _BV(OCIE4B); // DISABLE TIMER4 OCRA INTERRUPT
-#if defined(DEBUG_ESC_PWM) || defined(DEBUG_ESC)
-    DEBUG_SERIAL.println("X");
+#ifdef DEBUG_PWM
+    DEBUG_PWM_PRINT("X");
+    DEBUG_PRINTLN();
 #endif
 }
 #endif
@@ -77,8 +81,9 @@ void EscPWM::FTM0_IRQ_handler()
         FTM0_C0SC |= FTM_CSC_CHIE; // ENABLE CH0 INTERRUPT
         escPwmUpdate = true;
         escPwmRunning = true;
-#if defined(DEBUG_ESC_PWM) || defined(DEBUG_ESC)
-        DEBUG_SERIAL.println(escPwmDuration);
+#ifdef DEBUG_PWM
+        DEBUG_PWM_PRINT(escPwmDuration);
+        DEBUG_PRINTLN();
 #endif
     }
     if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH4
@@ -87,8 +92,9 @@ void EscPWM::FTM0_IRQ_handler()
         FTM0_C0SC |= FTM_CSC_CHF;   // CLEAR FLAG
         escPwmRunning = false;
         escPwmDuration = 0xFFFF;
-#if defined(DEBUG_ESC_PWM) || defined(DEBUG_ESC)
-        DEBUG_SERIAL.println("X");
+#ifdef DEBUG_PWM
+        DEBUG_PWM_PRINT("X");
+        DEBUG_PRINTLN();
 #endif
     }
 }
@@ -139,6 +145,23 @@ void EscPWM::begin()
     NVIC_ENABLE_IRQ(IRQ_FTM0);
 
 #endif
+
+/*
+#if defined(__IMXRT1062__)
+    
+    GPT1_CR = 0;                    // DISABLE TIMER (EN=0)
+    delayMicroseconds(1);
+    GPT1_CNT = 0;
+    GPT1_CR |= GPT_CR_CLKSRC(B001); // CLOCK
+
+    GPT1_PR = GPT_PR_PRESCALER(32); // PRESCALER 32
+    GPT1_CR |= GPT_PR_IM1(B01);     // CAPTURE RISING CH1
+    GPT1_CR |= GPT_CR_EN;           // ENABLE TIMER
+    //PORT_PCR_MUX
+    NVIC_ENABLE_IRQ(IRQ_GPT1);
+#endif
+*/
+
 }
 
 void EscPWM::update()
