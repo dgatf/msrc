@@ -1,47 +1,33 @@
 #include "serial.h"
 
-Fifo::Fifo() {}
-
-void Fifo::write(uint8_t value)
-{
-  if (((writePos - readPos) & (FIFO_SIZE - 1)) < (FIFO_SIZE - 1))
-  {
-    fifo[writePos] = value;
-    writePos++;
-    writePos &= (FIFO_SIZE - 1);
-  }
-}
-
-uint8_t Fifo::read()
-{
-  if (readPos != writePos)
-  {
-    uint8_t value = fifo[readPos];
-    readPos++;
-    readPos &= (FIFO_SIZE - 1);
-    return value;
-  }
-  return 0;
-}
-
-void Fifo::reset()
-{
-  readPos = writePos;
-}
-
-uint8_t Fifo::available()
-{
-  return (writePos - readPos) & (FIFO_SIZE - 1);
-}
-
 AbstractSerial::AbstractSerial() {}
 
 AbstractSerial::~AbstractSerial() {}
 
+void AbstractSerial::reset()
+{
+  readPosRx = writePosRx;
+}
+
 void AbstractSerial::write(uint8_t data)
 {
-  buffTx.write(data);
+  if (((writePosTx - readPosTx) & (FIFO_SIZE - 1)) < (FIFO_SIZE - 1))
+  {
+    buffTx[writePosTx] = data;
+    writePosTx++;
+    writePosTx &= (FIFO_SIZE - 1);
+  }
   initWrite();
+}
+
+void AbstractSerial::writeRx(uint8_t data)
+{
+  if (((writePosRx - readPosRx) & (FIFO_SIZE - 1)) < (FIFO_SIZE - 1))
+  {
+    buffRx[writePosRx] = data;
+    writePosRx++;
+    writePosRx &= (FIFO_SIZE - 1);
+  }
 }
 
 void AbstractSerial::writeBytes(uint8_t *buff, uint8_t size)
@@ -52,7 +38,26 @@ void AbstractSerial::writeBytes(uint8_t *buff, uint8_t size)
 
 uint8_t AbstractSerial::read()
 {
-  return buffRx.read();
+  if (readPosRx != writePosRx)
+  {
+    uint8_t value = buffRx[readPosRx];
+    readPosRx++;
+    readPosRx &= (FIFO_SIZE - 1);
+    return value;
+  }
+  return 0;
+}
+
+uint8_t AbstractSerial::readTx()
+{
+  if (readPosTx != writePosTx)
+  {
+    uint8_t value = buffTx[readPosTx];
+    readPosTx++;
+    readPosTx &= (FIFO_SIZE - 1);
+    return value;
+  }
+  return 0;
 }
 
 void AbstractSerial::readBytes(uint8_t *buff, uint8_t size)
@@ -65,7 +70,7 @@ void AbstractSerial::readBytes(uint8_t *buff, uint8_t size)
 
 uint8_t AbstractSerial::readFrame(uint8_t *buff)
 {
-  uint8_t lenght = buffRx.available();
+  uint8_t lenght = available();
   readBytes(buff, lenght);
   return lenght;
 }
@@ -77,13 +82,18 @@ void AbstractSerial::setTimeout(uint8_t timeout)
 
 uint8_t AbstractSerial::available()
 {
-  return buffRx.available();
+  return (writePosRx - readPosRx) & (FIFO_SIZE - 1);
+}
+
+uint8_t AbstractSerial::availableTx()
+{
+  return (writePosTx - readPosTx) & (FIFO_SIZE - 1);
 }
 
 uint8_t AbstractSerial::availableTimeout()
 {
   if ((uint16_t)micros() - ts > timeout_ * 1000)
-    return buffRx.available();
+    return available();
   else
     return 0;
 }
@@ -122,9 +132,9 @@ void AbstractSerial::print(uint32_t value, uint8_t base)
   char buff[11];
   uint8_t lenght;
   if (base == HEX)
-    lenght = sprintf(buff, "%lu", value);
-  else
     lenght = sprintf(buff, "%lX", value);
+  else
+    lenght = sprintf(buff, "%lu", value);
   writeBytes((uint8_t *)buff, lenght);
 }
 
