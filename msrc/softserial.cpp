@@ -17,7 +17,7 @@ SoftSerial::SoftSerial() {}
 void SoftSerial::TIMER0_COMPA_handler()
 {
   cont++;
-  if (timeout_ == cont)
+  if (timeout_ / (uint8_t)(255 * MS_TO_COMP(64)) == cont)
     timedout = true;
   TIMSK0 &= ~_BV(OCIE0A);
 }
