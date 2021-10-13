@@ -4,136 +4,157 @@
 
 ISR(PCINTx_vect)
 {
-    softSerial.PCINT2_handler();
+  softSerial.PCINT2_handler();
 }
 
 ISR(TIMER0_COMPA_vect)
 {
-    softSerial.TIMER0_COMPA_handler();
+  softSerial.TIMER0_COMPA_handler();
 }
 
 SoftSerial::SoftSerial() {}
 
-void SoftSerial::PCINT2_handler()
+void SoftSerial::TIMER0_COMPA_handler()
 {
-    if (status == SOFTSERIAL_IDLE)
-    {
-        if ((!bit_is_set(PINx, PINxn) && !inverted_) || (bit_is_set(PINx, PINxn) && inverted_))
-        {
-            initVal = TCNT0 + initDeltaRx;
-            OCR0A = initVal + delta[0];
-            TIFR0 |= _BV(OCF0A);
-            TIMSK0 |= _BV(OCIE0A);
-            PCMSKx &= ~_BV(PCINTxn);
-            bit = 1;
-            incomingByte = 0;
-            status = SOFTSERIAL_RECEIVING;
-            if ((uint16_t)micros() - ts > timeout_ * 1000)
-                reset();
-        }
-    }
+  cont++;
+  if (timeout_ == cont)
+    timedout = true;
+  TIMSK0 &= ~_BV(OCIE0A);
 }
 
-void SoftSerial::TIMER0_COMPA_handler() // Rx, Tx
+void SoftSerial::PCINT2_handler()
 {
-    if (status == SOFTSERIAL_RECEIVING)
+  if ( inverted_ ? bit_is_set(PINx, PINxn): !bit_is_set(PINx, PINxn) )
+  {
+    PCMSKx &= ~_BV(PCINTxn);
+    uint8_t incomingByte = 0;
+
+    // start bit
+    _delay_loop_2(rx_delay_centering);
+
+    // data
+    for (uint8_t i = 0; i < 8; i++)
     {
-        if (bit <= 8) // data
-        {
-            if ((bit_is_set(PINx, PINxn) && !inverted_) || (!bit_is_set(PINx, PINxn) && inverted_))
-                incomingByte |= _BV(bit - 1);
-            OCR0A = initVal + delta[bit];
-            bit++;
-        }
-        else // end of transmission
-        {
-            PCMSKx |= _BV(PCINTxn);
-            TIMSK0 &= ~_BV(OCIE0A);
-            writeRx(incomingByte);
-            status = SOFTSERIAL_IDLE;
-            ts = micros();
-        }
+      
+      _delay_loop_2(rx_delay);
+      if ( bit_is_set(PINx, PINxn) )
+        incomingByte |= _BV(i);
+      
+      /*
+      _delay_loop_2(rx_delay);
+      incomingByte >>= 1;
+      if ( bit_is_set(PINx, PINxn) )
+        incomingByte |= 0x80;
+      */
+      
     }
-    else
+    if (inverted_)
+      incomingByte = ~incomingByte;
+
+    // stop bit
+    //_delay_loop_2(rx_delay_stop);
+    PCIFR = B111;
+    PCMSKx |= _BV(PCINTxn);
+    if (timedout)
     {
-        if (bit < 9) // data
-        {
-            if (bit_is_set(outgoingByte, bit - 1))
-            {
-                setPinLogic1;
-            }
-            else
-                setPinLogic0;
-        }
-        else if (bit == 9) // stop bit
-        {
-            setPinLogic1;
-        }
-        else // end of transmission
-        {
-            status = SOFTSERIAL_IDLE;
-            if (availableTx())
-            {
-                initWrite();
-                return;
-            }
-            else
-            {
-                PCMSKx |= _BV(PCINTxn);
-                TIFR0 |= _BV(OCF0A);
-                TIMSK0 &= ~_BV(OCIE0A);
-            }
-            return;
-        }
-        OCR0A = initVal + delta[bit];
-        bit++;
+      reset();
+      timedout = false;
     }
+    writeRx(incomingByte);
+    cont = 0;
+    OCR0A = TCNT0 - 1;
+    TIFR0 |= _BV(OCF0A);
+    TIMSK0 |= _BV(OCIE0A);
+    
+  }
 }
 
 void SoftSerial::initWrite()
 {
-    if (status == SOFTSERIAL_IDLE)
+  uint8_t outgoingByte = readTx();
+  if (inverted_)
+    outgoingByte = ~outgoingByte;
+  PCMSKx &= ~_BV(PCINTxn);
+
+  // start bit
+  if (inverted_)
+  {
+    setPinHigh;
+  }
+  else
+  {
+    setPinLow;
+  }
+  _delay_loop_2(tx_delay);
+
+  // data
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    if (outgoingByte & 1)
     {
-        PCMSKx &= ~_BV(PCINTxn);
-        status = SOFTSERIAL_SENDING;
-        bit = 1;
-        outgoingByte = readTx();
-        initVal = TCNT0 - initDeltaTx;
-        OCR0A = initVal + delta[0];
-        setPinLogic0;
-        TIFR0 |= _BV(OCF0A);
-        TIMSK0 |= _BV(OCIE0A);
+      setPinHigh;
     }
+    else
+    {
+      setPinLow;
+    }
+    _delay_loop_2(tx_delay);
+    outgoingByte >>= 1;
+  }
+
+  // stop bit
+  if (inverted_)
+  {
+    setPinLow;
+  }
+  else
+  {
+    setPinHigh;
+  }
+  _delay_loop_2(tx_delay);
+
+  PCIFR = B111;
+  PCMSKx |= _BV(PCINTxn);
 }
 
 void SoftSerial::begin(uint32_t baud, uint8_t format)
 {
-    // FORMAT: 8N1
+  // FORMAT: 8N1
 
-    // RX: 328P/PB: PIN 7   (PD7,PCINT23)
-    //     2560:    PIN A15 (PK7,PCINT23)
-    //     32U4:    PIN B3  (PB3,PCINT3)
+  // RX: 328P/PB: PIN 7   (PD7,PCINT23)
+  //     2560:    PIN A15 (PK7,PCINT23)
+  //     32U4:    PIN B3  (PB3,PCINT3)
 
-    // TX: 328P/PB: PIN 12  (PB4)
-    //     2560:    PIN D10 (PB4)
-    //     32U4:    PIN B4  (PB4)
+  // TX: 328P/PB: PIN 12  (PB4)
+  //     2560:    PIN D10 (PB4)
+  //     32U4:    PIN B4  (PB4)
 
-    PORTx |= _BV(PORTxn);   // PULLUP
-    PCICR |= _BV(PCIEx);    // ENABLE PCINT
-    PCMSKx |= _BV(PCINTxn); // PCINT MASK
+  PORTx |= _BV(PORTxn);   // PULLUP
+  PCICR |= _BV(PCIEx);    // ENABLE PCINT
+  PCMSKx |= _BV(PCINTxn); // PCINT MASK
 
-    DDRB |= _BV(DDB4);
+  DDRB |= _BV(DDB4);
 
-    TCCR0A = 0;
+  inverted_ = format & 0x40;
+  if (inverted_)
+    setPinLow;
+  else
+    setPinHigh;
 
-    inverted_ = format & 0x40;
-    setPinLogic1;
+  // 1 bit delay in 4 clock cycles
+  uint16_t delay = (F_CPU / baud) / 4;
+  // substract overheads
+  tx_delay = subs(delay, 15 / 4); // 15
+  rx_delay = subs(delay, 17 / 4); // 23:  16-19  17
+  rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 18) / 4);
+  rx_delay_stop = subs(delay * 3 / 4, (37 + 11) / 4);
+}
 
-    float comp = 1000.0 / baud * MS_TO_COMP(64);
-    for (uint8_t i = 0; i < 12; i++) //100000: delta 0.96, deltarx 0.09, deltatx 0.27
-        delta[i] = round(comp * (i + 1));
-    initDeltaRx = round(0.0 * comp);
-    initDeltaTx = round(0.3 * comp);
+uint16_t SoftSerial::subs(uint16_t val1, uint16_t val2)
+{
+    if (val1 > val2)
+      return val1 - val2;
+    return 1;
 }
 
 SoftSerial softSerial;

@@ -21,8 +21,8 @@
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
-#define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SBUS_SERIAL hardSerial0
+#define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
+#define SRXL_IBUS_SERIAL hardSerial0
 #define ESC_SERIAL hardSerial0
 #define GPS_SERIAL hardSerial0
 #define DEBUG_SERIAL hardSerial0
@@ -41,8 +41,8 @@
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
-#define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SBUS_SERIAL hardSerial1
+#define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
+#define SRXL_IBUS_SERIAL hardSerial1
 #define ESC_SERIAL hardSerial0
 #define GPS_SERIAL hardSerial1
 #define DEBUG_SERIAL hardSerial0
@@ -61,8 +61,8 @@
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
-#define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SBUS_SERIAL hardSerial3
+#define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
+#define SRXL_IBUS_SERIAL hardSerial3
 #define ESC_SERIAL hardSerial1
 #define GPS_SERIAL hardSerial2
 #define DEBUG_SERIAL hardSerial0
@@ -75,8 +75,8 @@
 #define PIN_VOLTAGE2 A3         // PF4
 #define PIN_CURRENT A9          // PB5
 #define PIN_PRESSURE A7         // PD7
-#define SMARTPORT_FRSKY_SERIAL softSerial
-#define SRXL_IBUS_SBUS_SERIAL hardSerial1
+#define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
+#define SRXL_IBUS_SERIAL hardSerial1
 #define ESC_SERIAL hardSerial1
 #define GPS_SERIAL hardSerial1
 #define DEBUG_SERIAL Serial
@@ -89,8 +89,8 @@
 #define PIN_VOLTAGE2 17
 #define PIN_CURRENT 18
 #define PIN_PRESSURE 19
-#define SMARTPORT_FRSKY_SERIAL hardSerial0
-#define SRXL_IBUS_SBUS_SERIAL hardSerial0
+#define SMARTPORT_FRSKY_SBUS_SERIAL hardSerial0
+#define SRXL_IBUS_SERIAL hardSerial0
 #define ESC_SERIAL hardSerial1
 #define GPS_SERIAL hardSerial2
 #define DEBUG_SERIAL Serial

@@ -40,7 +40,7 @@
 #include "multiplex.h"
 
 #if RX_PROTOCOL == RX_SMARTPORT
-Smartport smartport(SMARTPORT_FRSKY_SERIAL);
+Smartport smartport(SMARTPORT_FRSKY_SBUS_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_XBUS
@@ -48,23 +48,23 @@ Xbus xbus;
 #endif
 
 #if RX_PROTOCOL == RX_SRXL
-Srxl srxl(SRXL_IBUS_SBUS_SERIAL);
+Srxl srxl(SRXL_IBUS_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_FRSKY
-Frsky frsky(SMARTPORT_FRSKY_SERIAL);
+Frsky frsky(SMARTPORT_FRSKY_SBUS_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_IBUS
-Ibus ibus(SRXL_IBUS_SBUS_SERIAL);
+Ibus ibus(SRXL_IBUS_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_SBUS
-Sbus sbus(SRXL_IBUS_SBUS_SERIAL);
+Sbus sbus(SMARTPORT_FRSKY_SBUS_SERIAL);
 #endif
 
 #if RX_PROTOCOL == RX_MULTIPLEX
-Multiplex multiplex(SRXL_IBUS_SBUS_SERIAL);
+Multiplex multiplex(SRXL_IBUS_SERIAL);
 #endif
 
 PwmOut pwmOut;

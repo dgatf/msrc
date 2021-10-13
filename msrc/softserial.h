@@ -45,23 +45,22 @@
 #define SOFTSERIAL_RECEIVING 1
 #define SOFTSERIAL_SENDING 2
 
-#define setPinLogic1 inverted_ ? PORTB &= ~_BV(PORTB4) : PORTB |= _BV(PORTB4)
-#define setPinLogic0 inverted_ ? PORTB |= _BV(PORTB4) : PORTB &= ~_BV(PORTB4)
+#define setPinHigh PORTB |= _BV(PORTB4)
+#define setPinLow PORTB &= ~_BV(PORTB4)
 
-/* This needs to be fast. Fixed at 8N1 and Rx and Tx pins. Parameters: baud rate and inverted */
+/* This needs to be fast. Blocking driver and fixed at 8N1 and Rx and Tx pins. Parameters: baud rate and inverted */
 
 class SoftSerial : public AbstractSerial
 {
 private:
-    volatile uint8_t incomingByte;
-    uint8_t outgoingByte;
-    volatile uint8_t bit;
-    volatile uint8_t initVal;
-    uint8_t delta[12];
-    uint8_t initDeltaRx;
-    uint8_t initDeltaTx;
-    volatile uint8_t status;
     bool inverted_;
+    uint16_t tx_delay;
+    uint16_t rx_delay;
+    uint16_t rx_delay_centering;
+    uint16_t rx_delay_stop;
+    uint16_t subs(uint16_t val1, uint16_t val2);
+    uint8_t timedout = false;
+    volatile uint8_t cont;
 
 public:
     SoftSerial();
