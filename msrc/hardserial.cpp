@@ -67,15 +67,11 @@ void HardSerial::USART_UDRE_handler()
 
 void HardSerial::USART_RX_handler()
 {
-    if (timeout_)
-    {
-        if ((uint16_t)micros() - ts > timeout_ * 1000)
-        {
-            reset();
-        }
-    }
+    if (timedout)
+        reset();
     writeRx(*udr_);
     ts = micros();
+    timedout = false;
 }
 
 void HardSerial::begin(uint32_t baud, uint8_t format)
@@ -97,9 +93,17 @@ void HardSerial::initWrite()
 
 uint8_t HardSerial::availableTimeout()
 {
-  if ((uint16_t)micros() - ts > timeout_ * 1000)
-    return available();
-  else
+    if (timeout_)
+    {
+        cli();
+        if ((uint16_t)micros() - ts > timeout_ * 1000)
+        {
+            timedout = true;
+        }
+        sei();
+        if (timedout)
+            return available();
+    }
     return 0;
 }
 
@@ -142,16 +146,12 @@ void HardSerial::UART_IRQ_handler()
 {
     if (*uart_s1_ & UART_S1_RDRF) // Rx complete interrupt
     {
-        if (timeout_)
-        {
-            if ((uint16_t)micros() - ts > timeout_ * 1000)
-            {
-                reset();
-            }
-        }
+        if (timedout)
+            reset();
         uint8_t c = *uart_d_;
         writeRx(c);
         ts = micros();
+        timedout = false;
     }
     if (*uart_s1_ & UART_S1_TDRE) // Tx complete interrupt
     {
@@ -240,9 +240,17 @@ void HardSerial::initWrite()
 
 uint8_t HardSerial::availableTimeout()
 {
-  if ((uint16_t)micros() - ts > timeout_ * 1000)
-    return available();
-  else
+    if (timeout_)
+    {
+        cli();
+        if ((uint16_t)micros() - ts > timeout_ * 1000)
+        {
+            timedout = true;
+        }
+        sei();
+        if (timedout)
+            return available();
+    }
     return 0;
 }
 

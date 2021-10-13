@@ -53,6 +53,8 @@ class HardSerial : public AbstractSerial
 {
 private:
 public:
+    volatile uint16_t ts = 0;
+    uint8_t timedout = false;
     volatile uint8_t *const udr_;
     volatile uint8_t *const ucsra_;
     volatile uint8_t *const ucsrb_;

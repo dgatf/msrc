@@ -13,7 +13,7 @@ void EscHW3::begin()
 void EscHW3::update()
 {
     static uint16_t serialTs = 0;
-    if (serial_.available() == ESCHWV3_PACKET_LENGHT)
+    if (serial_.availableTimeout() == ESCHWV3_PACKET_LENGHT)
     {
         uint8_t data[ESCHWV3_PACKET_LENGHT];
         serial_.readBytes(data, ESCHWV3_PACKET_LENGHT);

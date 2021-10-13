@@ -28,8 +28,6 @@ public:
     void writeRx(uint8_t value);
     void reset();
     uint8_t readTx();
-
-    volatile uint16_t ts;
     virtual void begin(uint32_t baud, uint8_t format) = 0;
     virtual void initWrite() = 0;
     virtual void write(uint8_t data);
@@ -40,7 +38,6 @@ public:
     virtual uint8_t available();
     uint8_t availableTx();
     virtual uint8_t availableTimeout() = 0;
-    virtual uint16_t getTimestamp();
     virtual void setTimeout(uint8_t timeout);
 
     void print(uint8_t value, uint8_t base = DEC);

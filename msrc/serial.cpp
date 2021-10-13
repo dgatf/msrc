@@ -90,11 +90,6 @@ uint8_t AbstractSerial::availableTx()
   return (writePosTx - readPosTx) & (FIFO_SIZE - 1);
 }
 
-uint16_t AbstractSerial::getTimestamp()
-{
-  return ts;
-}
-
 void AbstractSerial::print(uint8_t value, uint8_t base)
 {
   print((uint32_t)value, base);
