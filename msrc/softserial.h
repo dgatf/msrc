@@ -59,13 +59,14 @@ private:
     uint16_t rx_delay_centering;
     uint16_t rx_delay_stop;
     uint16_t subs(uint16_t val1, uint16_t val2);
-    uint8_t timedout = false;
+    volatile uint8_t timedout = false;
     volatile uint8_t cont;
 
 public:
     SoftSerial();
     void begin(uint32_t baud, uint8_t format);
     void initWrite();
+    uint8_t availableTimeout();
     void PCINT2_handler();
     void TIMER0_COMPA_handler();
 };

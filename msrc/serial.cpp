@@ -90,14 +90,6 @@ uint8_t AbstractSerial::availableTx()
   return (writePosTx - readPosTx) & (FIFO_SIZE - 1);
 }
 
-uint8_t AbstractSerial::availableTimeout()
-{
-  if ((uint16_t)micros() - ts > timeout_ * 1000)
-    return available();
-  else
-    return 0;
-}
-
 uint16_t AbstractSerial::getTimestamp()
 {
   return ts;

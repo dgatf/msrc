@@ -95,6 +95,14 @@ void HardSerial::initWrite()
     *ucsrb_ |= _BV(UDREx);
 }
 
+uint8_t HardSerial::availableTimeout()
+{
+  if ((uint16_t)micros() - ts > timeout_ * 1000)
+    return available();
+  else
+    return 0;
+}
+
 HardSerial::HardSerial(volatile uint8_t *udr, volatile uint8_t *ucsra, volatile uint8_t *ucsrb, volatile uint8_t *ucsrc, volatile uint8_t *ubrrl, volatile uint8_t *ubrrh)
     : udr_(udr), ucsra_(ucsra), ucsrb_(ucsrb), ucsrc_(ucsrc), ubrrl_(ubrrl), ubrrh_(ubrrh) {}
 
@@ -228,6 +236,14 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
 void HardSerial::initWrite()
 {
     *uart_c2_ |= UART_C2_TIE;
+}
+
+uint8_t HardSerial::availableTimeout()
+{
+  if ((uint16_t)micros() - ts > timeout_ * 1000)
+    return available();
+  else
+    return 0;
 }
 
 HardSerial::HardSerial(volatile uint32_t *core_pin_rx_config, volatile uint32_t *core_pin_tx_config, volatile uint8_t *uart_d, volatile uint8_t *uart_s1, volatile uint8_t *uart_s2, volatile uint8_t *uart_bdh, volatile uint8_t *uart_bdl, volatile uint8_t *uart_c1, volatile uint8_t *uart_c2, volatile uint8_t *uart_c3, uint8_t irq_uart_status, uint32_t sim_scgc4_uart) : core_pin_rx_config_(core_pin_rx_config), core_pin_tx_config_(core_pin_tx_config), uart_d_(uart_d), uart_s1_(uart_s1), uart_s2_(uart_s2), uart_bdh_(uart_bdh), uart_bdl_(uart_bdl), uart_c1_(uart_c1), uart_c2_(uart_c2), uart_c3_(uart_c3), irq_uart_status_(irq_uart_status), sim_scgc4_uart_(sim_scgc4_uart) {}

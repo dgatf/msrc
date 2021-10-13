@@ -39,7 +39,7 @@ public:
     virtual uint8_t readFrame(uint8_t *buff);
     virtual uint8_t available();
     uint8_t availableTx();
-    virtual uint8_t availableTimeout();
+    virtual uint8_t availableTimeout() = 0;
     virtual uint16_t getTimestamp();
     virtual void setTimeout(uint8_t timeout);
 

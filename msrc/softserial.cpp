@@ -118,6 +118,14 @@ void SoftSerial::initWrite()
   PCMSKx |= _BV(PCINTxn);
 }
 
+uint8_t SoftSerial::availableTimeout()
+{
+  if (timedout)
+    return available();
+  else
+    return 0;
+}
+
 void SoftSerial::begin(uint32_t baud, uint8_t format)
 {
   // FORMAT: 8N1

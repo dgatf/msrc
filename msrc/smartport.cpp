@@ -11,7 +11,7 @@ Smartport::~Smartport()
 
 void Smartport::begin()
 {
-    serial_.begin(57600, SERIAL_8N1_RXINV_TXINV | SERIAL_HALF_DUP);
+    serial_.begin(9600, SERIAL_8N1_RXINV_TXINV | SERIAL_HALF_DUP);
     serial_.setTimeout(2);
     pinMode(LED_BUILTIN, OUTPUT);
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
@@ -201,8 +201,19 @@ uint8_t Smartport::read(uint8_t &sensorId, uint8_t &frameId, uint16_t &dataId, u
     {
         uint8_t data[15];
         serial_.readBytes(data, lenght);
+#ifdef DEBUG_PACKET
+            DEBUG_PRINT("< ");
+            for (uint8_t i = 0; i < lenght; i++)
+            {
+                DEBUG_PRINT_HEX(data[i]);
+                DEBUG_PRINT(" ");
+            }
+            DEBUG_PRINTLN();
+#endif 
         if (lenght == 2 && data[0] == 0x7E && data[1] == sensorId_)
+        {
             packet = RECEIVED_POLL;
+        }
         if (lenght >= 10)
         {
             uint8_t i;

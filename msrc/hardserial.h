@@ -63,6 +63,7 @@ public:
     void begin(uint32_t baud, uint8_t format);
     void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
     void initWrite();
+    uint8_t availableTimeout();
     void USART_RX_handler();
     void USART_UDRE_handler();
 };
@@ -130,6 +131,7 @@ public:
     HardSerial(volatile uint32_t * core_pin_rx_config, volatile uint32_t * core_pin_tx_config, volatile uint8_t * uart_d, volatile uint8_t * uart_s1, volatile uint8_t * uart_s2, volatile uint8_t * uart_bdh, volatile uint8_t * uart_bdl, volatile uint8_t * uart_c1, volatile uint8_t * uart_c2, volatile uint8_t * uart_c3, uint8_t irq_uart_status, uint32_t sim_scgc4_uart);
     void begin(uint32_t baud, uint8_t format);
     void initWrite();
+    uint8_t availableTimeout();
     void UART_IRQ_handler();
 };
 
