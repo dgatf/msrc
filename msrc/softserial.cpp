@@ -18,8 +18,10 @@ void SoftSerial::TIMER0_COMPA_handler()
 {
   cont++;
   if (timeout_ / (uint8_t)(255 * MS_TO_COMP(64)) == cont)
+  {
     timedout = true;
-  TIMSK0 &= ~_BV(OCIE0A);
+    TIMSK0 &= ~_BV(OCIE0A);
+  }
 }
 
 void SoftSerial::PCINT2_handler()
@@ -65,7 +67,6 @@ void SoftSerial::PCINT2_handler()
     OCR0A = TCNT0 - 1;
     TIFR0 |= _BV(OCF0A);
     TIMSK0 |= _BV(OCIE0A);
-    
   }
 }
 
