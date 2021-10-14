@@ -56,6 +56,7 @@ void Multiplex::sendPacket(uint8_t address)
     if (isNegative)
         value |= 1 << 15;
     serial_.write(value);
+    serial_.write(value >> 8);
     digitalWrite(LED_BUILTIN, LOW);
 #ifdef DEBUG
     DEBUG_PRINT_HEX((uint8_t)(address << 4 | sensorMultiplexP[address]->dataId()));

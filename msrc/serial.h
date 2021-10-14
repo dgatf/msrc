@@ -13,7 +13,6 @@
 class AbstractSerial
 {
 protected:
-    uint8_t timeout_ = 0;
 
 public:
     AbstractSerial();
@@ -38,7 +37,7 @@ public:
     virtual uint8_t available();
     uint8_t availableTx();
     virtual uint8_t availableTimeout() = 0;
-    virtual void setTimeout(uint8_t timeout);
+    virtual void setTimeout(uint8_t timeout) = 0;
 
     void print(uint8_t value, uint8_t base = DEC);
     void print(int8_t value);

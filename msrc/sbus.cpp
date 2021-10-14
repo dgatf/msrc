@@ -54,7 +54,10 @@ void Sbus::sendPacket(uint8_t telemetryPacket)
 void Sbus::sendSlot(uint8_t number)
 {
     serial_.write(slotId[number]);
-    serial_.write(sensorSbusP[number]->valueFormatted());
+    //serial_.write(sensorSbusP[number]->valueFormatted());
+    uint16_t val = sensorSbusP[number]->valueFormatted();
+    serial_.write(val);
+    serial_.write(val >> 8);
 #ifdef DEBUG
 
     DEBUG_PRINT("(");

@@ -53,8 +53,8 @@ class HardSerial : public AbstractSerial
 {
 private:
 public:
+    uint16_t timeout_;
     volatile uint16_t ts = 0;
-    uint8_t timedout = false;
     volatile uint8_t *const udr_;
     volatile uint8_t *const ucsra_;
     volatile uint8_t *const ucsrb_;
@@ -66,6 +66,7 @@ public:
     void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
     void initWrite();
     uint8_t availableTimeout();
+    void setTimeout(uint8_t timeout);
     void USART_RX_handler();
     void USART_UDRE_handler();
 };
