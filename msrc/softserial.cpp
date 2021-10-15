@@ -4,7 +4,7 @@
 
 ISR(PCINTx_vect)
 {
-    softSerial.PCINT2_handler();
+    softSerial.PCINT_handler();
 }
 
 ISR(TIMER2_COMPB_vect)
@@ -20,7 +20,7 @@ void SoftSerial::TIMER_COMP_handler()
     timedout = true;
 }
 
-void SoftSerial::PCINT2_handler()
+void SoftSerial::PCINT_handler()
 {
     if (inverted_ ? bit_is_set(PINx, PINxn) : !bit_is_set(PINx, PINxn))
     {

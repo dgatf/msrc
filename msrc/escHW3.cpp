@@ -24,6 +24,7 @@ void EscHW3::update()
                 rpmCycle = 1;
             float rpm = 60000000.0 / rpmCycle;
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+            serialTs = millis();
 #ifdef DEBUG_HW3
             uint32_t pn = (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
             DEBUG_PRINT(pn);
@@ -33,7 +34,7 @@ void EscHW3::update()
 #endif
         }
     }
-    if ((uint16_t)micros() - serialTs > 50000)
+    if ((uint16_t)millis() - serialTs > 100)
         rpm_ = 0;
 #ifdef SIM_SENSORS
     rpm_ = 12345.67;

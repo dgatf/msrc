@@ -2,7 +2,7 @@
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
 
-#if defined(UBRR0H) && defined(__AVR_ATmega328P__)
+#if defined(USART_RX_vect)
 ISR(USART_RX_vect)
 {
     hardSerial0.USART_RX_handler();
@@ -13,7 +13,7 @@ ISR(USART_UDRE_vect)
 }
 #endif
 
-#if defined(UBRR0H) && !defined(__AVR_ATmega328P__)
+#if defined(USART0_RX_vect)
 ISR(USART0_RX_vect)
 {
     hardSerial0.USART_RX_handler();
@@ -24,7 +24,7 @@ ISR(USART0_UDRE_vect)
 }
 #endif
 
-#if defined(UBRR1H)
+#if defined(USART1_RX_vect)
 ISR(USART1_RX_vect)
 {
     hardSerial1.USART_RX_handler();
@@ -35,7 +35,7 @@ ISR(USART1_UDRE_vect)
 }
 #endif
 
-#if defined(UBRR2H)
+#if defined(USART2_RX_vect)
 ISR(USART2_RX_vect)
 {
     hardSerial2.USART_RX_handler();
@@ -46,7 +46,7 @@ ISR(USART2_UDRE_vect)
 }
 #endif
 
-#if defined(UBRR3H)
+#if defined(USART3_RX_vect)
 ISR(USART3_RX_vect)
 {
     hardSerial3.USART_RX_handler();

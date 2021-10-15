@@ -68,7 +68,7 @@ public:
     void initWrite();
     uint8_t availableTimeout();
     void setTimeout(uint8_t timeout);
-    void PCINT2_handler();
+    void PCINT_handler();
     void TIMER_COMP_handler();
 };
 
