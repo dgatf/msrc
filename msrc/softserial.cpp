@@ -64,10 +64,10 @@ void SoftSerial::PCINT_handler()
 
 void SoftSerial::initWrite()
 {
+    PCMSKx &= ~_BV(PCINTxn);
     uint8_t outgoingByte = readTx();
     if (inverted_)
         outgoingByte = ~outgoingByte;
-    PCMSKx &= ~_BV(PCINTxn);
 
     // start bit
     if (inverted_)
@@ -149,7 +149,7 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     // 1 bit delay in 4 clock cycles
     uint16_t delay = (F_CPU / baud) / 4;
     // substract overheads
-    tx_delay = subs(delay, 30 / 4); // 15
+    tx_delay = subs(delay, 20 / 4); // 15
     rx_delay = subs(delay, 14 / 4); // 23:  16-19  17
     rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 18) / 4);
     rx_delay_stop = subs(delay * 3 / 4, (37 + 11) / 4);
