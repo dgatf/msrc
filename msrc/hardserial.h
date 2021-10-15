@@ -13,12 +13,14 @@
 #define RXCIEx RXCIE1
 #define RXENx RXEN1
 #define TXENx TXEN1
+#define RXCx RXC1
 #else
 #define UDREx UDRE0
 #define U2Xx U2X0
 #define RXCIEx RXCIE0
 #define RXENx RXEN0
 #define TXENx TXEN0
+#define RXCx RXC0
 #endif
 
 #define SERIAL_8N1 0x06
