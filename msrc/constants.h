@@ -25,8 +25,8 @@
 #define PIN_PRESSURE A7
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
 #define SRXL_IBUS_SERIAL hardSerial0
-#define ESC_SERIAL hardSerial0   // if using with srxl or ibus, use softSerial. If there is no reading, use 3.3v board
-#define GPS_SERIAL hardSerial0   // Same as above. Only one softserial is feasible
+#define ESC_SERIAL hardSerial0   // if using with srxl, ibus or multiplex, use softSerial. If there is no reading, use a 3.3v board
+#define GPS_SERIAL hardSerial0   // same as above. Only one softserial is feasible
 #define DEBUG_SERIAL hardSerial0
 #if defined(DEBUG_INIT) && !defined(DEBUG_GPS) 
 #define DISABLE_GPS
