@@ -3,18 +3,20 @@
 
 #include "config.h"
 
-// Version
+/* Version */
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 8
 #define VERSION_PATCH 0
 
-// Init debug port
+/* Init debug port */
 #if (defined(DEBUG) || defined(DEBUG_PACKET) || defined(DEBUG_EEPROM_WRITE) || defined(DEBUG_EEPROM_READ) || defined(DEBUG_GPS) || defined(DEBUG_HW3) || defined(DEBUG_HW4) || defined(DEBUG_PWM) || defined(DEBUG_CASTLE) || defined(DEBUG_CASTLE_RX) || defined(DEBUG_KONTRONIK))
 #define DEBUG_INIT DEBUG_SERIAL.begin(115200);
 #endif
 
-// Pins & Serial ports
-#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB) // ATmega328P
+/* Pins & Serial ports */
+
+// ATmega328P
+#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB) 
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
@@ -23,8 +25,8 @@
 #define PIN_PRESSURE A7
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
 #define SRXL_IBUS_SERIAL hardSerial0
-#define ESC_SERIAL hardSerial0
-#define GPS_SERIAL hardSerial0
+#define ESC_SERIAL hardSerial0   // if using with srxl or ibus, use softSerial. If there is no reading, use 3.3v board
+#define GPS_SERIAL hardSerial0   // Same as above. Only one softserial is feasible
 #define DEBUG_SERIAL hardSerial0
 #if defined(DEBUG_INIT) && !defined(DEBUG_GPS) 
 #define DISABLE_GPS
@@ -34,7 +36,8 @@
 #endif
 #endif
 
-#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) // ATmega328PB
+// ATmega328PB
+#if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
@@ -43,8 +46,8 @@
 #define PIN_PRESSURE A7
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
 #define SRXL_IBUS_SERIAL hardSerial1
-#define ESC_SERIAL hardSerial0
-#define GPS_SERIAL hardSerial1
+#define ESC_SERIAL hardSerial0  
+#define GPS_SERIAL hardSerial1   // if using with esc and srxl or ibus, use softSerial. If there is no reading, use 3.3v board
 #define DEBUG_SERIAL hardSerial0
 #if defined(DEBUG_INIT) && !defined(DEBUG_GPS) 
 #define DISABLE_GPS
@@ -54,7 +57,8 @@
 #endif
 #endif
 
-#if defined(__AVR_ATmega2560__) // ATmega2560
+// ATmega2560
+#if defined(__AVR_ATmega2560__)
 #define PIN_NTC1 A0
 #define PIN_NTC2 A1
 #define PIN_VOLTAGE1 A2
@@ -68,7 +72,8 @@
 #define DEBUG_SERIAL hardSerial0
 #endif
 
-#if defined(__AVR_ATmega32U4__) // ATmega32U4 (Teensy 2.0 / Arduino Pro Micro)
+// ATmega32U4 (Teensy 2.0)
+#if defined(__AVR_ATmega32U4__)
 #define PIN_NTC1 A0             // PF7
 #define PIN_NTC2 A1             // PF6
 #define PIN_VOLTAGE1 A2         // PF5
@@ -82,6 +87,7 @@
 #define DEBUG_SERIAL Serial
 #endif
 
+// Teensy LC/3.x
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
 #define PIN_NTC1 14
 #define PIN_NTC2 15
