@@ -149,9 +149,9 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     // 1 bit delay in 4 clock cycles
     uint16_t delay = (F_CPU / baud) / 4;
     // substract overheads
-    tx_delay = subs(delay, 20 / 4); // 15
-    rx_delay = subs(delay, 14 / 4); // 23:  16-19  17
-    rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 18) / 4);
+    tx_delay = subs(delay, 23 / 4); // for teensylc//atmega2560, 100000: 23
+    rx_delay = subs(delay, 16 / 4); // for teensylc/atmega2560, 100000: 16
+    rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 16) / 4);
     rx_delay_stop = subs(delay * 3 / 4, (37 + 11) / 4);
 
     // Set TMR2 to measure ms (max 16Mhz 16ms, 8Mhz 32ms)

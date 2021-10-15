@@ -64,8 +64,8 @@ void HardSerial::USART_UDRE_handler()
     else
     {
         *ucsrb_ &= ~_BV(UDREx);
-        *ucsra_ |= _BV(RXCx);
-        *ucsrb_ |= _BV(RXCIEx);
+        //*ucsra_ |= _BV(RXCx);
+        //*ucsrb_ |= _BV(RXCIEx);
     }
 }
 
@@ -92,7 +92,7 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
 void HardSerial::initWrite()
 {
     *ucsrb_ |= _BV(UDREx);
-    *ucsrb_ &= ~_BV(RXCIEx);
+    //*ucsrb_ &= ~_BV(RXCIEx);
 }
 
 uint8_t HardSerial::availableTimeout()
