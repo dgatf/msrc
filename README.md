@@ -495,7 +495,7 @@ Adjust constants in *pressure.h*:
 
 0.8
 
-- Added drivers for hardware serial and software serial
+- Added specific drivers for hardware serial and software serial
 - Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2, Multiplex Sensor Bus
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
