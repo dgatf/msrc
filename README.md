@@ -89,13 +89,13 @@ Depending on the receiver protocol connect to the Rx as follows
 ### ATmega boards
 
 <p align="center"><img src="./images/frsky_smartport.png" width="350"><br>
-<i>Frsky Smartport, SBUS (ATmega 16Mhz)</i><br><br></p>
+<i>Frsky Smartport, SBUS (SBUS only ATmega 16Mhz)</i><br><br></p>
 
 <p align="center"><img src="./images/frsky_d.png" width="350"><br>
 <i>Frsky D</i><br><br></p>
 
 <p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="350"><br>
-<i>SRXL, IBUS, SBUS (ATmega 8Mhz + signal inverter)</i><br><br></p>
+<i>SRXL, IBUS, SBUS (SBUS ATmega 8Mhz + signal inverter)</i><br><br></p>
 
 ### ARM Cortex boards 
 
