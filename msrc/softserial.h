@@ -53,9 +53,8 @@
 class SoftSerial : public AbstractSerial
 {
 private:
-    volatile uint8_t cont = 0;
     volatile bool timedout = false;
-    uint16_t timeout_ = 0;
+    uint8_t timeout_ = 0;
     bool inverted_;
     uint16_t tx_delay;
     uint16_t rx_delay;

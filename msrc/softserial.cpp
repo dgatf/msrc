@@ -7,7 +7,7 @@ ISR(PCINTx_vect)
     softSerial.PCINT2_handler();
 }
 
-ISR(TIMER0_COMPA_vect)
+ISR(TIMER2_COMPB_vect)
 {
     softSerial.TIMER_COMP_handler();
 }
@@ -16,12 +16,8 @@ SoftSerial::SoftSerial() {}
 
 void SoftSerial::TIMER_COMP_handler()
 {
-    if (cont > timeout_ >> 8)
-    {
-        TIMSK0 &= ~_BV(OCIE0A);
-        timedout = true;
-    }
-    cont++;
+    TIMSK2 &= ~_BV(OCIE2B);
+    timedout = true;
 }
 
 void SoftSerial::PCINT2_handler()
@@ -60,10 +56,9 @@ void SoftSerial::PCINT2_handler()
         timedout = false;
         PCIFR = B111;
         PCMSKx |= _BV(PCINTxn);
-        cont = 0;
-        OCR0A = TCNT0; // + (timeout_ % 0xFF);
-        TIFR0 |= _BV(OCF0A);
-        TIMSK0 |= _BV(OCIE0A);
+        OCR2B = TCNT2 + timeout_;
+        TIFR2 |= _BV(OCF2B);
+        TIMSK2 |= _BV(OCIE2B);
     }
 }
 
@@ -124,7 +119,7 @@ uint8_t SoftSerial::availableTimeout()
 
 void SoftSerial::setTimeout(uint8_t timeout)
 {
-    timeout_ = timeout * MS_TO_COMP(64);
+    timeout_ = timeout * MS_TO_COMP(1024);
 }
 
 void SoftSerial::begin(uint32_t baud, uint8_t format)
@@ -159,7 +154,9 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 18) / 4);
     rx_delay_stop = subs(delay * 3 / 4, (37 + 11) / 4);
 
+    // Set TMR2 to measure ms (max 16Mhz 16ms, 8Mhz 32ms)
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
+    TCCR2A = 0;
 }
 
 uint16_t SoftSerial::subs(uint16_t val1, uint16_t val2)

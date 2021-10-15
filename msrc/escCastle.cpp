@@ -55,13 +55,13 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
 
 void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
 {
-    DDRB &= ~_BV(DDB2);   // PWM OUT (PB2, PIN10) INPUT
-    PORTB |= _BV(PB2);    // PB2 PULLUP
-    EIFR |= _BV(INTF0);   // CLEAR INT0 FLAG
-    EIMSK = _BV(INT0);    // ENABLE INT0 (PD2, PIN2)
-    TCNT2 = 0;            // RESET TIMER2 COUNTER
-    TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
-    TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
+    DDRB &= ~_BV(DDB2);                    // PWM OUT (PB2, PIN10) INPUT
+    PORTB |= _BV(PB2);                     // PB2 PULLUP
+    EIFR |= _BV(INTF0);                    // CLEAR INT0 FLAG
+    EIMSK = _BV(INT0);                     // ENABLE INT0 (PD2, PIN2)
+    OCR2A = TCNT2 + 12 * MS_TO_COMP(1024); // 12ms AHEAD
+    TIFR2 |= _BV(OCF2A);                   // CLEAR TIMER2 OCRA CAPTURE FLAG
+    TIMSK2 |= _BV(OCIE2A);                 // ENABLE TIMER2 OCRA INTERRUPT
 }
 
 void EscCastle::INT0_handler() // READ TELEMETRY
@@ -81,9 +81,9 @@ void EscCastle::INT0_handler() // READ TELEMETRY
 
 void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
 {
-    EIMSK = 0;         // DISABLE INT0 (PD2, PIN2)
-    TIMSK2 = 0;        // DISABLE TIMER2 INTS
-    DDRB |= _BV(DDB2); // PWM OUT PIN 10 OUTPUT
+    EIMSK = 0;              // DISABLE INT0 (PD2, PIN2)
+    TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
+    DDRB |= _BV(DDB2);      // PWM OUT PIN 10 OUTPUT
     if (castleRxLastReceived > RX_MAX_CYCLES)
     {
         OCR1B = 0;
@@ -153,13 +153,13 @@ void EscCastle::TIMER1_OVF_handler() // NO RX INPUT
 
 void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
 {
-    DDRD &= ~_BV(DDD2);   // INPUT OC4B (PD2, 2)
-    PORTD |= _BV(PD2);    // PD2 PULLUP
-    TIFR4 |= _BV(ICF4);   // CLEAR ICP4 CAPTURE FLAG
-    TIMSK4 |= _BV(ICIE4); // ENABLE ICP4 CAPT
-    TCNT2 = 0;            // RESET TIMER2 COUNTER
-    TIFR2 |= _BV(OCF2A);  // CLEAR TIMER2 OCRA CAPTURE FLAG
-    TIMSK2 = _BV(OCIE2A); // ENABLE TIMER2 OCRA INTERRUPT
+    DDRD &= ~_BV(DDD2);                    // INPUT OC4B (PD2, 2)
+    PORTD |= _BV(PD2);                     // PD2 PULLUP
+    TIFR4 |= _BV(ICF4);                    // CLEAR ICP4 CAPTURE FLAG
+    TIMSK4 |= _BV(ICIE4);                  // ENABLE ICP4 CAPT
+    OCR2A = TCNT2 + 12 * MS_TO_COMP(1024); // 12ms AHEAD
+    TIFR2 |= _BV(OCF2A);                   // CLEAR TIMER2 OCRA CAPTURE FLAG
+    TIMSK2 |= _BV(OCIE2A);                 // ENABLE TIMER2 OCRA INTERRUPT
 }
 
 void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
