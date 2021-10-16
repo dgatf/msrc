@@ -7,6 +7,10 @@ ISR(USART_RX_vect)
 {
     hardSerial0.USART_RX_handler();
 }
+ISR(USART_TX_vect)
+{
+    hardSerial0.USART_TX_handler();
+}
 ISR(USART_UDRE_vect)
 {
     hardSerial0.USART_UDRE_handler();
@@ -17,6 +21,10 @@ ISR(USART_UDRE_vect)
 ISR(USART0_RX_vect)
 {
     hardSerial0.USART_RX_handler();
+}
+ISR(USART0_TX_vect)
+{
+    hardSerial0.USART_TX_handler();
 }
 ISR(USART0_UDRE_vect)
 {
@@ -29,6 +37,10 @@ ISR(USART1_RX_vect)
 {
     hardSerial1.USART_RX_handler();
 }
+ISR(USART1_TX_vect)
+{
+    hardSerial1.USART_TX_handler();
+}
 ISR(USART1_UDRE_vect)
 {
     hardSerial1.USART_UDRE_handler();
@@ -39,6 +51,10 @@ ISR(USART1_UDRE_vect)
 ISR(USART2_RX_vect)
 {
     hardSerial2.USART_RX_handler();
+}
+ISR(USART2_TX_vect)
+{
+    hardSerial2.USART_TX_handler();
 }
 ISR(USART2_UDRE_vect)
 {
@@ -51,6 +67,10 @@ ISR(USART3_RX_vect)
 {
     hardSerial3.USART_RX_handler();
 }
+ISR(USART3_TX_vect)
+{
+    hardSerial3.USART_TX_handler();
+}
 ISR(USART3_UDRE_vect)
 {
     hardSerial3.USART_UDRE_handler();
@@ -61,11 +81,18 @@ void HardSerial::USART_UDRE_handler()
 {
     if (availableTx())
         *udr_ = readTx();
+    *ucsrb_ &= ~_BV(UDREx);
+}
+
+void HardSerial::USART_TX_handler()
+{
+    if (availableTx())
+        *udr_ = readTx();
     else
     {
-        *ucsrb_ &= ~_BV(UDREx);
-        //*ucsra_ |= _BV(RXCx);
-        //*ucsrb_ |= _BV(RXCIEx);
+        *ucsrb_ &= ~_BV(TXENx);
+        *ddr_ &= ~_BV(pinTx_);
+        *ucsrb_ |= _BV(RXENx);
     }
 }
 
@@ -80,19 +107,22 @@ void HardSerial::USART_RX_handler()
 void HardSerial::begin(uint32_t baud, uint8_t format)
 {
     cli();
-    *ucsrb_ = _BV(RXCIEx) | _BV(RXENx) | _BV(TXENx);
+    *ucsrb_ = _BV(RXCIEx) | _BV(TXCIEx) | _BV(RXENx);
     uint16_t val = (F_CPU / 4 / baud - 1) / 2;
     *ubrrl_ = val;
     *ubrrh_ = val >> 8;
     *ucsra_ = 1 << U2Xx;
     *ucsrc_ = format & ~0x40;
+    *port_ |= _BV(pinRx_); // pullup rx
     sei();
 }
 
 void HardSerial::initWrite()
 {
+    *ucsrb_ |= _BV(TXENx);
+    *ucsrb_ &= ~_BV(RXENx);
+    
     *ucsrb_ |= _BV(UDREx);
-    //*ucsrb_ &= ~_BV(RXCIEx);
 }
 
 uint8_t HardSerial::availableTimeout()
@@ -108,19 +138,28 @@ void HardSerial::setTimeout(uint8_t timeout)
     timeout_ = timeout;
 }
 
-HardSerial::HardSerial(volatile uint8_t *udr, volatile uint8_t *ucsra, volatile uint8_t *ucsrb, volatile uint8_t *ucsrc, volatile uint8_t *ubrrl, volatile uint8_t *ubrrh) : udr_(udr), ucsra_(ucsra), ucsrb_(ucsrb), ucsrc_(ucsrc), ubrrl_(ubrrl), ubrrh_(ubrrh) {}
+HardSerial::HardSerial(volatile uint8_t *udr, volatile uint8_t *ucsra, volatile uint8_t *ucsrb, volatile uint8_t *ucsrc, volatile uint8_t *ubrrl, volatile uint8_t *ubrrh, volatile uint8_t *ddr, volatile uint8_t *port, uint8_t pinRx, uint8_t pinTx) : udr_(udr), ucsra_(ucsra), ucsrb_(ucsrb), ucsrc_(ucsrc), ubrrl_(ubrrl), ubrrh_(ubrrh), ddr_(ddr), port_(port), pinRx_(pinRx), pinTx_(pinTx) {}
 
-#if defined(UBRR0H)
-HardSerial hardSerial0(&UDR0, &UCSR0A, &UCSR0B, &UCSR0C, &UBRR0L, &UBRR0H);
+#if defined(UBRR0H) && defined(__AVR_ATmega2560__)
+HardSerial hardSerial0(&UDR0, &UCSR0A, &UCSR0B, &UCSR0C, &UBRR0L, &UBRR0H, &DDRE, &PORTE, 0, 1);
 #endif
-#if defined(UBRR1H)
-HardSerial hardSerial1(&UDR1, &UCSR1A, &UCSR1B, &UCSR1C, &UBRR1L, &UBRR1H);
+#if defined(UBRR0H) && (defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__))
+HardSerial hardSerial0(&UDR0, &UCSR0A, &UCSR0B, &UCSR0C, &UBRR0L, &UBRR0H, &DDRD, &PORTD, 0, 1);
+#endif
+#if defined(UBRR0H) && defined(__AVR_ATmega32U4__)
+HardSerial hardSerial0(&UDR0, &UCSR0A, &UCSR0B, &UCSR0C, &UBRR0L, &UBRR0H, &DDRD, &PORTD, 2, 3);
+#endif
+#if defined(UBRR1H) && defined(__AVR_ATmega2560__)
+HardSerial hardSerial1(&UDR1, &UCSR1A, &UCSR1B, &UCSR1C, &UBRR1L, &UBRR1H, &DDRD, &PORTD, 2, 3);
+#endif
+#if defined(UBRR1H) && defined(__AVR_ATmega328PB__)
+HardSerial hardSerial1(&UDR1, &UCSR1A, &UCSR1B, &UCSR1C, &UBRR1L, &UBRR1H, &DDRB, &PORTB, 3, 4);
 #endif
 #if defined(UBRR2H)
-HardSerial hardSerial2(&UDR2, &UCSR2A, &UCSR2B, &UCSR2C, &UBRR2L, &UBRR2H);
+HardSerial hardSerial2(&UDR2, &UCSR2A, &UCSR2B, &UCSR2C, &UBRR2L, &UBRR2H, &DDRH, &PORTH, 0, 1);
 #endif
 #if defined(UBRR3H)
-HardSerial hardSerial3(&UDR3, &UCSR3A, &UCSR3B, &UCSR3C, &UBRR3L, &UBRR3H);
+HardSerial hardSerial3(&UDR3, &UCSR3A, &UCSR3B, &UCSR3C, &UBRR3L, &UBRR3H, &DDRJ, &PORTJ, 0, 1);
 #endif
 
 #endif

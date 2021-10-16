@@ -188,7 +188,7 @@ void setup()
     // DEBUG is on Serial. Default baud rate is 115200
     // For boards with 1 UART, baud rate will be changed to ESC or GPS baud rate if enabled
 #ifdef DEBUG_INIT
-    delay(200);
+    delay(1000);
     DEBUG_INIT;
     DEBUG_PRINT("\nV");
     DEBUG_PRINT(VERSION_MAJOR * 10000 + VERSION_MINOR * 100 + VERSION_PATCH);

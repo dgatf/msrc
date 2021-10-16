@@ -2,7 +2,6 @@
 #define HARDSERIAL_H
 
 #include <Arduino.h>
-#include "constants.h"
 #include "serial.h"
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
@@ -11,6 +10,7 @@
 #define UDREx UDRE1
 #define U2Xx U2X1
 #define RXCIEx RXCIE1
+#define TXCIEx TXCIE1
 #define RXENx RXEN1
 #define TXENx TXEN1
 #define RXCx RXC1
@@ -18,6 +18,7 @@
 #define UDREx UDRE0
 #define U2Xx U2X0
 #define RXCIEx RXCIE0
+#define TXCIEx TXCIE0
 #define RXENx RXEN0
 #define TXENx TXEN0
 #define RXCx RXC0
@@ -63,13 +64,18 @@ public:
     volatile uint8_t *const ucsrc_;
     volatile uint8_t *const ubrrl_;
     volatile uint8_t *const ubrrh_;
-    HardSerial(volatile uint8_t *udr, volatile uint8_t *ucsra, volatile uint8_t *ucsrb, volatile uint8_t *ucsrc, volatile uint8_t *ubrrl, volatile uint8_t *ubrrh);
+    volatile uint8_t *const ddr_;
+    volatile uint8_t *const port_;
+    uint8_t pinRx_;
+    uint8_t pinTx_;
+    HardSerial(volatile uint8_t *udr, volatile uint8_t *ucsra, volatile uint8_t *ucsrb, volatile uint8_t *ucsrc, volatile uint8_t *ubrrl, volatile uint8_t *ubrrh, volatile uint8_t *ddr, volatile uint8_t *port, uint8_t pinRx, uint8_t pinTx);
     void begin(uint32_t baud, uint8_t format);
     void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
     void initWrite();
     uint8_t availableTimeout();
     void setTimeout(uint8_t timeout);
     void USART_RX_handler();
+    void USART_TX_handler();
     void USART_UDRE_handler();
 };
 
@@ -137,6 +143,7 @@ public:
     uint8_t half_duplex_mode = 0;
     HardSerial(volatile uint32_t * core_pin_rx_config, volatile uint32_t * core_pin_tx_config, volatile uint8_t * uart_d, volatile uint8_t * uart_s1, volatile uint8_t * uart_s2, volatile uint8_t * uart_bdh, volatile uint8_t * uart_bdl, volatile uint8_t * uart_c1, volatile uint8_t * uart_c2, volatile uint8_t * uart_c3, uint8_t irq_uart_status, uint32_t sim_scgc4_uart);
     void begin(uint32_t baud, uint8_t format);
+    void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
     void initWrite();
     uint8_t availableTimeout();
     void setTimeout(uint8_t timeout);
