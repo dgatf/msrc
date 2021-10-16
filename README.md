@@ -97,6 +97,8 @@ Depending on the receiver protocol connect to the Rx as follows
 <p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="350"><br>
 <i>SRXL, IBUS, SBUS (SBUS ATmega 8Mhz + signal inverter)</i><br><br></p>
 
+1N4148 diode is preferred, but it can be substituted by a 100Ω resistor or removed and connect Tx to Rx directly
+
 ### ARM Cortex boards 
 
 <p align="center"><img src="./images/frsk_smartport_srxl_ibus_sbus_teensy.png" width="350"><br>
