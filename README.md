@@ -68,7 +68,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 
 (1) with pull up 3.3k  
-(2) diode 1N4148 (alternatively 1k resistor can be used. Conntecting pins directly will work but is not recommended). Note the inverted orientation of the diode for Frsky and SBUS due to the inverted logic  
+(2) diode 1N4148. Note the inverted orientation of the diode for Frsky and SBUS due to the inverted logic. Alternatively 1k resistor can be used instead  
 (3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)  
 (4) Use ATmega 16Mhz or Teensy LC/3.x (If using ATmega 8Mhz, it is needed a signal inverter and connect it to UART)  
 
