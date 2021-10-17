@@ -47,8 +47,6 @@
 #define setPinHigh PORTB |= _BV(PORTB4)
 #define setPinLow PORTB &= ~_BV(PORTB4)
 
-/* This needs to be fast. Blocking driver and fixed at 8N1 and Rx and Tx pins. Parameters: baud rate and inverted */
-
 class SoftSerial : public AbstractSerial
 {
 private:
