@@ -40,17 +40,19 @@ void SoftSerial::PCINT_handler()
                 incomingByte |= _BV(i);
 
             /*
-      _delay_loop_2(rx_delay);
-      incomingByte >>= 1;
-      if ( bit_is_set(PINx, PINxn) )
-        incomingByte |= 0x80;
-      */
+            _delay_loop_2(rx_delay);
+            incomingByte >>= 1;
+            if ( bit_is_set(PINx, PINxn) )
+                incomingByte |= 0x80;
+            */
         }
         if (inverted_)
             incomingByte = ~incomingByte;
 
         // stop bit
+
         //_delay_loop_2(rx_delay_stop);
+
         if (timedout)
             reset();
         writeRx(incomingByte);
@@ -112,10 +114,11 @@ void SoftSerial::initWrite()
     {
         setPinHigh;
     }
-    SREG = oldSREG;
-    _delay_loop_2(tx_delay);
 
     //DDRB &= ~_BV(DDB4);
+
+    SREG = oldSREG;
+    _delay_loop_2(tx_delay);
 }
 
 uint8_t SoftSerial::availableTimeout()
@@ -157,9 +160,9 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     // 1 bit delay in 4 clock cycles
     uint16_t delay = (F_CPU / baud) / 4;
     // substract overheads
-    tx_delay = subs(delay, 15 / 4); // for teensylc//atmega2560, 100000: 23
-    rx_delay = subs(delay, 23 / 4); // for teensylc/atmega2560, 100000: 16
-    rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 16) / 4);
+    tx_delay = subs(delay, 17 / 4);
+    rx_delay = subs(delay, 23 / 4);
+    rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 23) / 4);
     rx_delay_stop = subs(delay * 3 / 4, (37 + 11) / 4);
 
     // Set TMR2 to measure ms (max 16Mhz 16ms, 8Mhz 32ms)
