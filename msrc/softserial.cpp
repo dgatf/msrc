@@ -18,7 +18,7 @@ void SoftSerial::TIMER_COMP_handler()
 {
     TIMSK2 &= ~_BV(OCIE2B);
     if (timeout_)
-      timedout = true;
+        timedout = true;
 }
 
 void SoftSerial::PCINT_handler()
@@ -32,20 +32,22 @@ void SoftSerial::PCINT_handler()
         _delay_loop_2(rx_delay_centering);
 
         // data
+        /*
         for (uint8_t i = 0; i < 8; i++)
         {
-
             _delay_loop_2(rx_delay);
             if (bit_is_set(PINx, PINxn))
                 incomingByte |= _BV(i);
-
-            /*
+        }
+        */
+        for (uint8_t i = 8; i > 0; --i)
+        {
             _delay_loop_2(rx_delay);
             incomingByte >>= 1;
-            if ( bit_is_set(PINx, PINxn) )
+            if (bit_is_set(PINx, PINxn))
                 incomingByte |= 0x80;
-            */
         }
+
         if (inverted_)
             incomingByte = ~incomingByte;
 
