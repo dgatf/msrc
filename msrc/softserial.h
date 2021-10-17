@@ -2,7 +2,6 @@
 #define SOFTSERIAL_H
 
 #include <Arduino.h>
-#include "constants.h"
 #include "serial.h"
 #include "hardserial.h"
 
@@ -65,6 +64,7 @@ private:
 public:
     SoftSerial();
     void begin(uint32_t baud, uint8_t format);
+    void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
     void initWrite();
     uint8_t availableTimeout();
     void setTimeout(uint8_t timeout);

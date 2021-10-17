@@ -64,6 +64,7 @@ void SoftSerial::PCINT_handler()
 
 void SoftSerial::initWrite()
 {
+    DDRB |= _BV(DDB4);
     PCMSKx &= ~_BV(PCINTxn);
     uint8_t outgoingByte = readTx();
     if (inverted_)
@@ -106,6 +107,7 @@ void SoftSerial::initWrite()
     }
     _delay_loop_2(tx_delay);
 
+    DDRB &= ~_BV(DDB4);
     PCIFR = B111;
     PCMSKx |= _BV(PCINTxn);
 }
