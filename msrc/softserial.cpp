@@ -69,7 +69,7 @@ void SoftSerial::PCINT_handler()
 
 void SoftSerial::initWrite()
 {
-    //DDRB |= _BV(DDB4);
+    DDRB |= _BV(DDB4);
 
     uint8_t outgoingByte = readTx();
     uint8_t oldSREG = SREG;
@@ -117,7 +117,7 @@ void SoftSerial::initWrite()
         setPinHigh;
     }
 
-    //DDRB &= ~_BV(DDB4);
+    DDRB &= ~_BV(DDB4);
 
     SREG = oldSREG;
     _delay_loop_2(tx_delay);
@@ -147,11 +147,9 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     //     2560:    PIN D10 (PB4)
     //     32U4:    PIN B4  (PB4)
 
-    PORTx |= _BV(PORTxn);   // PULLUP
+    //PORTx |= _BV(PORTxn); // PULLUP
     PCICR |= _BV(PCIEx);    // ENABLE PCINT
     PCMSKx |= _BV(PCINTxn); // PCINT MASK
-
-    DDRB |= _BV(DDB4);
 
     inverted_ = format & 0x40;
     if (inverted_)
