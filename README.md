@@ -61,13 +61,13 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
-| Frsky Smartport, SBUS<sup>(4)</sup> | 7<sup>(1)</sup>  & 12<sup>(2)</sup> | 7<sup>(1)</sup>  & 12<sup>(2)</sup> | A15<sup>(1)</sup>  & D10<sup>(2)</sup> | B3<sup>(1)</sup>  & B4<sup>(2)</sup><br/>(15 & 16) | 1 |
+| Frsky Smartport, SBUS<sup>(4)</sup> | 7  & 12<sup>(2)</sup> | 7  & 12<sup>(2)</sup> | A15  & D10<sup>(2)</sup> | B3  & B4<sup>(2)</sup><br/>(15 & 16) | 1 |
 | Frsky D | 12 | 12 | D10 | B4(16) | 1 |
 | SRXL, IBUS, SB | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15(RX3) & 14(TX3)<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 1 |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 
-(1) with 3.3k (or 4.7k) pull-up (Castle) or pull-down (Frsky, SBUS)  
+(1) with 3.3k pull up resistor  
 (2) diode 1N4148. Note the inverted orientation of the diode for Frsky and SBUS due to the inverted logic. Alternatively 1k resistor can be used instead  
 (3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)  
 (4) Use ATmega 16Mhz or Teensy LC/3.x (If using ATmega 8Mhz, it is needed a signal inverter and connect it to UART)  
@@ -91,7 +91,7 @@ Depending on the receiver protocol connect to the Rx as follows
 
 1N4148 diode is preferred, but it can be substituted by 1k resistor
 
-<p align="center"><img src="./images/frsky_smartport.png" width="430"><br>
+<p align="center"><img src="./images/frsky_smartport.png" width="400"><br>
 <i>Frsky Smartport, SBUS (SBUS only ATmega 16Mhz)</i><br><br></p>
 
 <p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="460"><br>
