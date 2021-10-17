@@ -68,7 +68,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 
 (1) with pull up 3.3k  
-(2) with resistor 3.3k  
+(2) diode 1N4148 (alternatively 100Ω resistor resistor or conntect both pins directly)  
 (3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)  
 (4) Use ATmega 16Mhz or Teensy LC/3.x (If using ATmega 8Mhz, it is needed a signal inverter and connect it to UART)
 
@@ -88,16 +88,16 @@ Depending on the receiver protocol connect to the Rx as follows
 
 ### ATmega boards
 
+1N4148 diode is preferred, but it can be substituted by a 100Ω resistor or removed and connect Tx to Rx (or pin 7 to pin 12) directly
+
 <p align="center"><img src="./images/frsky_smartport.png" width="350"><br>
 <i>Frsky Smartport, SBUS (SBUS only ATmega 16Mhz)</i><br><br></p>
-
-<p align="center"><img src="./images/frsky_d.png" width="350"><br>
-<i>Frsky D</i><br><br></p>
 
 <p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="350"><br>
 <i>SRXL, IBUS, SBUS (SBUS ATmega 8Mhz + signal inverter)</i><br><br></p>
 
-1N4148 diode is preferred, but it can be substituted by a 100Ω resistor or removed and connect Tx to Rx directly
+<p align="center"><img src="./images/frsky_d.png" width="350"><br>
+<i>Frsky D</i><br><br></p>
 
 ### ARM Cortex boards 
 
