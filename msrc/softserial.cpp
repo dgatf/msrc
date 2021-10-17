@@ -17,7 +17,8 @@ SoftSerial::SoftSerial() {}
 void SoftSerial::TIMER_COMP_handler()
 {
     TIMSK2 &= ~_BV(OCIE2B);
-    timedout = true;
+    if (timeout_)
+      timedout = true;
 }
 
 void SoftSerial::PCINT_handler()
