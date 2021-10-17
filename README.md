@@ -91,13 +91,13 @@ Depending on the receiver protocol connect to the Rx as follows
 
 1N4148 diode is preferred, but it can be substituted by 1k resistor
 
-<p align="center"><img src="./images/frsky_smartport.png" width="350"><br>
+<p align="center"><img src="./images/frsky_smartport.png" width="430"><br>
 <i>Frsky Smartport, SBUS (SBUS only ATmega 16Mhz)</i><br><br></p>
 
-<p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="350"><br>
+<p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="460"><br>
 <i>SRXL, IBUS, SBUS (SBUS ATmega 8Mhz + signal inverter)</i><br><br></p>
 
-<p align="center"><img src="./images/frsky_d.png" width="350"><br>
+<p align="center"><img src="./images/frsky_d.png" width="310"><br>
 <i>Frsky D</i><br><br></p>
 
 ### ARM Cortex boards 
@@ -144,7 +144,7 @@ Compatible ESC serial protocols: Hobbywing V3/V4/V5 and Kontronik (Kosmic, Kolib
 
 Optionally a PWM signal can be generated from the RPM value in serial telemetry
 
-<p align="center"><img src="./images/serial.png" width="400"><br>
+<p align="center"><img src="./images/serial.png" width="360"><br>
   <i>ESC serial</i><br><br></p>
 
 Remark:
@@ -156,7 +156,7 @@ Remark:
 
 If the ESC have a PWM signal or a phase sensor is installed, RPMs can be measured. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
 
-<p align="center"><img src="./images/pwm_in.png" width="400"><br>
+<p align="center"><img src="./images/pwm_in.png" width="350"><br>
   <i>PWM signal/phase sensor circuit</i><br><br></p>
 
 #### Castle link
@@ -165,7 +165,7 @@ The telemetry is send over the ESC signal. *Castle Link* has to be enabled in th
 
 If using ATmega328P telemetry values are not accurate all the time. Some readings are increased by 5-10%. This is a hardware limitation
 
-<p align="center"><img src="./images/castle.png" width="500"><br>
+<p align="center"><img src="./images/castle.png" width="550"><br>
   <i>Castle Link with Smartport</i><br><br></p>
 
 #### Available ESC telemetry
