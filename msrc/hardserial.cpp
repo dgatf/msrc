@@ -196,7 +196,7 @@ void uart2_status_isr()
 
 void HardSerial::UART_IRQ_handler()
 {
-    if (*uart_s1_ & UART_S1_RDRF) // Rx complete interrupt
+    if ( (*uart_c2_ & UART_C2_RIE) && (*uart_s1_ & UART_S1_RDRF) ) // Rx complete interrupt
     {
         if ((uint16_t)millis() - ts > timeout_ && timeout_)
             reset();
@@ -204,32 +204,25 @@ void HardSerial::UART_IRQ_handler()
         writeRx(c);
         ts = millis();
     }
-    if (*uart_s1_ & UART_S1_TDRE) // Tx complete interrupt
+    if ( (*uart_c2_ & UART_C2_TIE) && (*uart_s1_ & UART_S1_TDRE) ) // Tx complete interrupt
     {
         if (availableTx())
         {
-            if (half_duplex_mode)
-            {
-                __disable_irq();
-                volatile uint32_t reg = *uart_c3_;
-                reg |= UART_C3_TXDIR;
-                *uart_c3_ = reg;
-                __enable_irq();
-            }
             *uart_d_ = readTx();
         }
         else
         {
             *uart_c2_ &= ~UART_C2_TIE;
-            if (half_duplex_mode)
-            {
-                __disable_irq();
-                volatile uint32_t reg = UART0_C3;
-                reg &= ~UART_C3_TXDIR;
-                UART0_C3 = reg;
-                __enable_irq();
-            }
+            *uart_c2_ |= UART_C2_TCIE;
         }
+    }
+    if ( (*uart_c2_ & UART_C2_TCIE) && (*uart_s1_ & UART_S1_TC) ) 
+    {
+        *uart_c3_ &= ~UART_C3_TXDIR;
+        *uart_c2_ &= ~UART_C2_TCIE;
+        *uart_c2_;
+        *uart_d_;
+        *uart_c2_ |= UART_C2_RIE;
     }
 }
 
@@ -265,7 +258,10 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
     // polarity
     c = *uart_s2_ & ~0x10;
     if (format & 0x10)
+    {
         c |= 0x10; // rx invert
+        *core_pin_rx_config_ &= ~PORT_PCR_PS;
+    }
     *uart_s2_ = c;
     c = *uart_c3_ & ~0x10;
     if (format & 0x20)
@@ -286,7 +282,9 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
 
 void HardSerial::initWrite()
 {
+    *uart_c2_ &= ~UART_C2_RIE;
     *uart_c2_ |= UART_C2_TIE;
+    *uart_c3_ |= UART_C3_TXDIR;
 }
 
 uint8_t HardSerial::availableTimeout()
