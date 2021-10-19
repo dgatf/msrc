@@ -168,9 +168,9 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     // 1 bit delay in 4 clock cycles
     uint16_t delay = (F_CPU / baud) / 4;
     // substract overheads
-    tx_delay = subs(delay, 17 / 4);
-    rx_delay = subs(delay, 18 / 4); //23
-    rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 18) / 4);
+    tx_delay = subs(delay, 17 / 4); //15
+    rx_delay = subs(delay, 15 / 4); //23
+    rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 15) / 4);
     rx_delay_stop = subs(delay * 3 / 4, (37 + 11) / 4);
 
     // Set TMR2 to measure ms (max 16Mhz 16ms, 8Mhz 32ms)
