@@ -255,6 +255,18 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
     c = (c & ~0x13) | (format & 0x03); // configure parity
     *uart_c1_ = c;
 
+    // half duplex.
+    if ((format & SERIAL_HALF_DUP) != 0)
+    {
+        c = *uart_c1_;
+        c |= UART_C1_LOOPS | UART_C1_RSRC;
+        *uart_c1_ = c;
+        half_duplex_mode = 1;
+        *core_pin_tx_config_ |= PORT_PCR_PE | PORT_PCR_PS;
+    }
+    else
+        half_duplex_mode = 0;
+        
     // polarity
     c = *uart_s2_ & ~0x10;
     if (format & 0x10)
@@ -265,19 +277,13 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
     *uart_s2_ = c;
     c = *uart_c3_ & ~0x10;
     if (format & 0x20)
+    {
         c |= 0x10; // tx invert
+        if (half_duplex_mode)
+            *core_pin_tx_config_ &= ~PORT_PCR_PS;
+    }
     *uart_c3_ = c;
 
-    // half duplex.
-    if ((format & SERIAL_HALF_DUP) != 0)
-    {
-        c = *uart_c1_;
-        c |= UART_C1_LOOPS | UART_C1_RSRC;
-        *uart_c1_ = c;
-        half_duplex_mode = 1;
-    }
-    else
-        half_duplex_mode = 0;
 }
 
 void HardSerial::initWrite()
