@@ -136,7 +136,7 @@ void EscCastle::TIMER1_CAPT_handler() // RX INPUT
         TCNT1 = 0;           // RESET COUNTER
 #ifdef DEBUG_CASTLE_RX
         DEBUG_PRINT(castlePwmRx);
-        DEBUG_PRINT();
+        DEBUG_PRINTLN();
 #endif
     }
     TCCR1B ^= _BV(ICES1); // TOGGLE ICP1 EDGE
@@ -221,7 +221,7 @@ void EscCastle::TIMER4_CAPT_handler() // RX INPUT
         TCNT4 = 0;           // RESET COUNTER
 #ifdef DEBUG_CASTLE_RX
         DEBUG_PRINT(castlePwmRx);
-        DEBUG_PRINT();
+        DEBUG_PRINTLN();
 #endif
     }
     TCCR4B ^= _BV(ICES4); // TOGGLE ICP4 EDGE
