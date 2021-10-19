@@ -137,7 +137,7 @@ void AbstractSerial::print(float value, uint8_t prec)
     writeBytes((uint8_t *)buff, lenght);
 }
 
-void AbstractSerial::print(char *buff)
+void AbstractSerial::print(const char *buff)
 {
     uint8_t lenght = 0;
     while (buff[lenght] && lenght < 32)

@@ -46,7 +46,7 @@ public:
     void print(uint32_t value, uint8_t base = DEC);
     void print(int32_t value);
     void print(float value, uint8_t prec = 2);
-    void print(char *value);
+    void print(const char *value);
     void print(char data);
 };
 
