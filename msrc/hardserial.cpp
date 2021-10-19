@@ -196,7 +196,7 @@ void uart2_status_isr()
 
 void HardSerial::UART_IRQ_handler()
 {
-    if ( (*uart_c2_ & UART_C2_RIE) && (*uart_s1_ & UART_S1_RDRF) ) // Rx complete interrupt
+    if ( (*uart_c2_ & UART_C2_RIE) && (*uart_s1_ & UART_S1_RDRF) )
     {
         if ((uint16_t)millis() - ts > timeout_ && timeout_)
             reset();
@@ -204,7 +204,7 @@ void HardSerial::UART_IRQ_handler()
         writeRx(c);
         ts = millis();
     }
-    if ( (*uart_c2_ & UART_C2_TIE) && (*uart_s1_ & UART_S1_TDRE) ) // Tx complete interrupt
+    if ( (*uart_c2_ & UART_C2_TIE) && (*uart_s1_ & UART_S1_TDRE) )
     {
         if (availableTx())
         {
@@ -213,7 +213,8 @@ void HardSerial::UART_IRQ_handler()
         else
         {
             *uart_c2_ &= ~UART_C2_TIE;
-            *uart_c2_ |= UART_C2_TCIE;
+            if (half_duplex_mode)
+            	*uart_c2_ |= UART_C2_TCIE;
         }
     }
     if ( (*uart_c2_ & UART_C2_TCIE) && (*uart_s1_ & UART_S1_TC) ) 
@@ -288,9 +289,12 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
 
 void HardSerial::initWrite()
 {
-    *uart_c2_ &= ~UART_C2_RIE;
     *uart_c2_ |= UART_C2_TIE;
-    *uart_c3_ |= UART_C3_TXDIR;
+    if (half_duplex_mode)
+    {
+        *uart_c2_ &= ~UART_C2_RIE;
+        *uart_c3_ |= UART_C3_TXDIR;
+    }
 }
 
 uint8_t HardSerial::availableTimeout()
