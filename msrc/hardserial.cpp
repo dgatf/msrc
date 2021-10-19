@@ -81,15 +81,22 @@ void HardSerial::USART_UDRE_handler()
 {
     if (availableTx())
         *udr_ = readTx();
-    *ucsrb_ &= ~_BV(UDREx);
+    else
+    {
+        *ucsrb_ &= ~_BV(UDRIEx);
+        if (half_duplex_)
+        {
+            *ucsra_ |= _BV(TXCx);
+            *ucsrb_ |= _BV(TXCIEx);
+        }
+    }
 }
 
 void HardSerial::USART_TX_handler()
 {
-    if (availableTx())
-        *udr_ = readTx();
-    else
+    if (!availableTx())
     {
+        *ucsrb_ &= ~_BV(TXCIEx);
         *ucsrb_ &= ~_BV(TXENx);
         *ddr_ &= ~_BV(pinTx_);
         *ucsrb_ |= _BV(RXENx);
@@ -106,22 +113,28 @@ void HardSerial::USART_RX_handler()
 
 void HardSerial::begin(uint32_t baud, uint8_t format)
 {
+    half_duplex_ = format & 0x80;
     cli();
-    *ucsrb_ = _BV(RXCIEx) | _BV(TXCIEx) | _BV(RXENx);
+    *ucsrb_ = _BV(RXCIEx) | _BV(RXENx);
+    if (!half_duplex_)
+        *ucsrb_ |= _BV(TXENx);
+    else
+        *port_ |= _BV(pinRx_); // RX PULLUP
     uint16_t val = (F_CPU / 4 / baud - 1) / 2;
     *ubrrl_ = val;
     *ubrrh_ = val >> 8;
     *ucsra_ = 1 << U2Xx;
     *ucsrc_ = format & ~0x40;
-    *port_ |= _BV(pinRx_); // pullup rx
     sei();
 }
 
 void HardSerial::initWrite()
 {
-    *ucsrb_ |= _BV(TXENx);
-    *ucsrb_ &= ~_BV(RXENx);
-    
+    if (half_duplex_)
+    {
+        *ucsrb_ |= _BV(TXENx);
+        *ucsrb_ &= ~_BV(RXENx);
+    }
     *ucsrb_ |= _BV(UDREx);
 }
 

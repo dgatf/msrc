@@ -53,6 +53,7 @@ private:
     volatile bool timedout = false;
     uint8_t timeout_ = 0;
     bool inverted_;
+    bool half_duplex_;
     uint16_t tx_delay;
     uint16_t rx_delay;
     uint16_t rx_delay_centering;

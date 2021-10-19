@@ -117,7 +117,8 @@ void SoftSerial::initWrite()
         setPinHigh;
     }
 
-    DDRB &= ~_BV(DDB4);
+    if (half_duplex_)
+        DDRB &= ~_BV(DDB4);
 
     SREG = oldSREG;
     _delay_loop_2(tx_delay);
@@ -147,22 +148,29 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     //     2560:    PIN D10 (PB4)
     //     32U4:    PIN B4  (PB4)
 
-    //PORTx |= _BV(PORTxn); // PULLUP
     PCICR |= _BV(PCIEx);    // ENABLE PCINT
     PCMSKx |= _BV(PCINTxn); // PCINT MASK
 
     inverted_ = format & 0x40;
-    if (inverted_)
-        setPinLow;
-    else
-        setPinHigh;
+    half_duplex_ = format & 0x80;
+
+    if (!half_duplex_)
+    {
+        DDRB |= _BV(DDB4);
+        if (inverted_)
+            setPinLow;
+        else
+            setPinHigh;
+    }
+    else if (!inverted_)
+        PORTx |= _BV(PORTxn); // RX PULLUP for half duplex for non inverted signal. For inverted signal, an external pull down resistor maybe needed. Not needed if the other side has one 
 
     // 1 bit delay in 4 clock cycles
     uint16_t delay = (F_CPU / baud) / 4;
     // substract overheads
     tx_delay = subs(delay, 17 / 4);
-    rx_delay = subs(delay, 23 / 4);
-    rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 23) / 4);
+    rx_delay = subs(delay, 18 / 4); //23
+    rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 18) / 4);
     rx_delay_stop = subs(delay * 3 / 4, (37 + 11) / 4);
 
     // Set TMR2 to measure ms (max 16Mhz 16ms, 8Mhz 32ms)

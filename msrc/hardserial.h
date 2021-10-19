@@ -8,17 +8,21 @@
 
 #if defined(__AVR_ATmega32U4__)
 #define UDREx UDRE1
+#define UDRIEx UDRIE1
 #define U2Xx U2X1
 #define RXCIEx RXCIE1
 #define TXCIEx TXCIE1
+#define TXCx TXC1
 #define RXENx RXEN1
 #define TXENx TXEN1
 #define RXCx RXC1
 #else
 #define UDREx UDRE0
+#define UDRIEx UDRIE0
 #define U2Xx U2X0
 #define RXCIEx RXCIE0
 #define TXCIEx TXCIE0
+#define TXCx TXC0
 #define RXENx RXEN0
 #define TXENx TXEN0
 #define RXCx RXC0
@@ -27,7 +31,7 @@
 #define SERIAL_8N1 0x06
 #define SERIAL_8E1 0x26
 #define SERIAL_8N1_RXINV_TXINV 0x46  // val + 0x40
-#define SERIAL_HALF_DUP 0x00
+#define SERIAL_HALF_DUP 0x80
 
 #define SERIAL_5N1 0x00
 #define SERIAL_6N1 0x02
@@ -58,6 +62,7 @@ private:
 public:
     uint8_t timeout_;
     volatile uint16_t ts = 0;
+    bool half_duplex_;
     volatile uint8_t *const udr_;
     volatile uint8_t *const ucsra_;
     volatile uint8_t *const ucsrb_;
