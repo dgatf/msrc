@@ -302,7 +302,6 @@ void EscCastle::TIMER3_CAPT_handler() // RX INPUT
         }
         OCR1B = ICR3 - ts;
         castlePwmRx = OCR1B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
-        TCNT3 = 0;           // RESET COUNTER
 #ifdef DEBUG_CASTLE_RX
         DEBUG_PRINT(castlePwmRx);
         DEBUG_PRINTLN();
