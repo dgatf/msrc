@@ -15,9 +15,7 @@ ISR(USART_UDRE_vect)
 {
     hardSerial0.USART_UDRE_handler();
 }
-#endif
-
-#if defined(USART0_RX_vect)
+#elif defined(USART0_RX_vect)
 ISR(USART0_RX_vect)
 {
     hardSerial0.USART_RX_handler();
