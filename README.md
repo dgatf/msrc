@@ -165,8 +165,8 @@ The telemetry is send over the ESC signal. *Castle Link* has to be enabled in th
 
 If using ATmega328P telemetry values are not accurate all the time. Some readings are increased by 5-10%. This is a hardware limitation
 
-<p align="center"><img src="./images/castle_promini.png" width="420"><br>
-  <i>Castle Link with Pro Mini</i><br><br></p>
+<p align="center"><img src="./images/castle_teensy2.png" width="420"><br>
+  <i>Castle Link with Teensy 2</i><br><br></p>
 
 <p align="center"><img src="./images/castle_teensy3.png" width="500"><br>
 <i>Castle Link with Teensy LC/3.x</i><br><br></p>
