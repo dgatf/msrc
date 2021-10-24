@@ -250,6 +250,9 @@ void setup()
 #if RX_PROTOCOL == RX_MULTIPLEX
     multiplex.begin();
 #endif
+#if RX_PROTOCOL == RX_JETIEX
+    jetiEx.begin();
+#endif
 }
 
 void loop()
@@ -274,6 +277,9 @@ void loop()
 #endif
 #if RX_PROTOCOL == RX_MULTIPLEX
     multiplex.update();
+#endif
+#if RX_PROTOCOL == RX_JETIEX
+    jetiEx.update();
 #endif
     pwmOut.update();
 }

@@ -215,3 +215,54 @@ float *SensorMultiplex::valueP()
 {
     return valueP_;
 }
+
+SensorJetiEx::SensorJetiEx(uint8_t type, uint8_t decimals, float *valueP, AbstractDevice *deviceP) : type_(type), decimals_(decimals), valueP_(valueP), deviceP_(deviceP) {}
+
+SensorJetiEx::~SensorJetiEx()
+{
+}
+
+void SensorJetiEx::update()
+{
+    deviceP_->update();
+}
+
+float *SensorJetiEx::valueP()
+{
+    return valueP_;
+}
+
+void SensorJetiEx::setText(const char *textP)
+{
+    strncpy(text_, textP, 32);
+}
+
+void SensorJetiEx::setUnit(const char *textP)
+{
+    strncpy(unit_, textP, 8);
+}
+
+char *SensorJetiEx::textP()
+{
+    return text_;
+}
+
+char *SensorJetiEx::unitP()
+{
+    return unit_;
+}
+
+void SensorJetiEx::setSensorId(uint8_t sensorId)
+{
+    sensorId_ = sensorId;
+}
+
+uint8_t SensorJetiEx::type()
+{
+    return type_;
+}
+
+uint8_t SensorJetiEx::decimals()
+{
+    return decimals_;
+}
