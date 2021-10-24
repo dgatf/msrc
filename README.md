@@ -68,7 +68,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 
 (1) with 3.3k pull up resistor  
-(2) diode 1N4148. Note the inverted orientation of the diode for Frsky and SBUS. Alternatively 1k resistor can be used instead  
+(2) diode 1N4148. Note the inverted orientation of the diode for Frsky and SBUS. Alternatively 1k to 3.3k resistor can be used  
 (3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)  
 (4) Use ATmega 16Mhz or Teensy LC/3.x (If using ATmega 8Mhz, it is needed a signal inverter and connect it to UART)  
 
@@ -84,18 +84,19 @@ The following Rx protocols are supported:
 - Flysky IBUS: serial, 115200 bps
 - Futaba SBUS2: inverted serial, 100000 bps
 - Multiplex Sensor Bus: serial, 38400 bps
+- Jeti Ex Bus: serial 125000, 250000 bps
 
 Depending on the receiver protocol connect to the Rx as follows
 
 ### ATmega boards
 
-1N4148 diode is preferred, but it can be substituted by 1k resistor
+1N4148 diode or 1k to 3.3k resistor
 
 <p align="center"><img src="./images/frsky_smartport.png" width="400"><br>
 <i>Frsky Smartport, SBUS (SBUS only ATmega 16Mhz)</i><br><br></p>
 
 <p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="460"><br>
-<i>SRXL, IBUS, SBUS (SBUS ATmega 8Mhz + signal inverter)</i><br><br></p>
+<i>SRXL, IBUS, SBUS (SBUS ATmega 8Mhz + signal inverter), Jeti Ex Bus</i><br><br></p>
 
 <p align="center"><img src="./images/frsky_d.png" width="310"><br>
 <i>Frsky D</i><br><br></p>
@@ -502,7 +503,7 @@ Adjust constants in *pressure.h*:
 0.8
 
 - Added specific drivers for hardware serial and software serial
-- Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2, Multiplex Sensor Bus
+- Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2, Multiplex Sensor Bus, Jeti Ex Bus
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
 - Added support for Kontronik ESC
