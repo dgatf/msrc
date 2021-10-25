@@ -165,7 +165,6 @@ void JetiEx::sendPacket(uint8_t packetId)
     buffer[lengthExBuffer + 6] = crc;
     buffer[lengthExBuffer + 7] = crc >> 8;
     serial_.writeBytes(buffer, lengthExBuffer + 8);
-    packetCount++;
 #ifdef DEBUG
     if (packetCount % 16)
         DEBUG_PRINT("V"); // values
@@ -180,6 +179,7 @@ void JetiEx::sendPacket(uint8_t packetId)
     }
     DEBUG_PRINTLN();
 #endif
+    packetCount++;
     digitalWrite(LED_BUILTIN, LOW);
 }
 
