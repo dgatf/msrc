@@ -167,7 +167,7 @@ void JetiEx::sendPacket(uint8_t packetId)
     serial_.writeBytes(buffer, lengthExBuffer + 8);
     packetCount++;
 #ifdef DEBUG
-    if (packetId % 16)
+    if (packetCount % 16)
         DEBUG_PRINT("V"); // values
     else
         DEBUG_PRINT("T"); // text
