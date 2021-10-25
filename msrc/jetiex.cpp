@@ -152,8 +152,9 @@ uint8_t JetiEx::createExBuffer(uint8_t *buffer, bool sendValue)
 void JetiEx::sendPacket(uint8_t packetId)
 {
     digitalWrite(LED_BUILTIN, HIGH);
+    static uint8_t packetCount = 0;
     uint8_t buffer[36] = {0};
-    uint8_t lengthExBuffer = createExBuffer(buffer + 6, packetId % 16);
+    uint8_t lengthExBuffer = createExBuffer(buffer + 6, packetCount % 16);
     buffer[0] = 0x3B;
     buffer[1] = 0x01;
     buffer[2] = lengthExBuffer + 8;
@@ -164,6 +165,7 @@ void JetiEx::sendPacket(uint8_t packetId)
     buffer[lengthExBuffer + 6] = crc;
     buffer[lengthExBuffer + 7] = crc >> 8;
     serial_.writeBytes(buffer, lengthExBuffer + 8);
+    packetCount++;
 #ifdef DEBUG
     if (packetId % 16)
         DEBUG_PRINT("V"); // values
@@ -206,6 +208,15 @@ void JetiEx::update()
     serial_.readBytes(buff, length);
     if (length)
     {
+#ifdef DEBUG
+        DEBUG_PRINT("<");
+        for (uint8_t i = 0; i < JETIEX_PACKET_LENGHT; i++)
+        {
+            DEBUG_PRINT_HEX(buff[i]);
+            DEBUG_PRINT(" ");
+        }
+        DEBUG_PRINTLN();
+#endif
         if (crc16(buff, length) == 0)
         {
             badCrcCount = 0;
@@ -218,27 +229,18 @@ void JetiEx::update()
                 }
                 mute = !mute;
             }
-#ifdef DEBUG
-            DEBUG_PRINT("<");
-            for (uint8_t i = 0; i < JETIEX_PACKET_LENGHT; i++)
-            {
-                DEBUG_PRINT_HEX(buff[i]);
-                DEBUG_PRINT(" ");
-            }
-            DEBUG_PRINTLN();
-#endif
         }
         else
         {
             badCrcCount++;
-            if (badCrcCount == 5)
+            if (badCrcCount > 5)
             {
 
                 if (baudRate == 125000L)
                     baudRate = 250000L;
                 else
                     baudRate = 125000L;
-                serial_.begin(baudRate, SERIAL_8N1);
+                serial_.begin(baudRate, SERIAL_8N1 | SERIAL_HALF_DUP);
                 badCrcCount = 0;
 #ifdef DEBUG
                 DEBUG_PRINT("BR:");
