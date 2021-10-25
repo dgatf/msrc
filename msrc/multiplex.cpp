@@ -42,19 +42,8 @@ void Multiplex::sendPacket(uint8_t address)
     if (!sensorMultiplexP[address])
         return;
     digitalWrite(LED_BUILTIN, HIGH);
-    bool isNegative = false;
     serial_.write(address << 4 | sensorMultiplexP[address]->dataId());
     int16_t value = sensorMultiplexP[address]->valueFormatted();
-    if (value < 0)
-    {
-        value *= -1;
-        isNegative = true;
-    }
-    if (value > 0x3FF7)
-        value = 0x3FF7;
-    value <<= 1;
-    if (isNegative)
-        value |= 1 << 15;
     serial_.write(value);
     serial_.write(value >> 8);
     digitalWrite(LED_BUILTIN, LOW);

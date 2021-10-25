@@ -251,6 +251,7 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
 
 int16_t FormatData::formatMultiplex(uint8_t dataId, float value)
 {
+    int16_t formatted;
     if (dataId == FHSS_VOLTAGE ||
         dataId == FHSS_CURRENT ||
         dataId == FHSS_VARIO ||
@@ -258,10 +259,20 @@ int16_t FormatData::formatMultiplex(uint8_t dataId, float value)
         dataId == FHSS_TEMP ||
         dataId == FHSS_COURSE ||
         dataId == FHSS_DISTANCE)
-        return round(value * 10);
-
-    if (dataId == FHSS_RPM)
-        return round(value / 10);
-
-    return round(value);
+        formatted = round(value * 10);
+    else if (dataId == FHSS_RPM)
+        formatted = round(value / 10);
+    else
+        formatted = round(value);
+    if (formatted > 16383)
+        formatted = 16383;
+    if (formatted < -16383)
+        formatted = -16383;
+    bool isNegative = false;
+    if (formatted < 0)
+        isNegative = true;
+    formatted <<= 1;
+    if (isNegative)
+        formatted |= 1 << 15;
+    return formatted;
 }
