@@ -208,6 +208,7 @@ void JetiEx::update()
     {
         if (crc16(buff, length) == 0)
         {
+            badCrcCount = 0;
             if (length == JETIEX_PACKET_LENGHT && buff[0] == 0x3D && buff[1] == 0x01 && buff[4] == 0x3A)
             {
                 if (!mute)
