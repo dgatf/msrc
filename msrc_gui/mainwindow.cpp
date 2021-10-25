@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4 LV", "Hobbywing V4 HV", "Hobbywing V5 LV", "Hobbywing V5 HV", "PWM", "Castle link", "Kontronic"});
     ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "19200", "14400", "9600","4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
-    ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS", "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2", "Multiplex Sensor Bus"});
+    ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS", "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2", "Multiplex Sensor Bus", "Jeti Ex Bus"});
     for (uint8_t i = 0; i < 127; i++) {
         ui->cbAddress->addItem(QString::number(i));
     }
@@ -62,6 +62,9 @@ void MainWindow::generateConfig()
         break;
     case 6:
         configString += "RX_MULTIPLEX";
+        break;
+    case 7:
+        configString += "RX_JETIEX";
         break;
     }
 
