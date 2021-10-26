@@ -143,7 +143,7 @@ void MainWindow::generateConfig()
     else configString += "false";
 
     // Airspeed
-    configString += " \n#define CONFIG_AIRPEED ";
+    configString += " \n#define CONFIG_AIRSPEED ";
     if (ui->cbAirspeed->isChecked()) configString += "true";
     else configString += "false";
 
