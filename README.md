@@ -199,7 +199,7 @@ The following analog sensors are supported:
 
 - 2 x voltage divider
 - 2 x temperature sensors (thermistors)
-- Current sensor (Hall effect)
+- Current sensor (Hall effect: ACS758)
 - Airspeed sensor (MPXV7002)
 
 ### 3.4. I2C sensors
