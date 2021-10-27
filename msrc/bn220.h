@@ -35,7 +35,7 @@ private:
     float lat_ = 0, lon_ = 0, alt_ = 0, spd_ = 0, cog_ = 0, kph_ = 0;
     int8_t latDir_ = 1, lonDir_ = 1;
     float time_ = 0, date_ = 0;
-    uint8_t sat_ = 0, nmeaCmd_ = 255;
+    uint8_t sat_ = 0, nmeaCmd_ = 0;
     char buffer_[20] = {};
     AbstractSerial &serial_;
     uint32_t baud_;
