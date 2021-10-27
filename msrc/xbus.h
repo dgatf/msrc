@@ -88,7 +88,7 @@ struct Xbus_Gps_Stat
     uint8_t identifier = 0x17;
     uint8_t sID = 0;
     uint16_t speed = 0;       // BCD, knots, format 3.1
-    uint32_t UTC = 0;         // BCD, format HH:MM:SS.S, format 6.1
+    uint32_t UTC = 0;         // BCD, format HH:MM:SS.SS, format 6.2
     uint8_t numSats = 0;      // BCD, 0-99
     uint8_t altitudeHigh = 0; // BCD, meters, format 2.0 (High bits alt)
 };
