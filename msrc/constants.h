@@ -13,6 +13,26 @@
 #define DEBUG_INIT DEBUG_SERIAL.begin(115200);
 #endif
 
+/* Enums */
+#define RX_SMARTPORT 0
+#define RX_XBUS 1
+#define RX_SRXL 2
+#define RX_FRSKY 3
+#define RX_IBUS 4
+#define RX_SBUS 5
+#define RX_MULTIPLEX 6
+#define RX_JETIEX 7
+
+#define PROTOCOL_NONE 0
+#define PROTOCOL_HW_V3 1
+#define PROTOCOL_HW_V4_LV 2
+#define PROTOCOL_HW_V4_HV 3
+#define PROTOCOL_HW_V5_LV 4
+#define PROTOCOL_HW_V5_HV 5
+#define PROTOCOL_PWM 6
+#define PROTOCOL_CASTLE 7
+#define PROTOCOL_KONTRONIK 8
+
 /* Pins & Serial ports */
 
 // ATmega328P
@@ -28,10 +48,10 @@
 #define ESC_SERIAL hardSerial0   // if using with srxl, ibus or multiplex, use softSerial. If there is no reading, use a 3.3v board
 #define GPS_SERIAL hardSerial0   // same as above. Only one softserial is feasible
 #define DEBUG_SERIAL hardSerial0
-#if defined(DEBUG_INIT) && !defined(DEBUG_GPS) 
+#if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && !CONFIG_GPS 
 #define DISABLE_GPS
 #endif
-#if defined(DEBUG_INIT) && !defined(DEBUG_HW4) 
+#if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && CONFIG_ESC_PROTOCOL != PROTOCOL_HW_V4_LV && CONFIG_ESC_PROTOCOL != PROTOCOL_HW_V4_HV && CONFIG_ESC_PROTOCOL != PROTOCOL_HW_V5_LV && CONFIG_ESC_PROTOCOL != PROTOCOL_HW_V5_HV
 #define DISABLE_HW4
 #endif
 #endif
@@ -103,25 +123,6 @@
 #endif
 
 #define N_TO_ALPHA(VALUE) (2.0 / (1 + VALUE) * 100)
-
-#define RX_SMARTPORT 0
-#define RX_XBUS 1
-#define RX_SRXL 2
-#define RX_FRSKY 3
-#define RX_IBUS 4
-#define RX_SBUS 5
-#define RX_MULTIPLEX 6
-#define RX_JETIEX 7
-
-#define PROTOCOL_NONE 0
-#define PROTOCOL_HW_V3 1
-#define PROTOCOL_HW_V4_LV 2
-#define PROTOCOL_HW_V4_HV 3
-#define PROTOCOL_HW_V5_LV 4
-#define PROTOCOL_HW_V5_HV 5
-#define PROTOCOL_PWM 6
-#define PROTOCOL_CASTLE 7
-#define PROTOCOL_KONTRONIK 8
 
 // i2c
 #define I2C_NONE 0
