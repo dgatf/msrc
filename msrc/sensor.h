@@ -137,26 +137,19 @@ public:
     uint16_t valueFormatted();
 };
 
-#define JETIEX_TYPE_INT6 0
-#define JETIEX_TYPE_INT14 1
-#define JETIEX_TYPE_INT22 4
-#define JETIEX_TYPE_TIMEDATE 5
-#define JETIEX_TYPE_INT30 8
-#define JETIEX_TYPE_COORDINATES 9
-
 class SensorJetiEx
 {
 protected:
     uint8_t sensorId_;
     uint8_t type_;
-    uint8_t decimals_;
+    uint8_t format_;
     float *valueP_;
     char text_[32] = "SENSOR";
     char unit_[8] = "";
 
 public:
     AbstractDevice *deviceP_;
-    SensorJetiEx(uint8_t type, uint8_t decimals, float *value, AbstractDevice *deviceP);
+    SensorJetiEx(uint8_t type, uint8_t format, float *value, AbstractDevice *deviceP);
     ~SensorJetiEx();
     void setText(const char *textP);
     void setUnit(const char *textP);
@@ -164,7 +157,7 @@ public:
     char *unitP();
     void setSensorId(uint8_t sensorId);
     uint8_t type();
-    uint8_t decimals();
+    uint8_t format();
     float *valueP();
     void update();
 };

@@ -216,7 +216,7 @@ float *SensorMultiplex::valueP()
     return valueP_;
 }
 
-SensorJetiEx::SensorJetiEx(uint8_t type, uint8_t decimals, float *valueP, AbstractDevice *deviceP) : type_(type), decimals_(decimals), valueP_(valueP), deviceP_(deviceP) {}
+SensorJetiEx::SensorJetiEx(uint8_t type, uint8_t format, float *valueP, AbstractDevice *deviceP) : type_(type), format_(format), valueP_(valueP), deviceP_(deviceP) {}
 
 SensorJetiEx::~SensorJetiEx()
 {
@@ -262,7 +262,7 @@ uint8_t SensorJetiEx::type()
     return type_;
 }
 
-uint8_t SensorJetiEx::decimals()
+uint8_t SensorJetiEx::format()
 {
-    return decimals_;
+    return format_;
 }
