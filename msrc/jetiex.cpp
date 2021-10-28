@@ -31,7 +31,7 @@ bool JetiEx::addSensorValueToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t
     if (sensorJetiExP[sensorNumber])
     {
         uint8_t format = sensorJetiExP[sensorNumber]->format() << 5;
-        if (sensorJetiExP[sensorNumber]->valueP() < 0)
+        if (*sensorJetiExP[sensorNumber]->valueP() < 0)
         {
             if (sensorJetiExP[sensorNumber]->type() == JETIEX_TYPE_COORDINATES)
                 format |= 1 << 6;
@@ -362,11 +362,11 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Voltage");
         sensorJetiExP->setUnit("V");
-        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT6, 0, esc->tempFetP(), esc);
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempFetP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp FET");
         sensorJetiExP->setUnit("°C");
-        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT6, 0, esc->tempBecP(), esc);
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempBecP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp BEC");
         sensorJetiExP->setUnit("°C");
@@ -404,7 +404,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("BEC Voltage");
         sensorJetiExP->setUnit("V");
-        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT6, 0, esc->temperatureP(), esc);
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->temperatureP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temperature");
         sensorJetiExP->setUnit("°C");
@@ -438,11 +438,11 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("BEC Voltage");
         sensorJetiExP->setUnit("V");
-        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT6, 0, esc->tempFetP(), esc);
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempFetP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp FET");
         sensorJetiExP->setUnit("°C");
-        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT6, 0, esc->tempBecP(), esc);
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempBecP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp BEC");
         sensorJetiExP->setUnit("°C");
@@ -461,7 +461,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Speed");
         sensorJetiExP->setUnit("kts");
-        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, gps->altP(), gps);
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT22, 1, gps->altP(), gps);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Altitude");
         sensorJetiExP->setUnit("m");
@@ -523,7 +523,7 @@ void JetiEx::setConfig(Config &config)
         SensorJetiEx *sensorJetiExP;
         Ntc *ntc;
         ntc = new Ntc(PIN_NTC1, ALPHA(config.average.temp));
-        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT6, 0, ntc->valueP(), ntc);
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, ntc->valueP(), ntc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp 1");
         sensorJetiExP->setUnit("°C");
@@ -533,7 +533,7 @@ void JetiEx::setConfig(Config &config)
         SensorJetiEx *sensorJetiExP;
         Ntc *ntc;
         ntc = new Ntc(PIN_NTC2, ALPHA(config.average.temp));
-        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT6, 0, ntc->valueP(), ntc);
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, ntc->valueP(), ntc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp 2");
         sensorJetiExP->setUnit("°C");
