@@ -123,8 +123,8 @@ extern HardSerial hardSerial3;
 #define SERIAL_8E1_RXINV_TXINV 0x36
 #define SERIAL_8O1_RXINV_TXINV 0x37
 
-#define BAUD2DIV(baud) (((F_PLL / 2 / 16) + ((baud) >> 1)) / (baud))
-#define BAUD2DIV2(baud) (((F_BUS / 16) + ((baud) >> 1)) / (baud))
+#define BAUD2DIVISOR(baud) (((F_PLL / 2 / 16) + ((baud) >> 1)) / (baud))
+#define BAUD2DIVISOR2(baud) (((F_BUS / 16) + ((baud) >> 1)) / (baud))
 #define IRQ_PRIORITY  64  // 0 = highest priority, 255 = lowest
 
 class HardSerial : public AbstractSerial

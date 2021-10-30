@@ -235,9 +235,9 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
     SIM_SCGC4 |= sim_scgc4_uart_;
     uint32_t divisor;
     if (uart_d_ == &UART0_D)
-        divisor = BAUD2DIV(baud);
+        divisor = BAUD2DIVISOR(baud);
     else
-        divisor = BAUD2DIV2(baud);
+        divisor = BAUD2DIVISOR2(baud);
     if (divisor < 1)
         divisor = 1;
     *uart_bdh_ = (divisor >> 8) & 0x1F;
