@@ -3,7 +3,7 @@
 
 #include "constants.h"
 #include <Arduino.h>
-#if (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
+#if (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
 #include <i2c_t3.h>
 #define I2C_CHANNEL Wire1
 #else

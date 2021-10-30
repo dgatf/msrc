@@ -143,6 +143,9 @@ void Xbus::begin()
     CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
     esc.begin();
 #endif
+#if (CONFIG_I2C1_TYPE == I2C_BMP280) && !defined(__MK20DX128__) && defined(I2C_T3_TEENSY)
+    bmp.begin();
+#endif
 #if defined(I2C_T3_TEENSY) && !defined(__IMXRT1062__)
     Wire.begin(I2C_SLAVE, XBUS_AIRSPEED, XBUS_RPM_VOLT_TEMP, I2C_PINS_18_19, I2C_PULLUP_EXT, 400000);
 #endif
@@ -267,7 +270,7 @@ void Xbus::update()
     xbusGpsLoc.altitudeLow = bcd16(fmod(alt, 1000), 1);
     xbusGpsStat.altitudeHigh = bcd8((uint8_t)(alt / 1000), 0);
 #endif
-#if (CONFIG_I2C1_TYPE == I2C_BMP280) && (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
+#if (CONFIG_I2C1_TYPE == I2C_BMP280) && (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
     static uint16_t maxAltitude = 0;
     bmp.update();
     uint16_t altitude = round(*bmp.altitudeP() * 10);
