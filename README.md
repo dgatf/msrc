@@ -122,6 +122,10 @@ Sensor mapping to slots for Futaba radios:
 
 ### XBUS
 
+Auto-config may be used to detect the new sensors.
+
+If no telemetry is shown power the receiver after MSRC has started.
+
 If using Teensy LC/3.x, it is feasible to use i2c_t3 library by enabling I2C_T3_TEENSY in config.h. This allows to use a second I2C port to use I2C sensors together with XBUS. Then I2C sensor to be connected to pins 23 (SDA1) and 22 (SCL1)
 
 <p align="center"><img src="./images/xbus.png" width="300"><br>
