@@ -45,6 +45,11 @@ void Xbus::i2c_request_handler()
     address = LPI2C1_SASR;
 #endif
 #endif
+#ifdef DEBUG_PACKET
+    DEBUG_PRINT("<");
+    DEBUG_PRINT_HEX(address);
+    DEBUG_PRINTLN();
+#endif
     uint8_t buffer[16] = {0};
     switch (address)
     {
@@ -94,6 +99,7 @@ void Xbus::i2c_request_handler()
 
 void Xbus::begin()
 {
+    delay(5000);
     pinMode(LED_BUILTIN, OUTPUT);
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_PWM || CONFIG_VOLTAGE1 || CONFIG_VOLTAGE2 || CONFIG_NTC1 || CONFIG_NTC2
@@ -117,10 +123,8 @@ void Xbus::begin()
     CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV || \
     CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK || \
     CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
-
     addressMask |= XBUS_ESC;
     esc.begin();
-    
 #endif
     Wire.begin(addressMask);
     Wire.onRequest(i2c_request_handler);

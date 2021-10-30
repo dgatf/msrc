@@ -185,9 +185,14 @@ void ftm1_isr()
 
 void setup()
 {
+#if RX_PROTOCOL == RX_XBUS
+    //Clock stretching for xbus
+    pinMode(SCL, OUTPUT);
+    digitalWrite(SCL, LOW);
+#endif
+#ifdef DEBUG_INIT
     // DEBUG is on Serial. Default baud rate is 115200
     // For boards with 1 UART, baud rate will be changed to ESC or GPS baud rate if enabled
-#ifdef DEBUG_INIT
     delay(500);
     DEBUG_INIT;
     DEBUG_PRINT("\nV");
@@ -205,7 +210,7 @@ void setup()
 #if (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY) && RX_PROTOCOL == RX_XBUS
     Wire1.begin();
     Wire1.setTimeout(WIRE_TIMEOUT);
-#else
+#elif RX_PROTOCOL != RX_XBUS
     Wire.begin();
     Wire.setTimeout(WIRE_TIMEOUT);
 #endif

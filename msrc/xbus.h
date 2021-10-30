@@ -1,13 +1,13 @@
 #ifndef XBUS_H
 #define XBUS_H
 
-#define XBUS_AIRSPEED 0x11
-#define XBUS_ALTIMETER 0x12
-#define XBUS_GPS_LOC 0x16
-#define XBUS_GPS_STAT 0x17
-#define XBUS_ESC 0x20
-#define XBUS_BATTERY 0x34
-#define XBUS_RPM_VOLT_TEMP 0x7E
+#define XBUS_AIRSPEED 0x70
+#define XBUS_ALTIMETER 0x71
+#define XBUS_GPS_LOC 0x72
+#define XBUS_GPS_STAT 0x73
+#define XBUS_ESC 0x74
+#define XBUS_BATTERY 0x75
+#define XBUS_RPM_VOLT_TEMP 0x76
 
 #define GPS_INFO_FLAGS_IS_NORTH_BIT 0
 #define GPS_INFO_FLAGS_IS_EAST_BIT 1
@@ -61,14 +61,14 @@ struct Xbus_RpmVoltTemp
 
 struct Xbus_Battery
 {
-    uint8_t identifier = 0x34;// Source device = 0x34
-    uint8_t sID = 0;          // Secondary ID
-    int16_t current_A = 0;    // Instantaneous current, 0.1A (0-3276.8A)
-    int16_t chargeUsed_A = 0; // Integrated mAh used, 1mAh (0-32.766Ah)
-    uint16_t temp_A = 0;      // Temperature, 0.1C (0-150.0C, // 0x7FFF indicates not populated)
-    int16_t current_B = 0;    // Instantaneous current, 0.1A (0-6553.4A)
-    int16_t chargeUsed_B = 0; // Integrated mAh used, 1mAh (0-65.534Ah)
-    uint16_t temp_B = 0;      // Temperature, 0.1C (0-150.0C,// 0x7FFF indicates not populated)
+    uint8_t identifier = 0x34; // Source device = 0x34
+    uint8_t sID = 0;           // Secondary ID
+    int16_t current_A = 0;     // Instantaneous current, 0.1A (0-3276.8A)
+    int16_t chargeUsed_A = 0;  // Integrated mAh used, 1mAh (0-32.766Ah)
+    uint16_t temp_A = 0;       // Temperature, 0.1C (0-150.0C, // 0x7FFF indicates not populated)
+    int16_t current_B = 0;     // Instantaneous current, 0.1A (0-6553.4A)
+    int16_t chargeUsed_B = 0;  // Integrated mAh used, 1mAh (0-65.534Ah)
+    uint16_t temp_B = 0;       // Temperature, 0.1C (0-150.0C,// 0x7FFF indicates not populated)
 };
 
 struct Xbus_Gps_Loc
@@ -85,28 +85,28 @@ struct Xbus_Gps_Loc
 
 struct Xbus_Gps_Stat
 {
-    uint8_t identifier = 0x17;
-    uint8_t sID = 0;
-    uint16_t speed = 0;       // BCD, knots, format 3.1
-    uint32_t UTC = 0;         // BCD, format HH:MM:SS.SS, format 6.2
-    uint8_t numSats = 0;      // BCD, 0-99
-    uint8_t altitudeHigh = 0; // BCD, meters, format 2.0 (High bits alt)
+    uint8_t identifier = 0x17; // Source device = 0x17
+    uint8_t sID = 0;           // Secondary ID
+    uint16_t speed = 0;        // BCD, knots, format 3.1
+    uint32_t UTC = 0;          // BCD, format HH:MM:SS.SS, format 6.2
+    uint8_t numSats = 0;       // BCD, 0-99
+    uint8_t altitudeHigh = 0;  // BCD, meters, format 2.0 (High bits alt)
 };
 
 struct Xbus_Airspeed
 {
-    uint8_t identifier = 0x11;
-    uint8_t sID;
-    uint16_t airspeed;    // 1 km/h increments
-    uint16_t maxAirspeed; // 1 km/h increments
+    uint8_t identifier = 0x11; // Source device = 0x11
+    uint8_t sID = 0;           // Secondary ID
+    uint16_t airspeed = 0;     // 1 km/h increments
+    uint16_t maxAirspeed = 0;  // 1 km/h increments
 };
 
 struct Xbus_Altitude
 {
-uint8_t identifier;
-uint8_t sID;         // Secondary ID
-int16_t altitude;    // .1m increments
-int16_t maxAltitude; // .1m increments
+    uint8_t identifier = 0x12; // Source device = 0x12
+    uint8_t sID = 0;           // Secondary ID
+    int16_t altitude = 0;      // .1m increments
+    int16_t maxAltitude = 0;   // .1m increments
 };
 
 class Xbus
@@ -171,7 +171,6 @@ protected:
     static Xbus_Altitude xbusAltitude;
     Bmp280 bmp = Bmp280(CONFIG_I2C1_ADDRESS, ALPHA(CONFIG_AVERAGING_ELEMENTS_TEMP));
 #endif
-
 
 public:
     Xbus();
