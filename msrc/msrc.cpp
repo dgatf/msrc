@@ -187,8 +187,8 @@ void setup()
 {
 #if RX_PROTOCOL == RX_XBUS
     //Clock stretching for xbus
-    pinMode(SCL, OUTPUT);
-    digitalWrite(SCL, LOW);
+    //pinMode(SCL, OUTPUT);
+    //digitalWrite(SCL, LOW);
 #endif
 #ifdef DEBUG_INIT
     // DEBUG is on Serial. Default baud rate is 115200
