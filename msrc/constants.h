@@ -92,7 +92,7 @@
 #define DEBUG_SERIAL hardSerial0
 #endif
 
-// ATmega32U4 (Teensy 2.0)
+// ATmega32U4 (Teensy 2.0 / Arduino Micro)
 #if defined(__AVR_ATmega32U4__)
 #define PIN_NTC1 A0             // PF7
 #define PIN_NTC2 A1             // PF6
@@ -105,6 +105,11 @@
 #define ESC_SERIAL hardSerial1
 #define GPS_SERIAL hardSerial1
 #define DEBUG_SERIAL Serial
+#ifndef CORE_TEENSY
+#define DISABLE_GPS
+#define DISABLE_HW4
+#define DISABLE_CASTLE
+#endif
 #endif
 
 // Teensy LC/3.x

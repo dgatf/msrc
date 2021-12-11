@@ -531,7 +531,7 @@ void EscCastle::begin()
     OCR5C = 12 * MS_TO_COMP(8);          // TOGGLE OC5B OUTPUT
 #endif
 
-#if defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega32U4__) && !defined(DISABLE_CASTLE)
     TIMER3_CAPT_handlerP = TIMER3_CAPT_handler;
     TIMER3_OVF_handlerP = TIMER3_OVF_handler;
     TIMER1_COMPC_handlerP = TIMER1_COMPC_handler;
