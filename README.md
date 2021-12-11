@@ -126,10 +126,20 @@ Auto-config may be used to detect the new sensors.
 
 If using Teensy LC/3.1/3.5/3.6, it is feasible to use i2c_t3 library by enabling I2C_T3_TEENSY in config.h. This allows to use a second I2C port to use I2C sensors together with XBUS. Then I2C sensor to be connected to pins 23 (SDA1) and 22 (SCL1)
 
-If no telemetry is shown it may be that MSRC is booting too slow and the first poll from the receiver is answered. To fix it, power the receiver after MSRC has started or flash MSRC without bootloader.
-
 <p align="center"><img src="./images/xbus.png" width="300"><br>
   <i>XBUS</i><br><br></p>
+
+If no telemetry is shown, may be MSRC is booting too slow and the first poll from the receiver is not answered. There are several ways to fix this:
+
+1. Power on the receiver after MSRC has started
+2. Flash MSRC without bootloader
+3. I2C clock stretch. Pull down the SCL line until MSRC has started, then open the switch. You can use a manual swith or a NPN transistor (e.g. PN2222ABU). If using a transistor you need to enable XBUS_CLOCK_STRECH_SWITCH in config.h to open the switch after boot. If using manual switch, open the switch after boot, to finish the clock stretch
+
+<p align="center"><img src="./images/xbus-switch.png" width="300"><br>
+  <i>Clock stretch XBUS with manual switch</i><br><br></p>
+
+<p align="center"><img src="./images/xbus-npn-switch.png" width="300"><br>
+  <i>Clock stretch XBUS with transistor</i><br><br></p>
 
 ## 3. Sensors
 

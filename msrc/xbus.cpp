@@ -163,6 +163,11 @@ void Xbus::begin()
 #if CONFIG_VOLTAGE2 || CONFIG_NTC2
     xbusRpmVoltTemp2.sID = 1;
 #endif
+
+#if defined(XBUS_CLOCK_STRECH_SWITCH)
+    pinMode(13, OUTPUT);
+    digitalWrite(13, LOW);
+#endif
 }
 
 void Xbus::update()

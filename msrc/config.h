@@ -22,7 +22,7 @@
 #define CONFIG_REFRESH_CURR 1
 #define CONFIG_REFRESH_TEMP 1
 #define CONFIG_REFRESH_DEF 1
-/* Averaging elements */
+/* Averaging elements (1 = no averaging) */
 #define CONFIG_AVERAGING_ELEMENTS_RPM 3
 #define CONFIG_AVERAGING_ELEMENTS_VOLT 3
 #define CONFIG_AVERAGING_ELEMENTS_CURR 3
@@ -39,8 +39,11 @@
 //#define ESC_SIGNATURE // HW V4 signature (only smartport). This outputs esc signature and raw current to sensors 5100, 5101 and 5102
 #define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
 
+/* XBus */
+//#define XBUS_CLOCK_STRECH_SWITCH
+
 /* Use library I2C_T3 for Teensy LC/3.X */
-#define I2C_T3_TEENSY
+//#define I2C_T3_TEENSY
 
 /* Add init delay for FlyFun ESC. Uncomment if the ESC doesn't arm */
 //#define ESC_INIT_DELAY 10000
