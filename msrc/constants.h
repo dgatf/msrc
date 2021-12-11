@@ -118,8 +118,8 @@
 #define PIN_NTC2 15
 #define PIN_VOLTAGE1 16
 #define PIN_VOLTAGE2 17
-#define PIN_CURRENT 18
-#define PIN_PRESSURE 19
+#define PIN_CURRENT 20
+#define PIN_PRESSURE 26
 #define SMARTPORT_FRSKY_SBUS_SERIAL hardSerial0
 #define SRXL_IBUS_SERIAL hardSerial0
 #define ESC_SERIAL hardSerial1
