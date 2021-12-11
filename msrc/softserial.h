@@ -69,7 +69,7 @@ public:
     void setTimeout(uint8_t timeout);
     void PCINT_handler();
     void TIMER_COMP_handler();
-    inline void tunedDelay(uint16_t delay);
+    inline void delay_loop(uint16_t delay);
 };
 
 extern SoftSerial softSerial;

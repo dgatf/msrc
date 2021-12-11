@@ -41,17 +41,25 @@ void SoftSerial::TIMER_COMP_handler()
         timedout = true;
 }
 
-inline void SoftSerial::tunedDelay(uint16_t delay)
+inline void SoftSerial::delay_loop(uint16_t delay)
 {
-    uint8_t tmp = 0;
+    asm volatile (
+        "1: sbiw %0,1" "\n\t"
+        "brne 1b"
+        : "=w" (delay)
+        : "0" (delay)
+    );
 
+    /*uint8_t tmp = 0;
     asm volatile("sbiw    %0, 0x01 \n\t"
                  "ldi %1, 0xFF \n\t"
                  "cpi %A0, 0xFF \n\t"
                  "cpc %B0, %1 \n\t"
                  "brne .-10 \n\t"
                  : "+r"(delay), "+a"(tmp)
-                 : "0"(delay));
+                 : "0"(delay)
+    );*/
+
 }
 
 void SoftSerial::PCINT_handler()
@@ -62,20 +70,12 @@ void SoftSerial::PCINT_handler()
         uint8_t incomingByte = 0;
 
         // start bit
-        tunedDelay(rx_delay_centering);
+        delay_loop(rx_delay_centering);
 
         // data
-        /*
-        for (uint8_t i = 0; i < 8; i++)
-        {
-            _delay_loop_2(rx_delay);
-            if (bit_is_set(PINx, PINxn))
-                incomingByte |= _BV(i);
-        }
-        */
         for (uint8_t i = 8; i > 0; --i)
         {
-            tunedDelay(rx_delay);
+            delay_loop(rx_delay);
             incomingByte >>= 1;
             if (bit_is_set(PINx, PINxn))
                 incomingByte |= 0x80;
@@ -86,7 +86,7 @@ void SoftSerial::PCINT_handler()
 
         // stop bit
 
-        //_delay_loop_2(rx_delay_stop);
+        //_delay_loop(rx_delay_stop);
 
         if (timedout)
             reset();
@@ -123,7 +123,7 @@ void SoftSerial::initWrite()
     {
         setPinLow;
     }
-    tunedDelay(delay);
+    delay_loop(delay);
 
     // data
     for (uint8_t i = 0; i < 8; i++)
@@ -136,7 +136,7 @@ void SoftSerial::initWrite()
         {
             setPinLow;
         }
-        tunedDelay(delay);
+        delay_loop(delay);
         outgoingByte >>= 1;
     }
 
@@ -154,7 +154,7 @@ void SoftSerial::initWrite()
         DDRB &= ~_BV(DDB4);
 
     SREG = oldSREG;
-    tunedDelay(tx_delay);
+    delay_loop(tx_delay);
 }
 
 void SoftSerial::setTimeout(uint8_t timeout)
@@ -168,11 +168,11 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
 
     // RX: 328P/PB: PIN 7   (PD7,PCINT23)
     //     2560:    PIN A15 (PK7,PCINT23)
-    //     32U4:    PIN B3  (PB3,PCINT3)
+    //     32U4:    PIN B3/14  (PB3,PCINT3)
 
     // TX: 328P/PB: PIN 12  (PB4)
     //     2560:    PIN D10 (PB4)
-    //     32U4:    PIN B4  (PB4)
+    //     32U4:    PIN B4/8  (PB4)
 
     PCICR |= _BV(PCIEx);    // ENABLE PCINT
     PCMSKx |= _BV(PCINTxn); // PCINT MASK

@@ -157,10 +157,7 @@ HardSerial hardSerial0(&UDR0, &UCSR0A, &UCSR0B, &UCSR0C, &UBRR0L, &UBRR0H, &DDRE
 #if defined(UBRR0H) && (defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__))
 HardSerial hardSerial0(&UDR0, &UCSR0A, &UCSR0B, &UCSR0C, &UBRR0L, &UBRR0H, &DDRD, &PORTD, 0, 1);
 #endif
-#if defined(UBRR1H) && defined(__AVR_ATmega32U4__)
-HardSerial hardSerial1(&UDR1, &UCSR1A, &UCSR1B, &UCSR1C, &UBRR1L, &UBRR1H, &DDRD, &PORTD, 2, 3);
-#endif
-#if defined(UBRR1H) && defined(__AVR_ATmega2560__)
+#if defined(UBRR1H) && (defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__))
 HardSerial hardSerial1(&UDR1, &UCSR1A, &UCSR1B, &UCSR1C, &UBRR1L, &UBRR1H, &DDRD, &PORTD, 2, 3);
 #endif
 #if defined(UBRR1H) && defined(__AVR_ATmega328PB__)
