@@ -1,13 +1,13 @@
 #ifndef XBUS_H
 #define XBUS_H
 
-#define XBUS_AIRSPEED 0x70
-#define XBUS_ALTIMETER 0x71
-#define XBUS_GPS_LOC 0x72
-#define XBUS_GPS_STAT 0x73
-#define XBUS_ESC 0x74
-#define XBUS_BATTERY 0x75
-#define XBUS_RPM_VOLT_TEMP 0x76
+#define XBUS_AIRSPEED 0x11
+#define XBUS_ALTIMETER 0x12
+#define XBUS_GPS_LOC 0x16
+#define XBUS_GPS_STAT 0x17
+#define XBUS_ESC 0x20
+#define XBUS_BATTERY 0x34
+#define XBUS_RPM_VOLT_TEMP 0x7E
 
 #define GPS_INFO_FLAGS_IS_NORTH_BIT 0
 #define GPS_INFO_FLAGS_IS_EAST_BIT 1
@@ -70,7 +70,7 @@ struct Xbus_Battery
     int16_t chargeUsed_B = 0;  // Integrated mAh used, 1mAh (0-65.534Ah)
     uint16_t temp_B = 0;       // Temperature, 0.1C (0-150.0C,// 0x7FFF indicates not populated)
 };
-
+ 
 struct Xbus_Gps_Loc
 {
     uint8_t identifier = 0x16; // Source device = 0x16
