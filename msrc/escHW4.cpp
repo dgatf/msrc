@@ -23,10 +23,9 @@ void EscHW4::update()
         if (thr_ < 1024 && // try to filter invalid data frames
             pwm_ < 1024 &&
             rpm < 200000 &&
-            data[11] < 0xF && // for sensors, ADC is 12bits- > higher bits must be 0
+            data[11] < 0xF && // for sensors, ADC is 12bits- > higher bits must be 0. Why data[17] is higher when motor stops (issue #55) -> data[17] can't be used as a filter
             data[13] < 0xF &&
-            data[15] < 0xF &&
-            data[17] < 0xF)
+            data[15] < 0xF)
         {
             uint16_t rawCur = (uint16_t)data[13] << 8 | data[14];
             if (rawCurrentOffset_ == -1 && rawCur > 0)
