@@ -282,7 +282,7 @@ void Xbus::update()
     if (altitude > maxAltitude && millis() > 7000)
     {
         maxAltitude = altitude;
-        xbusAltitude.maxAltitude = __builtin_bswap16(altitude)
+        xbusAltitude.maxAltitude = __builtin_bswap16(altitude);
     }
 #endif
 #if defined(SIM_RX) && RX_PROTOCOL == RX_XBUS
