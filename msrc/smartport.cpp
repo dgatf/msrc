@@ -285,7 +285,7 @@ void Smartport::update()
     static uint16_t ts = 0;
     uint8_t sensorId = sensorId_;
     uint8_t packetType = RECEIVED_NONE;
-    if ((uint16_t)millis() - ts > 1200)
+    if ((uint16_t)(millis() - ts) > 1200)
     {
         packetType = RECEIVED_POLL;
         ts = millis();
