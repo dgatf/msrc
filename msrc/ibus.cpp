@@ -304,7 +304,7 @@ void Ibus::setConfig(Config &config)
     {
         SensorIbus *sensorIbusP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt), VOLTAGE1_MULTIPLIER);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_EXTV, IBUS_TYPE_U16, voltage->valueP(), voltage);
         addSensor(sensorIbusP);
     }
@@ -312,7 +312,7 @@ void Ibus::setConfig(Config &config)
     {
         SensorIbus *sensorIbusP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt), VOLTAGE2_MULTIPLIER);
         sensorIbusP = new SensorIbus(A4_FIRST_ID, voltage->valueP(), config.refresh.volt, voltage);
         addSensor(sensorIbusP);
     }*/
@@ -320,7 +320,7 @@ void Ibus::setConfig(Config &config)
     {
         SensorIbus *sensorIbusP;
         Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr));
+        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, current->valueP(), current);
         addSensor(sensorIbusP);
     }

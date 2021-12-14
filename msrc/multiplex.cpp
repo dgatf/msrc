@@ -205,7 +205,7 @@ void Multiplex::setConfig(Config &config)
     {
         SensorMultiplex *sensorMultiplexP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt), VOLTAGE1_MULTIPLIER);
         sensorMultiplexP = new SensorMultiplex(FHSS_VOLTAGE, voltage->valueP(), voltage);
         addSensor(sensorMultiplexP);
     }
@@ -213,7 +213,7 @@ void Multiplex::setConfig(Config &config)
     {
         SensorMultiplex *sensorMultiplexP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt), VOLTAGE2_MULTIPLIER);
         sensorMultiplexP = new SensorMultiplex(FHSS_VOLTAGE, voltage->valueP(), voltage);
         addSensor(sensorMultiplexP);
     }
@@ -221,7 +221,7 @@ void Multiplex::setConfig(Config &config)
     {
         SensorMultiplex *sensorMultiplexP;
         Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr));
+        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorMultiplexP = new SensorMultiplex(FHSS_CURRENT, current->valueP(), current);
         addSensor(sensorMultiplexP);
     }

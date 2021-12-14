@@ -264,7 +264,7 @@ void Sbus::setConfig(Config &config)
     {
         SensorSbus *sensorSbusP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt), VOLTAGE1_MULTIPLIER);
         sensorSbusP = new SensorSbus(FASST_VOLT_V1, voltage->valueP(), voltage);
         addSensor(2, sensorSbusP);
 
@@ -278,7 +278,7 @@ void Sbus::setConfig(Config &config)
     {
         SensorSbus *sensorSbusP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt), VOLTAGE2_MULTIPLIER);
         sensorSbusP = new SensorSbus(FASST_VOLT_V2, voltage->valueP(), voltage);
         addSensor(3, sensorSbusP);
         if (config.voltage1 == false)
@@ -291,7 +291,7 @@ void Sbus::setConfig(Config &config)
     {
         SensorSbus *sensorSbusP;
         Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr));
+        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorSbusP = new SensorSbus(FASST_POWER_CURR, current->valueP(), current);
         addSensor(8, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_VOLT, NULL, NULL);

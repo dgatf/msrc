@@ -1,10 +1,12 @@
 #include "voltage.h"
 
+Voltage::Voltage(uint8_t pin, uint8_t alpha, float multiplier) : pin_(pin), alpha_(alpha), multiplier_(multiplier) {}
+
 Voltage::Voltage(uint8_t pin, uint8_t alpha) : pin_(pin), alpha_(alpha) {}
 
 float Voltage::readVoltage()
 {
-    return analogRead(pin_) * BOARD_VCC / 1024.0;
+    return analogRead(pin_) * BOARD_VCC / 1024.0 * multiplier_;
 }
 
 void Voltage::update()

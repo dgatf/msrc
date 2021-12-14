@@ -268,7 +268,7 @@ void Frsky::setConfig(Config &config)
     {
         Sensord *sensorP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt), VOLTAGE1_MULTIPLIER);
         sensorP = new Sensord(VOLTS_BP_ID, voltage->valueP(), config.refresh.volt, voltage);
         addSensor(sensorP);
         sensorP = new Sensord(VOLTS_AP_ID, voltage->valueP(), config.refresh.volt, voltage);
@@ -278,7 +278,7 @@ void Frsky::setConfig(Config &config)
     {
         Sensord *sensorP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt), VOLTAGE2_MULTIPLIER);
         sensorP = new Sensord(A4_FIRST_ID, voltage->valueP(), config.refresh.volt, voltage);
         addSensor(sensorP);
     }*/
@@ -286,7 +286,7 @@ void Frsky::setConfig(Config &config)
     {
         Sensord *sensorP;
         Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr));
+        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorP = new Sensord(CURRENT_ID, current->valueP(), config.refresh.curr, current);
         addSensor(sensorP);
     }

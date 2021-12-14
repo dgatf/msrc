@@ -480,7 +480,7 @@ void Smartport::setConfig(Config &config)
     {
         Sensor *sensorP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt), VOLTAGE1_MULTIPLIER);
         sensorP = new Sensor(A3_FIRST_ID, voltage->valueP(), config.refresh.volt, voltage);
         addSensor(sensorP);
     }
@@ -488,7 +488,7 @@ void Smartport::setConfig(Config &config)
     {
         Sensor *sensorP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt), VOLTAGE2_MULTIPLIER);
         sensorP = new Sensor(A4_FIRST_ID, voltage->valueP(), config.refresh.volt, voltage);
         addSensor(sensorP);
     }
@@ -496,7 +496,7 @@ void Smartport::setConfig(Config &config)
     {
         Sensor *sensorP;
         Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr));
+        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorP = new Sensor(CURR_FIRST_ID, current->valueP(), config.refresh.curr, current);
         addSensor(sensorP);
     }

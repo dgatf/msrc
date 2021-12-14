@@ -503,7 +503,7 @@ void JetiEx::setConfig(Config &config)
     {
         SensorJetiEx *sensorJetiExP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt), VOLTAGE1_MULTIPLIER);
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, voltage->valueP(), voltage);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Voltage 1");
@@ -513,7 +513,7 @@ void JetiEx::setConfig(Config &config)
     {
         SensorJetiEx *sensorJetiExP;
         Voltage *voltage;
-        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt));
+        voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt), VOLTAGE2_MULTIPLIER);
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, voltage->valueP(), voltage);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Voltage 2");
@@ -523,7 +523,7 @@ void JetiEx::setConfig(Config &config)
     {
         SensorJetiEx *sensorJetiExP;
         Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr));
+        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, current->valueP(), current);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Current");

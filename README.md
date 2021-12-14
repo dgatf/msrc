@@ -211,9 +211,9 @@ Serial GPS (NMEA protocol) is supported
 
 The following analog sensors are supported:
 
-- 2 x voltage divider
+- 2 x voltage divider. Calibrate voltage analog sensors with VOLTAGE1_MULTIPLIER and VOLTAGE2_MULTIPLIER in config.h. Or from opentx, but it is reocommended by code to increase sensor resolution
 - 2 x temperature sensors (thermistors)
-- Current sensor (Hall effect: ACS758)
+- Current sensor (Hall effect: ACS758). Calibrate current analog sensor with CURRENT_MULTIPLIER in config.h. Or from opentx, but it is reocommended by code to increase sensor resolution
 - Airspeed sensor (MPXV7002)
 
 ### 3.4. I2C sensors
@@ -332,9 +332,13 @@ Some of the sensors have to be adusted in openTx
 
 ### 6.2. Adjust voltage sensors (A3, A4)
 
+Remark: Instead of adjusting the sensor in opentx, it is recommended to use VOLTAGE1_MULTIPLIER and VOLTAGE2_MULTIPLIER in config.h to increase the sensor resolution. Though voltage resolution in opentx is 10 times the current resolution, so less critical
+
 Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4 sensor
 
 ### 6.3. Adjust analog current sensor (Curr)
+
+Remark: Instead of adjusting the sensor in opentx, it is recommended to use CURRENT_MULTIPLIER in config.h to increase the sensor resolution
 
 If using a hall effect sensor, adjust the ratio: *25.5 x 1000 / output sensitivity (mV/A)*
 

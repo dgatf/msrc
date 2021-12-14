@@ -16,9 +16,11 @@ protected:
     uint8_t pin_;
     float value_ = 0;
     uint8_t alpha_;
+    float multiplier_ = 1;
     float readVoltage();
 
 public:
+    Voltage(uint8_t pin, uint8_t alpha, float multiplier);
     Voltage(uint8_t pin, uint8_t alpha);
     void update();
     float *valueP();
