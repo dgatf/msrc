@@ -4,14 +4,14 @@ This is a DIY project to send sensors telemetry for a fraction of the weight and
 
 Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky IBUS, Futaba SBUS2, Multiplex Sensor Bus, Jeti Ex Bus
 
-Compatible ESCs: Hobbywing V3/V4/V5, Kontronik, Castle Link
+Compatible ESCs: Hobbywing V3/V4/V5, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal
 
 Compatible MCUs: ATmega328P, ATmega328PB, ATmega2560 and ATmega32U4 and Teensy LC/3.x
 
 Implemented sensors:
 
 - ESC
-  - ESCs with serial telemetry (Hobbywing V3/V4/V5<sup>(1)</sup>, Kontronik<sup>(2)</sup>)
+  - ESCs with serial telemetry (Hobbywing V3/V4/V5<sup>(1)</sup>, Kontronik<sup>(2)</sup>), APD F/HV/UHV
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
@@ -162,9 +162,13 @@ Other protocols may not have all of the sensors:
 
 #### Serial telemetry
 
-Compatible ESC serial protocols: Hobbywing V3/V4/V5 and Kontronik (Kosmic, Kolibri, JivePro)
+Compatible ESC serial protocols:
 
-Optionally a PWM signal can be generated from the RPM value in serial telemetry
+ - Hobbywing V3/V4/V5. Serial 19200
+ - Kontronik Kosmic/Kolibri/JivePro. Serial 115200, even parity
+ - APD F/HV/UHV. Serial 115200
+
+Optionally, for Hobbywing Flyfun (V5) and APD F-series, a PWM signal can be generated from the RPM telemetry value
 
 <p align="center"><img src="./images/serial.png" width="360"><br>
   <i>ESC serial</i><br><br></p>
@@ -228,6 +232,9 @@ If using ATmega328P telemetry values are not accurate all the time. Some reading
 | Hobbywing V4/V5<sup>(4)</sup><sup>(5)</sup> | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:         | :white_check_mark:<sup>(2)</sup>    |             |             | :white_check_mark: FET       | :white_check_mark: BEC       |             |
 | Castle Link        | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:         | :white_check_mark:       | :white_check_mark:<sup>(3)</sup>      | :white_check_mark:<sup>(3)</sup>      | :white_check_mark:           |               | :white_check_mark:         |
 | Kontronik        | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:         | :white_check_mark:       | :white_check_mark:      | :white_check_mark: | :white_check_mark: Power amp | :white_check_mark: BEC     |         |
+| APD F | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:         | :white_check_mark:    |             |             | :white_check_mark:       |        |             |
+| APD HV/UHV | :white_check_mark:         | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:<sup>(1)</sup>      | :white_check_mark:         | :white_check_mark:    |             |             | :white_check_mark:      |       |             |
+
 
 (1) Available but not forwarded to smartport  
 (2) For 80A models and higher  
@@ -576,6 +583,7 @@ v0.9
 - XBUS. Added analog voltage2/ntc2 sensor
 - BMP280. Added vertical speed calculation (vario)
 - Current analog. Added consumption
+- Added APD support
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
@@ -584,7 +592,7 @@ v0.9
 - Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2, Multiplex Sensor Bus, Jeti Ex Bus
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
-- Added support for Kontronik ESC
+- Added ESCs support for: Kontronik Kosmic/Kolibri/JivePro and APD F/HV/UHV
 - Improved current calculation for HW V4/V5
 
 [v0.7](https://github.com/dgatf/msrc/tree/v0.7)
