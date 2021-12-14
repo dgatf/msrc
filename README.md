@@ -211,9 +211,9 @@ Serial GPS (NMEA protocol) is supported
 
 The following analog sensors are supported:
 
-- 2 x voltage divider. Calibrate voltage analog sensors with VOLTAGE1_MULTIPLIER and VOLTAGE2_MULTIPLIER in config.h. Or from opentx, but it is reocommended by code to increase sensor resolution
+- 2 x voltage divider. Calibrate voltage analog sensors with VOLTAGE1_MULTIPLIER and VOLTAGE2_MULTIPLIER in config.h. Or from opentx, but it is recommended by code to increase sensor resolution
 - 2 x temperature sensors (thermistors)
-- Current sensor (Hall effect: ACS758). Calibrate current analog sensor with CURRENT_MULTIPLIER in config.h. Or from opentx, but it is reocommended by code to increase sensor resolution
+- Current sensor (Hall effect: ACS758). Calibrate current analog sensor with CURRENT_MULTIPLIER in config.h. Or from opentx, but it is recommended by code to increase sensor resolution
 - Airspeed sensor (MPXV7002)
 
 ### 3.4. I2C sensors
