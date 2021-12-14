@@ -26,9 +26,9 @@ local sensorIdTx = 17 -- sensorId 18
 local config = {
     firmwareVersion = "",
     protocol = {
-        selected = 7,
-        list = {"NONE", "HW V3", "HW V4", "PWM", "CASTLE", "KONTRONIK", ""},
-        elements = 6
+        selected = 9,
+        list = {"NONE", "HW V3", "HW V4", "PWM", "CASTLE", "KONTRONIK", "APD F", "APD HV", ""},
+        elements = 8
     },
     voltage1 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
     voltage2 = {selected = 3, list = {"Off", "On", ""}, elements = 2},
@@ -191,7 +191,7 @@ local function readConfig()
                 if bit32.extract(value, 20, 4) >= 1 and bit32.extract(value, 20, 4) <= 16 then
                     config.queueTemp.selected = bit32.extract(value, 20, 4) -- bits 21-24
                 end
-                if bit32.extract(value, 24, 8) >= 0 and bit32.extract(value, 24, 8) <= 5 then
+                if bit32.extract(value, 24, 8) >= 0 and bit32.extract(value, 24, 8) <= 7 then
                     config.protocol.selected = bit32.extract(value, 24, 8) + 1 -- bits 25-32
                 end
                 readConfigState = state["PACKET_3"]
