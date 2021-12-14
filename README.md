@@ -30,11 +30,11 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 | MCU | Recommended board | Castle telemetry | UART<sup>(1)</sup> | Inverted UART<sup>(2)</sup> |
 | :---: | :---: | :---: | :---: | :---: |
 | ATmega328P | Arduino Pro Mini<sup>(5)</sup> | Innacurate | 1 | :x: |
-| ATmega328PB | Pololu ATmega328PB<sup>(5)</sup> | :green_check_mark: | 2 | :x: |
-| ATmega2560 | ATmega2560 Pro Mini | :green_check_mark: | 4 | :x: |
-| ATmega32U4<sup>(3)</sup> | Teensy 2 | :green_check_mark: | 1 | :x: |
-| ARM CortexM0+ | Teensy LC<sup>(4)</sup> | :green_check_mark: | 3 | :green_check_mark: |
-| ARM CortexM4 | Teensy 3.2 | :green_check_mark: | 3 | :green_check_mark: |
+| ATmega328PB | Pololu ATmega328PB<sup>(5)</sup> | :heavy_check_mark: | 2 | :x: |
+| ATmega2560 | ATmega2560 Pro Mini | :heavy_check_mark: | 4 | :x: |
+| ATmega32U4<sup>(3)</sup> | Teensy 2 | :heavy_check_mark: | 1 | :x: |
+| ARM CortexM0+ | Teensy LC<sup>(4)</sup> | :heavy_check_mark: | 3 | :heavy_check_mark: |
+| ARM CortexM4 | Teensy 3.2 | :heavy_check_mark: | 3 | :heavy_check_mark: |
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Allows to use hardware serial for Smartport and SBUS without signal inverter. Also is half duplex capable  
@@ -228,12 +228,12 @@ If using ATmega328P telemetry values are not accurate all the time. Some reading
 
 | Model              | RPM         | Throttle    | Motor PWM   | Voltage     | Current   | Voltage BEC | Current BEC | Temperature 1 | Temperature 2 | Ripple Volt |
 | ------------------ | :---------: | :---------: | :---------: | :---------: | :-------: | :---------: | :---------: | :-----------: | :-----------: | :---------: |
-| Hobbywing V3       | :green_check_mark:         | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:<sup>(1)</sup>      |             |           |             |             |               |               |             |
-| Hobbywing V4/V5<sup>(4)</sup><sup>(5)</sup> | :green_check_mark:         | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:         | :green_check_mark:<sup>(2)</sup>    |             |             | :green_check_mark: FET       | :green_check_mark: BEC       |             |
-| Castle Link        | :green_check_mark:         | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:         | :green_check_mark:       | :green_check_mark:<sup>(3)</sup>      | :green_check_mark:<sup>(3)</sup>      | :green_check_mark:           |               | :green_check_mark:         |
-| Kontronik        | :green_check_mark:         | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:         | :green_check_mark:       | :green_check_mark:      | :green_check_mark: | :green_check_mark: Power amp | :green_check_mark: BEC     |         |
-| APD F | :green_check_mark:         | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:         | :green_check_mark:    |             |             | :green_check_mark:       |        |             |
-| APD HV/UHV | :green_check_mark:         | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:<sup>(1)</sup>      | :green_check_mark:         | :green_check_mark:    |             |             | :green_check_mark:      |       |             |
+| Hobbywing V3       | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      |             |           |             |             |               |               |             |
+| Hobbywing V4/V5<sup>(4)</sup><sup>(5)</sup> | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:<sup>(2)</sup>    |             |             | :heavy_check_mark: FET       | :heavy_check_mark: BEC       |             |
+| Castle Link        | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:       | :heavy_check_mark:<sup>(3)</sup>      | :heavy_check_mark:<sup>(3)</sup>      | :heavy_check_mark:           |               | :heavy_check_mark:         |
+| Kontronik        | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:       | :heavy_check_mark:      | :heavy_check_mark: | :heavy_check_mark: Power amp | :heavy_check_mark: BEC     |         |
+| APD F | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:       |        |             |
+| APD HV/UHV | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:      |       |             |
 
 
 (1) Available but not forwarded to smartport  
