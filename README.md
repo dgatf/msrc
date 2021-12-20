@@ -91,10 +91,10 @@ Depending on the receiver protocol connect to the Rx as follows
 
 1N4148 diode or 1k to 3.3k resistor
 
-<p align="center"><img src="./images/frsky_smartport.png" width="400"><br>
+<p align="center"><img src="./images/frsky_smartport_sbus.png" width="400"><br>
 <i>Frsky Smartport, SBUS</i><br><br></p>
 
-<p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="460"><br>
+<p align="center"><img src="./images/srxl_ibus_sb.png" width="460"><br>
 <i>SRXL, IBUS, Jeti Ex Bus</i><br><br></p>
 
 <p align="center"><img src="./images/frsky_d.png" width="310"><br>
