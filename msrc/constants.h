@@ -69,10 +69,10 @@
 #define ESC_SERIAL hardSerial0  
 #define GPS_SERIAL hardSerial1   // if using with esc and srxl or ibus, use softSerial. If there is no reading, use 3.3v board
 #define DEBUG_SERIAL hardSerial0
-#if defined(DEBUG_INIT) && !defined(DEBUG_GPS) 
+#if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && !CONFIG_GPS 
 #define DISABLE_GPS
 #endif
-#if defined(DEBUG_INIT) && !defined(DEBUG_HW4) 
+#if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && CONFIG_ESC_PROTOCOL != PROTOCOL_HW_V4_LV && CONFIG_ESC_PROTOCOL != PROTOCOL_HW_V4_HV && CONFIG_ESC_PROTOCOL != PROTOCOL_HW_V5_LV && CONFIG_ESC_PROTOCOL != PROTOCOL_HW_V5_HV
 #define DISABLE_HW4
 #endif
 #endif

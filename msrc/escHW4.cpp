@@ -99,8 +99,6 @@ void EscHW4::update()
     tempBec_ = 12.34;
     cellVoltage_ = voltage_ / cellCount_;
 #endif
-
-#endif
 }
 
 float EscHW4::calcVolt(uint16_t voltRaw)
@@ -125,6 +123,7 @@ float EscHW4::calcCurr(uint16_t currentRaw)
     if (currentRaw - rawCurrentOffset_ < 0)
         return 0;
     return (currentRaw - rawCurrentOffset_) * ESCHW4_V_REF / (ampGain_[type_] * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
+#endif
 }
 
 float *EscHW4::rpmP()
