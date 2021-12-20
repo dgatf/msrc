@@ -21,6 +21,7 @@ public:
     EscApdHV(AbstractSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint8_t alphaCurr, uint8_t alphaTemp);
     void begin();
     void update();
+    uint16_t get_crc16(uint8_t *buffer);
     float *rpmP();
     float *voltageP();
     float *currentP();

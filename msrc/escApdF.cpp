@@ -10,21 +10,39 @@ void EscApdF::begin()
     serial_.setTimeout(2);
 }
 
+uint8_t EscApdF::update_crc8(uint8_t crc, uint8_t crc_seed)
+{
+    uint8_t crc_u, i;
+    crc_u = crc;
+    crc_u ^= crc_seed;
+    for (i = 0; i < 8; i++)
+        crc_u = (crc_u & 0x80) ? 0x7 ^ (crc_u << 1) : (crc_u << 1);
+    return (crc_u);
+}
+
+uint8_t EscApdF::get_crc8(uint8_t *buffer, uint8_t lenght)
+{
+    uint8_t crc = 0, i;
+    for (i = 0; i < lenght; i++)
+        crc = update_crc8(buffer[i], crc);
+    return crc;
+}
+
 void EscApdF::update()
 {
-    if (serial_.availableTimeout() == APDF_PACKET_LENGHT)
+    uint8_t lenght = serial_.availableTimeout();
+    if (lenght == APDF_PACKET_LENGHT || lenght == KISS_PACKET_LENGHT)
     {
-        uint8_t data[APDF_PACKET_LENGHT];
-        serial_.readBytes(data, APDF_PACKET_LENGHT);
-        if (data[10] == 0 && data[11] == 0)
+        uint8_t data[lenght];
+        serial_.readBytes(data, lenght);
+        //if (data[10] == 0 && data[11] == 0)
+        if (get_crc8(data, KISS_PACKET_LENGHT) == data[9])
         {
             float temp = data[0];
             float voltage = ((uint16_t)data[1] << 8 | data[2]) / 100.0;
             float current = ((uint16_t)data[3] << 8 | data[4]) / 100.0;
             float consumption = ((uint16_t)data[5] << 8 | data[6]);
             float rpm = ((uint16_t)data[7] << 8 | data[8]) * 100.0;
-            uint8_t crc = data[9];
-
             temp_ = calcAverage(alphaTemp_ / 100.0F, temp_, temp);
             voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);
             current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
