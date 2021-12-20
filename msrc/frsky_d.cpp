@@ -223,6 +223,44 @@ void Frsky::setConfig(Config &config)
         sensorP = new Sensord(FUEL_ID, esc->consumptionP(), config.refresh.curr, esc);
         addSensor(sensorP);
     }
+    if (config.protocol == PROTOCOL_APD_F)
+    {
+        Sensord *sensorP;
+        EscApdF *esc;
+        esc = new EscApdF(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
+        sensorP = new Sensord(RPM_ID, esc->rpmP(), config.refresh.rpm, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(VOLTS_BP_ID, esc->voltageP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(VOLTS_AP_ID, esc->voltageP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(CURRENT_ID, esc->currentP(), config.refresh.curr, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(TEMP1_ID, esc->tempP(), config.refresh.temp, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(VFAS_ID, esc->cellVoltageP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+    }
+        if (config.protocol == PROTOCOL_APD_HV)
+    {
+        Sensord *sensorP;
+        EscApdHV *esc;
+        esc = new EscApdHV(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
+        sensorP = new Sensord(RPM_ID, esc->rpmP(), config.refresh.rpm, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(VOLTS_BP_ID, esc->voltageP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(VOLTS_AP_ID, esc->voltageP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(CURRENT_ID, esc->currentP(), config.refresh.curr, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(TEMP1_ID, esc->tempP(), config.refresh.temp, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(VFAS_ID, esc->cellVoltageP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+    }
     if (config.gps == true)
     {
         Sensord *sensorP;

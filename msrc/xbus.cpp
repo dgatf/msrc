@@ -150,6 +150,8 @@ void Xbus::begin()
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 || \
     CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4 || \
     CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK || \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_APD_F || \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_APD_HV || \
     CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
     esc.begin();
 #endif
@@ -205,6 +207,13 @@ void Xbus::update()
     xbusEsc.tempBEC = __builtin_bswap16(*esc.tempBecP() * 10);
     xbusEsc.currentBEC = *esc.becCurrentP() * 10;
     xbusEsc.voltsBEC = *esc.becVoltageP() * 20;
+#endif
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_APD_F || CONFIG_ESC_PROTOCOL == PROTOCOL_APD_HV
+    esc.update();
+    xbusEsc.RPM = __builtin_bswap16(*esc.rpmP() / 10);
+    xbusEsc.voltsInput = __builtin_bswap16(*esc.voltageP() * 100);
+    xbusEsc.tempFET = __builtin_bswap16(*esc.tempP() * 10);
+    xbusEsc.currentMotor = __builtin_bswap16(*esc.currentP() * 100);
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
     esc.update();
