@@ -61,7 +61,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
-| Frsky Smartport, SBUS<sup>(4)</sup> | 7  & 12<sup>(2)</sup> | 7  & 12<sup>(2)</sup> | A15  & D10<sup>(2)</sup> | B3  & B4<sup>(2)</sup><br/>(15 & 16) | 1 |
+| Frsky Smartport, SBUS | 7  & 12<sup>(2)</sup> | 7  & 12<sup>(2)</sup> | A15  & D10<sup>(2)</sup> | B3  & B4<sup>(2)</sup><br/>(15 & 16) | 1 |
 | Frsky D | 12 | 12 | D10 | B4(16) | 1 |
 | SRXL, IBUS, SB, Jeti Ex | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15(RX3) & 14(TX3)<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 1 |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
@@ -70,7 +70,6 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 (1) with 3.3k pull up resistor  
 (2) diode 1N4148. Note the inverted orientation of the diode for Frsky and SBUS. Alternatively 1k to 3.3k resistor can be used  
 (3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)  
-(4) Use ATmega 16Mhz or Teensy LC/3.x (If using ATmega 8Mhz, it is needed a signal inverter and connect it to UART)  
 
 
 ## 2. Receiver protocol
@@ -93,10 +92,10 @@ Depending on the receiver protocol connect to the Rx as follows
 1N4148 diode or 1k to 3.3k resistor
 
 <p align="center"><img src="./images/frsky_smartport.png" width="400"><br>
-<i>Frsky Smartport, SBUS (SBUS only ATmega 16Mhz)</i><br><br></p>
+<i>Frsky Smartport, SBUS</i><br><br></p>
 
 <p align="center"><img src="./images/srxl_ibus_sbus_sb.png" width="460"><br>
-<i>SRXL, IBUS, SBUS (SBUS ATmega 8Mhz + signal inverter), Jeti Ex Bus</i><br><br></p>
+<i>SRXL, IBUS, Jeti Ex Bus</i><br><br></p>
 
 <p align="center"><img src="./images/frsky_d.png" width="310"><br>
 <i>Frsky D</i><br><br></p>
