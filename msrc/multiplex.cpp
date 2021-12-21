@@ -61,7 +61,7 @@ void Multiplex::update()
     uint8_t address = 0;
 #if defined(SIM_RX)
     static uint16_t ts = 0;
-    if ((uint16_t)millis() - ts > 100)
+    if ((uint16_t)(millis() - ts) > 100)
     {
         status = MULTIPLEX_SEND;
         ts = millis();

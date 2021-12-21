@@ -255,7 +255,7 @@ void JetiEx::update()
 #if defined(SIM_RX)
     static uint16_t ts = 0;
     static uint8_t packetId = 0;
-    if ((uint16_t)millis() - ts > 100)
+    if ((uint16_t)(millis() - ts) > 100)
     {
         if (!mute)
         {

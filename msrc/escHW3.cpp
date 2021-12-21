@@ -34,7 +34,7 @@ void EscHW3::update()
 #endif
         }
     }
-    if ((uint16_t)millis() - serialTs > 100)
+    if ((uint16_t)(millis() - serialTs) > 100)
         rpm_ = 0;
 #ifdef SIM_SENSORS
     rpm_ = 12345.67;

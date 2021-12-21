@@ -283,9 +283,8 @@ void Smartport::update()
 
 #elif defined(SIM_RX)
     static uint16_t ts = 0;
-    uint8_t sensorId = sensorId_;
     uint8_t packetType = RECEIVED_NONE;
-    if ((uint16_t)(millis() - ts) > 1200)
+    if ((uint16_t)(millis() - ts) > 120)
     {
         packetType = RECEIVED_POLL;
         ts = millis();
@@ -317,11 +316,11 @@ void Smartport::update()
         {
             // loop sensors until correct timestamp or 1 sensors cycle
             Sensor *initialSensorP = spSensorP;
-            while (((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) <= (uint16_t)spSensorP->refresh() * 100) && spSensorP->nextP != initialSensorP)
+            while ( ((uint16_t)(millis() - spSensorP->timestamp()) <= (uint16_t)spSensorP->refresh() * 100) && spSensorP->nextP != initialSensorP )
             {
                 spSensorP = spSensorP->nextP;
             }
-            if ((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) >= (uint16_t)spSensorP->refresh() * 100)
+            if ( (uint16_t)(millis() - spSensorP->timestamp()) >= (uint16_t)spSensorP->refresh() * 100 )
             {
                 sendData(spSensorP->frameId(), spSensorP->dataId(), spSensorP->valueFormatted());
 #ifdef DEBUG

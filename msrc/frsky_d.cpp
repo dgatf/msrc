@@ -98,11 +98,11 @@ void Frsky::update()
     {
         static Sensord *spSensorP = sensorP; // loop sensors until correct timestamp or 1 sensors cycle
         Sensord *initialSensorP = spSensorP;
-        while (((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) <= (uint16_t)spSensorP->refresh() * 100) && spSensorP->nextP != initialSensorP)
+        while ( ((uint16_t)(millis() - spSensorP->timestamp()) <= (uint16_t)spSensorP->refresh() * 100) && spSensorP->nextP != initialSensorP )
         {
             spSensorP = spSensorP->nextP;
         }
-        if ((uint16_t)((uint16_t)millis() - spSensorP->timestamp()) >= (uint16_t)spSensorP->refresh() * 100)
+        if ( (uint16_t)(millis() - spSensorP->timestamp()) >= (uint16_t)spSensorP->refresh() * 100 )
         {
             sendData(spSensorP->dataId(), spSensorP->valueFormatted());
 #ifdef DEBUG
