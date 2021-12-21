@@ -517,9 +517,10 @@ Adjust constants in *pressure.h*:
 
 ## 10. Change log
 
-0.8
+[v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
 - Added specific drivers for hardware serial and software serial
+- Added msrc_gui to create config.h (not all options are avaiable from gui)
 - Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2, Multiplex Sensor Bus, Jeti Ex Bus
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
