@@ -105,7 +105,7 @@
 #define ESC_SERIAL hardSerial1
 #define GPS_SERIAL hardSerial1
 #define DEBUG_SERIAL Serial
-#ifndef CORE_TEENSY && (RX_PROTOCOL == RX_SMARTPORT)
+#if !defined(CORE_TEENSY) && (RX_PROTOCOL == RX_SMARTPORT)
 #define DISABLE_GPS
 #define DISABLE_HW4
 #define DISABLE_CASTLE
