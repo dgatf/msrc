@@ -215,7 +215,7 @@ void setup()
     Wire.setTimeout(WIRE_TIMEOUT);
 #endif
 #if defined(ESC_INIT_DELAY)
-#if defined(__AVR_ATmega328P__) && !defined(ARDUINO_AVR_A_STAR_328PB)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
     pinMode(0, OUTPUT);
     digitalWrite(0, LOW);
 #endif
