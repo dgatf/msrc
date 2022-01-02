@@ -38,7 +38,9 @@ void EscHW4::update()
 #endif
             }
             float voltage = calcVolt((uint16_t)data[11] << 8 | data[12]);
-            float current = calcCurr((uint16_t)data[13] << 8 | data[14]);
+            float current = 0;
+            if (thr_ > CURRENT_THRESHOLD / 100.0 * 1024)
+                current = calcCurr((uint16_t)data[13] << 8 | data[14]);
             float tempFET = calcTemp((uint16_t)data[15] << 8 | data[16]);
             float tempBEC = calcTemp((uint16_t)data[17] << 8 | data[18]);
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);

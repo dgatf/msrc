@@ -52,6 +52,9 @@
 /* Add init delay for FlyFun ESC. Uncomment if the ESC doesn't arm */
 //#define ESC_INIT_DELAY 10000
 
+/* HW V4/V5 current threshold throttle (0-100%) */
+#define CURRENT_THRESHOLD 25
+
 /* Force eeprom write */
 //#define FORCE_EEPROM_WRITE // Uncomment to force write eeprom as defined in config.h. Useful when using lua and eeprom is messed up. Reflash againg with line commented or config will be reset at power up 
 
