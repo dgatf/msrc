@@ -520,7 +520,7 @@ Adjust constants in *pressure.h*:
 
 v0.9
 
-- HW V4/V5. Added threshold filter for current sensor. Values for current when throttle is low are not reliable
+- HW V4/V5. Added threshold filter for current sensor. Values for current when throttle is low may not be reliable, depending on model
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
