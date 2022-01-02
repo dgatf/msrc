@@ -165,7 +165,7 @@ Remarks:
  - In HW V3 the telemetry port is the program port. It is a servo male plug on the ESC
  - In HW V4/V5 the telemetry port is a wired servo female plug. Don't confuse with RPM PWM signal connector or the program port
  - For HW ESCs be sure the firmware installed is NOT VBAR version
- - HW V4/V5 with current sensor. Values for current when throttle is low (<25%, depending on model) may not be reliable. If getting high or noisy current values when throttle is low, adjust CURRENT_THRESHOLD in config.h. Below this throttle percentage (0-100%), current values will be 0A
+ - HW V4/V5 with current sensor. Values for current when throttle is low (up to 25%, depending on model) may not be reliable. If getting high or noisy current values when throttle is low, adjust CURRENT_THRESHOLD in config.h. Below this throttle percentage (0-100%), current values will be 0A
 
 #### PWM signal
 
