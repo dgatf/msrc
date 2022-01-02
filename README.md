@@ -518,6 +518,10 @@ Adjust constants in *pressure.h*:
 
 ## 10. Change log
 
+v0.9
+
+- HW V4/V5. Added threshold filter for current sensor. Values for current when throttle is low are not reliable
+
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
 - Added specific drivers for hardware serial and software serial
