@@ -385,6 +385,10 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Cell Voltage");
         sensorJetiExP->setUnit("V");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->consumptionP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Consumption");
+        sensorJetiExP->setUnit("mAh");
     }
     if (config.protocol == PROTOCOL_CASTLE)
     {
@@ -423,6 +427,10 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Cell Voltage");
         sensorJetiExP->setUnit("V");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->consumptionP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Consumption");
+        sensorJetiExP->setUnit("mAh");
     }
     if (config.protocol == PROTOCOL_KONTRONIK)
     {
@@ -461,6 +469,10 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Cell Voltage");
         sensorJetiExP->setUnit("V");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->consumptionP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Consumption");
+        sensorJetiExP->setUnit("mAh");
     }
     if (config.gps == true)
     {

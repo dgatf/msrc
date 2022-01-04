@@ -231,6 +231,8 @@ void Ibus::setConfig(Config &config)
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_CELL_VOLTAGE, IBUS_TYPE_U16, esc->cellVoltageP(), esc);
         addSensor(sensorIbusP);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_FUEL, IBUS_TYPE_U16, esc->consumptionP(), esc);
+        addSensor(sensorIbusP);
     }
     if (config.protocol == PROTOCOL_CASTLE)
     {
@@ -251,6 +253,8 @@ void Ibus::setConfig(Config &config)
         sensorIbusP = new SensorIbus(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, esc->temperatureP(), esc);
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_CELL_VOLTAGE, IBUS_TYPE_U16, esc->cellVoltageP(), esc);
+        addSensor(sensorIbusP);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_FUEL, IBUS_TYPE_U16, esc->consumptionP(), esc);
         addSensor(sensorIbusP);
     }
     if (config.protocol == PROTOCOL_KONTRONIK)
@@ -273,6 +277,8 @@ void Ibus::setConfig(Config &config)
         addSensor(sensorIbusP);
         //sensorIbusP = new SensorIbus(TEMP2_ID, esc->tempBecP(), esc);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_CELL_VOLTAGE, IBUS_TYPE_U16, esc->cellVoltageP(), esc);
+        addSensor(sensorIbusP);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_FUEL, IBUS_TYPE_U16, esc->consumptionP(), esc);
         addSensor(sensorIbusP);
     }
     if (config.gps == true)

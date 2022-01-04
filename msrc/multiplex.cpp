@@ -133,6 +133,8 @@ void Multiplex::setConfig(Config &config)
         addSensor(sensorMultiplexP);
         //sensorMultiplexP = new SensorMultiplex(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorMultiplexP);
+        sensorMultiplexP = new SensorMultiplex(FHSS_CONSUMPTION, esc->consumptionP(), esc);
+        addSensor(sensorMultiplexP);
     }
     if (config.protocol == PROTOCOL_CASTLE)
     {
@@ -156,6 +158,8 @@ void Multiplex::setConfig(Config &config)
         addSensor(sensorMultiplexP);
         //sensorMultiplexP = new SensorMultiplex(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(sensorMultiplexP);
+        sensorMultiplexP = new SensorMultiplex(FHSS_CONSUMPTION, esc->consumptionP(), esc);
+        addSensor(sensorMultiplexP);
     }
     if (config.protocol == PROTOCOL_KONTRONIK)
     {
@@ -181,6 +185,8 @@ void Multiplex::setConfig(Config &config)
         addSensor(sensorMultiplexP);
         //sensorMultiplexP = new SensorMultiplex(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(sensorMultiplexP);
+        sensorMultiplexP = new SensorMultiplex(FHSS_CONSUMPTION, esc->consumptionP(), esc);
+        addSensor(sensorMultiplexP);
     }
     if (config.gps == true)
     {

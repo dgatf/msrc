@@ -170,6 +170,8 @@ void Frsky::setConfig(Config &config)
         addSensor(sensorP);
         sensorP = new Sensord(VFAS_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         addSensor(sensorP);
+        sensorP = new Sensord(FUEL_ID, esc->consumptionP(), config.refresh.curr, esc);
+        addSensor(sensorP);
     }
     if (config.protocol == PROTOCOL_CASTLE)
     {
@@ -193,6 +195,8 @@ void Frsky::setConfig(Config &config)
         addSensor(sensorP);
         sensorP = new Sensord(VFAS_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         addSensor(sensorP);
+        sensorP = new Sensord(FUEL_ID, esc->consumptionP(), config.refresh.curr, esc);
+        addSensor(sensorP);
     }
     if (config.protocol == PROTOCOL_KONTRONIK)
     {
@@ -215,6 +219,8 @@ void Frsky::setConfig(Config &config)
         sensorP = new Sensord(TEMP2_ID, esc->tempBecP(), config.refresh.temp, esc);
         addSensor(sensorP);
         sensorP = new Sensord(VFAS_ID, esc->cellVoltageP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+        sensorP = new Sensord(FUEL_ID, esc->consumptionP(), config.refresh.curr, esc);
         addSensor(sensorP);
     }
     if (config.gps == true)

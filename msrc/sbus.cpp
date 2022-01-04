@@ -159,7 +159,7 @@ void Sbus::setConfig(Config &config)
         addSensor(8, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->voltageP(), esc);
         addSensor(9, sensorSbusP);
-        sensorSbusP = new SensorSbus(FASST_POWER_CONS, NULL, NULL);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, esc->consumptionP(), esc);
         addSensor(10, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempFetP(), esc);
         addSensor(6, sensorSbusP);
@@ -180,7 +180,7 @@ void Sbus::setConfig(Config &config)
         addSensor(8, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->voltageP(), esc);
         addSensor(9, sensorSbusP);
-        sensorSbusP = new SensorSbus(FASST_POWER_CONS, NULL, NULL);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, esc->consumptionP(), esc);
         addSensor(10, sensorSbusP);
         //sensorSbusP = new SensorSbus(FASST_POWER_CURR, esc->rippleVoltageP(), esc);
         //addSensor(11, sensorSbusP);
@@ -209,7 +209,7 @@ void Sbus::setConfig(Config &config)
         addSensor(8, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->voltageP(), esc);
         addSensor(9, sensorSbusP);
-        sensorSbusP = new SensorSbus(FASST_POWER_CONS, NULL, NULL);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, esc->consumptionP(), esc);
         addSensor(10, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_CURR, esc->becCurrentP(), esc);
         addSensor(11, sensorSbusP);
