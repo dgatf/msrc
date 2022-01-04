@@ -24,7 +24,7 @@ float calcConsumption(float current)
         lastms = millis();
         return 0;
     }
-    float mAh= current * (millis() - lastms) / 3600;
+    float mAh = current * (millis() - lastms) / 3600;
     lastms = millis();
-    return (mAh);
+    return mAh;
 }
