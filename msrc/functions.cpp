@@ -15,3 +15,16 @@ float calcAverage(float alpha, float oldValue, float newValue)
         return oldValue;
     return (1 - alpha) * oldValue + alpha * newValue;
 }
+
+float calcConsumption(float current)
+{
+    static uint32_t lastms = 0;
+    if (lastms == 0)
+    {
+        lastms = millis();
+        return 0;
+    }
+    float mAh= current * (millis() - lastms) / 3600;
+    lastms = millis();
+    return (mAh);
+}

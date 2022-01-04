@@ -622,6 +622,7 @@ void EscCastle::update()
         thr_ = getValue(4);
         output_ = getValue(5);
         rpm_ = getValue(6);
+        consumption_ += calcConsumption(current_);
         becVoltage_ = getValue(7);
         becCurrent_ = getValue(8);
         if (castleTelemetry[9] > castleTelemetry[10])
@@ -671,6 +672,11 @@ float *EscCastle::outputP()
 float *EscCastle::rpmP()
 {
     return &rpm_;
+}
+
+float *EscCastle::consumptionP()
+{
+    return &consumption_;
 }
 
 float *EscCastle::becVoltageP()

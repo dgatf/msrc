@@ -44,6 +44,7 @@ void EscHW4::update()
             float tempFET = calcTemp((uint16_t)data[15] << 8 | data[16]);
             float tempBEC = calcTemp((uint16_t)data[17] << 8 | data[18]);
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+            consumption_ += calcConsumption(current);
             voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);
             current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
             tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFET);
@@ -95,6 +96,7 @@ void EscHW4::update()
 #endif
 #ifdef SIM_SENSORS
     rpm_ = 12345.67;
+    consumption_ = 123.4;
     voltage_ = 12.34;
     current_ = 5.678;
     tempFet_ = 12.34;
@@ -131,6 +133,11 @@ float EscHW4::calcCurr(uint16_t currentRaw)
 float *EscHW4::rpmP()
 {
     return &rpm_;
+}
+
+float *EscHW4::consumptionP()
+{
+    return &consumption_;
 }
 
 float *EscHW4::voltageP()

@@ -26,6 +26,7 @@ void EscKontronik::update()
             float tempFet = data[26];
             float tempBec = data[27];
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+            consumption_ += calcConsumption(current);
             voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);
             current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
             becVoltage_ = calcAverage(alphaVolt_ / 100.0F, becVoltage_, becVoltage);
@@ -57,6 +58,7 @@ void EscKontronik::update()
     }
 #ifdef SIM_SENSORS
     rpm_ = 12345.67;
+    consumption_ = 123.4;
     voltage_ = 12.34;
     current_ = 12.34;
     tempFet_ = 12.34;
@@ -68,6 +70,11 @@ void EscKontronik::update()
 float *EscKontronik::rpmP()
 {
     return &rpm_;
+}
+
+float *EscKontronik::consumptionP()
+{
+    return &consumption_;
 }
 
 float *EscKontronik::voltageP()
