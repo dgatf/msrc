@@ -295,7 +295,7 @@ ESC:
 - ESC voltage: EscV (0x0b50)
 - ESC cell average: VFAS (0x0210)
 - ESC current: EscA (0x0b50)
-- ESC consumption: EscC (0x0b50)
+- ESC consumption: EscC (0x0b60)
 - ESC temp FET (HW) or ESC temp linear (Castle): EscT (0x0b70)
 - ESC temp BEC (HW) or ESC temp NTC (Castle): EscT (0x0b71)
 - ESC ripple voltage: EscV (0x0b51)
@@ -323,8 +323,8 @@ Analog:
 
 I2C:
 
- - Altitude: Alt (0x0820)
- - Temperature: T1 (0x0401, 0x0402)
+- Altitude: Alt (0x0820)
+- Temperature: T1 (0x0401, 0x0402)
 
 Some of the sensors have to be adusted in openTx
 
