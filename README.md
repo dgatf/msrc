@@ -203,6 +203,8 @@ If using ATmega328P telemetry values are not accurate all the time. Some reading
 
 If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for correct cell count
 
+If current is available, battery consumption is calculated in mAh
+
 ### 3.2. Serial GPS
 
 Serial GPS (NMEA protocol) is supported
@@ -293,6 +295,7 @@ ESC:
 - ESC voltage: EscV (0x0b50)
 - ESC cell average: VFAS (0x0210)
 - ESC current: EscA (0x0b50)
+- ESC consumption: EscC (0x0b50)
 - ESC temp FET (HW) or ESC temp linear (Castle): EscT (0x0b70)
 - ESC temp BEC (HW) or ESC temp NTC (Castle): EscT (0x0b71)
 - ESC ripple voltage: EscV (0x0b51)
@@ -350,7 +353,9 @@ To calculate the battery consumption add a new sensor:
 
 ### 6.4 Calculate current consumption
 
-The battery consumption can be calculated by adding a calculated sensor in openTx:
+Battery consumption is calculatd since MSRC v0.9
+
+Alternatively can be calculated by adding a calculated sensor in openTx:
 
 - Type: _Calculated_
 - Formula: _Consumption_
