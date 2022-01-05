@@ -43,6 +43,7 @@
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
+#define PIN_SWITCH_XBUS 13 // PB5
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
 #define SRXL_IBUS_SERIAL hardSerial0
 #define ESC_SERIAL hardSerial0   // if using with srxl, ibus or multiplex, use softSerial. If there is no reading, use a 3.3v board
@@ -64,6 +65,7 @@
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
+#define PIN_SWITCH_XBUS 13 // PB5
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
 #define SRXL_IBUS_SERIAL hardSerial1
 #define ESC_SERIAL hardSerial0  
@@ -85,6 +87,7 @@
 #define PIN_VOLTAGE2 A3
 #define PIN_CURRENT A6
 #define PIN_PRESSURE A7
+#define PIN_SWITCH_XBUS 13 // PB7
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
 #define SRXL_IBUS_SERIAL hardSerial3
 #define ESC_SERIAL hardSerial1
@@ -100,6 +103,7 @@
 #define PIN_VOLTAGE2 A3         // PF4
 #define PIN_CURRENT A9          // PB5
 #define PIN_PRESSURE A7         // PD7
+#define PIN_SWITCH_XBUS PB5
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
 #define SRXL_IBUS_SERIAL hardSerial1
 #define ESC_SERIAL hardSerial1
@@ -120,6 +124,7 @@
 #define PIN_VOLTAGE2 17
 #define PIN_CURRENT 20
 #define PIN_PRESSURE 26
+#define PIN_SWITCH_XBUS 13
 #define SMARTPORT_FRSKY_SBUS_SERIAL hardSerial0
 #define SRXL_IBUS_SERIAL hardSerial0
 #define ESC_SERIAL hardSerial1

@@ -66,10 +66,12 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | SRXL, IBUS, SB, Jeti Ex | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15(RX3) & 14(TX3)<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 1 |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
+| XBUS NPN clock stretch<sup>(4)</sup> | 13 | 13 | 13 | PB5(9) | 13 |
 
 (1) with 3.3k pull up resistor  
 (2) diode 1N4148. Note the inverted orientation of the diode for Frsky and SBUS. Alternatively 1k to 3.3k resistor can be used  
 (3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)  
+(4) optional. Only if needed. If connected, enable XBUS_CLOCK_STRECH_SWITCH in config.h 
 
 
 ## 2. Receiver protocol

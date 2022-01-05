@@ -165,8 +165,8 @@ void Xbus::begin()
 #endif
 
 #if defined(XBUS_CLOCK_STRECH_SWITCH)
-    pinMode(13, OUTPUT);
-    digitalWrite(13, LOW);
+    pinMode(PIN_SWITCH_XBUS, OUTPUT);
+    digitalWrite(PIN_SWITCH_XBUS, LOW);
 #endif
 }
 
