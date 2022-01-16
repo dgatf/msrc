@@ -38,7 +38,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Allows to use hardware serial for Smartport and SBUS without signal inverter. Also is half duplex capable  
-(3) Arduino Micro with smartport has disabled HW4, GPS and Castle due to smaller flash size (28KB)  
+(3) For Arduino Micro with smartport, only the ESC driver defined in config.h is flashed, due to smaller flash size (28KB). It can't be changed later with lua script  
 (4) Teensy LC is not 5v tolerant. If using with Castle is preferred Teensy 3.2, which is 5v tolerant  
 (5) Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
 

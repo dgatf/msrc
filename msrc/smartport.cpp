@@ -367,7 +367,7 @@ void Smartport::setConfig(Config &config)
 {
     deleteSensors();
     setSensorId(idToCrc(config.sensorId));
-    if (config.protocol == PROTOCOL_PWM)
+    if (ESC_PROTOCOL == PROTOCOL_PWM)
     {
         Sensor *sensorP;
         EscPWM *esc;
@@ -376,7 +376,7 @@ void Smartport::setConfig(Config &config)
         sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
         addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_HW_V3)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V3)
     {
         Sensor *sensorP;
         EscHW3 *esc;
@@ -385,11 +385,11 @@ void Smartport::setConfig(Config &config)
         sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
         addSensor(sensorP);
     }
-    if (config.protocol >= PROTOCOL_HW_V4_LV && config.protocol <= PROTOCOL_HW_V5_HV)
+    if (ESC_PROTOCOL >= PROTOCOL_HW_V4_LV && ESC_PROTOCOL <= PROTOCOL_HW_V5_HV)
     {
         Sensor *sensorP;
         EscHW4 *esc;
-        esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
+        esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), ESC_PROTOCOL - PROTOCOL_HW_V4_LV);
         esc->begin();
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
@@ -412,7 +412,7 @@ void Smartport::setConfig(Config &config)
         addSensor(sensorP);
 #endif
     }
-    if (config.protocol == PROTOCOL_CASTLE)
+    if (ESC_PROTOCOL == PROTOCOL_CASTLE)
     {
         Sensor *sensorP;
         EscCastle *esc;
@@ -431,7 +431,7 @@ void Smartport::setConfig(Config &config)
         sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_KONTRONIK)
+    if (ESC_PROTOCOL == PROTOCOL_KONTRONIK)
     {
         Sensor *sensorP;
         EscKontronik *esc;
