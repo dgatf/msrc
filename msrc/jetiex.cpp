@@ -275,7 +275,7 @@ void JetiEx::update()
     {
 #ifdef DEBUG
         DEBUG_PRINT("<");
-        for (uint8_t i = 0; i < JETIEX_PACKET_LENGHT; i++)
+        for (uint8_t i = 0; i < length; i++)
         {
             DEBUG_PRINT_HEX(buff[i]);
             DEBUG_PRINT(" ");
