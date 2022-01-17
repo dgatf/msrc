@@ -268,29 +268,54 @@ void JetiEx::update()
 #else
     uint8_t packetId;
     uint8_t length = serial_.availableTimeout();
-    uint8_t buff[length];
     static uint8_t badCrcCount = 0;
-    serial_.readBytes(buff, length);
     if (length)
     {
+        uint8_t buff[length];
+        serial_.readBytes(buff, length);
 #ifdef DEBUG
         DEBUG_PRINT("<");
         for (uint8_t i = 0; i < length; i++)
         {
             DEBUG_PRINT_HEX(buff[i]);
             DEBUG_PRINT(" ");
+            delay(1);
         }
         DEBUG_PRINTLN();
 #endif
-        if (crc16(buff, length) == 0)
+        uint8_t packet[JETIEX_PACKET_LENGHT];
+        if (buff[0] == 0x3E && buff[1] == 0x3 && length - buff[2] == JETIEX_PACKET_LENGHT)
+        {
+            memcpy(packet, buff + buff[2], JETIEX_PACKET_LENGHT);
+/*#ifdef DEBUG
+            DEBUG_PRINT("P:");
+            for (uint8_t i = 0; i < JETIEX_PACKET_LENGHT; i++)
+            {
+                DEBUG_PRINT_HEX(packet[i]);
+                DEBUG_PRINT(" ");
+                delay(1);
+            }
+            DEBUG_PRINTLN();
+#endif*/
+        }
+        else if (length == JETIEX_PACKET_LENGHT)
+        {
+            memcpy(packet, buff, JETIEX_PACKET_LENGHT);
+        }
+        else 
+        {
+            badCrcCount++;
+            return;
+        }
+        if (crc16(packet, JETIEX_PACKET_LENGHT) == 0)
         {
             badCrcCount = 0;
-            if (length == JETIEX_PACKET_LENGHT && buff[0] == 0x3D && buff[1] == 0x01 && buff[4] == 0x3A)
+            if (packet[0] == 0x3D && packet[1] == 0x01 && packet[4] == 0x3A)
             {
                 if (!mute)
                 {
                     status = JETIEX_SEND;
-                    packetId = buff[3];
+                    packetId = packet[3];
                 }
                 mute = !mute;
             }
