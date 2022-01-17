@@ -56,7 +56,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | Current | A6 | A6 | A6 | B5(A9) | 20 |
 | Airspeed | A7 | A7 | A7 | D7(A7) | 26 |
 | ESC serial | RX<sup>(5)</sup> or 7<sup>(6)</sup> | RX0 | 19(RX1) | D2(RX1)<sup>(5)</sup> or B3(15)<sup>(6)</sup> | 9 |
-| GPS | RX | RX1 | 17(RX2) | D2(RX1) | 7 |
+| GPS | RX<sup>(5)</sup> or 7<sup>(6)</sup> | RX1 | 17(RX2) | D2(RX1)<sup>(5)</sup> or B3(15)<sup>(6)</sup> | 7 |
 | PWM in | 8 | 8 | 49 | D4(A6) | 6 |
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
