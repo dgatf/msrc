@@ -142,6 +142,10 @@ If no telemetry is shown, may be MSRC is booting too slow and the first poll fro
 <p align="center"><img src="./images/xbus-npn-switch.png" width="300"><br>
   <i>Clock stretch XBUS with transistor</i><br><br></p>
 
+### Jeti Ex Bus
+
+Configure receiver pin (E1 or E2) as Ex Bus
+
 ## 3. Sensors
 
 All sensors are available with Smartport protocol
@@ -529,6 +533,7 @@ v0.9
 
 - HW V4/V5. Added threshold filter for current sensor. Values for current when throttle is low may not be reliable, depending on model
 - Added consumption calculation. Thanks MJ666
+- Fixed Jeti Ex bug
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
