@@ -46,8 +46,13 @@
 #define PIN_SWITCH_XBUS 13 // PB5
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
 #define SRXL_IBUS_SERIAL hardSerial0
-#define ESC_SERIAL hardSerial0   // if using with srxl, ibus, multiplex or jeti, use softSerial. If there is no reading, use a 3.3v board
-#define GPS_SERIAL hardSerial0   // same as above. Only one softserial is feasible
+#if RX_PROTOCOL == RX_SMARTPORT || RX_PROTOCOL == RX_FRSKY || RX_PROTOCOL == RX_SBUS
+#define ESC_SERIAL hardSerial0
+#define GPS_SERIAL hardSerial0
+#else
+#define ESC_SERIAL softSerial
+#define GPS_SERIAL softSerial
+#endif
 #define DEBUG_SERIAL hardSerial0
 #if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && !CONFIG_GPS 
 #define DISABLE_GPS
@@ -106,8 +111,13 @@
 #define PIN_SWITCH_XBUS PB5
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
 #define SRXL_IBUS_SERIAL hardSerial1
-#define ESC_SERIAL hardSerial1   // if using with srxl, ibus, multiplex or jeti, use softSerial. If there is no reading, use a 3.3v board
-#define GPS_SERIAL hardSerial1   // same as above. Only one softserial is feasible
+#if RX_PROTOCOL == RX_SMARTPORT || RX_PROTOCOL == RX_FRSKY || RX_PROTOCOL == RX_SBUS
+#define ESC_SERIAL hardSerial1
+#define GPS_SERIAL hardSerial1
+#else
+#define ESC_SERIAL softSerial
+#define GPS_SERIAL softSerial
+#endif
 #define DEBUG_SERIAL Serial
 #endif
 

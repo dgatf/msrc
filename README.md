@@ -55,7 +55,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | Voltage 2 | A3 | A3 | A3 | F4(A2) | 17 |
 | Current | A6 | A6 | A6 | B5(A9) | 20 |
 | Airspeed | A7 | A7 | A7 | D7(A7) | 26 |
-| ESC serial | RX | RX0 | 19(RX1) | D2(RX1) | 9 |
+| ESC serial | RX<sup>(5)</sup> or 7<sup>(6)</sup> | RX0 | 19(RX1) | D2(RX1)<sup>(5)</sup> or B3(15)<sup>(6)</sup> | 9 |
 | GPS | RX | RX1 | 17(RX2) | D2(RX1) | 7 |
 | PWM in | 8 | 8 | 49 | D4(A6) | 6 |
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
@@ -71,7 +71,9 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 (1) with 3.3k pull up resistor  
 (2) diode 1N4148. Note the inverted orientation of the diode for Frsky and SBUS. Alternatively 1k to 3.3k resistor can be used  
 (3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)  
-(4) optional. Only if needed. If connected, enable XBUS_CLOCK_STRECH_SWITCH in config.h 
+(4) optional. Only if needed. If connected, enable XBUS_CLOCK_STRECH_SWITCH in config.h  
+(5) If Rx protocol: Smartport, Frsky D, SBUS, XBUS  
+(6) If Rx protocol: SRXL, Ibus, Multiplex or Jeti 
 
 
 ## 2. Receiver protocol
