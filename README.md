@@ -536,7 +536,6 @@ v0.9
 - HW V4/V5. Added threshold filter for current sensor. Values for current when throttle is low may not be reliable, depending on model
 - Added consumption calculation. Thanks MJ666
 - Fixed Jeti Ex bug
-- Fixed ADC resolution (12bits) for ARM Cortex
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
