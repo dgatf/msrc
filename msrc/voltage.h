@@ -7,11 +7,7 @@
 #define BOARD_VCC 3.3
 #endif
 
-#if defined(__AVR_ATmega328P__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega2560__)  || defined(__AVR_ATmega32U4__) 
 #define ADC_RESOLUTION 1024.0
-#else
-#define ADC_RESOLUTION 4096.0
-#endif
 
 #include <Arduino.h>
 #include "device.h"
