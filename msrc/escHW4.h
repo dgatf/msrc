@@ -12,14 +12,24 @@
 #define ESCHW4_V_REF 3.3
 #define ESCHW4_ADC_RES 4096.0
 
+#define ESCHW4_DIVISOR_V4LV 11
+#define ESCHW4_DIVISOR_V4HV 21
+#define ESCHW4_DIVISOR_V5LV 11
+#define ESCHW4_DIVISOR_V5HV 21
+
+#define ESCHW4_AMPGAIN_V4LV 10
+#define ESCHW4_AMPGAIN_V4HV 16.9
+#define ESCHW4_AMPGAIN_V5LV 10
+#define ESCHW4_AMPGAIN_V5HV 16.9
+
 #include <Arduino.h>
 #include "device.h"
 
 class EscHW4 : public AbstractDevice
 {
 private:
-    const uint8_t voltageDivisor_[4] = {11, 21, 11, 21};
-    const float ampGain_[4] = {10, 16.9, 10, 16.9};
+    const uint8_t voltageDivisor_[4] = {ESCHW4_DIVISOR_V4LV, ESCHW4_DIVISOR_V4HV, ESCHW4_DIVISOR_V5LV, ESCHW4_DIVISOR_V5HV};
+    const float ampGain_[4] = {ESCHW4_AMPGAIN_V4LV, ESCHW4_AMPGAIN_V4HV, ESCHW4_AMPGAIN_V5LV, ESCHW4_AMPGAIN_V5HV};
     int16_t rawCurrentOffset_ = -1;
     AbstractSerial &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_, type_, cellCount_ = 255;
