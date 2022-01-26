@@ -186,6 +186,7 @@ Optionally a PWM signal can be generated from the RPM value in serial telemetry
 | 3-6S (LV) | 11 |
 | 3-8S (LV v2) | 15.4 |
 | 5-12s (HV) | 21 |
+| 6-14s (HV v2) | unknown |
 
 | Amperage | ESCHW4_AMPGAIN |
 | :---: | :---: |
