@@ -438,11 +438,7 @@ thr, pwm: 0-255 (8bits)
 
 thr, pwm: 0-1024 (10bits)
 
-Voltage, current and temperature are raw sensor data. Actual values requires transformation. Depending on the model, sensors are different so  the transformations:
-
-  - Voltage divider. Different for LV and HV models. LV divisor 11. HV divisor 21
-  - Current sensor (shunt resistor and diff amp). Different for V4 and V5. V5 seems to be shifted by Vref=0.53V. See 4.4 Calibrate current sensor HW V4/V5
-  - Temperature. NTC resistor. So far it is the same for tested models
+Voltage, current and temperature are raw sensor data. Actual values requires transformation. Depending on the model, sensors are different
 
 Before throttle is raised from 0, signature packets are sent between telemetry packets. This is used to identify the hardware and firmware of the ESC
 
