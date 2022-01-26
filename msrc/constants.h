@@ -25,13 +25,10 @@
 
 #define PROTOCOL_NONE 0
 #define PROTOCOL_HW_V3 1
-#define PROTOCOL_HW_V4_LV 2
-#define PROTOCOL_HW_V4_HV 3
-#define PROTOCOL_HW_V5_LV 4
-#define PROTOCOL_HW_V5_HV 5
-#define PROTOCOL_PWM 6
-#define PROTOCOL_CASTLE 7
-#define PROTOCOL_KONTRONIK 8
+#define PROTOCOL_HW_V4 2
+#define PROTOCOL_PWM 3
+#define PROTOCOL_CASTLE 4
+#define PROTOCOL_KONTRONIK 5
 
 /* Pins & Serial ports */
 

@@ -12,15 +12,32 @@
 #define ESCHW4_V_REF 3.3
 #define ESCHW4_ADC_RES 4096.0
 
-#define ESCHW4_DIVISOR_V4LV 11
-#define ESCHW4_DIVISOR_V4HV 21
-#define ESCHW4_DIVISOR_V5LV 11
-#define ESCHW4_DIVISOR_V5HV 21
+/* ESCHW4_DIVISOR and ESCHW4_AMPGAIN values
 
-#define ESCHW4_AMPGAIN_V4LV 10
-#define ESCHW4_AMPGAIN_V4HV 16.9
-#define ESCHW4_AMPGAIN_V5LV 10
-#define ESCHW4_AMPGAIN_V5HV 16.9
+Divisor: Cells range
+
+3-6S (LV): divisor = 11 
+3-8S (LV v2): divisor = 15.4
+5-12s (HV): divisor = 21
+
+Gain: Amperage
+
+60A: gain = 6
+80A: gain = 7.8
+100A: gain = 9(1)
+120A: gain = 10
+130A: gain = 11.3(1)
+150A: gain = 12.9(1)
+160A: gain = 13.7(1)
+200A: gain = 16.9
+
+(1) Extrapolated from confirmed models
+
+*/
+
+#define ESCHW4_DIVISOR 11
+#define ESCHW4_AMPGAIN 10
+#define ESCHW4_CURRENT_MAX 250
 
 #include <Arduino.h>
 #include "device.h"
@@ -28,8 +45,6 @@
 class EscHW4 : public AbstractDevice
 {
 private:
-    const uint8_t voltageDivisor_[4] = {ESCHW4_DIVISOR_V4LV, ESCHW4_DIVISOR_V4HV, ESCHW4_DIVISOR_V5LV, ESCHW4_DIVISOR_V5HV};
-    const float ampGain_[4] = {ESCHW4_AMPGAIN_V4LV, ESCHW4_AMPGAIN_V4HV, ESCHW4_AMPGAIN_V5LV, ESCHW4_AMPGAIN_V5HV};
     int16_t rawCurrentOffset_ = -1;
     AbstractSerial &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_, type_, cellCount_ = 255;

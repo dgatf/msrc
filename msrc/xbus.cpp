@@ -176,7 +176,7 @@ void Xbus::update()
     esc.update();
     xbusEsc.RPM = __builtin_bswap16(*esc.rpmP() / 10);
 #endif
-#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4
     esc.update();
     xbusEsc.RPM = __builtin_bswap16(*esc.rpmP() / 10);
     xbusEsc.voltsInput = __builtin_bswap16(*esc.voltageP() * 100);

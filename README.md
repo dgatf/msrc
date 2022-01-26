@@ -169,11 +169,36 @@ Optionally a PWM signal can be generated from the RPM value in serial telemetry
 <p align="center"><img src="./images/serial.png" width="360"><br>
   <i>ESC serial</i><br><br></p>
 
-Remarks:
- - In HW V3 the telemetry port is the program port. It is a servo male plug on the ESC
- - In HW V4/V5 the telemetry port is a wired servo female plug. Don't confuse with RPM PWM signal connector or the program port
- - For HW ESCs be sure the firmware installed is NOT VBAR version
- - HW V4/V5 with current sensor. Values for current when throttle is low (up to 25%, depending on model) may not be reliable. If getting high or noisy current values when throttle is low, adjust CURRENT_THRESHOLD in config.h. Below this throttle percentage (0-100%), current values will be 0A
+<ins>Hobbywing Platinum V3</ins>
+ 
+ Telemetry port is the program port. It is a servo male plug on the ESC
+
+<ins>Hobbywing Platinum V4 / FlyFun V5</ins>
+
+- The telemetry port is a wired servo female plug. Don't confuse with RPM PWM signal connector or the program port
+- Check firmware installed is NOT VBAR version
+- Values for current when throttle is low (up to 25%, depending on model) may not be reliable. If getting high or noisy current values when throttle is low, adjust CURRENT_THRESHOLD in config.h. Below this throttle percentage (0-100%), current values will be 0A
+- Set ESCHW4_CURRENT_MAX to the peak current of the ESC (eg: 80A: ESCHW4_CURRENT_MAX 100)
+- Adjust ESCHW4_DIVISOR and ESCHW4_AMPGAIN in escHW4.h, depending on model:
+ 
+| Cells range | ESCHW4_DIVISOR |
+| :---: | :---: |
+| 3-6S (LV) | 11 |
+| 3-8S (LV v2) | 15.4 |
+| 5-12s (HV) | 21 |
+
+| Amperage | ESCHW4_AMPGAIN |
+| :---: | :---: |
+| 60A | 6
+| 80A | 7.8 |
+| 100A | 9<sup>(1)</sup> |
+| 120A | 10 |
+| 130A | 11.3<sup>(1)</sup> |
+| 150A | 12.9<sup>(1)</sup> |
+| 160A | 13.7<sup>(1)</sup> |
+| 200A | 16.9 |
+
+(1) Extrapolated from confirmed models. If you find discrepancy adjust gain parameter and send gain and ESC model to update the table
 
 #### PWM signal
 
@@ -536,6 +561,7 @@ v0.9
 - HW V4/V5. Added threshold filter for current sensor. Values for current when throttle is low may not be reliable, depending on model
 - Added consumption calculation. Thanks MJ666
 - Fixed Jeti Ex bug
+- HW V4/V5. Only one HW V4/V5 protocol. Voltage and current sensor parameters to be set manually
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 

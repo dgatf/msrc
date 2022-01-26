@@ -41,6 +41,8 @@ void EscHW4::update()
             float current = 0;
             if (thr_ > CURRENT_THRESHOLD / 100.0 * 1024)
                 current = calcCurr(rawCur);
+            if (current > ESCHW4_CURRENT_MAX)
+                current = 0;
             float tempFET = calcTemp((uint16_t)data[15] << 8 | data[16]);
             float tempBEC = calcTemp((uint16_t)data[17] << 8 | data[18]);
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
@@ -107,7 +109,7 @@ void EscHW4::update()
 
 float EscHW4::calcVolt(uint16_t voltRaw)
 {
-    return ESCHW4_V_REF * voltRaw / ESCHW4_ADC_RES * voltageDivisor_[type_];
+    return ESCHW4_V_REF * voltRaw / ESCHW4_ADC_RES * ESCHW4_DIVISOR;
 }
 
 float EscHW4::calcTemp(uint16_t tempRaw)
@@ -126,7 +128,7 @@ float EscHW4::calcCurr(uint16_t currentRaw)
 {
     if (currentRaw - rawCurrentOffset_ < 0)
         return 0;
-    return (currentRaw - rawCurrentOffset_) * ESCHW4_V_REF / (ampGain_[type_] * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
+    return (currentRaw - rawCurrentOffset_) * ESCHW4_V_REF / (ESCHW4_AMPGAIN * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
 #endif
 }
 

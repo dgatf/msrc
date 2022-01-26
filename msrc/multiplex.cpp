@@ -113,11 +113,11 @@ void Multiplex::setConfig(Config &config)
         sensorMultiplexP = new SensorMultiplex(FHSS_RPM, esc->rpmP(), esc);
         addSensor(sensorMultiplexP);
     }
-    if (config.protocol >= PROTOCOL_HW_V4_LV && config.protocol <= PROTOCOL_HW_V5_HV)
+    if (config.protocol == PROTOCOL_HW_V4)
     {
         SensorMultiplex *sensorMultiplexP;
         EscHW4 *esc;
-        esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), config.protocol - PROTOCOL_HW_V4_LV);
+        esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), 0);
         esc->begin();
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());

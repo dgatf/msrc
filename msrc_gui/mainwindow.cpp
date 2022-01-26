@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     //ui->cbBoard->addItems({"Arduino Pro Mini", "Pololu ATmega328PB", "ATmega2560 Pro Mini", "Teensy 2", "Teensy LC", "Teensy 3.2"});
-    ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4 LV", "Hobbywing V4 HV", "Hobbywing V5 LV", "Hobbywing V5 HV", "PWM", "Castle link", "Kontronic"});
+    ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4", "PWM", "Castle link", "Kontronic"});
     ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "19200", "14400", "9600","4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS", "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2", "Multiplex Sensor Bus", "Jeti Ex Bus"});
@@ -83,24 +83,15 @@ void MainWindow::generateConfig()
             configString += "PROTOCOL_HW_V3";
             break;
         case 1:
-            configString += "PROTOCOL_HW_V4_LV";
+            configString += "PROTOCOL_HW_V4";
             break;
         case 2:
-            configString += "PROTOCOL_HW_V4_HV";
-            break;
-        case 3:
-            configString += "PROTOCOL_HW_V5_LV";
-            break;
-        case 4:
-            configString += "PROTOCOL_HW_V5_HV";
-            break;
-        case 5:
             configString += "PROTOCOL_PWM";
             break;
-        case 6:
+        case 3:
             configString += "PROTOCOL_CASTLE";
             break;
-        case 7:
+        case 4:
             configString += "PROTOCOL_KONTRONIK";
             break;
         }

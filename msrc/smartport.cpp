@@ -385,11 +385,11 @@ void Smartport::setConfig(Config &config)
         sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), NULL, config.refresh.rpm, esc);
         addSensor(sensorP);
     }
-    if (ESC_PROTOCOL >= PROTOCOL_HW_V4_LV && ESC_PROTOCOL <= PROTOCOL_HW_V5_HV)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V4)
     {
         Sensor *sensorP;
         EscHW4 *esc;
-        esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), ESC_PROTOCOL - PROTOCOL_HW_V4_LV);
+        esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), 0);
         esc->begin();
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
