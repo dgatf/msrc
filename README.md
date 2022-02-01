@@ -570,6 +570,7 @@ v0.9
 - Added consumption calculation. Thanks MJ666
 - Fixed Jeti Ex bug
 - HW V4/V5. Only one HW V4/V5 protocol. Voltage and current sensor parameters to be set manually
+- Added RPM multipliers
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
