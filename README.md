@@ -241,6 +241,15 @@ If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7
 
 If current is available, battery consumption is calculated in mAh
 
+### RPM multipliers
+
+Adjust RPMs in *config.h*:
+
+- Set the number of pair of poles of the motor, RPM_PAIR_OF_POLES
+- For helis also set the pinion and main gear teeth: RPM_PINION_TEETH, RPM_MAIN_TEETH
+
+Alternatively this can be done in the transmitter
+
 ### 3.2. Serial GPS
 
 Serial GPS (NMEA protocol) is supported
