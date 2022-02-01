@@ -82,6 +82,7 @@ public:
     void USART_RX_handler();
     void USART_TX_handler();
     void USART_UDRE_handler();
+    uint16_t timestamp() { return ts; }
 };
 
 #if defined(UBRRH) || defined(UBRR0H)

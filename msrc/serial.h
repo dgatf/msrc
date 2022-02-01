@@ -38,6 +38,7 @@ public:
     uint8_t availableTx();
     virtual uint8_t availableTimeout() = 0;
     virtual void setTimeout(uint8_t timeout) = 0;
+    virtual uint16_t timestamp() { return 0; }
 
     void print(uint8_t value, uint8_t base = DEC);
     void print(int8_t value);
