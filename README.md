@@ -148,6 +148,8 @@ If no telemetry is shown, may be MSRC is booting too slow and the first poll fro
 
 Configure receiver pin (E1 or E2) as Ex Bus
 
+To use with ESC serial or GPS you'll need a board with 2 or 3 UARTs. It is not feasible to use sotfware serial with Jeti Ex Bus
+
 ## 3. Sensors
 
 All sensors are available with Smartport protocol
