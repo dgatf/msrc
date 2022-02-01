@@ -176,6 +176,7 @@ void EscPWM::update()
 #else
             float rpm = 60000.0 / (escPwmDuration * COMP_TO_MS(1));
 #endif
+            rpm *= RPM_MULTIPLIER;
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
             escPwmUpdate = false;
         }

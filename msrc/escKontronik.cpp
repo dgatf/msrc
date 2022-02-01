@@ -19,6 +19,7 @@ void EscKontronik::update()
         if (data[0] == 0x4B && data[1] == 0x4F && data[2] == 0x44 && data[3] == 0x4C)
         {
             float rpm = (uint32_t)data[7] << 24 | (uint32_t)data[6] << 16 | (uint16_t)data[5] << 8 | data[4];
+            rpm *= RPM_MULTIPLIER;
             float voltage = ((uint16_t)data[9] << 8 | data[8]) / 100.0;
             float current = ((uint16_t)data[11] << 8 | data[10]) / 10.0;
             float becCurrent = ((uint16_t)data[19] << 8 | data[18]) / 1000.0;

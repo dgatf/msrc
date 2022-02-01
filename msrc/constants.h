@@ -13,6 +13,9 @@
 #define DEBUG_INIT DEBUG_SERIAL.begin(115200);
 #endif
 
+/* RPM multiplier */
+#define RPM_MULTIPLIER (RPM_PINION_TEETH / (1.0 * RPM_MAIN_TEETH * RPM_PAIR_OF_POLES))
+
 /* Enums */
 #define RX_SMARTPORT 0
 #define RX_XBUS 1

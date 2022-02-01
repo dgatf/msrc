@@ -621,7 +621,7 @@ void EscCastle::update()
         current_ = getValue(3);
         thr_ = getValue(4);
         output_ = getValue(5);
-        rpm_ = getValue(6);
+        rpm_ = getValue(6) * RPM_MULTIPLIER;
         consumption_ += calcConsumption(current_);
         becVoltage_ = getValue(7);
         becCurrent_ = getValue(8);

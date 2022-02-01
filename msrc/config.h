@@ -32,6 +32,10 @@
 #define VOLTAGE1_MULTIPLIER 1
 #define VOLTAGE2_MULTIPLIER 1
 #define CURRENT_MULTIPLIER 1
+/* RPM multipliers (optional, this may be done in transmitter*/
+#define RPM_PAIR_OF_POLES 1
+#define RPM_PINION_TEETH 1  // For helis
+#define RPM_MAIN_TEETH 1    // For helis
 
 /* Pwm out */
 #define CONFIG_PWMOUT false

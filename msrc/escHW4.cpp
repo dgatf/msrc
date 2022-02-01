@@ -45,6 +45,7 @@ void EscHW4::update()
                 current = 0;
             float tempFET = calcTemp((uint16_t)data[15] << 8 | data[16]);
             float tempBEC = calcTemp((uint16_t)data[17] << 8 | data[18]);
+            rpm *= RPM_MULTIPLIER;
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
             consumption_ += calcConsumption(current);
             voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);

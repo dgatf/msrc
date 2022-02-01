@@ -22,7 +22,7 @@ void EscHW3::update()
             uint16_t rpmCycle = (uint16_t)data[8] << 8 | data[9];
             if (rpmCycle <= 0)
                 rpmCycle = 1;
-            float rpm = 60000000.0 / rpmCycle;
+            float rpm = 60000000.0 / rpmCycle * RPM_MULTIPLIER;
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
             serialTs = millis();
 #ifdef DEBUG_HW3
