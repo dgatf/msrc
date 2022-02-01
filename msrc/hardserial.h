@@ -154,6 +154,7 @@ public:
     uint8_t availableTimeout();
     void setTimeout(uint8_t timeout);
     void UART_IRQ_handler();
+    uint16_t timestamp() { return ts; }
 };
 
 extern HardSerial hardSerial0;
