@@ -5,14 +5,11 @@ Srxl::Srxl(AbstractSerial &serial) : serial_(serial) {}
 void Srxl::begin()
 {
     serial_.begin(115200, SERIAL_8N1 | SERIAL_HALF_DUP);
-    serial_.setTimeout(2);
+    serial_.setTimeout(SRXL_SERIAL_TIMEOUT);
     pinMode(LED_BUILTIN, OUTPUT);
     uint8_t cont = 0;
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 &&     \
-    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_LV &&  \
-    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4_HV &&  \
-    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_LV &&  \
-    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V5_HV &&  \
+    CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4 &&     \
     CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK && \
     CONFIG_ESC_PROTOCOL == PROTOCOL_CASTLE
     esc.begin();
