@@ -240,7 +240,7 @@ void JetiEx::sendPacket(uint8_t packetId)
     {
         DEBUG_PRINT_HEX(buffer[i]);
         DEBUG_PRINT(" ");
-        delay(1);
+        delayMicroseconds(100);
     }
     DEBUG_PRINTLN();
 #endif
@@ -273,7 +273,7 @@ void JetiEx::update()
     {
         uint8_t buff[length];
         serial_.readBytes(buff, length);
-#ifdef DEBUG_PACKET
+#ifdef DEBUG_PACKET2
         DEBUG_PRINT("<");
         for (uint8_t i = 0; i < length; i++)
         {
@@ -287,7 +287,7 @@ void JetiEx::update()
         if (buff[0] == 0x3E && buff[1] == 0x3 && length - buff[2] == JETIEX_PACKET_LENGHT)
         {
             memcpy(packet, buff + buff[2], JETIEX_PACKET_LENGHT);
-#ifdef DEBUG2
+#ifdef DEBUG_PACKET
             DEBUG_PRINT("P:");
             for (uint8_t i = 0; i < JETIEX_PACKET_LENGHT; i++)
             {
@@ -340,12 +340,18 @@ void JetiEx::update()
         }
     }
 #endif
-    if (status == JETIEX_SEND && serial_.timestamp() < 900)
+    if (status == JETIEX_SEND)
     {
-        DEBUG_PRINT("OK");
-        sendPacket(packetId);
+        if (serial_.timestamp() < 900)
+            sendPacket(packetId);
+#ifdef DEBUG
+        else 
+        {
+            DEBUG_PRINT("KO");
+            DEBUG_PRINTLN();
+        }
+#endif
     }
-
     // update sensor
     static uint8_t cont = 0;
     if (sensorJetiExP[cont])
