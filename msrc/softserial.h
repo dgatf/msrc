@@ -51,7 +51,7 @@ class SoftSerial : public AbstractSerial
 {
 private:
     volatile bool timedout = false;
-    uint8_t timeout_ = 0;
+    uint16_t timeout_ = 0;
     bool inverted_;
     bool half_duplex_;
     uint16_t tx_delay;
@@ -66,7 +66,7 @@ public:
     void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
     void initWrite();
     uint8_t availableTimeout();
-    void setTimeout(uint8_t timeout);
+    void setTimeout(uint16_t timeout);
     void PCINT_handler();
     void TIMER_COMP_handler();
     inline void delay_loop(uint16_t delay);

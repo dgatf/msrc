@@ -7,7 +7,7 @@ EscHW4::EscHW4(AbstractSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, uint
 void EscHW4::begin()
 {
     serial_.begin(19200, SERIAL_8N1);
-    serial_.setTimeout(2);
+    serial_.setTimeout(ESCHW4_ESCSERIAL_TIMEOUT);
 }
 
 void EscHW4::update()

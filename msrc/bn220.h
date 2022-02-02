@@ -19,7 +19,7 @@
 #define BN220_LAT_SIGN 9
 #define BN220_LON_SIGN 10
 
-#define BN220_TIMEOUT 4
+#define BN220_TIMEOUT 2000
 
 #include <Arduino.h>
 #include "device.h"

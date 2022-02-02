@@ -11,7 +11,7 @@ JetiEx::~JetiEx()
 void JetiEx::begin()
 {
     serial_.begin(baudRate, SERIAL_8N1 | SERIAL_HALF_DUP);
-    serial_.setTimeout(1);
+    serial_.setTimeout(JETIEX_TIMEOUT);
     pinMode(LED_BUILTIN, OUTPUT);
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
     setConfig(config);
@@ -273,13 +273,13 @@ void JetiEx::update()
     {
         uint8_t buff[length];
         serial_.readBytes(buff, length);
-#ifdef DEBUG
+#ifdef DEBUG_PACKET
         DEBUG_PRINT("<");
         for (uint8_t i = 0; i < length; i++)
         {
             DEBUG_PRINT_HEX(buff[i]);
             DEBUG_PRINT(" ");
-            delay(1);
+            delayMicroseconds(100);
         }
         DEBUG_PRINTLN();
 #endif
@@ -287,16 +287,15 @@ void JetiEx::update()
         if (buff[0] == 0x3E && buff[1] == 0x3 && length - buff[2] == JETIEX_PACKET_LENGHT)
         {
             memcpy(packet, buff + buff[2], JETIEX_PACKET_LENGHT);
-/*#ifdef DEBUG
+#ifdef DEBUG2
             DEBUG_PRINT("P:");
             for (uint8_t i = 0; i < JETIEX_PACKET_LENGHT; i++)
             {
                 DEBUG_PRINT_HEX(packet[i]);
                 DEBUG_PRINT(" ");
-                delay(1);
             }
             DEBUG_PRINTLN();
-#endif*/
+#endif
         }
         else if (length == JETIEX_PACKET_LENGHT)
         {
@@ -341,8 +340,9 @@ void JetiEx::update()
         }
     }
 #endif
-    if (status == JETIEX_SEND && (uint16_t)(millis() - serial_.timestamp()) < 3)
+    if (status == JETIEX_SEND && serial_.timestamp() < 900)
     {
+        DEBUG_PRINT("OK");
         sendPacket(packetId);
     }
 

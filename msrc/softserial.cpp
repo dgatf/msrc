@@ -159,7 +159,7 @@ void SoftSerial::initWrite()
 
 void SoftSerial::setTimeout(uint8_t timeout)
 {
-    timeout_ = timeout * MS_TO_COMP(8);
+    timeout_ = timeout * US_TO_COMP(8);
 }
 
 void SoftSerial::begin(uint32_t baud, uint8_t format)
@@ -322,9 +322,9 @@ void SoftSerial::initWrite()
     _delay_loop_2(tx_delay);
 }
 
-void SoftSerial::setTimeout(uint8_t timeout)
+void SoftSerial::setTimeout(uint16_t timeout)
 {
-    timeout_ = timeout * MS_TO_COMP(1024);
+    timeout_ = timeout * US_TO_COMP(1024);
 }
 
 void SoftSerial::begin(uint32_t baud, uint8_t format)

@@ -60,7 +60,7 @@ class HardSerial : public AbstractSerial
 {
 private:
 public:
-    uint8_t timeout_;
+    uint16_t timeout_;
     volatile uint16_t ts = 0;
     bool half_duplex_;
     volatile uint8_t *const udr_;
@@ -78,11 +78,11 @@ public:
     void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
     void initWrite();
     uint8_t availableTimeout();
-    void setTimeout(uint8_t timeout);
+    void setTimeout(uint16_t timeout);
     void USART_RX_handler();
     void USART_TX_handler();
     void USART_UDRE_handler();
-    uint16_t timestamp() { return ts; }
+    uint16_t timestamp() { return (uint16_t)(micros() - ts); }
 };
 
 #if defined(UBRRH) || defined(UBRR0H)
@@ -132,7 +132,7 @@ class HardSerial : public AbstractSerial
 {
 private:
 public:
-    uint8_t timeout_;
+    uint16_t timeout_;
     volatile uint16_t ts = 0;
     volatile uint32_t *const core_pin_rx_config_;
     volatile uint32_t *const core_pin_tx_config_;
@@ -152,9 +152,9 @@ public:
     void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
     void initWrite();
     uint8_t availableTimeout();
-    void setTimeout(uint8_t timeout);
+    void setTimeout(uint16_t timeout);
     void UART_IRQ_handler();
-    uint16_t timestamp() { return ts; }
+    uint16_t timestamp() { return (uint16_t)(micros() - ts); }
 };
 
 extern HardSerial hardSerial0;

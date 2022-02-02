@@ -44,6 +44,8 @@
 #define JETIEX_WAIT 0
 #define JETIEX_SEND 1
 
+#define JETIEX_TIMEOUT 300
+
 class JetiEx
 {
 private:

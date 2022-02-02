@@ -20,7 +20,7 @@
 #include "configeeprom.h"
 #include "pwmout.h"
 
-#define MULTIPLEX_SERIAL_TIMEOUT 1000 // us
+#define MULTIPLEX_SERIAL_TIMEOUT 2000
 
 #define MULTIPLEX_WAIT 0
 #define MULTIPLEX_SEND 1

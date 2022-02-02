@@ -20,7 +20,7 @@
 #include "configeeprom.h"
 #include "pwmout.h"
 
-#define SBUS_SERIAL_TIMEOUT 2000 // us
+#define SBUS_SERIAL_TIMEOUT 2000
 #define SBUS_PACKET_LENGHT 25
 
 #define SBUS_WAIT 0

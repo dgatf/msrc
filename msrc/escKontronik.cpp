@@ -7,7 +7,7 @@ EscKontronik::EscKontronik(AbstractSerial &serial, uint8_t alphaRpm, uint8_t alp
 void EscKontronik::begin()
 {
     serial_.begin(115200, SERIAL_8E1);
-    serial_.setTimeout(2);
+    serial_.setTimeout(KONTRONIK_ESCSERIAL_TIMEOUT);
 }
 
 void EscKontronik::update()

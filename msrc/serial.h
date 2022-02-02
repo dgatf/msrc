@@ -6,8 +6,7 @@
 #define OUTPUT_NORMAL 0
 #define OUTPUT_HEX 1
 
-#define MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000.0))
-#define COMP_TO_MS(SCALER) ((SCALER * 1000.0) / F_CPU)
+#define US_TO_COMP(SCALER) (F_CPU / (SCALER * 1000000.0))
 #define FIFO_SIZE 64
 
 class AbstractSerial
@@ -37,7 +36,7 @@ public:
     virtual uint8_t available();
     uint8_t availableTx();
     virtual uint8_t availableTimeout() = 0;
-    virtual void setTimeout(uint8_t timeout) = 0;
+    virtual void setTimeout(uint16_t timeout) = 0;
     virtual uint16_t timestamp() { return 0; }
 
     void print(uint8_t value, uint8_t base = DEC);
