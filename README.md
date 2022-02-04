@@ -571,8 +571,8 @@ v0.9
 - Fixed Jeti Ex bug
 - HW V4/V5. Only one HW V4/V5 protocol. Voltage and current sensor parameters to be set manually
 - Added RPM multipliers
-- Fast protocols (eg: Jeti Ex) handling imporved. Serial drivers timeout to microseconds
-- Allow some Rx protocols & boards to be used with serial ESC and GPS- Use software serial only for Rx protocols, not for sensors
+- Fast protocols (eg: Jeti Ex) handling imporved. Changed serial drivers timeout to microseconds
+- Allow additional Rx protocols & boards to be used with serial ESC and GPS. Use software serial only for Rx protocols, not sensors
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
