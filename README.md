@@ -55,15 +55,15 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | Voltage 2 | A3 | A3 | A3 | F4(A2) | 17 |
 | Current | A6 | A6 | A6 | B5(A9) | 20 |
 | Airspeed | A7 | A7 | A7 | D7(A7) | 26 |
-| ESC serial | RX<sup>(5)</sup> or 7<sup>(6)</sup> | RX0 | 19(RX1) | D2(RX1)<sup>(5)</sup> or B3(15)<sup>(6)</sup> | 9 |
-| GPS | RX<sup>(5)</sup> or 7<sup>(6)</sup> | RX1 | 17(RX2) | D2(RX1)<sup>(5)</sup> or B3(15)<sup>(6)</sup> | 7 |
+| ESC serial | RX | RX0 | 19(RX1) | D2(RX1) | 9 |
+| GPS | RX | RX1 | 17(RX2) | D2(RX1) | 7 |
 | PWM in | 8 | 8 | 49 | D4(A6) | 6 |
 | PWM out | 10 | 10 | 7 | B6(A10) | 22 |
 | Rx Castle | 8 | 8 | 49 | C7 | 16 |
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
 | Frsky Smartport, SBUS | 7  & 12<sup>(2)</sup> | 7  & 12<sup>(2)</sup> | A15  & D10<sup>(2)</sup> | B3  & B4<sup>(2)</sup><br/>(15 & 16) | 1 |
 | Frsky D | 12 | 12 | D10 | B4(16) | 1 |
-| SRXL, IBUS, SB, Jeti Ex | RX & TX<sup>(2)</sup> | 12(RX1) & 11(TX1)<sup>(2)</sup> | 15(RX3) & 14(TX3)<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> | 1 |
+| SRXL, IBUS, SB, Jeti Ex | RX & TX<sup>(2)</sup> </br>or<sup>(8)</sup> 7 & 12<sup>(2)</sup> | RX1 & TX1<sup>(2)</sup> </br>or<sup>(6)</sup> RX0 & TX0<sup>(2)</sup> </br>or<sup>(7)</sup> 7 & 12<sup>(2)</sup> | 15(RX3) & 14(TX3)<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> </br>or B3<sup>(8)</sup> & B4<sup>(5)(2)</sup>(15 & 16) | 1 |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 | XBUS NPN clock stretch<sup>(4)</sup> | 13 | 13 | 13 | PB5(9) | 13 |
@@ -72,8 +72,10 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 (2) diode 1N4148. Note the inverted orientation of the diode for Frsky and SBUS. Alternatively 1k to 3.3k resistor can be used  
 (3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)  
 (4) optional. Only if needed. If connected, enable XBUS_CLOCK_STRECH_SWITCH in config.h  
-(5) If Rx protocol: Smartport, Frsky D, SBUS, XBUS  
-(6) If Rx protocol: SRXL, Ibus, Multiplex or Jeti 
+(5) If using serial ESC  
+(6) If using GPS  
+(7) If using serial ESC and GPS. If using a diode, the diode line towards the pin  
+(8) If using serial ESC or GPS. If using a diode, the diode line towards the pin  
 
 
 ## 2. Receiver protocol
@@ -96,10 +98,10 @@ Depending on the receiver protocol connect to the Rx as follows
 1N4148 diode or 1k to 3.3k resistor
 
 <p align="center"><img src="./images/frsky_smartport_sbus.png" width="400"><br>
-<i>Frsky Smartport, SBUS</i><br><br></p>
+<i>Frsky Smartport, SBUS</br>or SRXL, IBUS, SB, Jeti Ex Bus and boards with no available UARTS, as being used for ESC serial or GPS (if using a diode, then invert orientation) </i><br><br></p>
 
 <p align="center"><img src="./images/srxl_ibus_sb.png" width="460"><br>
-<i>SRXL, IBUS, Jeti Ex Bus</i><br><br></p>
+<i>SRXL, IBUS, SB, Jeti Ex Bus</i><br><br></p>
 
 <p align="center"><img src="./images/frsky_d.png" width="310"><br>
 <i>Frsky D</i><br><br></p>
@@ -148,8 +150,6 @@ If no telemetry is shown, may be MSRC is booting too slow and the first poll fro
 
 Configure receiver pin (E1 or E2) as Ex Bus
 
-To use with ESC serial or GPS you'll need a board with 2 or 3 UARTs. It is not feasible to use sotfware serial with Jeti Ex Bus
-
 ## 3. Sensors
 
 All sensors are available with Smartport protocol
@@ -186,20 +186,20 @@ Optionally a PWM signal can be generated from the RPM value in serial telemetry
 | Cells range | ESCHW4_DIVISOR |
 | :---: | :---: |
 | 3-6S (LV) | 11 |
-| 3-8S (LV v2) | 15.4 |
+| 3-8S (LV v2) | 16.1 |
 | 5-12s (HV) | 21 |
 | 6-14s (HV v2) | unknown |
 
 | Amperage | ESCHW4_AMPGAIN |
 | :---: | :---: |
-| 60A | 6
-| 80A | 7.8 |
+| FlyFun 60A | 6
+| FlyFun 80A | 11.3 |
 | 100A | 9<sup>(1)</sup> |
-| 120A | 10 |
+| Platinum V4 120A | 10 |
 | 130A | 11.3<sup>(1)</sup> |
 | 150A | 12.9<sup>(1)</sup> |
 | 160A | 13.7<sup>(1)</sup> |
-| 200A | 16.9 |
+| Platinum V4 200A | 16.9 |
 
 (1) Extrapolated from confirmed models. If you find discrepancy adjust gain parameter and send gain and ESC model to update the table
 
@@ -571,6 +571,8 @@ v0.9
 - Fixed Jeti Ex bug
 - HW V4/V5. Only one HW V4/V5 protocol. Voltage and current sensor parameters to be set manually
 - Added RPM multipliers
+- Serial drivers timeout to microseconds
+- Use software serial only for Rx protocols, not for sensors
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 

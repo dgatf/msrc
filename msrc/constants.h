@@ -45,14 +45,13 @@
 #define PIN_PRESSURE A7
 #define PIN_SWITCH_XBUS 13 // PB5
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4 || CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK || CONFIG_GPS
+#define SRXL_IBUS_SERIAL softSerial
+#else
 #define SRXL_IBUS_SERIAL hardSerial0
-#if RX_PROTOCOL == RX_SMARTPORT || RX_PROTOCOL == RX_FRSKY || RX_PROTOCOL == RX_SBUS
+#endif
 #define ESC_SERIAL hardSerial0
 #define GPS_SERIAL hardSerial0
-#else
-#define ESC_SERIAL softSerial
-#define GPS_SERIAL softSerial
-#endif
 #define DEBUG_SERIAL hardSerial0
 #if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && !CONFIG_GPS 
 #define DISABLE_GPS
@@ -72,9 +71,24 @@
 #define PIN_PRESSURE A7
 #define PIN_SWITCH_XBUS 13 // PB5
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
+// ESC serial & GPS
+#if (CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4 || CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK) && CONFIG_GPS
+#define SRXL_IBUS_SERIAL softserial
+#endif
+// ESC serial
+#if (CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4 || CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK) && !CONFIG_GPS
 #define SRXL_IBUS_SERIAL hardSerial1
+#endif
+// GPS
+#if !(CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4 || CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK) && CONFIG_GPS
+#define SRXL_IBUS_SERIAL hardSerial0
+#endif
+// No serial sensor
+#if !(CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4 || CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK) && CONFIG_GPS
+#define SRXL_IBUS_SERIAL hardSerial1
+#endif
 #define ESC_SERIAL hardSerial0  
-#define GPS_SERIAL hardSerial1   // if using with srxl, ibus, multiplex or jeti, use softSerial. If there is no reading, use a 3.3v board
+#define GPS_SERIAL hardSerial1
 #define DEBUG_SERIAL hardSerial0
 #if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && !CONFIG_GPS 
 #define DISABLE_GPS
@@ -110,14 +124,13 @@
 #define PIN_PRESSURE A7         // PD7
 #define PIN_SWITCH_XBUS PB5
 #define SMARTPORT_FRSKY_SBUS_SERIAL softSerial
+#if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V3 || CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4 || CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK || CONFIG_GPS
+#define SRXL_IBUS_SERIAL softSerial
+#else
 #define SRXL_IBUS_SERIAL hardSerial1
-#if RX_PROTOCOL == RX_SMARTPORT || RX_PROTOCOL == RX_FRSKY || RX_PROTOCOL == RX_SBUS
+#endif
 #define ESC_SERIAL hardSerial1
 #define GPS_SERIAL hardSerial1
-#else
-#define ESC_SERIAL softSerial
-#define GPS_SERIAL softSerial
-#endif
 #define DEBUG_SERIAL Serial
 #endif
 
