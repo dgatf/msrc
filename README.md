@@ -566,7 +566,7 @@ Adjust constants in *pressure.h*:
 
 v0.9
 
-- HW V4/V5. Added threshold filter for current sensor. Values for current when throttle is low may not be reliable, depending on model
+- HW V4/V5. Added throttle threshold maximum current filters for current sensor. Values for current when throttle is low may not be reliable, depending on model
 - Added consumption calculation. Thanks MJ666
 - Fixed Jeti Ex bug
 - HW V4/V5. Only one HW V4/V5 protocol. Voltage and current sensor parameters to be set manually
