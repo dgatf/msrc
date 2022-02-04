@@ -63,7 +63,7 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | ESC Castle<sup>(1)</sup> | 2 & 10 | 2 & 22 | 45 & 48 | C8 & B6 | 2 & 6 |
 | Frsky Smartport, SBUS | 7  & 12<sup>(2)</sup> | 7  & 12<sup>(2)</sup> | A15  & D10<sup>(2)</sup> | B3  & B4<sup>(2)</sup><br/>(15 & 16) | 1 |
 | Frsky D | 12 | 12 | D10 | B4(16) | 1 |
-| SRXL, IBUS, SB, Jeti Ex | RX & TX<sup>(2)</sup> </br>or<sup>(8)</sup> 7 & 12<sup>(2)</sup> | RX1 & TX1<sup>(2)</sup> </br>or<sup>(6)</sup> RX0 & TX0<sup>(2)</sup> </br>or<sup>(7)</sup> 7 & 12<sup>(2)</sup> | 15(RX3) & 14(TX3)<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> </br>or B3<sup>(8)</sup> & B4<sup>(5)(2)</sup>(15 & 16) | 1 |
+| SRXL, IBUS, SB, Jeti Ex | RX & TX<sup>(2)</sup> </br>or<sup>(8)</sup> 7 & 12<sup>(2)</sup> | RX1 & TX1<sup>(2)</sup> </br>or<sup>(6)</sup> RX0 & TX0<sup>(2)</sup> </br>or<sup>(7)</sup> 7 & 12<sup>(2)</sup> | 15(RX3) & 14(TX3)<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> </br>or<sup>(8)</sup> B3 & B4<sup>(2)</sup>(15 & 16) | 1 |
 | XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
 | XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 | XBUS NPN clock stretch<sup>(4)</sup> | 13 | 13 | 13 | PB5(9) | 13 |
@@ -571,8 +571,8 @@ v0.9
 - Fixed Jeti Ex bug
 - HW V4/V5. Only one HW V4/V5 protocol. Voltage and current sensor parameters to be set manually
 - Added RPM multipliers
-- Serial drivers timeout to microseconds
-- Use software serial only for Rx protocols, not for sensors
+- Fast protocols (eg: Jeti Ex) handling imporved. Serial drivers timeout to microseconds
+- Allow some Rx protocols & boards to be used with serial ESC and GPS- Use software serial only for Rx protocols, not for sensors
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
