@@ -141,7 +141,7 @@ uint16_t FormatData::formatData(uint8_t dataId, float value)
     return round(value);
 }
 
-uint16_t FormatData::formatIbus(uint8_t dataId, float value)
+int32_t FormatData::formatIbus(uint8_t dataId, float value)
 {
 
     if (dataId == AFHDS2A_ID_TEMPERATURE)

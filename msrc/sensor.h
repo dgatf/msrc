@@ -102,7 +102,7 @@ public:
     uint8_t dataId();
     uint8_t type();
     void update();
-    uint32_t valueFormatted();
+    int32_t valueFormatted();
 };
 
 class SensorSbus : public FormatData

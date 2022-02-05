@@ -147,7 +147,7 @@ void SensorIbus::update()
     deviceP_->update();
 }
 
-uint32_t SensorIbus::valueFormatted()
+int32_t SensorIbus::valueFormatted()
 {
     return formatIbus(dataId_, *valueP_);
 }

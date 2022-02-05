@@ -243,7 +243,7 @@ protected:
     uint32_t formatDateTime(uint8_t type, uint32_t value);
     uint32_t formatCell(uint8_t cellIndex, float value1, float value2);
     uint16_t formatData(uint8_t dataId, float value);
-    uint16_t formatIbus(uint8_t dataId, float value);
+    int32_t formatIbus(uint8_t dataId, float value);
     uint16_t formatSbus(uint8_t dataId, float value);
     int16_t formatMultiplex(uint8_t dataId, float value);
 };

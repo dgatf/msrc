@@ -39,7 +39,9 @@ void Ibus::sendData(uint8_t command, uint8_t address)
 
     uint8_t *u8P;
     uint16_t crc = 0;
-    uint32_t value;
+    int32_t valueS32;
+    int16_t valueS16;
+    uint16_t valueU16;
 
     // get value
     uint8_t lenght = 0;
@@ -49,17 +51,29 @@ void Ibus::sendData(uint8_t command, uint8_t address)
         lenght = 0;
         break;
     case IBUS_COMMAND_TYPE:
-        value = 0x02 << 8 | sensorIbusP[address]->dataId();
-        u8P = (uint8_t *)&value;
+        valueU16 = 0x02 << 8 | sensorIbusP[address]->dataId();
+        u8P = (uint8_t *)&valueU16;
         lenght = 2;
         break;
     case IBUS_COMMAND_MEASURE:
-        value = sensorIbusP[address]->valueFormatted();
-        u8P = (uint8_t *)&value;
-        if (sensorIbusP[address]->type() == IBUS_TYPE_S16 || sensorIbusP[address]->type() == IBUS_TYPE_U16)
+        valueS32 = sensorIbusP[address]->valueFormatted();
+        if (sensorIbusP[address]->type() == IBUS_TYPE_S16)
+        {
+            valueS16 = valueS32;
+            u8P = (uint8_t *)&valueS16;
             lenght = 2;
+        }
+        else if (sensorIbusP[address]->type() == IBUS_TYPE_U16)
+        {
+            valueU16 = valueS32;
+            u8P = (uint8_t *)&valueU16;
+            lenght = 2;
+        }
         else
+        {
+            u8P = (uint8_t *)&valueS32;
             lenght = 4;
+        }
         break;
     }
 #ifdef DEBUG
@@ -287,9 +301,9 @@ void Ibus::setConfig(Config &config)
         Bn220 *gps;
         gps = new Bn220(GPS_SERIAL, GPS_BAUD_RATE);
         gps->begin();
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_LAT, IBUS_TYPE_S32, gps->lonP(), gps);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_LAT, IBUS_TYPE_S32, gps->latP(), gps);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_LON, IBUS_TYPE_S32, gps->latP(), gps);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_LON, IBUS_TYPE_S32, gps->lonP(), gps);
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_ALT, IBUS_TYPE_S32, gps->altP(), gps);
         addSensor(sensorIbusP);
