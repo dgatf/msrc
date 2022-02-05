@@ -19,7 +19,7 @@ float calcAverage(float alpha, float oldValue, float newValue)
 float calcConsumption(float current)
 {
     static uint32_t lastms = 0;
-    if (lastms == 0)
+    if (lastms == 0 || millis() - lastms > 1000)
     {
         lastms = millis();
         return 0;
