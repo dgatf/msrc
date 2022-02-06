@@ -157,7 +157,7 @@ void SoftSerial::initWrite()
     delay_loop(tx_delay);
 }
 
-void SoftSerial::setTimeout(uint8_t timeout)
+void SoftSerial::setTimeout(uint16_t timeout)
 {
     timeout_ = timeout * US_TO_COMP(8);
 }
