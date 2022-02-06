@@ -5,6 +5,7 @@
 #define IBUS_TYPE_S16 1
 #define IBUS_TYPE_U32 2
 #define IBUS_TYPE_S32 3
+#define IBUS_TYPE_GPS 4
 
 #define IBUS_RECEIVED_NONE 0
 #define IBUS_RECEIVED_POLL 1

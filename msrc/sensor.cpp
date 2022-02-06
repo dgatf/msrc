@@ -136,7 +136,7 @@ uint8_t Sensord::refresh()
     return refresh_;
 }
 
-SensorIbus::SensorIbus(uint8_t dataId, uint8_t type, float *valueP, AbstractDevice *deviceP) : dataId_(dataId), type_(type), valueP_(valueP), deviceP_(deviceP) {}
+SensorIbus::SensorIbus(uint8_t dataId, uint8_t type, AbstractDevice *deviceP) : dataId_(dataId), type_(type), deviceP_(deviceP) {}
 
 SensorIbus::~SensorIbus()
 {
@@ -147,11 +147,6 @@ void SensorIbus::update()
     deviceP_->update();
 }
 
-int32_t SensorIbus::valueFormatted()
-{
-    return formatIbus(dataId_, *valueP_);
-}
-
 uint8_t SensorIbus::dataId()
 {
     return dataId_;
@@ -160,6 +155,60 @@ uint8_t SensorIbus::dataId()
 uint8_t SensorIbus::type()
 {
     return type_;
+}
+
+SensorIbusS16::SensorIbusS16(uint8_t dataId, uint8_t type, float *valueP, AbstractDevice *deviceP) : SensorIbus(dataId, type, deviceP), valueP_(valueP) {}
+
+SensorIbusS16::~SensorIbusS16()
+{
+}
+
+uint8_t *SensorIbusS16::valueFormatted()
+{
+    valueFormatted_ = formatIbus(dataId_, *valueP_);
+    return (uint8_t *)&valueFormatted_;
+}
+
+SensorIbusU16::SensorIbusU16(uint8_t dataId, uint8_t type, float *valueP, AbstractDevice *deviceP) : SensorIbus(dataId, type, deviceP), valueP_(valueP) {}
+
+SensorIbusU16::~SensorIbusU16()
+{
+}
+
+uint8_t *SensorIbusU16::valueFormatted()
+{
+    valueFormatted_ = formatIbus(dataId_, *valueP_);
+    return (uint8_t *)&valueFormatted_;
+}
+
+SensorIbusS32::SensorIbusS32(uint8_t dataId, uint8_t type, float *valueP, AbstractDevice *deviceP) : SensorIbus(dataId, type, deviceP), valueP_(valueP) {}
+
+SensorIbusS32::~SensorIbusS32()
+{
+}
+
+uint8_t *SensorIbusS32::valueFormatted()
+{
+    valueFormatted_ = formatIbus(dataId_, *valueP_);
+    return (uint8_t *)&valueFormatted_;
+}
+
+SensorIbusGps::SensorIbusGps(uint8_t dataId, uint8_t type, float *valueLatP, float *valueLonP, float *valueAltP, AbstractDevice *deviceP) : SensorIbus(dataId, type, deviceP), valueLatP_(valueLatP), valueLonP_(valueLonP), valueAltP_(valueAltP) {}
+
+SensorIbusGps::~SensorIbusGps()
+{
+}
+
+uint8_t *SensorIbusGps::valueFormatted()
+{
+    int32_t value;
+    value = formatIbus(AFHDS2A_ID_GPS_LAT, *valueLatP_);
+    memcpy(buffer + 2, &value, 4);
+    value = formatIbus(AFHDS2A_ID_GPS_LON, *valueLonP_);
+    memcpy(buffer + 6, &value, 4);
+    value = formatIbus(AFHDS2A_ID_GPS_ALT, *valueAltP_);
+    memcpy(buffer + 10, &value, 4);
+    return (uint8_t *)&buffer;
 }
 
 SensorSbus::SensorSbus(uint8_t dataId, float *valueP, AbstractDevice *deviceP) : dataId_(dataId), valueP_(valueP), deviceP_(deviceP) {}

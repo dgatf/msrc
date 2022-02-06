@@ -37,10 +37,8 @@ void Ibus::sendData(uint8_t command, uint8_t address)
 {
     digitalWrite(LED_BUILTIN, HIGH);
 
-    uint8_t *u8P;
+    uint8_t *u8P = NULL;
     uint16_t crc = 0;
-    int32_t valueS32;
-    int16_t valueS16;
     uint16_t valueU16;
 
     // get value
@@ -56,23 +54,18 @@ void Ibus::sendData(uint8_t command, uint8_t address)
         lenght = 2;
         break;
     case IBUS_COMMAND_MEASURE:
-        valueS32 = sensorIbusP[address]->valueFormatted();
-        if (sensorIbusP[address]->type() == IBUS_TYPE_S16)
+        u8P = sensorIbusP[address]->valueFormatted();
+        if (sensorIbusP[address]->type() == IBUS_TYPE_S16 || sensorIbusP[address]->type() == IBUS_TYPE_U16)
         {
-            valueS16 = valueS32;
-            u8P = (uint8_t *)&valueS16;
             lenght = 2;
         }
-        else if (sensorIbusP[address]->type() == IBUS_TYPE_U16)
+        else if (sensorIbusP[address]->type() == IBUS_TYPE_S32)
         {
-            valueU16 = valueS32;
-            u8P = (uint8_t *)&valueU16;
-            lenght = 2;
-        }
-        else
-        {
-            u8P = (uint8_t *)&valueS32;
             lenght = 4;
+        }
+        else if (sensorIbusP[address]->type() == IBUS_TYPE_GPS)
+        {
+            lenght = 14;
         }
         break;
     }
@@ -213,7 +206,7 @@ void Ibus::setConfig(Config &config)
         EscPWM *esc;
         esc = new EscPWM(ALPHA(config.average.rpm));
         esc->begin();
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
         addSensor(sensorIbusP);
     }
     if (config.protocol == PROTOCOL_HW_V3)
@@ -222,7 +215,7 @@ void Ibus::setConfig(Config &config)
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
         esc->begin();
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
         addSensor(sensorIbusP);
     }
     if (config.protocol == PROTOCOL_HW_V4)
@@ -233,19 +226,19 @@ void Ibus::setConfig(Config &config)
         esc->begin();
         PwmOut pwmOut;
         pwmOut.setRpmP(esc->rpmP());
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_EXTV, IBUS_TYPE_U16, esc->voltageP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_EXTV, IBUS_TYPE_U16, esc->voltageP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, esc->currentP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, esc->currentP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, esc->tempFetP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, esc->tempFetP(), esc);
         addSensor(sensorIbusP);
-        //sensorIbusP = new SensorIbus(TEMP2_ID, esc->tempBecP(), esc);
+        //sensorIbusP = new SensorIbusU16(TEMP2_ID, esc->tempBecP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_CELL_VOLTAGE, IBUS_TYPE_U16, esc->cellVoltageP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_CELL_VOLTAGE, IBUS_TYPE_U16, esc->cellVoltageP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_FUEL, IBUS_TYPE_U16, esc->consumptionP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_FUEL, IBUS_TYPE_U16, esc->consumptionP(), esc);
         addSensor(sensorIbusP);
     }
     if (config.protocol == PROTOCOL_CASTLE)
@@ -254,21 +247,21 @@ void Ibus::setConfig(Config &config)
         EscCastle *esc;
         esc = new EscCastle(ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
         esc->begin();
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_EXTV, IBUS_TYPE_U16, esc->voltageP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_EXTV, IBUS_TYPE_U16, esc->voltageP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, esc->currentP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, esc->currentP(), esc);
         addSensor(sensorIbusP);
-        //sensorIbusP = new SensorIbus(SBEC_POWER_FIRST_ID, esc->becVoltageP(), esc->becCurrentP(), esc);
+        //sensorIbusP = new SensorIbusU16(SBEC_POWER_FIRST_ID, esc->becVoltageP(), esc->becCurrentP(), esc);
         //addSensor(sensorIbusP);
-        //sensorIbusP = new SensorIbus(ESC_POWER_FIRST_ID + 1, esc->rippleVoltageP(), NULL, config.refresh.volt, esc);
+        //sensorIbusP = new SensorIbusU16(ESC_POWER_FIRST_ID + 1, esc->rippleVoltageP(), NULL, config.refresh.volt, esc);
         //addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, esc->temperatureP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, esc->temperatureP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_CELL_VOLTAGE, IBUS_TYPE_U16, esc->cellVoltageP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_CELL_VOLTAGE, IBUS_TYPE_U16, esc->cellVoltageP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_FUEL, IBUS_TYPE_U16, esc->consumptionP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_FUEL, IBUS_TYPE_U16, esc->consumptionP(), esc);
         addSensor(sensorIbusP);
     }
     if (config.protocol == PROTOCOL_KONTRONIK)
@@ -279,20 +272,20 @@ void Ibus::setConfig(Config &config)
         esc->begin();
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_MOT, IBUS_TYPE_U16, esc->rpmP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_EXTV, IBUS_TYPE_U16, esc->voltageP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_EXTV, IBUS_TYPE_U16, esc->voltageP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, esc->currentP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, esc->currentP(), esc);
         addSensor(sensorIbusP);
-        //sensorIbusP = new SensorIbus(SBEC_POWER_FIRST_ID, esc->becVoltageP(), esc->becCurrentP(), esc);
+        //sensorIbusP = new SensorIbusU16(SBEC_POWER_FIRST_ID, esc->becVoltageP(), esc->becCurrentP(), esc);
         //addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, esc->tempFetP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, esc->tempFetP(), esc);
         addSensor(sensorIbusP);
-        //sensorIbusP = new SensorIbus(TEMP2_ID, esc->tempBecP(), esc);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_CELL_VOLTAGE, IBUS_TYPE_U16, esc->cellVoltageP(), esc);
+        //sensorIbusP = new SensorIbusU16(TEMP2_ID, esc->tempBecP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_CELL_VOLTAGE, IBUS_TYPE_U16, esc->cellVoltageP(), esc);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_FUEL, IBUS_TYPE_U16, esc->consumptionP(), esc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_FUEL, IBUS_TYPE_U16, esc->consumptionP(), esc);
         addSensor(sensorIbusP);
     }
     if (config.gps == true)
@@ -301,15 +294,17 @@ void Ibus::setConfig(Config &config)
         Bn220 *gps;
         gps = new Bn220(GPS_SERIAL, GPS_BAUD_RATE);
         gps->begin();
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_LAT, IBUS_TYPE_S32, gps->latP(), gps);
+        sensorIbusP = new SensorIbusGps(AFHDS2A_ID_GPS_FULL, IBUS_TYPE_GPS, gps->latP(), gps->lonP(), gps->altP(), gps);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_LON, IBUS_TYPE_S32, gps->lonP(), gps);
+        /*sensorIbusP = new SensorIbusS32(AFHDS2A_ID_GPS_LAT, IBUS_TYPE_S32, gps->latP(), gps);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_ALT, IBUS_TYPE_S32, gps->altP(), gps);
+        sensorIbusP = new SensorIbusS32(AFHDS2A_ID_GPS_LON, IBUS_TYPE_S32, gps->lonP(), gps);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_SPE, IBUS_TYPE_U16, gps->spdP(), gps);
+        sensorIbusP = new SensorIbusS32(AFHDS2A_ID_GPS_ALT, IBUS_TYPE_S32, gps->altP(), gps);
+        addSensor(sensorIbusP);*/
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_SPE, IBUS_TYPE_U16, gps->spdP(), gps);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_COG, IBUS_TYPE_U16, gps->cogP(), gps);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_COG, IBUS_TYPE_U16, gps->cogP(), gps);
         addSensor(sensorIbusP);
     }
     if (config.airspeed == true)
@@ -317,7 +312,7 @@ void Ibus::setConfig(Config &config)
         SensorIbus *sensorIbusP;
         Pressure *pressure;
         pressure = new Pressure(PIN_PRESSURE, ALPHA(config.average.volt));
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_CLIMB_RATE, IBUS_TYPE_S16, pressure->valueP(), pressure);
+        sensorIbusP = new SensorIbusS16(AFHDS2A_ID_CLIMB_RATE, IBUS_TYPE_S16, pressure->valueP(), pressure);
         addSensor(sensorIbusP);
     }
     if (config.voltage1 == true)
@@ -325,7 +320,7 @@ void Ibus::setConfig(Config &config)
         SensorIbus *sensorIbusP;
         Voltage *voltage;
         voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt), VOLTAGE1_MULTIPLIER);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_EXTV, IBUS_TYPE_U16, voltage->valueP(), voltage);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_EXTV, IBUS_TYPE_U16, voltage->valueP(), voltage);
         addSensor(sensorIbusP);
     }
     /*if (config.voltage2 == true)
@@ -333,7 +328,7 @@ void Ibus::setConfig(Config &config)
         SensorIbus *sensorIbusP;
         Voltage *voltage;
         voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt), VOLTAGE2_MULTIPLIER);
-        sensorIbusP = new SensorIbus(A4_FIRST_ID, voltage->valueP(), config.refresh.volt, voltage);
+        sensorIbusP = new SensorIbusU16(A4_FIRST_ID, voltage->valueP(), config.refresh.volt, voltage);
         addSensor(sensorIbusP);
     }*/
     if (config.current == true)
@@ -341,7 +336,7 @@ void Ibus::setConfig(Config &config)
         SensorIbus *sensorIbusP;
         Voltage *current;
         current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, current->valueP(), current);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, current->valueP(), current);
         addSensor(sensorIbusP);
     }
     if (config.ntc1 == true)
@@ -349,7 +344,7 @@ void Ibus::setConfig(Config &config)
         SensorIbus *sensorIbusP;
         Ntc *ntc;
         ntc = new Ntc(PIN_NTC1, ALPHA(config.average.temp));
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, ntc->valueP(), ntc);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, ntc->valueP(), ntc);
         addSensor(sensorIbusP);
     }
     /*if (config.ntc2 == true)
@@ -357,7 +352,7 @@ void Ibus::setConfig(Config &config)
         SensorIbus *sensorIbusP;
         Ntc *ntc;
         ntc = new Ntc(PIN_NTC2, ALPHA(config.average.temp));
-        sensorIbusP = new SensorIbus(TEMP2_ID, ntc->valueP(), ntc);
+        sensorIbusP = new SensorIbusU16(TEMP2_ID, ntc->valueP(), ntc);
         addSensor(sensorIbusP);
     }*/
     if (config.deviceI2C1Type == I2C_BMP280)
@@ -366,8 +361,8 @@ void Ibus::setConfig(Config &config)
         Bmp280 *bmp;
         bmp = new Bmp280(config.deviceI2C1Address, ALPHA(config.average.temp), 10);
         bmp->begin();
-        //sensorIbusP = new SensorIbus(TEMP1_ID, bmp->temperatureP(), bmp);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_ALT_FLYSKY, IBUS_TYPE_U16, bmp->altitudeP(), bmp);
+        //sensorIbusP = new SensorIbusU16(TEMP1_ID, bmp->temperatureP(), bmp);
+        sensorIbusP = new SensorIbusU16(AFHDS2A_ID_ALT_FLYSKY, IBUS_TYPE_U16, bmp->altitudeP(), bmp);
         addSensor(sensorIbusP);
     }
 }
