@@ -47,7 +47,7 @@ void EscHW4::update()
             float tempBEC = calcTemp((uint16_t)data[17] << 8 | data[18]);
             rpm *= RPM_MULTIPLIER;
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
-            consumption_ += calcConsumption(current);
+            consumption_ += calcConsumption(current, ESCHW4_CURRENT_MAX);
             voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);
             current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
             tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFET);
@@ -63,6 +63,8 @@ void EscHW4::update()
 #ifdef DEBUG_HW4
             uint32_t pn = (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
             DEBUG_PRINT(pn);
+            DEBUG_PRINT(" T:");
+            DEBUG_PRINT(thr_);
             DEBUG_PRINT(" R:");
             DEBUG_PRINT(rpm);
             DEBUG_PRINT(" V:");
@@ -73,6 +75,8 @@ void EscHW4::update()
             DEBUG_PRINT(tempFET);
             DEBUG_PRINT(" T:");
             DEBUG_PRINT(tempBEC);
+            DEBUG_PRINT(" C:");
+            DEBUG_PRINT(consumption_);
             DEBUG_PRINT("\n");
 #endif
         }
