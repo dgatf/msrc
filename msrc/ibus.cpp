@@ -65,7 +65,7 @@ void Ibus::sendData(uint8_t command, uint8_t address)
         }
         else if (sensorIbusP[address]->type() == IBUS_TYPE_GPS)
         {
-            lenght = 14;
+            lenght = 15;
         }
         break;
     }

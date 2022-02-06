@@ -203,11 +203,11 @@ uint8_t *SensorIbusGps::valueFormatted()
 {
     int32_t value;
     value = formatIbus(AFHDS2A_ID_GPS_LAT, *valueLatP_);
-    memcpy(buffer + 2, &value, 4);
+    memcpy(buffer + 3, &value, 4);
     value = formatIbus(AFHDS2A_ID_GPS_LON, *valueLonP_);
-    memcpy(buffer + 6, &value, 4);
+    memcpy(buffer + 7, &value, 4);
     value = formatIbus(AFHDS2A_ID_GPS_ALT, *valueAltP_);
-    memcpy(buffer + 10, &value, 4);
+    memcpy(buffer + 11, &value, 4);
     return (uint8_t *)&buffer;
 }
 
