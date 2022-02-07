@@ -39,34 +39,34 @@ void Ibus::sendData(uint8_t command, uint8_t address)
 
     uint8_t *u8P = NULL;
     uint16_t crc = 0;
-    uint16_t valueU16;
-
-    // get value
+    uint16_t type;
     uint8_t lenght = 0;
+
+    switch(sensorIbusP[address]->type())
+    {
+    case IBUS_TYPE_S16:
+    case IBUS_TYPE_U16:
+        lenght = 2;
+        break;
+    case IBUS_TYPE_S32:
+        lenght = 4;
+        break;
+    case IBUS_TYPE_GPS:
+        lenght = 14;
+        break;
+    } 
     switch (command)
     {
     case IBUS_COMMAND_DISCOVER:
         lenght = 0;
         break;
     case IBUS_COMMAND_TYPE:
-        valueU16 = 0x02 << 8 | sensorIbusP[address]->dataId();
-        u8P = (uint8_t *)&valueU16;
+        type = lenght << 8 | sensorIbusP[address]->dataId();
+        u8P = (uint8_t *)&type;
         lenght = 2;
         break;
     case IBUS_COMMAND_MEASURE:
         u8P = sensorIbusP[address]->valueFormatted();
-        if (sensorIbusP[address]->type() == IBUS_TYPE_S16 || sensorIbusP[address]->type() == IBUS_TYPE_U16)
-        {
-            lenght = 2;
-        }
-        else if (sensorIbusP[address]->type() == IBUS_TYPE_S32)
-        {
-            lenght = 4;
-        }
-        else if (sensorIbusP[address]->type() == IBUS_TYPE_GPS)
-        {
-            lenght = 15;
-        }
         break;
     }
 #ifdef DEBUG

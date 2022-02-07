@@ -147,7 +147,7 @@ protected:
     float *latP_;
     float *lonP_;
     float *altP_;
-    uint8_t buffer[15] = {0}; // fix, 2x sat, 4x lat, 4x lon, 4x alt
+    uint8_t buffer[14] = {0}; // fix, sat, 4x lat, 4x lon, 4x alt
 
 public:
     SensorIbusGps(uint8_t dataId, uint8_t type, uint8_t *satP, float *latP, float *lonP, float *altP, AbstractDevice *deviceP);
