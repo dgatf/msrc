@@ -143,13 +143,14 @@ public:
 class SensorIbusGps : public SensorIbus
 {
 protected:
-    float *valueLatP_;
-    float *valueLonP_;
-    float *valueAltP_;
-    uint8_t buffer[15] = {0}; // spare, pin, sat, 4x lat, 4x lon, 4x alt
+    uint8_t *satP_;
+    float *latP_;
+    float *lonP_;
+    float *altP_;
+    uint8_t buffer[15] = {0}; // fix, 2x sat, 4x lat, 4x lon, 4x alt
 
 public:
-    SensorIbusGps(uint8_t dataId, uint8_t type, float *valueLat, float *valueLon, float *valueAlt, AbstractDevice *deviceP);
+    SensorIbusGps(uint8_t dataId, uint8_t type, uint8_t *satP, float *latP, float *lonP, float *altP, AbstractDevice *deviceP);
     ~SensorIbusGps();
     uint8_t *valueFormatted();
 };

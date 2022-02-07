@@ -297,8 +297,7 @@ void Ibus::setConfig(Config &config)
         Bn220 *gps;
         gps = new Bn220(GPS_SERIAL, GPS_BAUD_RATE);
         gps->begin();
-        //sensorIbusP = new SensorIbusGps(AFHDS2A_ID_GPS_FULL, IBUS_TYPE_GPS, gps->satP(), gps->latP(), gps->lonP(), gps->altP(), gps);
-        sensorIbusP = new SensorIbusGps(AFHDS2A_ID_GPS_FULL, IBUS_TYPE_GPS, gps->latP(), gps->lonP(), gps->altP(), gps);
+        sensorIbusP = new SensorIbusGps(AFHDS2A_ID_GPS_FULL, IBUS_TYPE_GPS, gps->satP(), gps->latP(), gps->lonP(), gps->altP(), gps);
         addSensor(sensorIbusP);
         /*sensorIbusP = new SensorIbusS32(AFHDS2A_ID_GPS_LAT, IBUS_TYPE_S32, gps->latP(), gps);
         addSensor(sensorIbusP);
