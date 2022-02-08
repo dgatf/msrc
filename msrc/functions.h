@@ -5,6 +5,6 @@
 
 uint8_t setCellCount(float voltage);
 float calcAverage(float alpha, float oldValue, float newValue);
-float calcConsumption(float current, uint16_t currentMax = 0);
+float calcConsumption(float current);
 
 #endif
