@@ -297,14 +297,14 @@ void Ibus::setConfig(Config &config)
         Bn220 *gps;
         gps = new Bn220(GPS_SERIAL, GPS_BAUD_RATE);
         gps->begin();
-        sensorIbusP = new SensorIbusGps(AFHDS2A_ID_GPS_FULL, IBUS_TYPE_GPS, gps->satP(), gps->latP(), gps->lonP(), gps->altP(), gps);
-        addSensor(sensorIbusP);
-        /*sensorIbusP = new SensorIbusS32(AFHDS2A_ID_GPS_LAT, IBUS_TYPE_S32, gps->latP(), gps);
+        //sensorIbusP = new SensorIbusGps(AFHDS2A_ID_GPS_FULL, IBUS_TYPE_GPS, gps->satP(), gps->latP(), gps->lonP(), gps->altP(), gps);
+        //addSensor(sensorIbusP);
+        sensorIbusP = new SensorIbusS32(AFHDS2A_ID_GPS_LAT, IBUS_TYPE_S32, gps->latP(), gps);
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbusS32(AFHDS2A_ID_GPS_LON, IBUS_TYPE_S32, gps->lonP(), gps);
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbusS32(AFHDS2A_ID_GPS_ALT, IBUS_TYPE_S32, gps->altP(), gps);
-        addSensor(sensorIbusP);*/
+        addSensor(sensorIbusP);
         sensorIbusP = new SensorIbusU16(AFHDS2A_ID_SPE, IBUS_TYPE_U16, gps->spdP(), gps);
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbusU16(AFHDS2A_ID_COG, IBUS_TYPE_U16, gps->cogP(), gps);
