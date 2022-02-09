@@ -11,8 +11,9 @@ SoftSerial::SoftSerial() {}
 
 uint8_t SoftSerial::availableTimeout()
 {
+    uint8_t availableCopy = available();
     if (timedout)
-        return available();
+        return availableCopy;
     return 0;
 }
 
@@ -37,8 +38,7 @@ ISR(TIMER3_COMPA_vect)
 void SoftSerial::TIMER_COMP_handler()
 {
     TIMSK3 &= ~_BV(OCIE3A);
-    if (timeout_)
-        timedout = true;
+    timedout = true;
 }
 
 inline void SoftSerial::delay_loop(uint16_t delay)
@@ -215,8 +215,7 @@ ISR(TIMER2_COMPB_vect)
 void SoftSerial::TIMER_COMP_handler()
 {
     TIMSK2 &= ~_BV(OCIE2B);
-    if (timeout_)
-        timedout = true;
+    timedout = true;
 }
 
 void SoftSerial::PCINT_handler()

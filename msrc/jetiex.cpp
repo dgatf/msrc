@@ -268,7 +268,7 @@ void JetiEx::update()
 #else
     uint8_t packetId;
     uint8_t length = serial_.availableTimeout();
-    static uint8_t badCrcCount = 0;
+    static uint16_t ts = 0;
     if (length)
     {
         uint8_t buff[length];
@@ -301,14 +301,13 @@ void JetiEx::update()
         {
             memcpy(packet, buff, JETIEX_PACKET_LENGHT);
         }
-        else 
+        else
         {
-            badCrcCount++;
             return;
         }
         if (crc16(packet, JETIEX_PACKET_LENGHT) == 0)
         {
-            badCrcCount = 0;
+            ts = millis();
             if (packet[0] == 0x3D && packet[1] == 0x01 && packet[4] == 0x3A)
             {
                 if (!mute)
@@ -319,25 +318,6 @@ void JetiEx::update()
                 mute = !mute;
             }
         }
-        else
-        {
-            badCrcCount++;
-            if (badCrcCount > 5)
-            {
-
-                if (baudRate == 125000L)
-                    baudRate = 250000L;
-                else
-                    baudRate = 125000L;
-                serial_.begin(baudRate, SERIAL_8N1 | SERIAL_HALF_DUP);
-                badCrcCount = 0;
-#ifdef DEBUG
-                DEBUG_PRINT("BR:");
-                DEBUG_PRINT(baudRate);
-                DEBUG_PRINTLN();
-#endif
-            }
-        }
     }
 #endif
     if (status == JETIEX_SEND)
@@ -345,13 +325,28 @@ void JetiEx::update()
         if (serial_.timestamp() < 900)
             sendPacket(packetId);
 #ifdef DEBUG
-        else 
+        else
         {
             DEBUG_PRINT("KO");
             DEBUG_PRINTLN();
         }
 #endif
     }
+    if ((uint16_t)(millis() - ts) > 5000)
+    {
+        if (baudRate == 125000L)
+            baudRate = 250000L;
+        else
+            baudRate = 125000L;
+        serial_.begin(baudRate, SERIAL_8N1 | SERIAL_HALF_DUP);
+        ts = millis();
+#ifdef DEBUG
+        DEBUG_PRINT("BR:");
+        DEBUG_PRINT(baudRate);
+        DEBUG_PRINTLN();
+#endif
+    }
+
     // update sensor
     static uint8_t cont = 0;
     if (sensorJetiExP[cont])
