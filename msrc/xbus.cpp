@@ -264,6 +264,7 @@ void Xbus::update()
     }
     xbusGpsLoc.longitude = bcd32((uint16_t)(lon / 60) * 100 + fmod(lon, 60), 4);
     xbusGpsLoc.course = bcd16(*gps.cogP(), 1);
+    xbusGpsLoc.HDOP = bcd8(*gps.hdopP(), 1);
     xbusGpsStat.speed = bcd16(*gps.spdP(), 1);
     xbusGpsStat.UTC = bcd32(*gps.timeP(), 2);
     xbusGpsStat.numSats = bcd8(*gps.satP(), 0);

@@ -526,6 +526,12 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_COORDINATES, JETIEX_FORMAT_LON, gps->lonP(), gps);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Longitude");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT6, JETIEX_FORMAT_0_DECIMAL, gps->satP(), gps);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Sats");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, JETIEX_FORMAT_2_DECIMAL, gps->hdopP(), gps);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("HDOP");
     }
     if (config.airspeed == true)
     {

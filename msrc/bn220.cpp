@@ -14,7 +14,7 @@ void Bn220::update()
 #if !defined(DISABLE_GPS)
     while (serial_.available())
     {
-        static uint8_t contIndex = 0, contBuff = 0;
+        static uint8_t contBuff = 0;
         char data = serial_.read();
         switch (data)
         {
@@ -31,17 +31,9 @@ void Bn220::update()
                 {
                     nmeaCmd_ = BN220_GGA;
                 }
-                else if (memcmp(buffer_ + 2, "GLL", 3) == 0)
-                {
-                    nmeaCmd_ = BN220_GLL;
-                }
                 else if (memcmp(buffer_ + 2, "RMC", 3) == 0)
                 {
                     nmeaCmd_ = BN220_RMC;
-                }
-                else if (memcmp(buffer_ + 2, "VTG", 3) == 0)
-                {
-                    nmeaCmd_ = BN220_VTG;
                 }
 #ifdef DEBUG_GPS
                 if (nmeaCmd_)
@@ -56,19 +48,10 @@ void Bn220::update()
             }
             else
             {
-                if (nmeaCmd_ > 0)
-                {
-                    uint8_t i = 0;
-                    while (nmeaData[nmeaCmd_][i][0] != 0)
-                    {
-                        if (nmeaData[nmeaCmd_][i][0] == contIndex)
-                        {
-                            uint8_t type = nmeaData[nmeaCmd_][i][1];
-                            parser(type, buffer_);
-                        }
-                        i++;
-                    }
-                }
+                if (nmeaCmd_ == BN220_GGA)
+                    processField(gga);
+                else if (nmeaCmd_ == BN220_RMC)
+                    processField(rmc);
             }
             contIndex++;
             contBuff = 0;
@@ -90,12 +73,25 @@ void Bn220::update()
     lon_ = -1250;  // 20º50" +E, -W
     alt_ = 1283;   // m
     spd_ = 158;    // kts
-    cog_ = 123.32; // º
-    kph_ = 132;    //
+    cog_ = 123.45; // º
     sat_ = 10;     //
     date_ = 10101; // yymmdd
     time_ = 20202; // hhmmss
+    hdop_ = 12.35; //
 #endif
+}
+
+void Bn220::processField(const uint8_t *command)
+{
+    uint8_t i = 0;
+    while (command[i] != BN220_END)
+    {
+        if (i == contIndex - 1 && command[i])
+        {
+            parser(command[i], buffer_);
+        }
+        i++;
+    }
 }
 
 void Bn220::parser(uint8_t type, char *data)
@@ -104,7 +100,7 @@ void Bn220::parser(uint8_t type, char *data)
     {
         if (type == BN220_TIME)
         {
-            time_ = atol(data);
+            time_ = atof(data);
         }
         else if (type == BN220_LAT)
         {
@@ -138,15 +134,11 @@ void Bn220::parser(uint8_t type, char *data)
         }
         else if (type == BN220_DATE)
         {
-            date_ = atol(data);
-        }
-        else if (type == BN220_KPH)
-        {
-            kph_ = atof(data);
+            date_ = atof(data);
         }
         else if (type == BN220_SAT)
         {
-            sat_ = atoi(data);
+            sat_ = atof(data);
         }
         else if (type == BN220_LAT_SIGN)
         {
@@ -155,6 +147,10 @@ void Bn220::parser(uint8_t type, char *data)
         else if (type == BN220_LON_SIGN)
         {
             (data[0] == 'E') ? lonDir_ = 1 : lonDir_ = -1;
+        }
+        else if (type == BN220_HDOP)
+        {
+            hdop_ = atof(data);
         }
 #ifdef DEBUG_GPS
         DEBUG_PRINT("(");
@@ -192,12 +188,7 @@ float *Bn220::cogP()
     return &cog_;
 }
 
-float *Bn220::kphP()
-{
-    return &lat_;
-}
-
-uint8_t *Bn220::satP()
+float *Bn220::satP()
 {
     return &sat_;
 }
@@ -210,4 +201,9 @@ float *Bn220::dateP()
 float *Bn220::timeP()
 {
     return &time_;
+}
+
+float *Bn220::hdopP()
+{
+    return &hdop_;
 }
