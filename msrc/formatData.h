@@ -160,7 +160,7 @@
 #define AFHDS2A_ID_PRES 0x41           // Pressure
 #define AFHDS2A_ID_ODO1 0x7C           // Odometer1
 #define AFHDS2A_ID_ODO2 0x7D           // Odometer2
-#define AFHDS2A_ID_SPE 0x7E            // Speed 2 bytes km/h
+#define AFHDS2A_ID_SPE 0x7E            // Speed 2 bytes km/h * 100
 #define AFHDS2A_ID_TX_V 0x7F           // TX Voltage
 
 #define AFHDS2A_ID_GPS_LAT 0x80 // 4bytes signed WGS84 in degrees * 1E7
@@ -233,6 +233,10 @@
 #define TYPE_TIME 1
 
 #include <Arduino.h>
+
+#include "softserial.h"
+#include "hardserial.h"
+#include "constants.h"
 
 class FormatData
 {
