@@ -156,9 +156,7 @@ All sensors are available with Smartport protocol
 
 Other protocols may not have all of the sensors:
 
-- Ibus. Not available second voltage and second temperature
 - Frsky D. Not available second voltage
-- Xbus, SRXL. Not available second voltage analog and second temperature analog
 
 ### 3.1. ESC
 
@@ -571,8 +569,11 @@ v0.9
 - Fixed Jeti Ex bug
 - HW V4/V5. Only one HW V4/V5 protocol. Voltage and current sensor parameters to be set manually
 - Added RPM multipliers
-- Fast protocols (eg: Jeti Ex) handling imporved. Changed serial drivers timeout to microseconds
+- Changed serial drivers timeout to microseconds for fast protocols (e.g. Jeti Ex)
 - Allow additional Rx protocols & boards to be used with serial ESC and GPS. Use software serial only for Rx protocols, not sensors
+- GPS. Added HDOP and sats
+- IBUS. Fixed S32 type bug (GPS values)
+- XBUS. Added analog voltage2/ntc2 seonsor
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
