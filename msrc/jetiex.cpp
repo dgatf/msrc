@@ -603,6 +603,10 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Altitude");
         sensorJetiExP->setUnit("m");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, bmp->temperatureP(), bmp);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Temperature");
+        sensorJetiExP->setUnit("°C");
     }
 }
 
