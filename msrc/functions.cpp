@@ -17,11 +17,12 @@ float calcAverage(float alpha, float oldValue, float newValue)
 }
 
 float calcConsumption(float current, uint16_t currentMax){
-    static uint16_t lastms = 0;
-    uint16_t interval = (uint16_t)(millis() - lastms);
+    static uint16_t lastms = millis();
+    uint16_t now = millis();
+    uint16_t interval = (uint16_t)(now - lastms);
     float mAh = current * interval / 3600.0;
-    lastms = millis();
-    if (lastms == 0 || interval > 1000 || (currentMax > 0 && (mAh > currentMax * (float)interval / 3600)))
+    lastms = now;
+    if (interval > 2000 || (currentMax && (mAh > currentMax * (float)interval / 3600)))
         return 0;
     return mAh;
 }
