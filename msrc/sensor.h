@@ -93,66 +93,17 @@ class SensorIbus : public FormatData
 protected:
     uint8_t dataId_;
     uint8_t type_;
-
-public:
-    AbstractDevice *deviceP_;
-    SensorIbus(uint8_t dataId, uint8_t type, AbstractDevice *deviceP);
-    virtual ~SensorIbus();
-    uint8_t dataId();
-    uint8_t type();
-    void update();
-    virtual uint8_t *valueFormatted() = 0;
-};
-
-class SensorIbusS16 : public SensorIbus
-{
-protected:
-    float *valueP_;
-    int16_t valueFormatted_;
-
-public:
-    SensorIbusS16(uint8_t dataId, uint8_t type, float *valueP, AbstractDevice *deviceP);
-    ~SensorIbusS16();
-    uint8_t *valueFormatted();
-};
-
-class SensorIbusU16 : public SensorIbus
-{
-protected:
-    float *valueP_;
-    uint16_t valueFormatted_;
-
-public:
-    SensorIbusU16(uint8_t dataId, uint8_t type, float *valueP, AbstractDevice *deviceP);
-    ~SensorIbusU16();
-    uint8_t *valueFormatted();
-};
-
-class SensorIbusS32 : public SensorIbus
-{
-protected:
     float *valueP_;
     int32_t valueFormatted_;
 
 public:
-    SensorIbusS32(uint8_t dataId, uint8_t type, float *valueP, AbstractDevice *deviceP);
-    ~SensorIbusS32();
-    uint8_t *valueFormatted();
-};
-
-class SensorIbusGps : public SensorIbus
-{
-protected:
-    uint8_t *satP_;
-    float *latP_;
-    float *lonP_;
-    float *altP_;
-    uint8_t buffer[14] = {0}; // fix, sat, 4x lat, 4x lon, 4x alt
-
-public:
-    SensorIbusGps(uint8_t dataId, uint8_t type, uint8_t *satP, float *latP, float *lonP, float *altP, AbstractDevice *deviceP);
-    ~SensorIbusGps();
-    uint8_t *valueFormatted();
+    AbstractDevice *deviceP_;
+    SensorIbus(uint8_t dataId, uint8_t type, float *value, AbstractDevice *deviceP);
+    virtual ~SensorIbus();
+    uint8_t dataId();
+    uint8_t type();
+    void update();
+    virtual uint8_t *valueFormatted();
 };
 
 class SensorSbus : public FormatData
@@ -163,7 +114,7 @@ protected:
 
 public:
     AbstractDevice *deviceP_;
-    SensorSbus(uint8_t dataId, float *value, AbstractDevice *deviceP);
+    SensorSbus(uint8_t dataId, float *valueP, AbstractDevice *deviceP);
     ~SensorSbus();
     uint8_t dataId();
     float *valueP();
