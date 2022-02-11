@@ -267,7 +267,9 @@ void Frsky::setConfig(Config &config)
         Sensord *sensorP;
         Pressure *pressure;
         pressure = new Pressure(PIN_PRESSURE, ALPHA(config.average.volt));
-        sensorP = new Sensord(VARIO_ID, pressure->valueP(), config.refresh.volt, pressure);
+        sensorP = new Sensord(GPS_SPEED_BP_ID, pressure->valueP(), 5, pressure);
+        addSensor(sensorP);
+        sensorP = new Sensord(GPS_SPEED_AP_ID, pressure->valueP(), 5, pressure);
         addSensor(sensorP);
     }
     if (config.voltage1 == true)
@@ -323,6 +325,8 @@ void Frsky::setConfig(Config &config)
         sensorP = new Sensord(BARO_ALT_BP_ID, bmp->altitudeP(), 10, bmp);
         addSensor(sensorP);
         sensorP = new Sensord(BARO_ALT_AP_ID, bmp->altitudeP(), 10, bmp);
+        addSensor(sensorP);
+        sensorP = new Sensord(VARIO_ID, bmp->speedP(), 5, bmp);
         addSensor(sensorP);
     }
 }

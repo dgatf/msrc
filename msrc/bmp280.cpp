@@ -65,7 +65,7 @@ void Bmp280::readPressure()
     }
 }
 
-float Bmp280::calcAltitude(float pressure)
+void Bmp280::calcAltitude()
 {
     if (P0_ == 0 && millis() > 5000)
 #ifdef SIM_SENSORS
@@ -74,21 +74,43 @@ float Bmp280::calcAltitude(float pressure)
         P0_ = pressure_;
 #endif
     if (P0_ == 0)
-        return 0;
-    return 44330.0 * (1 - pow(pressure_ / P0_, 1 / 5.255));
+    {
+        altitude_ = 0;
+        return;
+    }
+    altitude_ = 44330.0 * (1 - pow(pressure_ / P0_, 1 / 5.255));
+}
+
+void Bmp280::calcSpeed()
+{
+    static uint16_t ts = 0;
+    static float altitudePrev = 0;
+    uint16_t now = millis();
+    if ((uint16_t)(now - ts) < 500)
+        return;
+    speed_ = 1000 * (altitude_ - altitudePrev) / (uint16_t)(now-ts);
+    altitudePrev = altitude_;
+    ts = millis();
 }
 
 void Bmp280::update()
 {
+    static uint16_t ts = 0;
+    if ((uint16_t)(millis() - ts) < 20) return;
 #ifdef SIM_SENSORS
+    static int cont = 0;
     temperature_ = 20;
     pressure_ = 500;
+    altitude_ += 0.1;
+    cont++;
 #else
     readPressure();
 #endif
-    altitude_ = calcAltitude(pressure_);
+    //calcAltitude();
     if (altitude_ < 0)
         altitude_ = 0;
+    calcSpeed();
+    ts = millis();
 }
 
 float *Bmp280::temperatureP()
@@ -104,4 +126,9 @@ float *Bmp280::pressureP()
 float *Bmp280::altitudeP()
 {
     return &altitude_;
+}
+
+float *Bmp280::speedP()
+{
+    return &speed_;
 }

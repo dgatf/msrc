@@ -540,7 +540,7 @@ void JetiEx::setConfig(Config &config)
         pressure = new Pressure(PIN_PRESSURE, ALPHA(config.average.volt));
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, pressure->valueP(), pressure);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
-        sensorJetiExP->setText("Vario");
+        sensorJetiExP->setText("Air speed");
         sensorJetiExP->setUnit("m/s");
     }
     if (config.voltage1 == true)
@@ -607,6 +607,10 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temperature");
         sensorJetiExP->setUnit("°C");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, bmp->speedP(), bmp);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Vario");
+        sensorJetiExP->setUnit("m/s");
     }
 }
 

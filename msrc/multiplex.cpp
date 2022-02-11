@@ -252,7 +252,10 @@ void Multiplex::setConfig(Config &config)
         bmp = new Bmp280(config.deviceI2C1Address, ALPHA(config.average.temp), 10);
         bmp->begin();
         sensorMultiplexP = new SensorMultiplex(FHSS_TEMP, bmp->temperatureP(), bmp);
+        addSensor(sensorMultiplexP);
         sensorMultiplexP = new SensorMultiplex(FHSS_ALTITUDE, bmp->altitudeP(), bmp);
+        addSensor(sensorMultiplexP);
+        sensorMultiplexP = new SensorMultiplex(FHSS_VARIO, bmp->speedP(), bmp);
         addSensor(sensorMultiplexP);
     }
 }

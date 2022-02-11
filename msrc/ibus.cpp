@@ -315,7 +315,7 @@ void Ibus::setConfig(Config &config)
         SensorIbus *sensorIbusP;
         Pressure *pressure;
         pressure = new Pressure(PIN_PRESSURE, ALPHA(config.average.volt));
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_CLIMB_RATE, IBUS_TYPE_S16, pressure->valueP(), pressure);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_SPE, IBUS_TYPE_S16, pressure->valueP(), pressure);
         addSensor(sensorIbusP);
     }
     if (config.voltage1 == true)
@@ -367,6 +367,8 @@ void Ibus::setConfig(Config &config)
         sensorIbusP = new SensorIbus(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, bmp->temperatureP(), bmp);
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_ALT_FLYSKY, IBUS_TYPE_U16, bmp->altitudeP(), bmp);
+        addSensor(sensorIbusP);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_CLIMB_RATE, IBUS_TYPE_S16, bmp->speedP(), bmp);
         addSensor(sensorIbusP);
     }
 }

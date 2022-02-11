@@ -574,6 +574,7 @@ v0.9
 - GPS. Added HDOP and sats
 - IBUS. Fixed S32 type bug (GPS values)
 - XBUS. Added analog voltage2/ntc2 seonsor
+- BMP280. Added vertical speed calculation (vario)
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 

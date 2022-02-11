@@ -523,7 +523,9 @@ void Smartport::setConfig(Config &config)
         bmp->begin();
         sensorP = new Sensor(T1_FIRST_ID + 1, bmp->temperatureP(), config.refresh.temp, bmp);
         addSensor(sensorP);
-        sensorP = new Sensor(ALT_FIRST_ID, bmp->altitudeP(), 10, bmp);
+        sensorP = new Sensor(ALT_FIRST_ID, bmp->altitudeP(), 5, bmp);
+        addSensor(sensorP);
+        sensorP = new Sensor(VARIO_FIRST_ID, bmp->speedP(), 5, bmp);
         addSensor(sensorP);
     }
 }

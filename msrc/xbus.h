@@ -109,6 +109,19 @@ struct Xbus_Altitude
     int16_t maxAltitude = 0;   // .1m increments
 };
 
+struct Xbus_Vario
+{
+uint8_t identifier = 0x40; // Source device = 0x40
+uint8_t sID = 0; // Secondary ID
+int16_t altitude; // .1m increments
+int16_t delta_0250ms, // delta last 250ms, 0.1m/s increments
+delta_0500ms,// delta last 500ms, 0.1m/s increments
+delta_1000ms,// delta last 1.0 seconds
+delta_1500ms,// delta last 1.5 seconds
+delta_2000ms,// delta last 2.0 seconds
+delta_3000ms;// delta last 3.0 seconds
+};
+
 class Xbus
 {
 private:
