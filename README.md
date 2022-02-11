@@ -568,12 +568,12 @@ v0.9
 - Added consumption calculation. Thanks MJ666
 - Fixed Jeti Ex bug
 - HW V4/V5. Only one HW V4/V5 protocol. Voltage and current sensor parameters to be set manually
-- Added RPM multipliers
+- Added RPM multipliers. Motor poles and gears (for helis) 
 - Changed serial drivers timeout to microseconds for fast protocols (e.g. Jeti Ex)
 - Allow additional Rx protocols & boards to be used with serial ESC and GPS. Use software serial only for Rx protocols, not sensors
 - GPS. Added HDOP, sats and vario
 - IBUS. Fixed S32 type bug (GPS values)
-- XBUS. Added analog voltage2/ntc2 seonsor
+- XBUS. Added analog voltage2/ntc2 sensor
 - BMP280. Added vertical speed calculation (vario)
 - Current analog. Added consumption
 
