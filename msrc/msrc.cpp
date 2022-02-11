@@ -185,11 +185,6 @@ void ftm1_isr()
 
 void setup()
 {
-#if RX_PROTOCOL == RX_XBUS
-    //Clock stretching for xbus
-    //pinMode(SCL, OUTPUT);
-    //digitalWrite(SCL, LOW);
-#endif
 #ifdef DEBUG_INIT
     // DEBUG is on Serial. Default baud rate is 115200
     // For boards with 1 UART, baud rate will be changed to ESC or GPS baud rate if enabled

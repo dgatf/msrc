@@ -571,10 +571,11 @@ v0.9
 - Added RPM multipliers
 - Changed serial drivers timeout to microseconds for fast protocols (e.g. Jeti Ex)
 - Allow additional Rx protocols & boards to be used with serial ESC and GPS. Use software serial only for Rx protocols, not sensors
-- GPS. Added HDOP and sats
+- GPS. Added HDOP, sats and vario
 - IBUS. Fixed S32 type bug (GPS values)
 - XBUS. Added analog voltage2/ntc2 seonsor
 - BMP280. Added vertical speed calculation (vario)
+- Current analog. Added consumption
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 

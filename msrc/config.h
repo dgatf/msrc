@@ -15,7 +15,7 @@
 #define CONFIG_CURRENT false
 #define CONFIG_AIRSPEED false
 #define CONFIG_I2C1_TYPE I2C_NONE // I2C_NONE, I2C_BMP280
-#define CONFIG_I2C1_ADDRESS 0
+#define CONFIG_I2C1_ADDRESS 0x76  // 0x76, 0x77
 /* Refresh rate in 0.1s (1 = 100ms) */
 #define CONFIG_REFRESH_RPM 1
 #define CONFIG_REFRESH_VOLT 1
