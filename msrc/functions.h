@@ -13,6 +13,7 @@ float calcAverage(float alpha, float oldValue, float newValue);
 class Consumption
 {
 private:
+    uint16_t prevMs = 0;
 public:
     float calcConsumption(float current, uint16_t currentMax = 0);
 };
@@ -20,8 +21,11 @@ public:
 class Vario
 {
 private:
+    uint16_t prevMs = 0;
+    float prevAltitude = 0;
+    float speed = 0;
 public:
-    float calcSpeed(float altitude, uint16_t interval = 0);
+    float calcSpeed(float altitude, uint16_t intervalMin = 0);
 };
 
 #endif
