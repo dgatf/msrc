@@ -145,7 +145,7 @@ int32_t FormatData::formatIbus(uint8_t dataId, float value)
 {
 
     if (dataId == AFHDS2A_ID_TEMPERATURE)
-        return round(value * 10);
+        return round((value + 40) * 10);
 
     if (dataId == AFHDS2A_ID_EXTV ||
         dataId == AFHDS2A_ID_CELL_VOLTAGE ||
@@ -165,6 +165,9 @@ int32_t FormatData::formatIbus(uint8_t dataId, float value)
 
     if (dataId == AFHDS2A_ID_SPE)
         return round(value * 100 * 1.852);
+
+    if (dataId == AFHDS2A_ID_GPS_STATUS)
+        return value * 256;
 
     return round(value);
 }
@@ -225,7 +228,7 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
             value *= -1;
         }
         uint8_t degrees = value / 60;
-        lat |=  degrees << 8; // byte H: degrees
+        lat |= degrees << 8;
         uint32_t minutes = fmod(value, 60) * 10000; // minutes precision 4
         lat |= minutes >> 16;
         return __builtin_bswap16(lat);
