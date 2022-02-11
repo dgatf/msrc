@@ -366,7 +366,7 @@ void Ibus::setConfig(Config &config)
         bmp->begin();
         sensorIbusP = new SensorIbus(AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, bmp->temperatureP(), bmp);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_ALT_FLYSKY, IBUS_TYPE_U16, bmp->altitudeP(), bmp);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_ALT, IBUS_TYPE_S32, bmp->altitudeP(), bmp);
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_CLIMB_RATE, IBUS_TYPE_S16, bmp->speedP(), bmp);
         addSensor(sensorIbusP);
