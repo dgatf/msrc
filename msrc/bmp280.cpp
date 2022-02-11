@@ -105,10 +105,10 @@ void Bmp280::update()
     cont++;
 #else
     readPressure();
-#endif
-    //calcAltitude();
+    calcAltitude();
     if (altitude_ < 0)
         altitude_ = 0;
+#endif
     calcSpeed();
     ts = millis();
 }
