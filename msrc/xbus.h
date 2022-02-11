@@ -29,6 +29,7 @@
 #include "escCastle.h"
 #include "escKontronik.h"
 #include "voltage.h"
+#include "current.h"
 #include "ntc.h"
 #include "pressure.h"
 #include "bmp280.h"
@@ -146,7 +147,7 @@ protected:
 #endif
 #if CONFIG_CURRENT
     static Xbus_Battery xbusBattery;
-    Voltage curr = Voltage(PIN_CURRENT, ALPHA(CONFIG_AVERAGING_ELEMENTS_CURR), CURRENT_MULTIPLIER);
+    Current curr = Current(PIN_CURRENT, ALPHA(CONFIG_AVERAGING_ELEMENTS_CURR), CURRENT_MULTIPLIER);
 #endif
 #if CONFIG_GPS
     static Xbus_Gps_Loc xbusGpsLoc;
@@ -173,6 +174,7 @@ protected:
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_HW_V4
     EscHW4 esc = EscHW4(ESC_SERIAL, ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM), ALPHA(CONFIG_AVERAGING_ELEMENTS_VOLT), ALPHA(CONFIG_AVERAGING_ELEMENTS_CURR), ALPHA(CONFIG_AVERAGING_ELEMENTS_TEMP), 0);
+    PwmOut pwmOut;
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK
     EscKontronik esc = EscKontronik(ESC_SERIAL, ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM), ALPHA(CONFIG_AVERAGING_ELEMENTS_VOLT), ALPHA(CONFIG_AVERAGING_ELEMENTS_CURR), ALPHA(CONFIG_AVERAGING_ELEMENTS_TEMP));

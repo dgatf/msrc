@@ -16,7 +16,8 @@ float calcAverage(float alpha, float oldValue, float newValue)
     return (1 - alpha) * oldValue + alpha * newValue;
 }
 
-float calcConsumption(float current, uint16_t currentMax){
+float Consumption::calcConsumption(float current, uint16_t currentMax)
+{
     static uint16_t lastms = millis();
     uint16_t now = millis();
     uint16_t interval = (uint16_t)(now - lastms);
@@ -25,4 +26,18 @@ float calcConsumption(float current, uint16_t currentMax){
     if (interval > 2000 || (currentMax && (mAh > currentMax * (float)interval / 3600)))
         return 0;
     return mAh;
+}
+
+float Vario::calcSpeed(float altitude, uint16_t interval)
+{
+    static uint16_t ts = 0;
+    static float altitudePrev = 0;
+    static float speed = 0;
+    uint16_t now = millis();
+    if ((uint16_t)(now - ts) < interval)
+        return speed;
+    speed = 1000 * (altitude - altitudePrev) / (uint16_t)(now - ts);
+    altitudePrev = altitude;
+    ts = millis();
+    return speed;
 }

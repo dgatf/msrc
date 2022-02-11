@@ -68,6 +68,7 @@ void Bn220::update()
             }
         }
     }
+    vario_ = calcSpeed(alt_, 2000);
 #ifdef SIM_SENSORS
     lat_ = -630;   // 10º30" +N, -S
     lon_ = -1250;  // 20º50" +E, -W
@@ -78,6 +79,7 @@ void Bn220::update()
     date_ = 10101; // yymmdd
     time_ = 20202; // hhmmss
     hdop_ = 12.35; //
+    vario_ = 5.67  // m/s
 #endif
 }
 
@@ -206,4 +208,9 @@ float *Bn220::timeP()
 float *Bn220::hdopP()
 {
     return &hdop_;
+}
+
+float *Bn220::varioP()
+{
+    return &vario_;
 }

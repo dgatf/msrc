@@ -532,6 +532,10 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, JETIEX_FORMAT_2_DECIMAL, gps->hdopP(), gps);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("HDOP");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, gps->varioP(), gps);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Vario");
+        sensorJetiExP->setUnit("m/s");
     }
     if (config.airspeed == true)
     {
@@ -607,7 +611,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temperature");
         sensorJetiExP->setUnit("°C");
-        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, bmp->speedP(), bmp);
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, bmp->varioP(), bmp);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Vario");
         sensorJetiExP->setUnit("m/s");

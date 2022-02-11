@@ -68,7 +68,7 @@ extern void (*FTM1_IRQ_handlerP)();
 
 #endif
 
-class EscCastle : public AbstractDevice
+class EscCastle : public AbstractDevice, Consumption
 {
 private:
     static volatile bool castleTelemetryReceived;

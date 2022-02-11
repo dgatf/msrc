@@ -7,7 +7,7 @@
 #include <Arduino.h>
 #include "device.h"
 
-class EscKontronik : public AbstractDevice
+class EscKontronik : public AbstractDevice, Consumption
 {
 private:
     AbstractSerial &serial_;

@@ -186,7 +186,6 @@ void Xbus::update()
     xbusEsc.tempFET = __builtin_bswap16(*esc.tempFetP() * 10);
     xbusEsc.currentMotor = __builtin_bswap16(*esc.currentP() * 100);
     xbusEsc.tempBEC = __builtin_bswap16(*esc.tempBecP() * 10);
-    PwmOut pwmOut;
     pwmOut.setRpmP(esc.rpmP());
 #endif
 #if CONFIG_ESC_PROTOCOL == PROTOCOL_KONTRONIK
@@ -241,7 +240,8 @@ void Xbus::update()
 #endif
 #if CONFIG_CURRENT
     curr.update();
-    xbusBattery.current_A = __builtin_bswap16(*curr.valueP() * 100);
+    xbusBattery.current_A = __builtin_bswap16(*curr.valueP() * 10);
+    xbusBattery.chargeUsed_A = __builtin_bswap16(*curr.consumptionP());
 #endif
 #if CONFIG_GPS
     gps.update();

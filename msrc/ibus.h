@@ -29,6 +29,7 @@
 #include "escCastle.h"
 #include "escKontronik.h"
 #include "voltage.h"
+#include "current.h"
 #include "ntc.h"
 #include "pressure.h"
 #include "bmp280.h"

@@ -309,6 +309,8 @@ void Ibus::setConfig(Config &config)
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_COG, IBUS_TYPE_U16, gps->cogP(), gps);
         addSensor(sensorIbusP);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_CLIMB_RATE, IBUS_TYPE_S16, gps->varioP(), gps);
+        addSensor(sensorIbusP);
     }
     if (config.airspeed == true)
     {
@@ -337,9 +339,11 @@ void Ibus::setConfig(Config &config)
     if (config.current == true)
     {
         SensorIbus *sensorIbusP;
-        Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
+        Current *current;
+        current = new Current(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, current->valueP(), current);
+        addSensor(sensorIbusP);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_FUEL, IBUS_TYPE_U16, current->consumptionP(), current);
         addSensor(sensorIbusP);
     }
     if (config.ntc1 == true)
@@ -368,7 +372,7 @@ void Ibus::setConfig(Config &config)
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_ALT, IBUS_TYPE_S32, bmp->altitudeP(), bmp);
         addSensor(sensorIbusP);
-        sensorIbusP = new SensorIbus(AFHDS2A_ID_CLIMB_RATE, IBUS_TYPE_S16, bmp->speedP(), bmp);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_CLIMB_RATE, IBUS_TYPE_S16, bmp->varioP(), bmp);
         addSensor(sensorIbusP);
     }
 }

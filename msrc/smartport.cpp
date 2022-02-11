@@ -466,6 +466,8 @@ void Smartport::setConfig(Config &config)
         addSensor(sensorP);
         sensorP = new SensorDateTime(GPS_TIME_DATE_FIRST_ID, gps->timeP(), gps->dateP(), 10, gps);
         addSensor(sensorP);
+        sensorP = new Sensor(VARIO_FIRST_ID + 1, gps->varioP(), 5, gps);
+        addSensor(sensorP);
     }
     if (config.airspeed == true)
     {
@@ -494,9 +496,11 @@ void Smartport::setConfig(Config &config)
     if (config.current == true)
     {
         Sensor *sensorP;
-        Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
+        Current *current;
+        current = new Current(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorP = new Sensor(CURR_FIRST_ID, current->valueP(), config.refresh.curr, current);
+        addSensor(sensorP);
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID + 1, NULL, current->consumptionP(), config.refresh.curr, current);
         addSensor(sensorP);
     }
     if (config.ntc1 == true)
@@ -525,7 +529,7 @@ void Smartport::setConfig(Config &config)
         addSensor(sensorP);
         sensorP = new Sensor(ALT_FIRST_ID, bmp->altitudeP(), 5, bmp);
         addSensor(sensorP);
-        sensorP = new Sensor(VARIO_FIRST_ID, bmp->speedP(), 5, bmp);
+        sensorP = new Sensor(VARIO_FIRST_ID, bmp->varioP(), 5, bmp);
         addSensor(sensorP);
     }
 }

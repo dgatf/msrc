@@ -246,6 +246,8 @@ void Sbus::setConfig(Config &config)
         addSensor(22, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_GPS_LONGITUDE2, gps->lonP(), gps);
         addSensor(23, sensorSbusP);
+        //sensorSbusP = new SensorSbus(FASST_VARIO_ALT, gps->varioP(), gps);
+        //addSensor(5, sensorSbusP);
     }
     if (config.airspeed == true)
     {
@@ -290,14 +292,14 @@ void Sbus::setConfig(Config &config)
     if (config.current == true)
     {
         SensorSbus *sensorSbusP;
-        Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
+        Current *current;
+        current = new Current(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorSbusP = new SensorSbus(FASST_POWER_CURR, current->valueP(), current);
-        addSensor(8, sensorSbusP);
+        addSensor(11, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_VOLT, NULL, NULL);
-        addSensor(9, sensorSbusP);
-        sensorSbusP = new SensorSbus(FASST_POWER_CONS, NULL, NULL);
-        addSensor(10, sensorSbusP);
+        addSensor(12, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, current->consumptionP(), current);
+        addSensor(13, sensorSbusP);
     }
     if (config.ntc1 == true)
     {
@@ -322,6 +324,8 @@ void Sbus::setConfig(Config &config)
         bmp = new Bmp280(config.deviceI2C1Address, ALPHA(config.average.temp), 10);
         bmp->begin();
         //sensorSbusP = new SensorSbus(TEMP1_ID, bmp->temperatureP(), bmp);
+        sensorSbusP = new SensorSbus(FASST_VARIO_SPEED, bmp->varioP(), bmp);
+        addSensor(4, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_VARIO_ALT, bmp->altitudeP(), bmp);
         addSensor(5, sensorSbusP);
         if (config.airspeed == true)

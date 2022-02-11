@@ -326,7 +326,7 @@ void Frsky::setConfig(Config &config)
         addSensor(sensorP);
         sensorP = new Sensord(BARO_ALT_AP_ID, bmp->altitudeP(), 10, bmp);
         addSensor(sensorP);
-        sensorP = new Sensord(VARIO_ID, bmp->speedP(), 5, bmp);
+        sensorP = new Sensord(VARIO_ID, bmp->varioP(), 5, bmp);
         addSensor(sensorP);
     }
 }

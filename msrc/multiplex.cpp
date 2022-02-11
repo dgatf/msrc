@@ -196,6 +196,8 @@ void Multiplex::setConfig(Config &config)
         addSensor(sensorMultiplexP);
         sensorMultiplexP = new SensorMultiplex(FHSS_ALTITUDE, gps->altP(), gps);
         addSensor(sensorMultiplexP);
+        sensorMultiplexP = new SensorMultiplex(FHSS_VARIO, gps->varioP(), gps);
+        addSensor(sensorMultiplexP);
     }
     if (config.airspeed == true)
     {
@@ -224,9 +226,11 @@ void Multiplex::setConfig(Config &config)
     if (config.current == true)
     {
         SensorMultiplex *sensorMultiplexP;
-        Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
+        Current *current;
+        current = new Current(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorMultiplexP = new SensorMultiplex(FHSS_CURRENT, current->valueP(), current);
+        addSensor(sensorMultiplexP);
+        sensorMultiplexP = new SensorMultiplex(FHSS_CONSUMPTION, current->consumptionP(), current);
         addSensor(sensorMultiplexP);
     }
     if (config.ntc1 == true)
@@ -255,7 +259,7 @@ void Multiplex::setConfig(Config &config)
         addSensor(sensorMultiplexP);
         sensorMultiplexP = new SensorMultiplex(FHSS_ALTITUDE, bmp->altitudeP(), bmp);
         addSensor(sensorMultiplexP);
-        sensorMultiplexP = new SensorMultiplex(FHSS_VARIO, bmp->speedP(), bmp);
+        sensorMultiplexP = new SensorMultiplex(FHSS_VARIO, bmp->varioP(), bmp);
         addSensor(sensorMultiplexP);
     }
 }

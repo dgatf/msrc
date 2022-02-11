@@ -24,7 +24,7 @@ protected:
 public:
     Voltage(uint8_t pin, uint8_t alpha, float multiplier);
     Voltage(uint8_t pin, uint8_t alpha);
-    void update();
+    virtual void update();
     float *valueP();
 };
 
