@@ -79,7 +79,7 @@ void Bn220::update()
     date_ = 10101; // yymmdd
     time_ = 20202; // hhmmss
     hdop_ = 12.35; //
-    vario_ = 5.67  // m/s
+    vario_ = 5.67;  // m/s
 #endif
 }
 
