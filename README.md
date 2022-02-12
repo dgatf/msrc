@@ -184,14 +184,14 @@ Optionally a PWM signal can be generated from the RPM value in serial telemetry
 | Cells range | ESCHW4_DIVISOR |
 | :---: | :---: |
 | 3-6S (LV) | 11 |
-| 3-8S (LV v2) | 16.1 |
+| 3-8S (LV v2) | 15.75 |
 | 5-12s (HV) | 21 |
 | 6-14s (HV v2) | unknown |
 
 | Amperage | ESCHW4_AMPGAIN |
 | :---: | :---: |
 | FlyFun 60A | 6
-| FlyFun 80A | 11.3 |
+| FlyFun 80A | 12.4 |
 | 100A | 9<sup>(1)</sup> |
 | Platinum V4 120A | 10 |
 | 130A | 11.3<sup>(1)</sup> |
