@@ -633,7 +633,7 @@ v0.9
 - Refresh rate and averaging added to lua config script
 
 
-## 9. Support
+## 11. Support
 
 For questions, issues or new protocol request (use this [sketch](./sniffer/sniffer.ino)) please post in the forums:
 
@@ -644,7 +644,7 @@ For questions, issues or new protocol request (use this [sketch](./sniffer/sniff
 Or open an [Issue](https://github.com/dgatf/msrc/issues) in Github
 
 
-## 10. Acknowledgements
+## 12. Acknowledgements
 
 - Commodore8888 (Helifreak)
 - MikeJ (Helifreak)
