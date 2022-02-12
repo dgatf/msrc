@@ -87,11 +87,9 @@ void Bmp280::update()
     if ((uint16_t)(millis() - ts) < 20)
         return;
 #ifdef SIM_SENSORS
-    static int cont = 0;
     temperature_ = 20;
     pressure_ = 500;
     altitude_ += 0.1;
-    cont++;
 #else
     readPressure();
     calcAltitude();
