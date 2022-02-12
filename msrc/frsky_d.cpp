@@ -261,6 +261,8 @@ void Frsky::setConfig(Config &config)
         addSensor(sensorP);
         sensorP = new Sensord(GPS_SEC_ID, gps->timeP(), 5, gps);
         addSensor(sensorP);
+        //sensorP = new Sensord(VARIO_ID, gps->varioP(), 5, gps);
+        //addSensor(sensorP);
     }
     if (config.airspeed == true)
     {
@@ -293,9 +295,11 @@ void Frsky::setConfig(Config &config)
     if (config.current == true)
     {
         Sensord *sensorP;
-        Voltage *current;
-        current = new Voltage(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
+        Current *current;
+        current = new Current(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorP = new Sensord(CURRENT_ID, current->valueP(), config.refresh.curr, current);
+        addSensor(sensorP);
+        sensorP = new Sensord(FUEL_ID, current->consumptionP(), config.refresh.curr, current);
         addSensor(sensorP);
     }
     if (config.ntc1 == true)
