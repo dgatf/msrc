@@ -36,7 +36,7 @@ float Vario::calcSpeed(float altitude, uint16_t intervalMin)
 {
     uint16_t now = millis();
     uint16_t interval = (uint16_t)(now - prevMs);
-    if (interval > intervalMin)
+    if (interval < intervalMin)
         return speed;
     speed = 1000 * (altitude - prevAltitude) / interval;
     prevAltitude = altitude;
