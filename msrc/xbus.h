@@ -7,6 +7,7 @@
 #define XBUS_GPS_STAT 0x17
 #define XBUS_ESC 0x20
 #define XBUS_BATTERY 0x34
+#define XBUS_VARIO 0X40
 #define XBUS_RPM_VOLT_TEMP 0x7E
 
 #define GPS_INFO_FLAGS_IS_NORTH_BIT 0
@@ -183,7 +184,7 @@ protected:
     EscCastle esc = EscCastle(ALPHA(CONFIG_AVERAGING_ELEMENTS_RPM), ALPHA(CONFIG_AVERAGING_ELEMENTS_VOLT), ALPHA(CONFIG_AVERAGING_ELEMENTS_CURR), ALPHA(CONFIG_AVERAGING_ELEMENTS_TEMP));
 #endif
 #if (CONFIG_I2C1_TYPE == I2C_BMP280) && (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
-    static Xbus_Altitude xbusAltitude;
+    static Xbus_Vario xbusVario;
     Bmp280 bmp = Bmp280(CONFIG_I2C1_ADDRESS, ALPHA(CONFIG_AVERAGING_ELEMENTS_TEMP), ALPHA(1));
 #endif
 

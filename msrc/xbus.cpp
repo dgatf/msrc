@@ -19,6 +19,9 @@ Xbus_Battery Xbus::xbusBattery;
 Xbus_Gps_Loc Xbus::xbusGpsLoc;
 Xbus_Gps_Stat Xbus::xbusGpsStat;
 #endif
+#if (CONFIG_I2C1_TYPE == I2C_BMP280) && (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
+Xbus_Vario Xbus::xbusVario;
+#endif
 
 Xbus::Xbus()
 {
@@ -89,6 +92,11 @@ void Xbus::i2c_request_handler()
         sId = !sId;
 #endif
         break;
+#endif
+#if (CONFIG_I2C1_TYPE == I2C_BMP280) && (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
+    case XBUS_VARIO:
+        memcpy(buffer, (uint8_t *)&xbusVario, sizeof(xbusVario));
+    break;
 #endif
     default:
         return;
@@ -279,15 +287,17 @@ void Xbus::update()
     xbusGpsStat.altitudeHigh = bcd8((uint8_t)(alt / 1000), 0);
 #endif
 #if (CONFIG_I2C1_TYPE == I2C_BMP280) && (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
-    static uint16_t maxAltitude = 0;
     bmp.update();
     uint16_t altitude = round(*bmp.altitudeP() * 10);
-    xbusAltitude.altitude = __builtin_bswap16(altitude);
+    uint16_t vario = round(*bmp.varioP() * 10);
+    xbusVario.altitude = __builtin_bswap16(altitude);
+    xbusVario.delta_0500ms = __builtin_bswap16(vario);
+    /*static uint16_t maxAltitude = 0;
     if (altitude > maxAltitude && millis() > 7000)
     {
         maxAltitude = altitude;
         xbusAltitude.maxAltitude = __builtin_bswap16(altitude);
-    }
+    }*/
 #endif
 #if defined(SIM_RX) && RX_PROTOCOL == RX_XBUS
     static uint32_t timestamp = 0;
