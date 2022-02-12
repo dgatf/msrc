@@ -45,7 +45,7 @@
 #define SENSOR_ID 10 // Sensor Id 
 #define DATA_ID 0x5000 // DataId (sensor type)
 //#define ESC_SIGNATURE // HW V4 signature (only smartport). This outputs esc signature and raw current to sensors 5100, 5101 and 5102
-#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
+//#define CONFIG_LUA // Comment if not using lua script for configuration (only smartport)
 
 /* XBus */
 //#define XBUS_CLOCK_STRECH_SWITCH
