@@ -13,19 +13,22 @@ void EscHW4::begin()
 void EscHW4::update()
 {
 #if !defined(DISABLE_HW4)
-    if (serial_.availableTimeout() == ESCHWV4_PACKET_LENGHT)
+    uint8_t lenght = serial_.availableTimeout();
+    if (lenght == ESCHWV4_PACKET_LENGHT || lenght == ESCHWV4_PACKET_LENGHT + 1)
     {
         uint8_t data[ESCHWV4_PACKET_LENGHT];
         serial_.readBytes(data, ESCHWV4_PACKET_LENGHT);
         thr_ = (uint16_t)data[4] << 8 | data[5]; // 0-1024
         pwm_ = (uint16_t)data[6] << 8 | data[7]; // 0-1024
         float rpm = (uint32_t)data[8] << 16 | (uint16_t)data[9] << 8 | data[10];
-        if (thr_ < 1024 && // try to filter invalid data frames
+        // try to filter invalid data frames
+        if (thr_ < 1024 &&
             pwm_ < 1024 &&
             rpm < 200000 &&
-            data[11] < 0xF && // for sensors, ADC is 12bits- > higher bits must be 0. Why data[17] is higher when motor stops (issue #55) -> data[17] can't be used as a filter
+            data[11] < 0xF &&
             data[13] < 0xF &&
-            data[15] < 0xF)
+            data[15] < 0xF &&
+            data[17] < 0xF)
         {
             uint16_t rawCur = (uint16_t)data[13] << 8 | data[14];
             if (rawCurrentOffset_ == -1 && rawCur > 0)
