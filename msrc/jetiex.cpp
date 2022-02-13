@@ -40,7 +40,7 @@ bool JetiEx::addSensorValueToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t
         }
         if (sensorJetiExP[sensorNumber]->type() == JETIEX_TYPE_INT6)
         {
-            if (posBuffer > 23)  // 25 - 2
+            if (posBuffer > 25)  // 29 bytes max:  25+2=pos27=byte28 +1crc=byte29
                 return false;
             else
             {
@@ -55,7 +55,7 @@ bool JetiEx::addSensorValueToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t
         }
         else if (sensorJetiExP[sensorNumber]->type() == JETIEX_TYPE_INT14)
         {
-            if (posBuffer > 22)
+            if (posBuffer > 24)
                 return false;
             else
             {
@@ -71,7 +71,7 @@ bool JetiEx::addSensorValueToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t
         }
         else if (sensorJetiExP[sensorNumber]->type() == JETIEX_TYPE_INT22)
         {
-            if (posBuffer > 21)
+            if (posBuffer > 23)
                 return false;
             else
             {
@@ -88,7 +88,7 @@ bool JetiEx::addSensorValueToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t
         }
         else if (sensorJetiExP[sensorNumber]->type() == JETIEX_TYPE_INT30)
         {
-            if (posBuffer > 20)
+            if (posBuffer > 22)
                 return false;
             else
             {
@@ -106,7 +106,7 @@ bool JetiEx::addSensorValueToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t
         }
         else if (sensorJetiExP[sensorNumber]->type() == JETIEX_TYPE_TIMEDATE)
         {
-            if (posBuffer > 21)
+            if (posBuffer > 23)
                 return false;
             else
             {
@@ -129,7 +129,7 @@ bool JetiEx::addSensorValueToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t
         }
         else if (sensorJetiExP[sensorNumber]->type() == JETIEX_TYPE_COORDINATES)
         {
-            if (posBuffer > 20)
+            if (posBuffer > 22)
                 return false;
             else
             {
@@ -152,9 +152,9 @@ bool JetiEx::addSensorValueToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t
     }
     else
         return false;
+    //DEBUG_PRINT(sensorNumber);
+    //DEBUG_PRINT(" ");
     sensorNumber++;
-    if (sensorJetiExP[sensorNumber] == NULL)
-        sensorNumber = 1;
     return true;
 }
 
@@ -165,7 +165,7 @@ bool JetiEx::addSensorTextToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t 
         uint8_t lenText = strlen(sensorJetiExP[sensorNumber]->textP());
         uint8_t lenUnit = strlen(sensorJetiExP[sensorNumber]->unitP());
 
-        if (posBuffer + lenText + lenUnit + 2 < 26)  // 28 - 2
+        if (posBuffer + lenText + lenUnit + 2 < 28)
         {
             buffer[posBuffer] = sensorNumber;
             buffer[posBuffer + 1] = lenText << 3 | lenUnit;
@@ -174,9 +174,9 @@ bool JetiEx::addSensorTextToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t 
             posBuffer += lenText;
             strcpy((char *)buffer + posBuffer, sensorJetiExP[sensorNumber]->unitP());
             posBuffer += lenUnit;
+            //DEBUG_PRINT(sensorNumber);
+            //DEBUG_PRINT(" ");
             sensorNumber++;
-            if (sensorJetiExP[sensorNumber] == NULL)
-                sensorNumber = 1;
             return true;
         }
     }
@@ -192,16 +192,24 @@ uint8_t JetiEx::createExBuffer(uint8_t *buffer, bool sendValue)
         return 0;
     if (sendValue)
     {
-        uint8_t firstSensor = sensorNumberTelemetry;
-        while (addSensorValueToBuffer(buffer, posBuffer, sensorNumberTelemetry) && sensorNumberTelemetry != firstSensor)
+        //DEBUG_PRINT("V ");
+        while (addSensorValueToBuffer(buffer, posBuffer, sensorNumberTelemetry) && sensorJetiExP[sensorNumberTelemetry] != NULL)
             ;
+        if (sensorJetiExP[sensorNumberTelemetry] == NULL)
+            sensorNumberTelemetry = 1;
         buffer[1] = 0x40;
+        //DEBUG_PRINT(posBuffer);
+        //DEBUG_PRINTLN();
     }
     else
     {
-        uint8_t firstSensor = sensorNumberText;
-        while (addSensorTextToBuffer(buffer, posBuffer, sensorNumberText) && sensorNumberText != firstSensor)
+        //DEBUG_PRINT("T ");
+        /*while*/ (addSensorTextToBuffer(buffer, posBuffer, sensorNumberText) && sensorJetiExP[sensorNumberText] != NULL)
             ;
+        if (sensorJetiExP[sensorNumberText] == NULL)
+            sensorNumberText = 1;
+        //DEBUG_PRINT(posBuffer);
+        //DEBUG_PRINTLN();
     }
     buffer[0] = 0x0F;
     buffer[1] |= posBuffer - 1;
@@ -322,7 +330,7 @@ void JetiEx::update()
 #endif
     if (status == JETIEX_SEND)
     {
-        //if (serial_.timestamp() < 900)
+        if (serial_.timestamp() < 1500)
             sendPacket(packetId);
 #ifdef DEBUG
         else
@@ -391,6 +399,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT22, 0, esc->rpmP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("RPM");
+        sensorJetiExP->setUnit("RPM");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, esc->currentP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Current");
@@ -403,10 +412,10 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp FET");
         sensorJetiExP->setUnit("C");
-        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempBecP(), esc);
+        /*sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempBecP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp BEC");
-        sensorJetiExP->setUnit("C");
+        sensorJetiExP->setUnit("C");*/
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, esc->cellVoltageP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Cell Voltage");
@@ -448,7 +457,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->temperatureP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temperature");
-        sensorJetiExP->setUnit("°C");
+        sensorJetiExP->setUnit("C");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, esc->cellVoltageP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Cell Voltage");
@@ -486,11 +495,11 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempFetP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp FET");
-        sensorJetiExP->setUnit("°C");
+        sensorJetiExP->setUnit("C");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempBecP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp BEC");
-        sensorJetiExP->setUnit("°C");
+        sensorJetiExP->setUnit("C");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, esc->cellVoltageP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Cell Voltage");
@@ -589,7 +598,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, ntc->valueP(), ntc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp 1");
-        sensorJetiExP->setUnit("°C");
+        sensorJetiExP->setUnit("C");
     }
     if (config.ntc2 == true)
     {
@@ -599,7 +608,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, ntc->valueP(), ntc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp 2");
-        sensorJetiExP->setUnit("°C");
+        sensorJetiExP->setUnit("C");
     }
     if (config.deviceI2C1Type == I2C_BMP280)
     {
@@ -614,7 +623,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, bmp->temperatureP(), bmp);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temperature");
-        sensorJetiExP->setUnit("°C");
+        sensorJetiExP->setUnit("C");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, bmp->varioP(), bmp);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Vario");
