@@ -9,7 +9,7 @@
 #define VERSION_PATCH 0
 
 /* Init debug port */
-#if (defined(DEBUG) || defined(DEBUG_PACKET) || defined(DEBUG_EEPROM_WRITE) || defined(DEBUG_EEPROM_READ) || defined(DEBUG_GPS) || defined(DEBUG_HW3) || defined(DEBUG_HW4) || defined(DEBUG_PWM) || defined(DEBUG_CASTLE) || defined(DEBUG_CASTLE_RX) || defined(DEBUG_KONTRONIK))
+#if (defined(DEBUG) || defined(DEBUG_PACKET) || defined(DEBUG_EEPROM_WRITE) || defined(DEBUG_EEPROM_READ) || defined(DEBUG_GPS) || defined(DEBUG_HW3) || defined(DEBUG_HW4) || defined(DEBUG_PWM) || defined(DEBUG_CASTLE) || defined(DEBUG_CASTLE_RX) || defined(DEBUG_KONTRONIK) || defined(DEBUG_APDF) || defined(DEBUG_APDHV))
 #define DEBUG_INIT DEBUG_SERIAL.begin(115200);
 #endif
 
@@ -32,6 +32,9 @@
 #define PROTOCOL_PWM 3
 #define PROTOCOL_CASTLE 4
 #define PROTOCOL_KONTRONIK 5
+#define PROTOCOL_APD_F 6
+#define PROTOCOL_APD_HV 7
+#define PROTOCOL_APD_F_DSHOT 8
 
 /* Pins & Serial ports */
 

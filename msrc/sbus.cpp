@@ -224,6 +224,48 @@ void Sbus::setConfig(Config &config)
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorSbusP);
     }
+    if (config.protocol == PROTOCOL_APD_F)
+    {
+        SensorSbus *sensorSbusP;
+        EscApdF *esc;
+        esc = new EscApdF(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
+        //PwmOut pwmOut;
+        //pwmOut.setRpmP(esc->rpmP());
+        sensorSbusP = new SensorSbus(FASST_RPM, esc->rpmP(), esc);
+        addSensor(1, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CURR, esc->currentP(), esc);
+        addSensor(8, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->voltageP(), esc);
+        addSensor(9, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, esc->consumptionP(), esc);
+        addSensor(10, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempP(), esc);
+        addSensor(6, sensorSbusP);
+        //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
+        //addSensor(12, sensorSbusP);
+    }
+        if (config.protocol == PROTOCOL_APD_HV)
+    {
+        SensorSbus *sensorSbusP;
+        EscApdHV *esc;
+        esc = new EscApdHV(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
+        //PwmOut pwmOut;
+        //pwmOut.setRpmP(esc->rpmP());
+        sensorSbusP = new SensorSbus(FASST_RPM, esc->rpmP(), esc);
+        addSensor(1, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CURR, esc->currentP(), esc);
+        addSensor(8, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->voltageP(), esc);
+        addSensor(9, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_CONS, esc->consumptionP(), esc);
+        addSensor(10, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempP(), esc);
+        addSensor(6, sensorSbusP);
+        //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
+        //addSensor(12, sensorSbusP);
+    }
     if (config.gps == true)
     {
         SensorSbus *sensorSbusP;

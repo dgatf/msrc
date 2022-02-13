@@ -509,6 +509,70 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setText("Consumption");
         sensorJetiExP->setUnit("mAh");
     }
+    if (config.protocol == PROTOCOL_APD_F)
+    {
+        SensorJetiEx *sensorJetiExP;
+        EscApdF *esc;
+        esc = new EscApdF(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT22, 0, esc->rpmP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("RPM");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, esc->currentP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Current");
+        sensorJetiExP->setUnit("A");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, esc->voltageP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Voltage");
+        sensorJetiExP->setUnit("V");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Temperature");
+        sensorJetiExP->setUnit("°C");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->consumptionP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Consumption");
+        sensorJetiExP->setUnit("mAh");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, esc->cellVoltageP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Cell Voltage");
+        sensorJetiExP->setUnit("V");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->consumptionP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Consumption");
+        sensorJetiExP->setUnit("mAh");
+    }
+    if (config.protocol == PROTOCOL_APD_HV)
+    {
+        SensorJetiEx *sensorJetiExP;
+        EscApdHV *esc;
+        esc = new EscApdHV(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT22, 0, esc->rpmP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("RPM");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, esc->currentP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Current");
+        sensorJetiExP->setUnit("A");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, esc->voltageP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Voltage");
+        sensorJetiExP->setUnit("V");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Temperature");
+        sensorJetiExP->setUnit("°C");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, esc->cellVoltageP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Cell Voltage");
+        sensorJetiExP->setUnit("V");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->consumptionP(), esc);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Consumption");
+        sensorJetiExP->setUnit("mAh");
+    }
     if (config.gps == true)
     {
         SensorJetiEx *sensorJetiExP;

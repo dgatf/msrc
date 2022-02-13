@@ -450,6 +450,38 @@ void Smartport::setConfig(Config &config)
         sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         addSensor(sensorP);
     }
+    if (config.protocol == PROTOCOL_APD_F)
+    {
+        Sensor *sensorP;
+        EscApdF *esc;
+        esc = new EscApdF(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
+        PwmOut pwmOut;
+        pwmOut.setRpmP(esc->rpmP());
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), esc->consumptionP(), config.refresh.rpm, esc);
+        addSensor(sensorP);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->voltageP(), esc->currentP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, esc->tempP(), config.refresh.temp, esc);
+        addSensor(sensorP);
+        sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+    }
+    if (config.protocol == PROTOCOL_APD_HV)
+    {
+        Sensor *sensorP;
+        EscApdHV *esc;
+        esc = new EscApdHV(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
+        esc->begin();
+        sensorP = new SensorDouble(ESC_RPM_CONS_FIRST_ID, esc->rpmP(), esc->consumptionP(), config.refresh.rpm, esc);
+        addSensor(sensorP);
+        sensorP = new SensorDouble(ESC_POWER_FIRST_ID, esc->voltageP(), esc->currentP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+        sensorP = new Sensor(ESC_TEMPERATURE_FIRST_ID, esc->tempP(), config.refresh.temp, esc);
+        addSensor(sensorP);
+        sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
+        addSensor(sensorP);
+    }
     if (config.gps == true)
     {
         Sensor *sensorP;

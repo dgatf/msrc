@@ -28,6 +28,8 @@
 #include "escPWM.h"
 #include "escCastle.h"
 #include "escKontronik.h"
+#include "escApdF.h"
+#include "escApdHV.h"
 #include "voltage.h"
 #include "current.h"
 #include "ntc.h"

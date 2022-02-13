@@ -55,7 +55,7 @@
 #define SENT_SENSOR_ID 9
 #define CHANGED_SENSOR_ID 10
 
-#if defined(__AVR_ATmega32U4__) && !defined(CORE_TEENSY)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
 #define ESC_PROTOCOL CONFIG_ESC_PROTOCOL
 #else
 #define ESC_PROTOCOL config.protocol
@@ -73,6 +73,8 @@
 #include "escPWM.h"
 #include "escCastle.h"
 #include "escKontronik.h"
+#include "escApdF.h"
+#include "escApdHV.h"
 #include "voltage.h"
 #include "current.h"
 #include "ntc.h"
