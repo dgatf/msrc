@@ -12,7 +12,6 @@ void EscHW4::begin()
 
 void EscHW4::update()
 {
-#if !defined(DISABLE_HW4)
     uint8_t lenght = serial_.availableTimeout();
     if (lenght == ESCHWV4_PACKET_LENGHT || lenght == ESCHWV4_PACKET_LENGHT + 1)
     {
@@ -137,7 +136,6 @@ float EscHW4::calcCurr(uint16_t currentRaw)
     if (currentRaw - rawCurrentOffset_ < 0)
         return 0;
     return (currentRaw - rawCurrentOffset_) * ESCHW4_V_REF / (ESCHW4_AMPGAIN * ESCHW4_DIFFAMP_SHUNT * ESCHW4_ADC_RES);
-#endif
 }
 
 float *EscHW4::rpmP()

@@ -11,7 +11,6 @@ void Bn220::begin()
 
 void Bn220::update()
 {
-#if !defined(DISABLE_GPS)
     while (serial_.available())
     {
         static uint8_t contBuff = 0;
@@ -162,7 +161,6 @@ void Bn220::parser(uint8_t type, char *data)
         DEBUG_PRINT(",");
 #endif
     }
-#endif
 }
 
 float *Bn220::latP()

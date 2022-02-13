@@ -56,12 +56,6 @@
 #define ESC_SERIAL hardSerial0
 #define GPS_SERIAL hardSerial0
 #define DEBUG_SERIAL hardSerial0
-#if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && !CONFIG_GPS 
-#define DISABLE_GPS
-#endif
-#if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && CONFIG_ESC_PROTOCOL != PROTOCOL_HW_V4
-#define DISABLE_HW4
-#endif
 #endif
 
 // ATmega328PB
@@ -93,12 +87,6 @@
 #define ESC_SERIAL hardSerial0  
 #define GPS_SERIAL hardSerial1
 #define DEBUG_SERIAL hardSerial0
-#if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && !CONFIG_GPS 
-#define DISABLE_GPS
-#endif
-#if defined(DEBUG_INIT) && RX_PROTOCOL == RX_SMARTPORT && CONFIG_ESC_PROTOCOL != PROTOCOL_HW_V4
-#define DISABLE_HW4
-#endif
 #endif
 
 // ATmega2560
