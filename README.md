@@ -29,8 +29,8 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 | MCU | Recommended board | Castle telemetry | UART<sup>(1)</sup> | Inverted UART<sup>(2)</sup> |
 | :---: | :---: | :---: | :---: | :---: |
-| ATmega328P | Arduino Pro Mini<sup>(5)</sup> | Innacurate | 1 | :x: |
-| ATmega328PB | Pololu ATmega328PB<sup>(5)</sup> | :heavy_check_mark: | 2 | :x: |
+| ATmega328P<sup>(3)</sup> | Arduino Pro Mini<sup>(5)</sup> | Innacurate | 1 | :x: |
+| ATmega328PB<sup>(3)</sup> | Pololu ATmega328PB<sup>(5)</sup> | :heavy_check_mark: | 2 | :x: |
 | ATmega2560 | ATmega2560 Pro Mini | :heavy_check_mark: | 4 | :x: |
 | ATmega32U4<sup>(3)</sup> | Teensy 2 | :heavy_check_mark: | 1 | :x: |
 | ARM CortexM0+ | Teensy LC<sup>(4)</sup> | :heavy_check_mark: | 3 | :heavy_check_mark: |
@@ -38,7 +38,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 (1) 2 x UARTS allows to use ESC serial and GPS at the same time  
 (2) Allows to use hardware serial for Smartport and SBUS without signal inverter. Also is half duplex capable  
-(3) For Arduino Micro with smartport, only the ESC driver defined in config.h is flashed, due to smaller flash size (28KB). It can't be changed later with lua script  
+(3) Arduino boards with 32kb or less and smartport, only the ESC driver defined in config.h is flashed. It can't be changed later with lua script  
 (4) Teensy LC is not 5v tolerant. If using with Castle is preferred Teensy 3.2, which is 5v tolerant  
 (5) Arduino Pro Mini and Pololu ATmega328PB requires a USB-TTL programmer for flashing
 
