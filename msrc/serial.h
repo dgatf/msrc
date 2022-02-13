@@ -7,7 +7,7 @@
 #define OUTPUT_HEX 1
 
 #define US_TO_COMP(SCALER) (F_CPU / (SCALER * 1000000.0))
-#define FIFO_SIZE 64
+#define FIFO_SIZE 128
 
 class AbstractSerial
 {
