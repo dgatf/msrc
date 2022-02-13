@@ -45,6 +45,7 @@ void EscApdHV::update()
             voltage_ = calcAverage(alphaVolt_ / 100.0F, voltage_, voltage);
             current_ = calcAverage(alphaCurr_ / 100.0F, current_, current);
             rpm_ = calcAverage(alphaRpm_ / 100.0F, rpm_, rpm);
+            consumption_ += calcConsumption(current);
             if (cellCount_ == 255)
                 if (millis() > 10000 && voltage_ > 1)
                     cellCount_ = setCellCount(voltage_);
@@ -113,6 +114,11 @@ float *EscApdHV::currentP()
 float *EscApdHV::tempP()
 {
     return &temp_;
+}
+
+float *EscApdHV::consumptionP()
+{
+    return &consumption_;
 }
 
 float *EscApdHV::cellVoltageP()

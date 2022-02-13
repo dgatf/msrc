@@ -8,7 +8,7 @@
 #include <Arduino.h>
 #include "device.h"
 
-class EscApdF : public AbstractDevice
+class EscApdF : public AbstractDevice, Consumption
 {
 private:
     AbstractSerial &serial_;

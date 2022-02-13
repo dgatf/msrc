@@ -583,7 +583,7 @@ v0.9
 - XBUS. Added analog voltage2/ntc2 sensor
 - BMP280. Added vertical speed calculation (vario)
 - Current analog. Added consumption
-- Added APD support
+- Added ESC support for APD F/HV/UHV
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
@@ -592,7 +592,7 @@ v0.9
 - Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2, Multiplex Sensor Bus, Jeti Ex Bus
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
-- Added ESCs support for: Kontronik Kosmic/Kolibri/JivePro and APD F/HV/UHV
+- Added ESCs support for: Kontronik Kosmic/Kolibri/JivePro
 - Improved current calculation for HW V4/V5
 
 [v0.7](https://github.com/dgatf/msrc/tree/v0.7)

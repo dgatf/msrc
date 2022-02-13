@@ -7,12 +7,12 @@
 #include <Arduino.h>
 #include "device.h"
 
-class EscApdHV : public AbstractDevice
+class EscApdHV : public AbstractDevice, Consumption
 {
 private:
     AbstractSerial &serial_;
     uint8_t alphaRpm_, alphaVolt_, alphaCurr_, alphaTemp_, cellCount_ = 255;
-    float rpm_ = 0, voltage_ = 0, current_ = 0, temp_ = 0, cellVoltage_ = 0;
+    float rpm_ = 0, voltage_ = 0, current_ = 0, temp_ = 0, cellVoltage_ = 0, consumption_ = 0;
 
     float calcTemp(uint16_t rawVal);
 
@@ -26,7 +26,9 @@ public:
     float *voltageP();
     float *currentP();
     float *tempP();
+    float *consumptionP();
     float *cellVoltageP();
+
 };
 
 #endif

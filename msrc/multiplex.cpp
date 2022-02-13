@@ -204,33 +204,14 @@ void Multiplex::setConfig(Config &config)
         addSensor(sensorMultiplexP);
         sensorMultiplexP = new SensorMultiplex(FHSS_CONSUMPTION, esc->consumptionP(), esc);
         addSensor(sensorMultiplexP);
-        //sensorMultiplexP = new SensorMultiplex(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
-        //addSensor(sensorMultiplexP);
+        sensorMultiplexP = new SensorMultiplex(FHSS_VOLTAGE, esc->cellVoltageP(), esc);
+        addSensor(sensorMultiplexP);
     }
     if (config.protocol == PROTOCOL_APD_HV)
     {
         SensorMultiplex *sensorMultiplexP;
         EscApdHV *esc;
         esc = new EscApdHV(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
-        esc->begin();
-        //PwmOut pwmOut;
-        //pwmOut.setRpmP(esc->rpmP());
-        sensorMultiplexP = new SensorMultiplex(FHSS_RPM, esc->rpmP(), esc);
-        addSensor(sensorMultiplexP);
-        sensorMultiplexP = new SensorMultiplex(FHSS_CURRENT, esc->currentP(), esc);
-        addSensor(sensorMultiplexP);
-        sensorMultiplexP = new SensorMultiplex(FHSS_VOLTAGE, esc->voltageP(), esc);
-        addSensor(sensorMultiplexP);
-        sensorMultiplexP = new SensorMultiplex(FHSS_TEMP, esc->tempP(), esc);
-        addSensor(sensorMultiplexP);
-        //sensorMultiplexP = new SensorMultiplex(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
-        //addSensor(sensorMultiplexP);
-    }
-    if (config.protocol == PROTOCOL_APD_F)
-    {
-        SensorMultiplex *sensorMultiplexP;
-        EscApdF *esc;
-        esc = new EscApdF(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
         esc->begin();
         //PwmOut pwmOut;
         //pwmOut.setRpmP(esc->rpmP());
@@ -244,27 +225,8 @@ void Multiplex::setConfig(Config &config)
         addSensor(sensorMultiplexP);
         sensorMultiplexP = new SensorMultiplex(FHSS_CONSUMPTION, esc->consumptionP(), esc);
         addSensor(sensorMultiplexP);
-        //sensorMultiplexP = new SensorMultiplex(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
-        //addSensor(sensorMultiplexP);
-    }
-    if (config.protocol == PROTOCOL_APD_HV)
-    {
-        SensorMultiplex *sensorMultiplexP;
-        EscApdHV *esc;
-        esc = new EscApdHV(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
-        esc->begin();
-        //PwmOut pwmOut;
-        //pwmOut.setRpmP(esc->rpmP());
-        sensorMultiplexP = new SensorMultiplex(FHSS_RPM, esc->rpmP(), esc);
+        sensorMultiplexP = new SensorMultiplex(FHSS_VOLTAGE, esc->cellVoltageP(), esc);
         addSensor(sensorMultiplexP);
-        sensorMultiplexP = new SensorMultiplex(FHSS_CURRENT, esc->currentP(), esc);
-        addSensor(sensorMultiplexP);
-        sensorMultiplexP = new SensorMultiplex(FHSS_VOLTAGE, esc->voltageP(), esc);
-        addSensor(sensorMultiplexP);
-        sensorMultiplexP = new SensorMultiplex(FHSS_TEMP, esc->tempP(), esc);
-        addSensor(sensorMultiplexP);
-        //sensorMultiplexP = new SensorMultiplex(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
-        //addSensor(sensorMultiplexP);
     }
     if (config.gps == true)
     {
