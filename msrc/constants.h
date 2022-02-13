@@ -1,9 +1,5 @@
 #ifndef CONSTANTS_H
-#define CONSTANTS_H
-
-#define DISABLE_GPS
-#define DISABLE_HW4
-#define DISABLE_CASTLE
+#define CONSTANTS_H 
 
 #include "config.h"
 
@@ -36,12 +32,9 @@
 #define PROTOCOL_PWM 3
 #define PROTOCOL_CASTLE 4
 #define PROTOCOL_KONTRONIK 5
-#define PROTOCOL_PWM 6
-#define PROTOCOL_CASTLE 7
-#define PROTOCOL_KONTRONIK 8
-#define PROTOCOL_APD_F 9
-#define PROTOCOL_APD_HV 10
-#define PROTOCOL_APD_F_DSHOT 11
+#define PROTOCOL_APD_F 6
+#define PROTOCOL_APD_HV 7
+#define PROTOCOL_APD_F_DSHOT 8
 
 /* Pins & Serial ports */
 
