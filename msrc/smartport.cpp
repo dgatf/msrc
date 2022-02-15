@@ -500,6 +500,8 @@ void Smartport::setConfig(Config &config)
         addSensor(sensorP);
         sensorP = new Sensor(VARIO_FIRST_ID + 1, gps->varioP(), 5, gps);
         addSensor(sensorP);
+        sensorP = new Sensor(DIY_FIRST_ID + 3, gps->satP(), 10, gps);
+        addSensor(sensorP);
     }
     if (config.airspeed == true)
     {
