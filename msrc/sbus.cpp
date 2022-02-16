@@ -49,7 +49,7 @@ void Sbus::TIMER_COMPA_handler()
         sendSlot(telemetryPacket * 8 + cont);
     if (cont < 7)
     {
-        OCR2A = ts + (uint8_t)(540 * US_TO_COMP(256)); // next slot  540us
+        OCR2A = ts + (uint8_t)(700 * US_TO_COMP(256)); // next slot  540us
         cont++;
     }
     else
@@ -92,7 +92,7 @@ void Sbus::TIMER_COMPA_handler()
         sendSlot(telemetryPacket * 8 + cont);
     if (cont < 7)
     {
-        OCR3A = ts + (uint16_t)(540 * US_TO_COMP(1)); // next slot  540us
+        OCR3A = ts + (uint16_t)(700 * US_TO_COMP(1)); // next slot 700us
         cont++;
     }
     else
@@ -135,7 +135,7 @@ void Sbus::FTM0_IRQ_handler()
             sendSlot(telemetryPacket * 8 + cont);
         if (cont < 7)
         {
-            FTM0_C0V = ts + (uint16_t)(540 * US_TO_COMP(128)); // next slot  540us
+            FTM0_C0V = ts + (uint16_t)(700 * US_TO_COMP(128)); // next slot 700us
             cont++;
         }
         else
