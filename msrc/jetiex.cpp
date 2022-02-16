@@ -152,8 +152,6 @@ bool JetiEx::addSensorValueToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t
     }
     else
         return false;
-    //DEBUG_PRINT(sensorNumber);
-    //DEBUG_PRINT(" ");
     sensorNumber++;
     return true;
 }
@@ -174,8 +172,6 @@ bool JetiEx::addSensorTextToBuffer(uint8_t *buffer, uint8_t &posBuffer, uint8_t 
             posBuffer += lenText;
             strcpy((char *)buffer + posBuffer, sensorJetiExP[sensorNumber]->unitP());
             posBuffer += lenUnit;
-            //DEBUG_PRINT(sensorNumber);
-            //DEBUG_PRINT(" ");
             sensorNumber++;
             return true;
         }
@@ -192,24 +188,18 @@ uint8_t JetiEx::createExBuffer(uint8_t *buffer, bool sendValue)
         return 0;
     if (sendValue)
     {
-        //DEBUG_PRINT("V ");
         while (addSensorValueToBuffer(buffer, posBuffer, sensorNumberTelemetry) && sensorJetiExP[sensorNumberTelemetry] != NULL)
             ;
         if (sensorJetiExP[sensorNumberTelemetry] == NULL)
             sensorNumberTelemetry = 1;
         buffer[1] = 0x40;
-        //DEBUG_PRINT(posBuffer);
-        //DEBUG_PRINTLN();
     }
     else
     {
-        //DEBUG_PRINT("T ");
         /*while*/ (addSensorTextToBuffer(buffer, posBuffer, sensorNumberText) && sensorJetiExP[sensorNumberText] != NULL)
             ;
         if (sensorJetiExP[sensorNumberText] == NULL)
             sensorNumberText = 1;
-        //DEBUG_PRINT(posBuffer);
-        //DEBUG_PRINTLN();
     }
     buffer[0] = 0x0F;
     buffer[1] |= posBuffer - 1;
@@ -377,6 +367,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT22, 0, esc->rpmP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("RPM");
+        sensorJetiExP->setUnit("RPM");
     }
     if (config.protocol == PROTOCOL_HW_V3)
     {
@@ -387,6 +378,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT22, 0, esc->rpmP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("RPM");
+        sensorJetiExP->setUnit("RPM");
     }
     if (config.protocol == PROTOCOL_HW_V4)
     {
@@ -412,10 +404,10 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp FET");
         sensorJetiExP->setUnit("C");
-        /*sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempBecP(), esc);
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempBecP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temp BEC");
-        sensorJetiExP->setUnit("C");*/
+        sensorJetiExP->setUnit("C");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, esc->cellVoltageP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Cell Voltage");
@@ -434,6 +426,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT22, 0, esc->rpmP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("RPM");
+        sensorJetiExP->setUnit("RPM");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, esc->currentP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Current");
@@ -476,6 +469,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT22, 0, esc->rpmP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("RPM");
+        sensorJetiExP->setUnit("RPM");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, esc->currentP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Current");
@@ -518,6 +512,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT22, 0, esc->rpmP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("RPM");
+        sensorJetiExP->setUnit("RPM");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, esc->currentP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Current");
@@ -529,7 +524,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temperature");
-        sensorJetiExP->setUnit("°C");
+        sensorJetiExP->setUnit("C");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->consumptionP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Consumption");
@@ -552,6 +547,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT22, 0, esc->rpmP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("RPM");
+        sensorJetiExP->setUnit("RPM");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, esc->currentP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Current");
@@ -563,7 +559,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, esc->tempP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Temperature");
-        sensorJetiExP->setUnit("°C");
+        sensorJetiExP->setUnit("C");
         sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 2, esc->cellVoltageP(), esc);
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Cell Voltage");
