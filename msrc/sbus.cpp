@@ -143,7 +143,6 @@ void Sbus::FTM0_IRQ_handler()
             FTM0_C0SC &= ~FTM_CSC_CHIE; // DISABLE CH0 INTERRUPT
             cont = 0;
             digitalWrite(LED_BUILTIN, LOW);
-            DEBUG_PRINTLN();
         }
         FTM0_C0SC |= FTM_CSC_CHF; // CLEAR FLAG CH2
     }
@@ -168,6 +167,7 @@ void Sbus::sendSlot(uint8_t number)
 void Sbus::begin()
 {
     SMARTPORT_FRSKY_SBUS_SERIAL.begin(100000, SERIAL_8E2_RXINV_TXINV | SERIAL_HALF_DUP);
+    //SMARTPORT_FRSKY_SBUS_SERIAL.begin(100000, SERIAL_8E2);
     SMARTPORT_FRSKY_SBUS_SERIAL.setTimeout(SBUS_SERIAL_TIMEOUT);
     pinMode(LED_BUILTIN, OUTPUT);
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
@@ -307,7 +307,7 @@ void Sbus::update()
             // SBUS2
             else if (buff[24] == 0x04 || buff[24] == 0x14 || buff[24] == 0x24 || buff[24] == 0x34)
             {
-                telemetryPacket = (buff[24] >> 4) + 1;
+                telemetryPacket = buff[24] >> 4;
                 status = SBUS_SEND;
             }
         }
