@@ -54,22 +54,27 @@ private:
     uint8_t timeout_ = 0;
     bool inverted_;
     bool half_duplex_;
+    uint8_t stop_bits_;
+    uint8_t parity_;
+    volatile uint16_t ts = 0;
     uint16_t tx_delay;
+    uint16_t tx_delay_stop;
     uint16_t rx_delay;
     uint16_t rx_delay_centering;
     uint16_t rx_delay_stop;
     uint16_t subs(uint16_t val1, uint16_t val2);
+    inline void delay_loop(uint16_t delay);
+    void initWrite();
 
 public:
     SoftSerial();
     void begin(uint32_t baud, uint8_t format);
     void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
-    void initWrite();
     uint8_t availableTimeout();
     void setTimeout(uint16_t timeout);
+    uint16_t timestamp();
     void PCINT_handler();
     void TIMER_COMP_handler();
-    inline void delay_loop(uint16_t delay);
 };
 
 extern SoftSerial softSerial;

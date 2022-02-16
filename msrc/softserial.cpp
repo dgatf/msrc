@@ -39,6 +39,7 @@ void SoftSerial::TIMER_COMP_handler()
 {
     TIMSK3 &= ~_BV(OCIE3A);
     timedout = true;
+    ts = micros();
 }
 
 inline void SoftSerial::delay_loop(uint16_t delay)
@@ -84,9 +85,8 @@ void SoftSerial::PCINT_handler()
         if (inverted_)
             incomingByte = ~incomingByte;
 
-        // stop bit
-
-        //_delay_loop(rx_delay_stop);
+        // stop bits
+        _delay_loop(rx_delay_stop);
 
         if (timedout)
             reset();
@@ -154,12 +154,17 @@ void SoftSerial::initWrite()
         DDRB &= ~_BV(DDB4);
 
     SREG = oldSREG;
-    delay_loop(tx_delay);
+    delay_loop(tdelay);
 }
 
 void SoftSerial::setTimeout(uint16_t timeout)
 {
     timeout_ = timeout * US_TO_COMP(8);
+}
+
+uint16_t SoftSerial::timestamp()
+{
+    return (uint16_t)(micros() - ts) + timeout_ / US_TO_COMP(8);
 }
 
 void SoftSerial::begin(uint32_t baud, uint8_t format)
@@ -216,6 +221,7 @@ void SoftSerial::TIMER_COMP_handler()
 {
     TIMSK2 &= ~_BV(OCIE2B);
     timedout = true;
+    ts = micros();
 }
 
 void SoftSerial::PCINT_handler()
@@ -248,9 +254,8 @@ void SoftSerial::PCINT_handler()
         if (inverted_)
             incomingByte = ~incomingByte;
 
-        // stop bit
-
-        //_delay_loop_2(rx_delay_stop);
+        // stop bits
+        _delay_loop_2(rx_delay_stop);
 
         if (timedout)
             reset();
@@ -272,6 +277,9 @@ void SoftSerial::initWrite()
     uint8_t oldSREG = SREG;
     bool inv = inverted_;
     uint16_t delay = tx_delay;
+    uint16_t delay_stop = tx_delay_stop;
+    uint8_t parity = parity_;
+    uint8_t parity_value = 0;
 
     if (inv)
         outgoingByte = ~outgoingByte;
@@ -300,8 +308,20 @@ void SoftSerial::initWrite()
         {
             setPinLow;
         }
+        parity_value ^= outgoingByte & 1;
         _delay_loop_2(delay);
         outgoingByte >>= 1;
+    }
+
+    // parity
+    if (parity)
+    {
+        parity_value ^= parity & 1;
+        if (parity_value)
+            setPinHigh;
+        else
+            setPinLow;
+        _delay_loop_2(delay);
     }
 
     // stop bit
@@ -318,12 +338,17 @@ void SoftSerial::initWrite()
         DDRB &= ~_BV(DDB4);
 
     SREG = oldSREG;
-    _delay_loop_2(tx_delay);
+    _delay_loop_2(delay_stop);
 }
 
 void SoftSerial::setTimeout(uint16_t timeout)
 {
-    timeout_ = timeout * US_TO_COMP(1024);
+    timeout_ = timeout * US_TO_COMP(256);
+}
+
+uint16_t SoftSerial::timestamp() 
+{
+    return (uint16_t)(micros() - ts) + timeout_ / US_TO_COMP(256);
 }
 
 void SoftSerial::begin(uint32_t baud, uint8_t format)
@@ -343,6 +368,8 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
 
     inverted_ = format & 0x40;
     half_duplex_ = format & 0x80;
+    stop_bits_ = ((format & 0x8) >> 3) + 1;
+    parity_ = (format & 0x30) >> 4;
 
     if (!half_duplex_)
     {
@@ -358,13 +385,14 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     // 1 bit delay in 4 clock cycles
     uint16_t delay = (F_CPU / baud) / 4;
     // substract overheads
-    tx_delay = subs(delay, 17 / 4); //15
+    tx_delay = subs(delay, (17 + 2) / 4); //15
+    tx_delay_stop = subs(delay * stop_bits_, 17 / 4);
     rx_delay = subs(delay, 15 / 4); //23
     rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 15) / 4);
-    rx_delay_stop = subs(delay * 3 / 4, (37 + 11) / 4);
+    rx_delay_stop = subs(delay * 3 * stop_bits_ / 4, (37 + 11 + 12) / 4);
 
-    // Set TMR2 to measure ms (max 16Mhz 16ms, 8Mhz 32ms)
-    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
+    // Set TMR2 to measure ms (max 16Mhz 4ms, 8Mhz 8ms) - shared with sbus
+    TCCR2B = _BV(CS22) | _BV(CS21); // SCALER 256
     TCCR2A = 0;
 }
 
