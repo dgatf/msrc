@@ -71,6 +71,7 @@
 
 //#define DEBUG
 //#define DEBUG_PACKET
+//#define DEBUG_SBUS_MS
 //#define DEBUG_EEPROM_WRITE
 //#define DEBUG_EEPROM_READ
 
