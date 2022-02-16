@@ -55,7 +55,7 @@ void EscHW4::update()
             tempFet_ = calcAverage(alphaTemp_ / 100.0F, tempFet_, tempFET);
             tempBec_ = calcAverage(alphaTemp_ / 100.0F, tempBec_, tempBEC);
             if (cellCount_ == 255)
-                if (millis() > 10000 && voltage_ > 1)
+                if (millis() > 15000 && voltage_ > 1)
                     cellCount_ = setCellCount(voltage_);
             cellVoltage_ = voltage_ / cellCount_;
 #ifdef ESC_SIGNATURE
@@ -71,14 +71,16 @@ void EscHW4::update()
             DEBUG_PRINT(rpm);
             DEBUG_PRINT(" V:");
             DEBUG_PRINT(voltage);
-            DEBUG_PRINT(" C:");
+            DEBUG_PRINT(" Cu:");
             DEBUG_PRINT(current);
             DEBUG_PRINT(" T:");
             DEBUG_PRINT(tempFET);
             DEBUG_PRINT(" T:");
             DEBUG_PRINT(tempBEC);
-            DEBUG_PRINT(" C:");
+            DEBUG_PRINT(" Co:");
             DEBUG_PRINT(consumption_);
+            DEBUG_PRINT(" CV:");
+            DEBUG_PRINT(cellVoltage_);
             DEBUG_PRINT("\n");
 #endif
         }
