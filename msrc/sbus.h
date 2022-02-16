@@ -23,7 +23,7 @@
 #include "configeeprom.h"
 #include "pwmout.h"
 
-#define SBUS_SERIAL_TIMEOUT 2000
+#define SBUS_SERIAL_TIMEOUT 1500
 #define SBUS_PACKET_LENGHT 25
 
 #define SBUS_WAIT 0
@@ -59,22 +59,39 @@ Slot mapping
 ----	
 */
 
+#if defined(__AVR_ATmega328P__) ||  defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+extern void (*TIMER2_COMPA_handlerP)();
+#endif
+
+#if defined(__AVR_ATmega32U4__)
+extern void (*TIMER3_COMPA_handlerP)();
+#endif
+
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+extern void (*FTM0_IRQ_handlerP)();
+#endif
+
 class Sbus
 {
 private:
     AbstractSerial &serial_;
-    SensorSbus *sensorSbusP[32] = {NULL};
-    const uint8_t slotId[32] = {0x03, 0x83, 0x43, 0xC3, 0x23, 0xA3, 0x63, 0xE3,
-                                0x13, 0x93, 0x53, 0xD3, 0x33, 0xB3, 0x73, 0xF3,
-                                0x0B, 0x8B, 0x4B, 0xCB, 0x2B, 0xAB, 0x6B, 0xEB,
-                                0x1B, 0x9B, 0x5B, 0xDB, 0x3B, 0xBB, 0x7B, 0xFB};
+    static uint8_t telemetryPacket ;
+    static SensorSbus *sensorSbusP[32];
+    static const uint8_t slotId[32];
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
+    static void TIMER_COMPA_handler();
+#endif
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    static void FTM0_IRQ_handler();
+#endif
+    static void sendSlot(uint8_t number);
+    void sendPacket();
+    static uint32_t ts2;
 
 public:
     Sbus(AbstractSerial &serial);
     ~Sbus();
     void begin();
-    void sendPacket(uint8_t telemetryPacket);
-    void sendSlot(uint8_t number);
     void addSensor(uint8_t slot, SensorSbus *newSensorSbusP);
     void deleteSensors();
     void update();

@@ -9,13 +9,200 @@ Sbus::~Sbus()
     deleteSensors();
 }
 
+SensorSbus *Sbus::sensorSbusP[32] = {NULL};
+
+const uint8_t Sbus::slotId[32] = {0x03, 0x83, 0x43, 0xC3, 0x23, 0xA3, 0x63, 0xE3,
+                                  0x13, 0x93, 0x53, 0xD3, 0x33, 0xB3, 0x73, 0xF3,
+                                  0x0B, 0x8B, 0x4B, 0xCB, 0x2B, 0xAB, 0x6B, 0xEB,
+                                  0x1B, 0x9B, 0x5B, 0xDB, 0x3B, 0xBB, 0x7B, 0xFB};
+
+uint8_t Sbus::telemetryPacket = 0;
+
+uint32_t Sbus::ts2 = 0;
+
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+
+void Sbus::TIMER_COMPA_handler()
+{
+    uint8_t ts = TCNT2;
+    static uint8_t cont = 0;
+#ifdef DEBUG_SBUS_MS
+    static uint16_t msprev = 0;
+    uint16_t ms = micros();
+    if (cont == 0)
+    {
+        DEBUG_PRINT(" ");
+        DEBUG_PRINT(micros() - ts2);
+    }
+    else
+    {
+        DEBUG_PRINT(" ");
+        DEBUG_PRINT((uint16_t)(ms - msprev));
+    }
+    msprev = ms;
+#endif
+#ifdef DEBUG
+    DEBUG_PRINT(" ");
+    DEBUG_PRINT(telemetryPacket * 8 + cont);
+#endif
+    if (sensorSbusP[telemetryPacket * 8 + cont] != NULL)
+        sendSlot(telemetryPacket * 8 + cont);
+    if (cont < 7)
+    {
+        OCR2A = ts + (uint8_t)(540 * US_TO_COMP(256)); // next slot  540us
+        cont++;
+    }
+    else
+    {
+        TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
+        cont = 0;
+        digitalWrite(LED_BUILTIN, LOW);
+    }
+}
+
+#endif
+
+#if defined(__AVR_ATmega32U4__)
+
+void Sbus::TIMER_COMPA_handler()
+{
+    uint16_t ts = TCNT3;
+    static uint8_t cont = 0;
+#ifdef DEBUG_SBUS_MS
+    static uint16_t msprev = 0;
+    uint16_t ms = micros();
+    if (cont == 0)
+    {
+        DEBUG_PRINT(" ");
+        DEBUG_PRINT(micros() - ts2);
+    }
+    else
+    {
+        DEBUG_PRINT(" ");
+        DEBUG_PRINT((uint16_t)(ms - msprev));
+    }
+    msprev = ms;
+#endif
+#ifdef DEBUG
+    DEBUG_PRINT(" ");
+    DEBUG_PRINT(telemetryPacket * 8 + cont);
+#endif
+
+    if (sensorSbusP[telemetryPacket * 8 + cont] != NULL)
+        sendSlot(telemetryPacket * 8 + cont);
+    if (cont < 7)
+    {
+        OCR3A = ts + (uint16_t)(540 * US_TO_COMP(1)); // next slot  540us
+        cont++;
+    }
+    else
+    {
+        TIMSK3 &= ~_BV(OCIE3A); // DISABLE TIMER2 OCRA INTERRUPT
+        cont = 0;
+        digitalWrite(LED_BUILTIN, LOW);
+    }
+}
+
+#endif
+
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+void Sbus::FTM0_IRQ_handler()
+{
+    if (FTM0_C0SC & FTM_CSC_CHF) // CH0 INTERRUPT
+    {
+        uint16_t ts = FTM0_CNT;
+        static uint8_t cont = 0;
+#ifdef DEBUG_SBUS_MS
+        static uint16_t msprev = 0;
+        uint16_t ms = micros();
+        if (cont == 0)
+        {
+            DEBUG_PRINT(" ");
+            DEBUG_PRINT(micros() - ts2);
+        }
+        else
+        {
+            DEBUG_PRINT(" ");
+            DEBUG_PRINT((uint16_t)(ms - msprev));
+        }
+        msprev = ms;
+#endif
+#ifdef DEBUG
+        DEBUG_PRINT(" ");
+        DEBUG_PRINT(telemetryPacket * 8 + cont);
+#endif
+        if (sensorSbusP[telemetryPacket * 8 + cont] != NULL)
+            sendSlot(telemetryPacket * 8 + cont);
+        if (cont < 7)
+        {
+            FTM0_C0V = ts + (uint16_t)(540 * US_TO_COMP(128)); // next slot  540us
+            cont++;
+        }
+        else
+        {
+            FTM0_C0SC &= ~FTM_CSC_CHIE; // DISABLE CH0 INTERRUPT
+            cont = 0;
+            digitalWrite(LED_BUILTIN, LOW);
+            DEBUG_PRINTLN();
+        }
+        FTM0_C0SC |= FTM_CSC_CHF; // CLEAR FLAG CH2
+    }
+}
+
+#endif
+
+void Sbus::sendSlot(uint8_t number)
+{
+    SMARTPORT_FRSKY_SBUS_SERIAL.write(slotId[number]);
+    uint16_t val = sensorSbusP[number]->valueFormatted();
+    SMARTPORT_FRSKY_SBUS_SERIAL.write(val);
+    SMARTPORT_FRSKY_SBUS_SERIAL.write(val >> 8);
+#ifdef DEBUG
+    DEBUG_PRINT(":");
+    DEBUG_PRINT_HEX(slotId[number]);
+    DEBUG_PRINT(":");
+    DEBUG_PRINT_HEX(sensorSbusP[number]->valueFormatted());
+#endif
+}
+
 void Sbus::begin()
 {
-    serial_.begin(100000, SERIAL_8N1_RXINV_TXINV | SERIAL_HALF_DUP);
-    serial_.setTimeout(SBUS_SERIAL_TIMEOUT);
+    //SMARTPORT_FRSKY_SBUS_SERIAL.begin(100000, SERIAL_8E2_RXINV_TXINV | SERIAL_HALF_DUP);
+    SMARTPORT_FRSKY_SBUS_SERIAL.begin(100000, SERIAL_8E2);
+    DEBUG_PRINT(SERIAL_8E1);
+    DEBUG_PRINTLN();
+    SMARTPORT_FRSKY_SBUS_SERIAL.setTimeout(SBUS_SERIAL_TIMEOUT);
     pinMode(LED_BUILTIN, OUTPUT);
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
     setConfig(config);
+
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+    // TIMER 2 - shared with softserial
+    TIMER2_COMPA_handlerP = TIMER_COMPA_handler;
+    TCCR2B = _BV(CS22) | _BV(CS21); // SCALER 256
+    TCCR2A = 0;
+#endif
+
+#if defined(__AVR_ATmega32U4__)
+    // TIMER 3
+    TIMER3_COMPA_handlerP = TIMER_COMPA_handler;
+    TCCR3B = _BV(CS30); // SCALER 1
+    TCCR3A = 0;
+#endif
+
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    FTM0_IRQ_handlerP = FTM0_IRQ_handler;
+    FTM0_SC = 0;
+    delayMicroseconds(1);
+    FTM0_CNT = 0;
+    SIM_SCGC6 |= SIM_SCGC6_FTM0; // ENABLE CLOCK
+    FTM0_SC = FTM_SC_PS(7);      // PRESCALER 128    FTM_SC_PS(5) - PRESCALER 32
+    FTM0_SC |= FTM_SC_CLKS(1);   // ENABLE COUNTER
+    FTM0_C0SC = 0;               // DISABLE CHANNEL
+    delayMicroseconds(1);
+    FTM0_C0SC = FTM_CSC_MSA; // SOFTWARE COMPARE
+    NVIC_ENABLE_IRQ(IRQ_FTM0);
+#endif
 }
 
 void Sbus::addSensor(uint8_t number, SensorSbus *newSensorSbusP)
@@ -32,48 +219,46 @@ void Sbus::deleteSensors()
     }
 }
 
-void Sbus::sendPacket(uint8_t telemetryPacket)
+void Sbus::sendPacket()
 {
+    digitalWrite(LED_BUILTIN, HIGH);
+    uint16_t ts = SMARTPORT_FRSKY_SBUS_SERIAL.timestamp();
 #ifdef DEBUG
     DEBUG_PRINT("\nTP");
     DEBUG_PRINT(telemetryPacket);
     DEBUG_PRINT(": ");
 #endif
-    digitalWrite(LED_BUILTIN, HIGH);
-    for (uint8_t i = (telemetryPacket - 1) * 8; i < telemetryPacket * 8; i++)
-    {
-        if (sensorSbusP[i] != NULL)
-        {
-            sendSlot(i);
-            delayMicroseconds(300);
-        }
-    }
-    digitalWrite(LED_BUILTIN, LOW);
-}
+#ifdef DEBUG_SBUS_MS
+    DEBUG_PRINTLN();
+    DEBUG_PRINT(ts);
+    DEBUG_PRINT("+");
+    ts2 = micros();
+#endif
 
-void Sbus::sendSlot(uint8_t number)
-{
-    serial_.write(slotId[number]);
-    //serial_.write(sensorSbusP[number]->valueFormatted());
-    uint16_t val = sensorSbusP[number]->valueFormatted();
-    serial_.write(val);
-    serial_.write(val >> 8);
-#ifdef DEBUG
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+    // configure timer
+    OCR2A = TCNT2 + (2000 - ts) * US_TO_COMP(256); // complete 2ms
+    TIFR2 |= _BV(OCF2A);                           // CLEAR TIMER2 OCRA CAPTURE FLAG
+    TIMSK2 |= _BV(OCIE2A);                         // ENABLE TIMER2 OCRA INTERRUPT
+#endif
 
-    DEBUG_PRINT("(");
-    DEBUG_PRINT(number);
-    DEBUG_PRINT(")");
-    DEBUG_PRINT_HEX(slotId[number]);
-    DEBUG_PRINT(" ");
-    DEBUG_PRINT_HEX(sensorSbusP[number]->valueFormatted());
-    DEBUG_PRINT("  ");
+#if defined(__AVR_ATmega32U4__)
+    // configure timer
+    OCR3A = TCNT2 + (2000 - ts) * US_TO_COMP(1); // complete 2ms
+    TIFR3 |= _BV(OCF3A);                         // CLEAR TIMER2 OCRA CAPTURE FLAG
+    TIMSK3 |= _BV(OCIE3A);                       // ENABLE TIMER2 OCRA INTERRUPT
+#endif
+
+#if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
+    FTM0_C0V = FTM0_CNT + (2000 - ts) * US_TO_COMP(128);
+    FTM0_C0SC |= FTM_CSC_CHF;                     // CLEAR FLAG
+    FTM0_C0SC |= FTM_CSC_CHIE;                    // ENABLE INTERRUPT
 #endif
 }
 
 void Sbus::update()
 {
     uint8_t status = SBUS_WAIT;
-    static uint8_t telemetryPacket = 0;
     static bool mute = true;
 #if defined(SIM_RX)
     static uint16_t ts = 0;
@@ -86,30 +271,54 @@ void Sbus::update()
         }
         mute = !mute;
         ts = millis();
-        if (telemetryPacket == 5)
-            telemetryPacket = 1;
+        if (telemetryPacket == 4)
+            telemetryPacket = 0;
     }
 #else
-    if (serial_.availableTimeout() == SBUS_PACKET_LENGHT)
+    uint8_t lenght = SMARTPORT_FRSKY_SBUS_SERIAL.availableTimeout();
+    uint8_t buff[lenght];
+    SMARTPORT_FRSKY_SBUS_SERIAL.readBytes(buff, lenght);
+#ifdef DEBUG_PACKET
+    if (lenght)
     {
-        uint8_t buff[SBUS_PACKET_LENGHT];
-        serial_.readBytes(buff, SBUS_PACKET_LENGHT);
-        if (buff[0] == 0x0F) // telemetry footer? 0x04, 0x14...
+        DEBUG_PRINT("\n<");
+        for (uint8_t i = 0; i < lenght; i++)
         {
-            if (!mute)
+            DEBUG_PRINT_HEX(buff[i]);
+            DEBUG_PRINT(" ");
+        }
+    }
+#endif
+    if (lenght == SBUS_PACKET_LENGHT)
+    {
+        //uint8_t buff[SBUS_PACKET_LENGHT];
+        //SMARTPORT_FRSKY_SBUS_SERIAL.readBytes(buff, SBUS_PACKET_LENGHT);
+        if (buff[0] == 0x0F)
+        {
+            // SBUS
+            if (buff[24] == 0)
             {
-                status = SBUS_SEND;
-                telemetryPacket++;
-                if (telemetryPacket == 5)
-                    telemetryPacket = 1;
+                if (!mute)
+                {
+                    status = SBUS_SEND;
+                    telemetryPacket++;
+                    if (telemetryPacket == 4)
+                        telemetryPacket = 0;
+                }
+                mute = !mute;
             }
-            mute = !mute;
+            // SBUS2
+            else if (buff[24] == 0x04 || buff[24] == 0x14 || buff[24] == 0x24 || buff[24] == 0x34)
+            {
+                telemetryPacket = (buff[24] >> 4) + 1;
+                status = SBUS_SEND;
+            }
         }
     }
 #endif
     if (status == SBUS_SEND)
     {
-        sendPacket(telemetryPacket);
+        sendPacket();
     }
 
     // update sensor
@@ -245,7 +454,7 @@ void Sbus::setConfig(Config &config)
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorSbusP);
     }
-        if (config.protocol == PROTOCOL_APD_HV)
+    if (config.protocol == PROTOCOL_APD_HV)
     {
         SensorSbus *sensorSbusP;
         EscApdHV *esc;

@@ -202,6 +202,7 @@ void MainWindow::generateConfig()
         "\n"
         "\n//#define DEBUG"
         "\n//#define DEBUG_PACKET"
+        "\n//#define DEBUG_SBUS_MS"
         "\n//#define DEBUG_EEPROM_WRITE"
         "\n//#define DEBUG_EEPROM_READ"
         "\n"
