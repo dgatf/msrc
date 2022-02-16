@@ -9,7 +9,7 @@
 #define VERSION_PATCH 0
 
 /* Init debug port */
-#if (defined(DEBUG) || defined(DEBUG_PACKET) || defined(DEBUG_EEPROM_WRITE) || defined(DEBUG_EEPROM_READ) || defined(DEBUG_GPS) || defined(DEBUG_HW3) || defined(DEBUG_HW4) || defined(DEBUG_PWM) || defined(DEBUG_CASTLE) || defined(DEBUG_CASTLE_RX) || defined(DEBUG_KONTRONIK) || defined(DEBUG_APDF) || defined(DEBUG_APDHV))
+#if (defined(DEBUG) || defined(DEBUG_PACKET) || defined(DEBUG_SBUS_MS) || defined(DEBUG_EEPROM_WRITE) || defined(DEBUG_EEPROM_READ) || defined(DEBUG_GPS) || defined(DEBUG_HW3) || defined(DEBUG_HW4) || defined(DEBUG_PWM) || defined(DEBUG_CASTLE) || defined(DEBUG_CASTLE_RX) || defined(DEBUG_KONTRONIK) || defined(DEBUG_APDF) || defined(DEBUG_APDHV))
 #define DEBUG_INIT DEBUG_SERIAL.begin(115200);
 #endif
 
@@ -150,6 +150,7 @@
 
 #define ALPHA(ELEMENTS) (uint8_t)(2.0 / (ELEMENTS + 1) * 100)
 #define MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000.0))
+#define US_TO_COMP(SCALER) (F_CPU / (SCALER * 1000000.0))
 #define COMP_TO_MS(SCALER) ((SCALER * 1000.0) / F_CPU)
 
 #define DEBUG_PRINT(VALUE) DEBUG_SERIAL.print(VALUE)
