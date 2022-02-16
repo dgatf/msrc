@@ -28,14 +28,10 @@
 #define RXCx RXC0
 #endif
 
-#define SERIAL_8N1 0x06
-#define SERIAL_8E1 0x26
-#define SERIAL_8N1_RXINV_TXINV 0x46  // val + 0x40
-#define SERIAL_HALF_DUP 0x80
-
 #define SERIAL_5N1 0x00
 #define SERIAL_6N1 0x02
 #define SERIAL_7N1 0x04
+#define SERIAL_8N1 0x06
 #define SERIAL_5N2 0x08
 #define SERIAL_6N2 0x0A
 #define SERIAL_7N2 0x0C
@@ -43,6 +39,7 @@
 #define SERIAL_5E1 0x20
 #define SERIAL_6E1 0x22
 #define SERIAL_7E1 0x24
+#define SERIAL_8E1 0x26
 #define SERIAL_5E2 0x28
 #define SERIAL_6E2 0x2A
 #define SERIAL_7E2 0x2C
@@ -55,6 +52,17 @@
 #define SERIAL_6O2 0x3A
 #define SERIAL_7O2 0x3C
 #define SERIAL_8O2 0x3E
+
+#define RXINV_TXINV 0x40
+#define SERIAL_HALF_DUP 0x80
+
+// values used in software serial
+#define SERIAL_8N1_RXINV_TXINV SERIAL_8N1 | RXINV_TXINV
+#define SERIAL_8N2_RXINV_TXINV SERIAL_8N2 | RXINV_TXINV
+#define SERIAL_8E1_RXINV_TXINV SERIAL_8E1 | RXINV_TXINV
+#define SERIAL_8E2_RXINV_TXINV SERIAL_8E2 | RXINV_TXINV
+#define SERIAL_8O1_RXINV_TXINV SERIAL_8O1 | RXINV_TXINV
+#define SERIAL_8O2_RXINV_TXINV SERIAL_8O2 | RXINV_TXINV
 
 class HardSerial : public AbstractSerial
 {
@@ -101,28 +109,39 @@ extern HardSerial hardSerial3;
 #endif
 
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-
-#define SERIAL_8N1 0x00
-#define SERIAL_8E1 0x06
-#define SERIAL_8N1_RXINV_TXINV 0x30
 #define SERIAL_HALF_DUP 0x40
 
+// parity: b1-2 (00-N, 10-E,11-O)
+// size: b2-3 (00-7, 01-8)
+// polarity: b5-6 (01-RX, 10-TX)
+// full/half duplex b7: 0-FD, 1-HD
+// stop bit: b8 (0-1b, 1-2b)
+
+#define RXINV_TXINV 0x30
+#define SERIAL_HALF_DUP 0x40
+#define STOP_BIT_2 0x80
+
+//8 bits including parity
 #define SERIAL_7E1 0x02
 #define SERIAL_7O1 0x03
+#define SERIAL_8N1 0x00
+
+//9 bits including parity and second stop bit
+#define SERIAL_8E1 0x06
 #define SERIAL_8O1 0x07
-#define SERIAL_7E1_RXINV 0x12
-#define SERIAL_7O1_RXINV 0x13
-#define SERIAL_8E1_RXINV 0x16
-#define SERIAL_8O1_RXINV 0x17
-#define SERIAL_7E1_TXINV 0x22
-#define SERIAL_7O1_TXINV 0x23
-#define SERIAL_8N1_TXINV 0x20
-#define SERIAL_8E1_TXINV 0x26
-#define SERIAL_8O1_TXINV 0x27
-#define SERIAL_7E1_RXINV_TXINV 0x32
-#define SERIAL_7O1_RXINV_TXINV 0x33
-#define SERIAL_8E1_RXINV_TXINV 0x36
-#define SERIAL_8O1_RXINV_TXINV 0x37
+#define SERIAL_8N2 0x04
+
+#define SERIAL_8N2 SERIAL_8N1 | STOP_BIT_2
+#define SERIAL_8E2 SERIAL_8E1 | STOP_BIT_2
+#define SERIAL_8O2 SERIAL_8O1 | STOP_BIT_2
+
+#define SERIAL_8N1_RXINV_TXINV SERIAL_8N1 | RXINV_TXINV
+#define SERIAL_8E1_RXINV_TXINV SERIAL_8E1 | RXINV_TXINV
+#define SERIAL_8O1_RXINV_TXINV SERIAL_8O1 | RXINV_TXINV
+
+#define SERIAL_8N2_RXINV_TXINV SERIAL_8N1 | RXINV_TXINV | STOP_BIT_2
+#define SERIAL_8E2_RXINV_TXINV SERIAL_8E1 | RXINV_TXINV | STOP_BIT_2
+#define SERIAL_8O2_RXINV_TXINV SERIAL_8O1 | RXINV_TXINV | STOP_BIT_2
 
 #define BAUD2DIVISOR(baud) (((F_PLL / 2 / 16) + ((baud) >> 1)) / (baud))
 #define BAUD2DIVISOR2(baud) (((F_BUS / 16) + ((baud) >> 1)) / (baud))

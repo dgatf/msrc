@@ -122,7 +122,7 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
     *ubrrl_ = val;
     *ubrrh_ = val >> 8;
     *ucsra_ = 1 << U2Xx;
-    *ucsrc_ = format & ~0x40;
+    *ucsrc_ = format & ~0xC0;
     sei();
 }
 
@@ -197,7 +197,7 @@ void uart2_status_isr()
 
 void HardSerial::UART_IRQ_handler()
 {
-    if ( (*uart_c2_ & UART_C2_RIE) && (*uart_s1_ & UART_S1_RDRF) )
+    if ((*uart_c2_ & UART_C2_RIE) && (*uart_s1_ & UART_S1_RDRF))
     {
         if ((uint16_t)(micros() - ts) > timeout_ && timeout_)
             reset();
@@ -205,7 +205,7 @@ void HardSerial::UART_IRQ_handler()
         writeRx(c);
         ts = micros();
     }
-    if ( (*uart_c2_ & UART_C2_TIE) && (*uart_s1_ & UART_S1_TDRE) )
+    if ((*uart_c2_ & UART_C2_TIE) && (*uart_s1_ & UART_S1_TDRE))
     {
         if (availableTx())
         {
@@ -215,10 +215,10 @@ void HardSerial::UART_IRQ_handler()
         {
             *uart_c2_ &= ~UART_C2_TIE;
             if (half_duplex_mode)
-            	*uart_c2_ |= UART_C2_TCIE;
+                *uart_c2_ |= UART_C2_TCIE;
         }
     }
-    if ( (*uart_c2_ & UART_C2_TCIE) && (*uart_s1_ & UART_S1_TC) ) 
+    if ((*uart_c2_ & UART_C2_TCIE) && (*uart_s1_ & UART_S1_TC))
     {
         *uart_c3_ &= ~UART_C3_TXDIR;
         *uart_c2_ &= ~UART_C2_TCIE;
@@ -252,12 +252,23 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
 
     // Format
 
-    // parity
+    // parity b1-2
     uint8_t c = *uart_c1_;
-    c = (c & ~0x13) | (format & 0x03); // configure parity
+    c = (c & ~0x13) | (format & 0x03);
     *uart_c1_ = c;
+    if (format & 0x04)
+        c |= 0x10;		// 9 bits (might include parity)
+	*uart_c1_ = c;
 
-    // half duplex.
+    // 2 stop bits b8
+    if (format & 0x80)
+    {
+        uint8_t bdl = *uart_bdl_;
+        *uart_bdh_ |= UART_BDH_SBNS;
+        *uart_bdl_ = bdl;
+    }
+
+    // half duplex b7
     if ((format & SERIAL_HALF_DUP) != 0)
     {
         c = *uart_c1_;
@@ -268,8 +279,8 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
     }
     else
         half_duplex_mode = 0;
-        
-    // polarity
+
+    // polarity b5-6
     c = *uart_s2_ & ~0x10;
     if (format & 0x10)
     {
@@ -280,12 +291,18 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
     c = *uart_c3_ & ~0x10;
     if (format & 0x20)
     {
+        if ((format & 0x0F) == 0x04)
+            *uart_c3_ &= ~0x40; // 8N2 is 9 bit with 9th bit always 0 (if inverted)
         c |= 0x10; // tx invert
         if (half_duplex_mode)
             *core_pin_tx_config_ &= ~PORT_PCR_PS;
     }
+    else
+    {
+        if ((format & 0x0F) == 0x04)
+            *uart_c3_ |= 0x40; // 8N2 is 9 bit with 9th bit always 1
+    }
     *uart_c3_ = c;
-
 }
 
 void HardSerial::initWrite()
