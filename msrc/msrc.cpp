@@ -202,10 +202,10 @@ void setup()
 #endif
     if (config.pwmOut)
         pwmOut.enable();
-#if (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY) && RX_PROTOCOL == RX_XBUS
+#if (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY) && RX_PROTOCOL == RX_XBUS && RX_PROTOCOL == RX_HITEC
     Wire1.begin();
     Wire1.setTimeout(WIRE_TIMEOUT);
-#elif RX_PROTOCOL != RX_XBUS
+#elif RX_PROTOCOL != RX_XBUS && RX_PROTOCOL != RX_HITEC
     Wire.begin();
     Wire.setTimeout(WIRE_TIMEOUT);
 #endif
@@ -254,6 +254,9 @@ void setup()
 #if RX_PROTOCOL == RX_JETIEX
     jetiEx.begin();
 #endif
+#if RX_PROTOCOL == RX_HITEC
+    hitec.begin();
+#endif
 }
 
 void loop()
@@ -281,6 +284,9 @@ void loop()
 #endif
 #if RX_PROTOCOL == RX_JETIEX
     jetiEx.update();
+#endif
+#if RX_PROTOCOL == RX_HITEC
+    hitec.update();
 #endif
     pwmOut.update();
 }
