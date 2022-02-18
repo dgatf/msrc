@@ -41,6 +41,7 @@
 #include "sbus.h"
 #include "multiplex.h"
 #include "jetiex.h"
+#include "hitec.h"
 
 #if RX_PROTOCOL == RX_SMARTPORT
 Smartport smartport(SMARTPORT_FRSKY_SBUS_SERIAL);
@@ -72,6 +73,10 @@ Multiplex multiplex(SRXL_IBUS_SERIAL);
 
 #if RX_PROTOCOL == RX_JETIEX
 JetiEx jetiEx(SRXL_IBUS_SERIAL);
+#endif
+
+#if RX_PROTOCOL == RX_HITEC
+Hitec hitec;
 #endif
 
 PwmOut pwmOut;
