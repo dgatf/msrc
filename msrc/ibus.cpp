@@ -6,7 +6,6 @@ Ibus::Ibus(AbstractSerial &serial) : serial_(serial)
 
 Ibus::~Ibus()
 {
-    deleteSensors();
 }
 
 void Ibus::begin()
@@ -106,15 +105,6 @@ void Ibus::addSensor(SensorIbus *newSensorIbusP)
     }
 }
 
-void Ibus::deleteSensors()
-{
-    for (uint8_t i = 0; i < 16; i++)
-    {
-        if (sensorIbusP[i] != NULL)
-            delete sensorIbusP[i];
-    }
-}
-
 bool Ibus::checkCrc(uint8_t *data)
 {
     uint16_t crc = 0xFFFF;
@@ -199,7 +189,6 @@ void Ibus::update()
 
 void Ibus::setConfig(Config &config)
 {
-    deleteSensors();
     if (config.protocol == PROTOCOL_PWM)
     {
         SensorIbus *sensorIbusP;

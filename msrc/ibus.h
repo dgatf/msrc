@@ -53,7 +53,6 @@ public:
     void begin();
     void sendData(uint8_t command, uint8_t address);
     void addSensor(SensorIbus *newSensorIbusP);
-    void deleteSensors();
     uint8_t read(uint8_t &command, uint8_t &address);
     void update();
     void setConfig(Config &config);
