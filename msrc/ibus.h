@@ -44,19 +44,25 @@ class Ibus
 private:
     AbstractSerial &serial_;
     SensorIbus *sensorIbusP[16] = {NULL};
-    uint16_t sensorMask = 0B1111111111111110;
+    /*
+     - Sensor at address 0x00 is reserved
+     - Sensor at address 0x01 is masked to give enough time to MSRC to init
+       Otherwise initial poll may not answered and sensor does not appear
+       Poll is every 7ms. If needed, power the receiver after or flash without bootloader
+    */
+    uint16_t sensorMask = 0B1111111111111100; 
     void sendByte(uint8_t c, uint16_t *crcP);
+    void sendData(uint8_t command, uint8_t address);
+    uint8_t read(uint8_t &command, uint8_t &address);
+    bool checkCrc(uint8_t *data);
 
 public:
     Ibus(AbstractSerial &serial);
     ~Ibus();
     void begin();
-    void sendData(uint8_t command, uint8_t address);
     void addSensor(SensorIbus *newSensorIbusP);
-    uint8_t read(uint8_t &command, uint8_t &address);
     void update();
     void setConfig(Config &config);
-    bool checkCrc(uint8_t *data);
 };
 
 #endif
