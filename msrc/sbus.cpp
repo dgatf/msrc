@@ -241,7 +241,7 @@ void Sbus::sendPacket()
 
 #if defined(__AVR_ATmega32U4__)
     // configure timer
-    OCR3A = TCNT2 + (2000 - ts) * US_TO_COMP(1); // complete 2ms
+    OCR3A = TCNT3 + (2000 - ts) * US_TO_COMP(1); // complete 2ms
     TIFR3 |= _BV(OCF3A);                         // CLEAR TIMER2 OCRA CAPTURE FLAG
     TIMSK3 |= _BV(OCIE3A);                       // ENABLE TIMER2 OCRA INTERRUPT
 #endif
