@@ -361,6 +361,10 @@ GPS:
 - GPS speed: GSpd (0x820)
 - GPS compass: Hdg (0x840)
 - GPS date/time: Date (0x850)
+- GPS sats: 0x5103  
+Calculated:
+- Vario: 0x111
+- Distance to home: 0x5104
 
 Analog:
 
@@ -374,7 +378,9 @@ Analog:
 I2C:
 
 - Altitude: Alt (0x0820)
-- Temperature: T1 (0x0401, 0x0402)
+- Temperature: T1 (0x0401, 0x0402)  
+Calculated:
+- Vario: 0x110
 
 Some of the sensors have to be adusted in openTx
 
