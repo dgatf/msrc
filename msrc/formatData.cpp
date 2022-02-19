@@ -168,6 +168,10 @@ int32_t FormatData::formatIbus(uint8_t dataId, float value)
 
     if (dataId == AFHDS2A_ID_GPS_STATUS)
         return value * 256;
+    
+    if (dataId == AFHDS2A_ID_S84 ||
+        dataId == AFHDS2A_ID_S85)
+        return value * 1e5;
 
     return round(value);
 }
