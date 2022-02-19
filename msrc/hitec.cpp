@@ -435,6 +435,7 @@ void Hitec::setConfig(Config &config)
         frame_0x17_P[HITEC_FRAME_0X17_TEMP4] = ntc->valueP();
         isEnabledFrame[HITEC_FRAME_0X17] = true;
     }
+#if (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
     if (config.deviceI2C1Type == I2C_BMP280)
     {
         Bmp280 *bmp;
@@ -444,4 +445,5 @@ void Hitec::setConfig(Config &config)
         frame_0x1B_P[HITEC_FRAME_0X14_GPS_ALT] = bmp->altitudeP();
         isEnabledFrame[HITEC_FRAME_0X14] = true;
     }
+#endif
 }
