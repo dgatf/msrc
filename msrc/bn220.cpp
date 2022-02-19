@@ -68,6 +68,7 @@ void Bn220::update()
         }
     }
     vario_ = calcSpeed(alt_, 2000);
+    dist_ = calcDistanceToHome(lat_ / 60, lon_ / 60, 1000);
 #ifdef SIM_SENSORS
     lat_ = -630;   // 10º30" +N, -S
     lon_ = -1250;  // 20º50" +E, -W
@@ -78,8 +79,40 @@ void Bn220::update()
     date_ = 10101; // yymmdd
     time_ = 20202; // hhmmss
     hdop_ = 12.35; //
-    vario_ = 5.67;  // m/s
+    vario_ = 5.67; // m/s
 #endif
+}
+
+float Bn220::degreesToRadians(float degrees)
+{
+    return degrees * PI / 180;
+}
+
+float Bn220::calcDistanceToHome(float lat, float lon, uint16_t intervalMin)
+{
+    static uint16_t msPrev = 0;
+    static float distance = 10000;
+    static float latInit = 0;
+    static float lonInit = 0;
+    static float dLatInit = 0;
+    if ((uint16_t)(millis() - msPrev) > intervalMin && sat_ > 9)
+    {
+        if (latInit == 0 && lonInit == 0)
+        {
+            latInit = lat;
+            lonInit = lon;
+            dLatInit = degreesToRadians(latInit);
+        }
+        uint16_t earthRadiusKm = 6371;
+        float dLatDelta = degreesToRadians(latInit - lat);
+        float dLonDelta = degreesToRadians(lonInit - lon);
+        float dLat = degreesToRadians(lat);
+        float a = sin(dLatDelta / 2) * sin(dLatDelta / 2) + sin(dLonDelta / 2) * sin(dLonDelta / 2) * cos(dLat) * cos(dLatInit);
+        float c = 2 * atan2(sqrt(a), sqrt(1 - a));
+        distance = earthRadiusKm * c * 1000; // distance in meters
+        msPrev = millis();
+    }
+    return distance;
 }
 
 void Bn220::processField(const uint8_t *command)
@@ -211,4 +244,9 @@ float *Bn220::hdopP()
 float *Bn220::varioP()
 {
     return &vario_;
+}
+
+float *Bn220::distP()
+{
+    return &dist_;
 }

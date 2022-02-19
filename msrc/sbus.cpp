@@ -22,7 +22,7 @@ uint32_t Sbus::ts2 = 0;
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
 
-void Sbus::TIMER_COMPA_handler()
+void Sbus::TIMER_COMP_handler()
 {
     uint8_t ts = TCNT2;
     static uint8_t cont = 0;
@@ -64,7 +64,7 @@ void Sbus::TIMER_COMPA_handler()
 
 #if defined(__AVR_ATmega32U4__)
 
-void Sbus::TIMER_COMPA_handler()
+void Sbus::TIMER_COMP_handler()
 {
     uint16_t ts = TCNT3;
     static uint8_t cont = 0;
@@ -92,12 +92,12 @@ void Sbus::TIMER_COMPA_handler()
         sendSlot(telemetryPacket * 8 + cont);
     if (cont < 7)
     {
-        OCR3A = ts + (uint16_t)(700 * US_TO_COMP(1)); // next slot 700us
+        OCR3B = ts + (uint16_t)(700 * US_TO_COMP(1)); // next slot 700us
         cont++;
     }
     else
     {
-        TIMSK3 &= ~_BV(OCIE3A); // DISABLE TIMER2 OCRA INTERRUPT
+        TIMSK3 &= ~_BV(OCIE3B); // DISABLE TIMER2 OCRA INTERRUPT
         cont = 0;
         digitalWrite(LED_BUILTIN, LOW);
     }
@@ -175,14 +175,14 @@ void Sbus::begin()
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
     // TIMER 2 - shared with softserial
-    TIMER2_COMPA_handlerP = TIMER_COMPA_handler;
+    TIMER2_COMPA_handlerP = TIMER_COMP_handler;
     TCCR2B = _BV(CS22) | _BV(CS21); // SCALER 256
     TCCR2A = 0;
 #endif
 
 #if defined(__AVR_ATmega32U4__)
     // TIMER 3
-    TIMER3_COMPA_handlerP = TIMER_COMPA_handler;
+    TIMER3_COMPB_handlerP = TIMER_COMP_handler;
     TCCR3B = _BV(CS30); // SCALER 1
     TCCR3A = 0;
 #endif
@@ -333,7 +333,7 @@ void Sbus::update()
 void Sbus::setConfig(Config &config)
 {
     deleteSensors();
-    if (config.protocol == PROTOCOL_PWM)
+    if (ESC_PROTOCOL == PROTOCOL_PWM)
     {
         SensorSbus *sensorSbusP;
         EscPWM *esc;
@@ -342,7 +342,7 @@ void Sbus::setConfig(Config &config)
         sensorSbusP = new SensorSbus(FASST_RPM, esc->rpmP(), esc);
         addSensor(1, sensorSbusP);
     }
-    if (config.protocol == PROTOCOL_HW_V3)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V3)
     {
         SensorSbus *sensorSbusP;
         EscHW3 *esc;
@@ -351,7 +351,7 @@ void Sbus::setConfig(Config &config)
         sensorSbusP = new SensorSbus(FASST_RPM, esc->rpmP(), esc);
         addSensor(1, sensorSbusP);
     }
-    if (config.protocol == PROTOCOL_HW_V4)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V4)
     {
         SensorSbus *sensorSbusP;
         EscHW4 *esc;
@@ -374,7 +374,7 @@ void Sbus::setConfig(Config &config)
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorSbusP);
     }
-    if (config.protocol == PROTOCOL_CASTLE)
+    if (ESC_PROTOCOL == PROTOCOL_CASTLE)
     {
         SensorSbus *sensorSbusP;
         EscCastle *esc;
@@ -401,7 +401,7 @@ void Sbus::setConfig(Config &config)
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorSbusP);
     }
-    if (config.protocol == PROTOCOL_KONTRONIK)
+    if (ESC_PROTOCOL == PROTOCOL_KONTRONIK)
     {
         SensorSbus *sensorSbusP;
         EscKontronik *esc;
@@ -430,7 +430,7 @@ void Sbus::setConfig(Config &config)
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorSbusP);
     }
-    if (config.protocol == PROTOCOL_APD_F)
+    if (ESC_PROTOCOL == PROTOCOL_APD_F)
     {
         SensorSbus *sensorSbusP;
         EscApdF *esc;
@@ -451,7 +451,7 @@ void Sbus::setConfig(Config &config)
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorSbusP);
     }
-    if (config.protocol == PROTOCOL_APD_HV)
+    if (ESC_PROTOCOL == PROTOCOL_APD_HV)
     {
         SensorSbus *sensorSbusP;
         EscApdHV *esc;

@@ -340,6 +340,8 @@ void Ibus::setConfig(Config &config)
         addSensor(sensorIbusP);
         sensorIbusP = new SensorIbus(AFHDS2A_ID_CLIMB_RATE, IBUS_TYPE_S16, gps->varioP(), gps);
         addSensor(sensorIbusP);
+        sensorIbusP = new SensorIbus(AFHDS2A_ID_GPS_DIST, IBUS_TYPE_U16, gps->distP(), gps);
+        addSensor(sensorIbusP);
     }
     if (config.airspeed == true)
     {

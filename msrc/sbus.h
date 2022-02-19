@@ -29,6 +29,12 @@
 #define SBUS_WAIT 0
 #define SBUS_SEND 1
 
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
+#define ESC_PROTOCOL CONFIG_ESC_PROTOCOL
+#else
+#define ESC_PROTOCOL config.protocol
+#endif
+
 /*
 
 Slot mapping
@@ -64,7 +70,7 @@ extern void (*TIMER2_COMPA_handlerP)();
 #endif
 
 #if defined(__AVR_ATmega32U4__)
-extern void (*TIMER3_COMPA_handlerP)();
+extern void (*TIMER3_COMPB_handlerP)();
 #endif
 
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
@@ -79,7 +85,7 @@ private:
     static SensorSbus *sensorSbusP[32];
     static const uint8_t slotId[32];
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
-    static void TIMER_COMPA_handler();
+    static void TIMER_COMP_handler();
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
     static void FTM0_IRQ_handler();

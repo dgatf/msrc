@@ -28,6 +28,12 @@
 #define MULTIPLEX_WAIT 0
 #define MULTIPLEX_SEND 1
 
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
+#define ESC_PROTOCOL CONFIG_ESC_PROTOCOL
+#else
+#define ESC_PROTOCOL config.protocol
+#endif
+
 class Multiplex
 {
 private:

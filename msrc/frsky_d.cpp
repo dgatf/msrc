@@ -130,7 +130,7 @@ void Frsky::update()
 void Frsky::setConfig(Config &config)
 {
     deleteSensors();
-    if (config.protocol == PROTOCOL_PWM)
+    if (ESC_PROTOCOL == PROTOCOL_PWM)
     {
         Sensord *sensorP;
         EscPWM *esc;
@@ -139,7 +139,7 @@ void Frsky::setConfig(Config &config)
         sensorP = new Sensord(RPM_ID, esc->rpmP(), config.refresh.rpm, esc);
         addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_HW_V3)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V3)
     {
         Sensord *sensorP;
         EscHW3 *esc;
@@ -148,7 +148,7 @@ void Frsky::setConfig(Config &config)
         sensorP = new Sensord(RPM_ID, esc->rpmP(), config.refresh.rpm, esc);
         addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_HW_V4)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V4)
     {
         Sensord *sensorP;
         EscHW4 *esc;
@@ -173,7 +173,7 @@ void Frsky::setConfig(Config &config)
         sensorP = new Sensord(FUEL_ID, esc->consumptionP(), config.refresh.curr, esc);
         addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_CASTLE)
+    if (ESC_PROTOCOL == PROTOCOL_CASTLE)
     {
         Sensord *sensorP;
         EscCastle *esc;
@@ -198,7 +198,7 @@ void Frsky::setConfig(Config &config)
         sensorP = new Sensord(FUEL_ID, esc->consumptionP(), config.refresh.curr, esc);
         addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_KONTRONIK)
+    if (ESC_PROTOCOL == PROTOCOL_KONTRONIK)
     {
         Sensord *sensorP;
         EscKontronik *esc;
@@ -223,7 +223,7 @@ void Frsky::setConfig(Config &config)
         sensorP = new Sensord(FUEL_ID, esc->consumptionP(), config.refresh.curr, esc);
         addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_APD_F)
+    if (ESC_PROTOCOL == PROTOCOL_APD_F)
     {
         Sensord *sensorP;
         EscApdF *esc;
@@ -242,7 +242,7 @@ void Frsky::setConfig(Config &config)
         sensorP = new Sensord(VFAS_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         addSensor(sensorP);
     }
-        if (config.protocol == PROTOCOL_APD_HV)
+    if (ESC_PROTOCOL == PROTOCOL_APD_HV)
     {
         Sensord *sensorP;
         EscApdHV *esc;

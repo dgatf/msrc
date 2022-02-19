@@ -358,7 +358,7 @@ void JetiEx::update()
 
 void JetiEx::setConfig(Config &config)
 {
-    if (config.protocol == PROTOCOL_PWM)
+    if (ESC_PROTOCOL == PROTOCOL_PWM)
     {
         SensorJetiEx *sensorJetiExP;
         EscPWM *esc;
@@ -369,7 +369,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setText("RPM");
         sensorJetiExP->setUnit("RPM");
     }
-    if (config.protocol == PROTOCOL_HW_V3)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V3)
     {
         SensorJetiEx *sensorJetiExP;
         EscHW3 *esc;
@@ -380,7 +380,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setText("RPM");
         sensorJetiExP->setUnit("RPM");
     }
-    if (config.protocol == PROTOCOL_HW_V4)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V4)
     {
         SensorJetiEx *sensorJetiExP;
         EscHW4 *esc;
@@ -417,7 +417,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setText("Consumption");
         sensorJetiExP->setUnit("mAh");
     }
-    if (config.protocol == PROTOCOL_CASTLE)
+    if (ESC_PROTOCOL == PROTOCOL_CASTLE)
     {
         SensorJetiEx *sensorJetiExP;
         EscCastle *esc;
@@ -460,7 +460,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setText("Consumption");
         sensorJetiExP->setUnit("mAh");
     }
-    if (config.protocol == PROTOCOL_KONTRONIK)
+    if (ESC_PROTOCOL == PROTOCOL_KONTRONIK)
     {
         SensorJetiEx *sensorJetiExP;
         EscKontronik *esc;
@@ -503,7 +503,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setText("Consumption");
         sensorJetiExP->setUnit("mAh");
     }
-    if (config.protocol == PROTOCOL_APD_F)
+    if (ESC_PROTOCOL == PROTOCOL_APD_F)
     {
         SensorJetiEx *sensorJetiExP;
         EscApdF *esc;
@@ -538,7 +538,7 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setText("Consumption");
         sensorJetiExP->setUnit("mAh");
     }
-    if (config.protocol == PROTOCOL_APD_HV)
+    if (ESC_PROTOCOL == PROTOCOL_APD_HV)
     {
         SensorJetiEx *sensorJetiExP;
         EscApdHV *esc;
@@ -605,6 +605,10 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
         sensorJetiExP->setText("Vario");
         sensorJetiExP->setUnit("m/s");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 0, gps->distP(), gps);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Dist Home");
+        sensorJetiExP->setUnit("m");
     }
     if (config.airspeed == true)
     {

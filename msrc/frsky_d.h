@@ -32,6 +32,11 @@
 #include "configeeprom.h"
 #include "pwmout.h"
 
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
+#define ESC_PROTOCOL CONFIG_ESC_PROTOCOL
+#else
+#define ESC_PROTOCOL config.protocol
+#endif
 class Frsky
 {
 private:

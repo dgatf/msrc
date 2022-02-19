@@ -95,7 +95,7 @@ void Multiplex::update()
 void Multiplex::setConfig(Config &config)
 {
     deleteSensors();
-    if (config.protocol == PROTOCOL_PWM)
+    if (ESC_PROTOCOL == PROTOCOL_PWM)
     {
         SensorMultiplex *sensorMultiplexP;
         EscPWM *esc;
@@ -104,7 +104,7 @@ void Multiplex::setConfig(Config &config)
         sensorMultiplexP = new SensorMultiplex(FHSS_RPM, esc->rpmP(), esc);
         addSensor(sensorMultiplexP);
     }
-    if (config.protocol == PROTOCOL_HW_V3)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V3)
     {
         SensorMultiplex *sensorMultiplexP;
         EscHW3 *esc;
@@ -113,7 +113,7 @@ void Multiplex::setConfig(Config &config)
         sensorMultiplexP = new SensorMultiplex(FHSS_RPM, esc->rpmP(), esc);
         addSensor(sensorMultiplexP);
     }
-    if (config.protocol == PROTOCOL_HW_V4)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V4)
     {
         SensorMultiplex *sensorMultiplexP;
         EscHW4 *esc;
@@ -136,7 +136,7 @@ void Multiplex::setConfig(Config &config)
         sensorMultiplexP = new SensorMultiplex(FHSS_CONSUMPTION, esc->consumptionP(), esc);
         addSensor(sensorMultiplexP);
     }
-    if (config.protocol == PROTOCOL_CASTLE)
+    if (ESC_PROTOCOL == PROTOCOL_CASTLE)
     {
         SensorMultiplex *sensorMultiplexP;
         EscCastle *esc;
@@ -161,7 +161,7 @@ void Multiplex::setConfig(Config &config)
         sensorMultiplexP = new SensorMultiplex(FHSS_CONSUMPTION, esc->consumptionP(), esc);
         addSensor(sensorMultiplexP);
     }
-    if (config.protocol == PROTOCOL_KONTRONIK)
+    if (ESC_PROTOCOL == PROTOCOL_KONTRONIK)
     {
         SensorMultiplex *sensorMultiplexP;
         EscKontronik *esc;
@@ -186,7 +186,7 @@ void Multiplex::setConfig(Config &config)
         sensorMultiplexP = new SensorMultiplex(FHSS_CONSUMPTION, esc->consumptionP(), esc);
         addSensor(sensorMultiplexP);
     }
-    if (config.protocol == PROTOCOL_APD_F)
+    if (ESC_PROTOCOL == PROTOCOL_APD_F)
     {
         SensorMultiplex *sensorMultiplexP;
         EscApdF *esc;
@@ -207,7 +207,7 @@ void Multiplex::setConfig(Config &config)
         sensorMultiplexP = new SensorMultiplex(FHSS_VOLTAGE, esc->cellVoltageP(), esc);
         addSensor(sensorMultiplexP);
     }
-    if (config.protocol == PROTOCOL_APD_HV)
+    if (ESC_PROTOCOL == PROTOCOL_APD_HV)
     {
         SensorMultiplex *sensorMultiplexP;
         EscApdHV *esc;
@@ -239,6 +239,8 @@ void Multiplex::setConfig(Config &config)
         sensorMultiplexP = new SensorMultiplex(FHSS_ALTITUDE, gps->altP(), gps);
         addSensor(sensorMultiplexP);
         sensorMultiplexP = new SensorMultiplex(FHSS_VARIO, gps->varioP(), gps);
+        addSensor(sensorMultiplexP);
+        sensorMultiplexP = new SensorMultiplex(FHSS_DISTANCE, gps->distP(), gps);
         addSensor(sensorMultiplexP);
     }
     if (config.airspeed == true)

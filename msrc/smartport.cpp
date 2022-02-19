@@ -450,7 +450,7 @@ void Smartport::setConfig(Config &config)
         sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_APD_F)
+    if (ESC_PROTOCOL == PROTOCOL_APD_F)
     {
         Sensor *sensorP;
         EscApdF *esc;
@@ -467,7 +467,7 @@ void Smartport::setConfig(Config &config)
         sensorP = new Sensor(VFAS_FIRST_ID, esc->cellVoltageP(), config.refresh.volt, esc);
         addSensor(sensorP);
     }
-    if (config.protocol == PROTOCOL_APD_HV)
+    if (ESC_PROTOCOL == PROTOCOL_APD_HV)
     {
         Sensor *sensorP;
         EscApdHV *esc;
@@ -501,6 +501,8 @@ void Smartport::setConfig(Config &config)
         sensorP = new Sensor(VARIO_FIRST_ID + 1, gps->varioP(), 5, gps);
         addSensor(sensorP);
         sensorP = new Sensor(DIY_FIRST_ID + 3, gps->satP(), 10, gps);
+        addSensor(sensorP);
+        sensorP = new Sensor(DIY_FIRST_ID + 4, gps->distP(), 10, gps);
         addSensor(sensorP);
     }
     if (config.airspeed == true)
