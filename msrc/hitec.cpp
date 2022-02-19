@@ -154,13 +154,11 @@ void Hitec::i2c_request_handler()
                 valueU8 = *frame_0x17_P[HITEC_FRAME_0X17_SATS];
                 buffer[3] = valueU8;
             }
-            break;
             if (frame_0x17_P[HITEC_FRAME_0X17_TEMP3])
             {
                 valueU8 = *frame_0x17_P[HITEC_FRAME_0X17_TEMP3] + 40;
                 buffer[4] = valueU8;
             }
-            break;
             if (frame_0x17_P[HITEC_FRAME_0X17_TEMP4])
             {
                 valueU8 = *frame_0x17_P[HITEC_FRAME_0X17_TEMP4] + 40;
@@ -177,8 +175,6 @@ void Hitec::i2c_request_handler()
             if (frame_0x18_P[HITEC_FRAME_0X18_AMP])
             {
                 valueU16 = (*frame_0x18_P[HITEC_FRAME_0X18_AMP] + 114.875) * 1.441;
-                // DEBUG_PRINT(*frame_0x18_P[HITEC_FRAME_0X18_AMP]);
-                // DEBUG_PRINT(" ");
                 buffer[3] = valueU16;
                 buffer[4] = valueU16 >> 8;
             }
