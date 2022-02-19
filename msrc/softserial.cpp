@@ -86,7 +86,7 @@ void SoftSerial::PCINT_handler()
             incomingByte = ~incomingByte;
 
         // stop bits
-        _delay_loop(rx_delay_stop);
+        delay_loop(rx_delay_stop);
 
         if (timedout)
             reset();
@@ -154,7 +154,7 @@ void SoftSerial::initWrite()
         DDRB &= ~_BV(DDB4);
 
     SREG = oldSREG;
-    delay_loop(tdelay);
+    delay_loop(delay);
 }
 
 void SoftSerial::setTimeout(uint16_t timeout)
