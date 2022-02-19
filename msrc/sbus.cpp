@@ -49,7 +49,7 @@ void Sbus::TIMER_COMP_handler()
         sendSlot(telemetryPacket * 8 + cont);
     if (cont < 7)
     {
-        OCR2A = ts + (uint8_t)(700 * US_TO_COMP(256)); // next slot  540us
+        OCR2A = ts + (uint8_t)(SBUS_INTER_SLOT_DELAY * US_TO_COMP(256));
         cont++;
     }
     else
@@ -92,7 +92,7 @@ void Sbus::TIMER_COMP_handler()
         sendSlot(telemetryPacket * 8 + cont);
     if (cont < 7)
     {
-        OCR3B = ts + (uint16_t)(700 * US_TO_COMP(1)); // next slot 700us
+        OCR3B = ts + (uint16_t)(SBUS_INTER_SLOT_DELAY * US_TO_COMP(1));
         cont++;
     }
     else
@@ -135,7 +135,7 @@ void Sbus::FTM0_IRQ_handler()
             sendSlot(telemetryPacket * 8 + cont);
         if (cont < 7)
         {
-            FTM0_C0V = ts + (uint16_t)(700 * US_TO_COMP(128)); // next slot 700us
+            FTM0_C0V = ts + (uint16_t)(SBUS_INTER_SLOT_DELAY * US_TO_COMP(128));
             cont++;
         }
         else
@@ -220,11 +220,6 @@ void Sbus::sendPacket()
 {
     digitalWrite(LED_BUILTIN, HIGH);
     uint16_t ts = SMARTPORT_FRSKY_SBUS_SERIAL.timestamp();
-#ifdef DEBUG
-    DEBUG_PRINT("\nTP");
-    DEBUG_PRINT(telemetryPacket);
-    DEBUG_PRINT(": ");
-#endif
 #ifdef DEBUG_SBUS_MS
     DEBUG_PRINTLN();
     DEBUG_PRINT(ts);
@@ -234,22 +229,22 @@ void Sbus::sendPacket()
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
     // configure timer
-    OCR2A = TCNT2 + (2000 - ts) * US_TO_COMP(256); // complete 2ms
-    TIFR2 |= _BV(OCF2A);                           // CLEAR TIMER2 OCRA CAPTURE FLAG
-    TIMSK2 |= _BV(OCIE2A);                         // ENABLE TIMER2 OCRA INTERRUPT
+    OCR2A = TCNT2 + (SBUS_SLOT_0_DELAY - ts) * US_TO_COMP(256); // complete 2ms
+    TIFR2 |= _BV(OCF2A);                                        // CLEAR TIMER2 OCRA CAPTURE FLAG
+    TIMSK2 |= _BV(OCIE2A);                                      // ENABLE TIMER2 OCRA INTERRUPT
 #endif
 
 #if defined(__AVR_ATmega32U4__)
     // configure timer
-    OCR3A = TCNT3 + (2000 - ts) * US_TO_COMP(1); // complete 2ms
-    TIFR3 |= _BV(OCF3A);                         // CLEAR TIMER2 OCRA CAPTURE FLAG
-    TIMSK3 |= _BV(OCIE3A);                       // ENABLE TIMER2 OCRA INTERRUPT
+    OCR3A = TCNT3 + (SBUS_SLOT_0_DELAY - ts) * US_TO_COMP(1); // complete 2ms
+    TIFR3 |= _BV(OCF3A);                                      // CLEAR TIMER2 OCRA CAPTURE FLAG
+    TIMSK3 |= _BV(OCIE3A);                                    // ENABLE TIMER2 OCRA INTERRUPT
 #endif
 
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
-    FTM0_C0V = FTM0_CNT + (2000 - ts) * US_TO_COMP(128);
-    FTM0_C0SC |= FTM_CSC_CHF;                     // CLEAR FLAG
-    FTM0_C0SC |= FTM_CSC_CHIE;                    // ENABLE INTERRUPT
+    FTM0_C0V = FTM0_CNT + (SBUS_SLOT_0_DELAY - ts) * US_TO_COMP(128);
+    FTM0_C0SC |= FTM_CSC_CHF;  // CLEAR FLAG
+    FTM0_C0SC |= FTM_CSC_CHIE; // ENABLE INTERRUPT
 #endif
 }
 
@@ -292,17 +287,22 @@ void Sbus::update()
         //SMARTPORT_FRSKY_SBUS_SERIAL.readBytes(buff, SBUS_PACKET_LENGHT);
         if (buff[0] == 0x0F)
         {
+#if defined(DEBUG) //|| defined(DEBUG_SBUS_MS)
+            DEBUG_PRINTLN();
+            DEBUG_PRINT_HEX(buff[24]);
+            DEBUG_PRINT(": ");
+#endif
             // SBUS
             if (buff[24] == 0)
             {
-                if (!mute)
+                /*if (!mute)
                 {
                     status = SBUS_SEND;
                     telemetryPacket++;
                     if (telemetryPacket == 4)
                         telemetryPacket = 0;
                 }
-                mute = !mute;
+                mute = !mute;*/
             }
             // SBUS2
             else if (buff[24] == 0x04 || buff[24] == 0x14 || buff[24] == 0x24 || buff[24] == 0x34)
