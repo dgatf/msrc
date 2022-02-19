@@ -30,7 +30,7 @@
 #define SBUS_SEND 1
 
 #define SBUS_SLOT_0_DELAY 2000
-#define SBUS_INTER_SLOT_DELAY 700
+#define SBUS_INTER_SLOT_DELAY 660
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
 #define ESC_PROTOCOL CONFIG_ESC_PROTOCOL
