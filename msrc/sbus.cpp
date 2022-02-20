@@ -160,7 +160,9 @@ void Sbus::sendSlot(uint8_t number)
     DEBUG_PRINT(":");
     DEBUG_PRINT_HEX(slotId[number]);
     DEBUG_PRINT(":");
-    DEBUG_PRINT_HEX(sensorSbusP[number]->valueFormatted());
+    DEBUG_PRINT_HEX((uint8_t)val);
+    DEBUG_PRINT(":");
+    DEBUG_PRINT_HEX((uint8_t)(val >> 8));
 #endif
 }
 

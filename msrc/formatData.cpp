@@ -180,47 +180,47 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
 {
     if (dataId == FASST_RPM)
     {
-        return __builtin_bswap16((uint16_t)round(value / 6));
+        return (uint16_t)round(value / 6);
     }
     if (dataId == FASST_TEMP)
     {
-        return __builtin_bswap16((uint16_t)round(value + 100) | 0X8000);
+        return (uint16_t)round(value + 100) | 0X8000;
     }
     if (dataId == FASST_VOLT_V1)
     {
-        return __builtin_bswap16((uint16_t)round(value * 10) | 0x8000);
+        return (uint16_t)round(value * 10) | 0x8000;
     }
     if (dataId == FASST_VOLT_V2)
     {
-        return __builtin_bswap16((uint16_t)round(value * 10));
+        return (uint16_t)round(value * 10);
     }
     if (dataId == FASST_VARIO_SPEED)
     {
-        return __builtin_bswap16((int16_t)round(value * 100));
+        return (int16_t)round(value * 100);
     }
     if (dataId == FASST_VARIO_ALT)
     {
-        return __builtin_bswap16((int16_t)round(value) | 0x4000);
+        return (int16_t)round(value) | 0x4000;
     }
     if (dataId == FASST_POWER_CURR)
     {
-        return __builtin_bswap16((uint16_t)round(value * 100) | 0x4000);
+        return (uint16_t)round(value * 100) | 0x4000;
     }
     if (dataId == FASST_POWER_VOLT)
     {
-        return __builtin_bswap16((uint16_t)round(value * 100));
+        return (uint16_t)round(value * 100);
     }
     if (dataId == FASST_GPS_SPEED)
     {
-        return __builtin_bswap16((uint16_t)round(value) | 0x4000);
+        return (uint16_t)round(value) | 0x4000;
     }
     if (dataId == FASST_GPS_VARIO_SPEED)
     {
-        return __builtin_bswap16((int16_t)round(value) * 10 | 0x4000);
+        return (int16_t)round(value) * 10 | 0x4000;
     }
     if (dataId == FASST_GPS_ALTITUDE)
     {
-        return __builtin_bswap16((int16_t)round(value) | 0x4000);
+        return (int16_t)round(value) | 0x4000;
     }
     if (dataId == FASST_GPS_LATITUDE1 || dataId == FASST_GPS_LONGITUDE1)
     {
@@ -235,7 +235,7 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
         lat |= degrees << 8;
         uint32_t minutes = fmod(value, 60) * 10000; // minutes precision 4
         lat |= minutes >> 16;
-        return __builtin_bswap16(lat);
+        return lat;
     }
     if (dataId == FASST_GPS_LATITUDE2 || dataId == FASST_GPS_LONGITUDE2)
     {
@@ -245,7 +245,7 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
             value *= -1;
         }
         uint32_t minutes = fmod(value, 60) * 10000; // minutes precision 4
-        return __builtin_bswap16(minutes);
+        return minutes;
     }
     if (dataId == FASST_GPS_TIME)
     {
@@ -254,9 +254,9 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
         uint8_t hours = value / 10000;
         uint8_t minutes = (uint8_t)(value / 100) - hours * 100;
         uint8_t seconds = (uint8_t)(value / 10000);
-        return __builtin_bswap16(hours * 3600 + minutes * 60 + seconds);
+        return hours * 3600 + minutes * 60 + seconds;
     }
-    return __builtin_bswap16(round(value));
+    return round(value);
 }
 
 int16_t FormatData::formatMultiplex(uint8_t dataId, float value)
