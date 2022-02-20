@@ -256,17 +256,18 @@ void Sbus::update()
     static bool mute = true;
 #if defined(SIM_RX)
     static uint16_t ts = 0;
-    if ((uint16_t)(millis() - ts) > 100)
+    if ((uint16_t)(millis() - ts) > 500)
     {
-        if (!mute)
-        {
-            status = SBUS_SEND;
-            telemetryPacket++;
-        }
-        mute = !mute;
-        ts = millis();
+        status = SBUS_SEND;
+        telemetryPacket++;
         if (telemetryPacket == 4)
             telemetryPacket = 0;
+        ts = millis();
+#if defined(DEBUG) //|| defined(DEBUG_SBUS_MS)
+        DEBUG_PRINTLN();
+        DEBUG_PRINT(telemetryPacket);
+        DEBUG_PRINT(": ");
+#endif
     }
 #else
     uint8_t lenght = SMARTPORT_FRSKY_SBUS_SERIAL.availableTimeout();
