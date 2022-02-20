@@ -1,13 +1,7 @@
 #ifndef ESCPWM_H
 #define ESCPWM_H
 
-
-#if (F_CPU == 16000000UL)
-#define ESCPWM_MAX_CYCLES (200/4)
-#endif
-#if (F_CPU == 8000000UL)
-#define ESCPWM_MAX_CYCLES (200/8)
-#endif
+#define ESCPWM_MAX_CYCLES 0xFF
 
 #include <Arduino.h>
 #include "device.h"

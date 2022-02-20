@@ -88,29 +88,36 @@ void EscPWM::FTM0_IRQ_handler()
     {
         static uint16_t ts = 0;
         if (escPwmRunning)
-            escPwmDuration = FTM0_CNT - ts;
+            escPwmDuration = (uint16_t)(FTM0_CNT - ts) + (cycles_ * 65536UL);
         ts = FTM0_CNT;
         FTM0_C4SC |= FTM_CSC_CHF; // CLEAR FLAG
-        FTM0_C0V = (uint16_t)((uint16_t)FTM0_CNT + (uint16_t)(12 * MS_TO_COMP(32)));
+        FTM0_C0V = FTM0_CNT;
         FTM0_C0SC |= FTM_CSC_CHF;  // CLEAR FLAG
         FTM0_C0SC |= FTM_CSC_CHIE; // ENABLE CH0 INTERRUPT
         escPwmUpdate = true;
         escPwmRunning = true;
+        cycles_ = 0;
 #ifdef DEBUG_PWM
-        DEBUG_PWM_PRINT(escPwmDuration);
+        //DEBUG_PRINT(escPwmDuration);
+        DEBUG_PRINT((float)(escPwmDuration * COMP_TO_MS(128)));
+        DEBUG_PRINT(" ");
         DEBUG_PRINTLN();
 #endif
     }
     if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH4
     {
-        FTM0_C0SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT
-        FTM0_C0SC |= FTM_CSC_CHF;   // CLEAR FLAG
-        escPwmRunning = false;
-        escPwmDuration = 0xFFFFFFFF;
+        cycles_++;
+        if (cycles_ > ESCPWM_MAX_CYCLES)
+        {
+            escPwmRunning = false;
+            escPwmDuration = 0xFFFFFFFF;
+            FTM0_C0SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT
+            FTM0_C0SC |= FTM_CSC_CHF;   // CLEAR FLAG
 #ifdef DEBUG_PWM
-        DEBUG_PWM_PRINT("X");
-        DEBUG_PRINTLN();
+            DEBUG_PRINT("X");
+            DEBUG_PRINTLN();
 #endif
+        }
     }
 }
 #endif
@@ -144,7 +151,7 @@ void EscPWM::begin()
     FTM0_CNT = 0;
     SIM_SCGC6 |= SIM_SCGC6_FTM0; // ENABLE CLOCK
     FTM0_MOD = 0xFFFF;
-    FTM0_SC = FTM_SC_PS(5);    // PRESCALER 32
+    FTM0_SC = FTM_SC_PS(7);    // PRESCALER 128
     FTM0_SC |= FTM_SC_CLKS(1); // ENABLE COUNTER
 
     FTM0_C4SC = 0;                              // DISABLE CHANNEL
