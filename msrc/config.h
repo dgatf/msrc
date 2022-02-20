@@ -6,14 +6,14 @@
 
 /* Sensors */
 #define CONFIG_ESC_PROTOCOL PROTOCOL_NONE // PROTOCOL_NONE, PROTOCOL_HW_V3, PROTOCOL_HW_V4, PROTOCOL_PWM, PROTOCOL_CASTLE, PROTOCOL_KONTRONIK, PROTOCOL_APD_F, PROTOCOL_APD_HV
-#define CONFIG_GPS false
+#define CONFIG_GPS true
 #define GPS_BAUD_RATE 9600
 #define CONFIG_VOLTAGE1 true
 #define CONFIG_VOLTAGE2 false
-#define CONFIG_NTC1 false
-#define CONFIG_NTC2 false
-#define CONFIG_CURRENT false
-#define CONFIG_AIRSPEED false
+#define CONFIG_NTC1 true
+#define CONFIG_NTC2 true
+#define CONFIG_CURRENT true
+#define CONFIG_AIRSPEED true
 #define CONFIG_I2C1_TYPE I2C_NONE // I2C_NONE, I2C_BMP280
 #define CONFIG_I2C1_ADDRESS 0x76  // 0x76, 0x77
 /* Refresh rate in 0.1s (1 = 100ms) */
@@ -69,7 +69,7 @@
    Connect arduino Rx to TTL Tx for flashing, then if applicabe connect arduino Rx to esc or gps
 */
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_PACKET
 //#define DEBUG_SBUS_MS
 //#define DEBUG_EEPROM_WRITE
