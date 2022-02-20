@@ -380,7 +380,7 @@ void Hitec::setConfig(Config &config)
         frame_0x14_P[HITEC_FRAME_0X14_GPS_SPD] = gps->spdP();
         frame_0x17_P[HITEC_FRAME_0X17_COG] = gps->cogP();
         frame_0x16_P[HITEC_FRAME_0X16_DATE] = gps->dateP();
-        frame_0x17_P[HITEC_FRAME_0X16_TIME] = gps->timeP();
+        frame_0x16_P[HITEC_FRAME_0X16_TIME] = gps->timeP();
         isEnabledFrame[HITEC_FRAME_0X17] = true;
         isEnabledFrame[HITEC_FRAME_0X12] = true;
         isEnabledFrame[HITEC_FRAME_0X13] = true;
