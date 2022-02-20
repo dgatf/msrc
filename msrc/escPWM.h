@@ -1,6 +1,14 @@
 #ifndef ESCPWM_H
 #define ESCPWM_H
 
+
+#if (F_CPU == 16000000UL)
+#define ESCPWM_MAX_CYCLES (200/4)
+#endif
+#if (F_CPU == 8000000UL)
+#define ESCPWM_MAX_CYCLES (200/8)
+#endif
+
 #include <Arduino.h>
 #include "device.h"
 
@@ -19,10 +27,11 @@ extern void (*FTM0_IRQ_handlerP)();
 class EscPWM : public AbstractDevice
 {
 private:
-    static volatile uint16_t escPwmDuration;
+    static volatile uint32_t escPwmDuration;
     static volatile bool escPwmRunning, escPwmUpdate;
+    static volatile uint8_t cycles_;
     uint8_t alphaRpm_;
-    float rpm_;
+    float rpm_ = 0;
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
     static void TIMER1_CAPT_handler();
     static void TIMER1_COMPB_handler();

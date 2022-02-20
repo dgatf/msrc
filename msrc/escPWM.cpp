@@ -1,8 +1,9 @@
 #include "escPWM.h"
 
-volatile uint16_t EscPWM::escPwmDuration = 0;
+volatile uint32_t EscPWM::escPwmDuration = 0;
 volatile bool EscPWM::escPwmRunning = false;
 volatile bool EscPWM::escPwmUpdate = false;
+volatile uint8_t EscPWM::cycles_ = 0;
 
 EscPWM::EscPWM(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
 
@@ -11,28 +12,35 @@ void EscPWM::TIMER1_CAPT_handler()
 {
     static uint16_t ts = 0;
     if (escPwmRunning)
-        escPwmDuration = ICR1 - ts;
+        escPwmDuration = (ICR1 - ts) + (cycles_ * 65536UL);
     ts = ICR1;
-    OCR1B = TCNT1 - 1;
+    OCR1B = TCNT1;
     TIFR1 |= _BV(OCF1B);   // CLEAR TIMER1 OCRB CAPTURE FLAG
     TIMSK1 |= _BV(OCIE1B); // ENABLE TIMER1 OCRB INTERRUPT
     escPwmRunning = true;
     escPwmUpdate = true;
+    cycles_ = 0;
 #ifdef DEBUG_PWM
-    DEBUG_PRINT(escPwmDuration);
+    //DEBUG_PRINT(escPwmDuration);
+    DEBUG_PRINT((float)(escPwmDuration * COMP_TO_MS(1)));
+    DEBUG_PRINT(" ");
     DEBUG_PRINTLN();
 #endif
 }
 
 void EscPWM::TIMER1_COMPB_handler()
 {
-    escPwmRunning = false;
-    escPwmDuration = 0xFFFF;
-    TIMSK1 ^= _BV(OCIE1B); // DISABLE TIMER1 OCRA INTERRUPT
+    cycles_++;
+    if (cycles_ > ESCPWM_MAX_CYCLES)
+    {
+        escPwmRunning = false;
+        escPwmDuration = 0xFFFFFFFF;
+        TIMSK1 ^= _BV(OCIE1B); // DISABLE TIMER1 OCRA INTERRUPT
 #ifdef DEBUG_PWM
-    DEBUG_PRINT("X");
-    DEBUG_PRINTLN();
+        DEBUG_PRINT("X");
+        DEBUG_PRINTLN();
 #endif
+    }
 }
 #endif
 
@@ -41,28 +49,35 @@ void EscPWM::TIMER4_CAPT_handler()
 {
     static uint16_t ts = 0;
     if (escPwmRunning)
-        escPwmDuration = ICR4 - ts;
+        escPwmDuration = (ICR4 - ts) + (cycles_ * 65536UL);
     ts = ICR4;
-    OCR4B = TCNT4 - 1;
+    OCR4B = TCNT4;
     TIFR4 |= _BV(OCF4B);   // CLEAR TIMER4 OCRB CAPTURE FLAG
     TIMSK4 |= _BV(OCIE4B); // ENABLE TIMER4 OCRB INTERRUPT
     escPwmRunning = true;
     escPwmUpdate = true;
+    cycles_ = 0;
 #ifdef DEBUG_PWM
-    DEBUG_PWM_PRINT(escPwmDuration);
+    //DEBUG_PRINT(escPwmDuration);
+    DEBUG_PRINT((float)(escPwmDuration * COMP_TO_MS(1)));
+    DEBUG_PRINT(" ");
     DEBUG_PRINTLN();
 #endif
 }
 
 void EscPWM::TIMER4_COMPB_handler()
 {
-    escPwmRunning = false;
-    escPwmDuration = 0xFFFF;
-    TIMSK4 ^= _BV(OCIE4B); // DISABLE TIMER4 OCRA INTERRUPT
+    cycles_++;
+    if (cycles_ > ESCPWM_MAX_CYCLES)
+    {
+        escPwmRunning = false;
+        escPwmDuration = 0xFFFFFFFF;
+        TIMSK4 ^= _BV(OCIE4B); // DISABLE TIMER4 OCRA INTERRUPT
 #ifdef DEBUG_PWM
-    DEBUG_PWM_PRINT("X");
-    DEBUG_PRINTLN();
+        DEBUG_PRINT("X");
+        DEBUG_PRINTLN();
 #endif
+    }
 }
 #endif
 
@@ -91,7 +106,7 @@ void EscPWM::FTM0_IRQ_handler()
         FTM0_C0SC &= ~FTM_CSC_CHIE; // DISABLE INTERRUPT
         FTM0_C0SC |= FTM_CSC_CHF;   // CLEAR FLAG
         escPwmRunning = false;
-        escPwmDuration = 0xFFFF;
+        escPwmDuration = 0xFFFFFFFF;
 #ifdef DEBUG_PWM
         DEBUG_PWM_PRINT("X");
         DEBUG_PRINTLN();
@@ -108,7 +123,7 @@ void EscPWM::begin()
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
     TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
     TCCR1A = 0;
-    TCCR1B = _BV(CS10) | _BV(ICES1) | _BV(ICNC1);
+    TCCR1B = _BV(CS10) | _BV(ICES1) | _BV(ICNC1); // SCALER 1
     TIMSK1 = _BV(ICIE1) | _BV(TOIE1);
 #endif
 
@@ -146,7 +161,7 @@ void EscPWM::begin()
 
 #endif
 
-/*
+    /*
 #if defined(__IMXRT1062__)
     
     GPT1_CR = 0;                    // DISABLE TIMER (EN=0)
@@ -161,7 +176,6 @@ void EscPWM::begin()
     NVIC_ENABLE_IRQ(IRQ_GPT1);
 #endif
 */
-
 }
 
 void EscPWM::update()
