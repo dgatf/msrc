@@ -35,7 +35,7 @@ void Hitec::i2c_request_handler()
     if (!isEmpty)
     {
         static uint8_t frame = 0;
-        uint16_t valueS32;
+        int32_t valueS32;
         uint16_t valueU16;
         uint16_t valueS16;
         uint8_t valueU8;
@@ -62,14 +62,16 @@ void Hitec::i2c_request_handler()
         case HITEC_FRAME_0X12:
             if (frame_0x12_P[HITEC_FRAME_0X12_GPS_LAT])
             {
-                valueS32 = *frame_0x12_P[HITEC_FRAME_0X12_GPS_LAT];
-                int8_t deg = valueS32 / 60;
-                uint8_t min = abs(deg - int16_t(valueS32)) * 60;
-                uint16_t sec_x_100 = deg - abs(int16_t(valueS32)) *60 * 100;
+                float degF = *frame_0x12_P[HITEC_FRAME_0X12_GPS_LAT] / 60;
+                int8_t deg = degF;
+                int8_t min = (degF - deg) * 60;
+                float sec = ((degF - deg) * 60 - min) * 60;
+                int16_t sec_x_100 = sec * 100;
+                int16_t deg_min = deg * 100 + min;
                 buffer[1] = sec_x_100 >> 8;
                 buffer[2] = sec_x_100;
-                buffer[3] = min;
-                buffer[4] = deg;
+                buffer[3] = deg_min >> 8;
+                buffer[4] = deg_min; 
             }
             if (frame_0x12_P[HITEC_FRAME_0X12_TIME])
             {
@@ -79,50 +81,52 @@ void Hitec::i2c_request_handler()
         case HITEC_FRAME_0X13:
             if (frame_0x13_P[HITEC_FRAME_0X13_GPS_LON])
             {
-                valueS32 = *frame_0x12_P[HITEC_FRAME_0X12_GPS_LAT];
-                int8_t deg = valueS32 / 60;
-                uint8_t min = abs(deg - int16_t(valueS32)) * 60;
-                uint16_t sec_x_100 = deg - abs(int16_t(valueS32)) *60 * 100;
+                float degF = *frame_0x13_P[HITEC_FRAME_0X13_GPS_LON] / 60;
+                int8_t deg = degF;
+                int8_t min = (degF - deg) * 60;
+                float sec = ((degF - deg) * 60 - min) * 60;
+                int16_t sec_x_100 = sec * 100;
+                int16_t deg_min = deg * 100 + min;
                 buffer[1] = sec_x_100 >> 8;
                 buffer[2] = sec_x_100;
-                buffer[3] = min;
-                buffer[4] = deg;
+                buffer[3] = deg_min >> 8;
+                buffer[4] = deg_min;
             }
             if (frame_0x13_P[HITEC_FRAME_0X13_TEMP2])
             {
-                valueU8 = *frame_0x13_P[HITEC_FRAME_0X13_TEMP2] + 40;
+                valueU8 = round(*frame_0x13_P[HITEC_FRAME_0X13_TEMP2] + 40);
                 buffer[5] = valueU8;
             }
             break;
         case HITEC_FRAME_0X14:
             if (frame_0x14_P[HITEC_FRAME_0X14_GPS_SPD])
             {
-                valueU16 = *frame_0x14_P[HITEC_FRAME_0X14_GPS_SPD] * 1.852;
+                valueU16 = round(*frame_0x14_P[HITEC_FRAME_0X14_GPS_SPD] * 1.852);
                 buffer[1] = valueU16 >> 8;
                 buffer[2] = valueU16;
             }
             if (frame_0x14_P[HITEC_FRAME_0X14_GPS_ALT])
             {
-                valueS16 = *frame_0x14_P[HITEC_FRAME_0X14_GPS_ALT];
+                valueS16 = round(*frame_0x14_P[HITEC_FRAME_0X14_GPS_ALT]);
                 buffer[3] = valueS16 >> 8;
                 buffer[4] = valueS16;
             }
             if (frame_0x14_P[HITEC_FRAME_0X14_TEMP1])
             {
-                valueU8 = *frame_0x14_P[HITEC_FRAME_0X14_TEMP1] + 40;
+                valueU8 = round(*frame_0x14_P[HITEC_FRAME_0X14_TEMP1] + 40);
                 buffer[5] = valueU8;
             }
             break;
         case HITEC_FRAME_0X15:
             if (frame_0x15_P[HITEC_FRAME_0X15_RPM1])
             {
-                valueU16 = *frame_0x15_P[HITEC_FRAME_0X15_RPM1];
+                valueU16 = round(*frame_0x15_P[HITEC_FRAME_0X15_RPM1]);
                 buffer[2] = valueU16;
                 buffer[3] = valueU16 >> 8;
             }
             if (frame_0x15_P[HITEC_FRAME_0X15_RPM2])
             {
-                valueU16 = *frame_0x15_P[HITEC_FRAME_0X15_RPM2];
+                valueU16 = round(*frame_0x15_P[HITEC_FRAME_0X15_RPM2]);
                 buffer[4] = valueU16;
                 buffer[5] = valueU16 >> 8;
             }
@@ -131,21 +135,21 @@ void Hitec::i2c_request_handler()
             if (frame_0x16_P[HITEC_FRAME_0X16_DATE])
             {
                 valueS32 = *frame_0x16_P[HITEC_FRAME_0X16_DATE];
-                buffer[1] = valueS32 / 10000;                               // year
-                buffer[2] = (valueS32 - buffer[0] * 10000) / 100;           // month
-                buffer[3] = valueS32 - buffer[0] * 10000 - buffer[1] * 100; // day
+                buffer[3] = valueS32 / 10000;                                 // year
+                buffer[2] = (valueS32 - buffer[3] * 10000UL) / 100;           // month
+                buffer[1] = valueS32 - buffer[3] * 10000UL - buffer[2] * 100; // day
             }
             if (frame_0x16_P[HITEC_FRAME_0X16_TIME])
             {
                 valueS32 = *frame_0x16_P[HITEC_FRAME_0X16_TIME];
-                buffer[4] = valueS32 / 10000;                               // hour
-                buffer[5] = (valueS32 - buffer[0] * 10000) / 100;           // minute
+                buffer[4] = valueS32 / 10000;                       // hour
+                buffer[5] = (valueS32 - buffer[4] * 10000UL) / 100; // minute
             }
             break;
         case HITEC_FRAME_0X17:
             if (frame_0x17_P[HITEC_FRAME_0X17_COG])
             {
-                valueU16 = *frame_0x17_P[HITEC_FRAME_0X17_COG];
+                valueU16 = round(*frame_0x17_P[HITEC_FRAME_0X17_COG]);
                 buffer[1] = valueU16 >> 8;
                 buffer[2] = valueU16;
             }
@@ -156,25 +160,30 @@ void Hitec::i2c_request_handler()
             }
             if (frame_0x17_P[HITEC_FRAME_0X17_TEMP3])
             {
-                valueU8 = *frame_0x17_P[HITEC_FRAME_0X17_TEMP3] + 40;
+                valueU8 = round(*frame_0x17_P[HITEC_FRAME_0X17_TEMP3] + 40);
                 buffer[4] = valueU8;
             }
             if (frame_0x17_P[HITEC_FRAME_0X17_TEMP4])
             {
-                valueU8 = *frame_0x17_P[HITEC_FRAME_0X17_TEMP4] + 40;
+                valueU8 = round(*frame_0x17_P[HITEC_FRAME_0X17_TEMP4] + 40);
                 buffer[5] = valueU8;
             }
             break;
         case HITEC_FRAME_0X18:
             if (frame_0x18_P[HITEC_FRAME_0X18_VOLT])
             {
-                valueU16 = *frame_0x18_P[HITEC_FRAME_0X18_VOLT] * 10;
+                valueU16 = round(*frame_0x18_P[HITEC_FRAME_0X18_VOLT] * 10);
                 buffer[1] = valueU16;
                 buffer[2] = valueU16 >> 8;
             }
             if (frame_0x18_P[HITEC_FRAME_0X18_AMP])
             {
-                valueU16 = (*frame_0x18_P[HITEC_FRAME_0X18_AMP] + 114.875) * 1.441;
+                /* value for stock transmitter (tbc) */
+                //valueU16 = (*frame_0x18_P[HITEC_FRAME_0X18_AMP] + 114.875) * 1.441;
+
+                /* value for opentx transmitter  */
+                valueU16 = round(*frame_0x18_P[HITEC_FRAME_0X18_AMP]);
+
                 buffer[3] = valueU16;
                 buffer[4] = valueU16 >> 8;
             }
@@ -182,43 +191,43 @@ void Hitec::i2c_request_handler()
         case HITEC_FRAME_0X19:
             if (frame_0x19_P[HITEC_FRAME_0X19_AMP1])
             {
-                valueU8 = *frame_0x19_P[HITEC_FRAME_0X19_AMP1] * 10;
+                valueU8 = round(*frame_0x19_P[HITEC_FRAME_0X19_AMP1] * 10);
                 buffer[5] = valueU8;
             }
             if (frame_0x19_P[HITEC_FRAME_0X19_AMP2])
             {
-                valueU8 = *frame_0x19_P[HITEC_FRAME_0X19_AMP2] * 10;
+                valueU8 = round(*frame_0x19_P[HITEC_FRAME_0X19_AMP2] * 10);
                 buffer[5] = valueU8;
             }
             if (frame_0x19_P[HITEC_FRAME_0X19_AMP3])
             {
-                valueU8 = *frame_0x19_P[HITEC_FRAME_0X19_AMP3] * 10;
+                valueU8 = round(*frame_0x19_P[HITEC_FRAME_0X19_AMP3] * 10);
                 buffer[5] = valueU8;
             }
             if (frame_0x19_P[HITEC_FRAME_0X19_AMP4])
             {
-                valueU8 = *frame_0x19_P[HITEC_FRAME_0X19_AMP4] * 10;
+                valueU8 = round(*frame_0x19_P[HITEC_FRAME_0X19_AMP4] * 10);
                 buffer[5] = valueU8;
             }
             break;
         case HITEC_FRAME_0X1A:
             if (frame_0x1A_P[HITEC_FRAME_0X1A_ASPD])
             {
-                valueU16 = *frame_0x1A_P[HITEC_FRAME_0X1A_ASPD];
-                buffer[1] = valueU16 >> 8;
-                buffer[2] = valueU16;
+                valueU16 = round(*frame_0x1A_P[HITEC_FRAME_0X1A_ASPD]);
+                buffer[3] = valueU16 >> 8;
+                buffer[4] = valueU16;
             }
             break;
         case HITEC_FRAME_0X1B:
             if (frame_0x1B_P[HITEC_FRAME_0X1B_ALTU])
             {
-                valueU16 = *frame_0x1B_P[HITEC_FRAME_0X1B_ALTU];
+                valueU16 = round(*frame_0x1B_P[HITEC_FRAME_0X1B_ALTU]);
                 buffer[1] = valueU16 >> 8;
                 buffer[2] = valueU16;
             }
             if (frame_0x1B_P[HITEC_FRAME_0X1B_ALTF])
             {
-                valueU16 = *frame_0x1B_P[HITEC_FRAME_0X1B_ALTF];
+                valueU16 = round(*frame_0x1B_P[HITEC_FRAME_0X1B_ALTF]);
                 buffer[3] = valueU16 >> 8;
                 buffer[4] = valueU16;
             }
