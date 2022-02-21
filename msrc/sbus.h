@@ -32,40 +32,62 @@
 #define SBUS_SLOT_0_DELAY 2000
 #define SBUS_INTER_SLOT_DELAY 660
 
+#define SBUS_SLOT_TEMP1 1
+#define SBUS_SLOT_RPM 2
+#define SBUS_SLOT_VARIO_SPEED 3
+#define SBUS_SLOT_VARIO_ALT 4
+#define SBUS_SLOT_VARIO_RESSURE 5
+#define SBUS_SLOT_VOLT_V1 6
+#define SBUS_SLOT_VOLT_V2 7
+
+#define SBUS_SLOT_GPS_SPD 8
+#define SBUS_SLOT_GPS_ALT 9
+#define SBUS_SLOT_GPS_TIME 10
+#define SBUS_SLOT_GPS_VARIO 11
+#define SBUS_SLOT_GPS_LAT1 12
+#define SBUS_SLOT_GPS_LAT2 13
+#define SBUS_SLOT_GPS_LON1 14
+#define SBUS_SLOT_GPS_LON2 15
+
+#define SBUS_SLOT_AIR_SPEED 16
+
+#define SBUS_SLOT_POWER_CURR1 24
+#define SBUS_SLOT_POWER_VOLT1 25
+#define SBUS_SLOT_POWER_CONS1 26
+#define SBUS_SLOT_POWER_CURR2 27
+#define SBUS_SLOT_POWER_VOLT2 28
+#define SBUS_SLOT_POWER_CONS2 29
+#define SBUS_SLOT_TEMP2 30
+
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
 #define ESC_PROTOCOL CONFIG_ESC_PROTOCOL
 #else
 #define ESC_PROTOCOL config.protocol
 #endif
 
-/*
+/*          
+        Slots mapping
 
-Slot mapping
+---------------------------------------
+0	    RX voltage (reserved)
+1       Temp1 (SBS-01T/TE)
+2	    RPM (SBS-01RB/RM+/RO)
+3-5	    Vario/Altitude (SBS-01A+/02A): 3-vario, 4-altitude, 5-pressure(unused) 
+6-7	    Voltage (SBS-01V+): 6-volt1, 7-volt2
+---------------------------------------
+8-15    GPS (SBS-01G/02G): 8-speed, 9-altitude, 10-time, 11-vario, 12-lat1, 13-lat2, 14-lon1, 15-lon2
+---------------------------------------
+16      Air speed (SBS-01TAS)
+17-23   Unused
+---------------------------------------
+24-26	Current1 (SBS-01C): 24-current, 25-voltage, 26.consumption 
+27-29(+)Current2 (SBS-01C): 24-current, 25-voltage, 26.consumption
+30(+)   Temp2 (SBS-01T/TE)
+31      Unused
+---------------------------------------
 
-----
-0	    rx volt (reserved)
-1	    rpm
-2-3	    volt (v1, v2)
-4-5	    vario (speed, alt)
-6	    temp1
-7	    temp2
-----
-8-10	curr1 (curr, volt, cons)
-11-13	curr2 (curr, volt, cons)
-14	
-15	
-----
-16-23	gps (speed, altitude, time, vario, lat1, lat2, lon1, lon2)
-----
-24	
-25	
-26	
-27	
-28	
-29	
-30	
-31
-----	
+(+) Non default slots
+
 */
 
 #if defined(__AVR_ATmega328P__) ||  defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
