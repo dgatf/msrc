@@ -92,7 +92,7 @@ private:
     static float *frame_0x14_P[3];
     static float *frame_0x15_P[3];
     static float *frame_0x16_P[2];
-    static float *frame_0x17_P[3];
+    static float *frame_0x17_P[4];
     static float *frame_0x18_P[2];
     static float *frame_0x19_P[4];
     static float *frame_0x1A_P[1];

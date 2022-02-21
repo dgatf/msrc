@@ -22,24 +22,24 @@ uint16_t I2C::readUInt(uint8_t device, uint8_t reg, uint8_t endian)
 
 uint8_t I2C::readBytes(uint8_t device, uint8_t reg, uint8_t *data, uint8_t lenght)
 {
-    I2C_CHANNEL.beginTransmission(device);
-    I2C_CHANNEL.write(reg);
-    I2C_CHANNEL.endTransmission(true);
-    I2C_CHANNEL.requestFrom(device, lenght);
-    return I2C_CHANNEL.readBytes(data, lenght);
+    I2C_SENSOR.beginTransmission(device);
+    I2C_SENSOR.write(reg);
+    I2C_SENSOR.endTransmission(true);
+    I2C_SENSOR.requestFrom(device, lenght);
+    return I2C_SENSOR.readBytes(data, lenght);
 }
 
 uint8_t I2C::writeBytes(uint8_t device, uint8_t reg)
 {
-    I2C_CHANNEL.beginTransmission(device);
-    I2C_CHANNEL.write(reg);
-    return I2C_CHANNEL.endTransmission();
+    I2C_SENSOR.beginTransmission(device);
+    I2C_SENSOR.write(reg);
+    return I2C_SENSOR.endTransmission();
 }
 
 uint8_t I2C::writeBytes(uint8_t device, uint8_t reg, uint8_t *data, uint8_t lenght)
 {
-    I2C_CHANNEL.beginTransmission(device);
-    I2C_CHANNEL.write(reg);
-    I2C_CHANNEL.write(data, lenght);
-    return I2C_CHANNEL.endTransmission();
+    I2C_SENSOR.beginTransmission(device);
+    I2C_SENSOR.write(reg);
+    I2C_SENSOR.write(data, lenght);
+    return I2C_SENSOR.endTransmission();
 }

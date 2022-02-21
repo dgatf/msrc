@@ -8,11 +8,6 @@
 #else
 #include <Wire.h>
 #endif
-#if (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && RX_PROTOCOL == RX_XBUS && defined(I2C_T3_TEENSY)
-#define I2C_CHANNEL Wire1
-#else
-#define I2C_CHANNEL Wire
-#endif
 
 #define I2C_BIG_ENDIAN 1
 #define I2C_LITTLE_ENDIAN 0

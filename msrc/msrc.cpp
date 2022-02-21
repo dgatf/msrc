@@ -202,13 +202,8 @@ void setup()
 #endif
     if (config.pwmOut)
         pwmOut.enable();
-#if (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY) && RX_PROTOCOL == RX_XBUS && RX_PROTOCOL == RX_HITEC
-    Wire1.begin();
-    Wire1.setTimeout(WIRE_TIMEOUT);
-#elif RX_PROTOCOL != RX_XBUS && RX_PROTOCOL != RX_HITEC
-    Wire.begin();
-    Wire.setTimeout(WIRE_TIMEOUT);
-#endif
+    I2C_SENSOR.begin();
+    I2C_SENSOR.setTimeout(WIRE_TIMEOUT);
 #if defined(ESC_INIT_DELAY)
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
     pinMode(0, OUTPUT);
