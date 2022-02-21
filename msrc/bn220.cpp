@@ -71,7 +71,7 @@ void Bn220::update()
     dist_ = calcDistanceToHome(lat_ / 60, lon_ / 60, 1000);
 #ifdef SIM_SENSORS
     lat_ = -692.761166667;   // 11º32'45.67" +N, -S
-    lon_ = -1252.1315;  // 20º51'67.89" +E, -W
+    lon_ = -1251.964833333;  // 20º51'57.89" +E, -W
     alt_ = 1283;   // m
     spd_ = 158;    // kts
     cog_ = 123.45; // º

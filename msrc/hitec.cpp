@@ -91,6 +91,10 @@ void Hitec::i2c_request_handler()
                 buffer[2] = sec_x_100;
                 buffer[3] = deg_min >> 8;
                 buffer[4] = deg_min;
+                /*DEBUG_PRINT(sec_x_100);
+                DEBUG_PRINT(" ");
+                DEBUG_PRINT(deg_min);
+                DEBUG_PRINTLN();*/
             }
             if (frame_0x13_P[HITEC_FRAME_0X13_TEMP2])
             {
