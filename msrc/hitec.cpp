@@ -91,10 +91,6 @@ void Hitec::i2c_request_handler()
                 buffer[2] = sec_x_100;
                 buffer[3] = deg_min >> 8;
                 buffer[4] = deg_min;
-                /*DEBUG_PRINT(sec_x_100);
-                DEBUG_PRINT(" ");
-                DEBUG_PRINT(deg_min);
-                DEBUG_PRINTLN();*/
             }
             if (frame_0x13_P[HITEC_FRAME_0X13_TEMP2])
             {
@@ -176,7 +172,7 @@ void Hitec::i2c_request_handler()
         case HITEC_FRAME_0X18:
             if (frame_0x18_P[HITEC_FRAME_0X18_VOLT])
             {
-                valueU16 = round(*frame_0x18_P[HITEC_FRAME_0X18_VOLT] * 10);
+                valueU16 = round((*frame_0x18_P[HITEC_FRAME_0X18_VOLT] - 0.2) * 10);
                 buffer[1] = valueU16;
                 buffer[2] = valueU16 >> 8;
             }
