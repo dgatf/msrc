@@ -1,4 +1,4 @@
-# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS1/2, Multiplex Sensor Bus, Jeti Ex Bus
+# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS1/2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec
 
 This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors. It adds support for several ESC telemetry protocols
 
@@ -64,8 +64,8 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | Frsky Smartport, SBUS | 7  & 12<sup>(2)</sup> | 7  & 12<sup>(2)</sup> | A15  & D10<sup>(2)</sup> | B3  & B4<sup>(2)</sup><br/>(15 & 16) | 1 |
 | Frsky D | 12 | 12 | D10 | B4(16) | 1 |
 | SRXL, IBUS, SB, Jeti Ex | RX & TX<sup>(2)</sup> </br>or<sup>(8)</sup> 7 & 12<sup>(2)</sup> | RX1 & TX1<sup>(2)</sup> </br>or<sup>(6)</sup> RX0 & TX0<sup>(2)</sup> </br>or<sup>(7)</sup> 7 & 12<sup>(2)</sup> | 15(RX3) & 14(TX3)<sup>(2)</sup> | D2(RX1) & D3(TX1)<sup>(2)</sup> </br>or<sup>(8)</sup> B3 & B4<sup>(2)</sup>(15 & 16) | 1 |
-| XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
-| XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
+| Hitec, XBUS or sensor SDA | A4 | A4 | 20 | D1(2) | 18<sup>(3)</sup> |
+| Hitec, XBUS or sensor SCL | A5 | A5 | 21 | D0(3) | 19<sup>(3)</sup> |
 | XBUS NPN clock stretch<sup>(4)</sup> | 13 | 13 | 13 | PB5(9) | 13 |
 
 (1) with 3.3k pull up resistor  
@@ -90,6 +90,7 @@ The following Rx protocols are supported:
 - Futaba SBUS1/2: inverted serial, 100000 bps
 - Multiplex Sensor Bus: serial, 38400 bps
 - Jeti Ex Bus: serial 125000, 250000 bps
+- Hitec: I2C
 
 Depending on the receiver protocol connect to the Rx as follows
 
@@ -590,6 +591,7 @@ v0.9
 - BMP280. Added vertical speed calculation (vario)
 - Current analog. Added consumption
 - Added ESC support for APD F/HV/UHV
+- Added Hitec protocol
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
