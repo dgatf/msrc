@@ -9,6 +9,7 @@ void Current::update()
     value_ = calcAverage(alpha_ / 100.0F, value_, readVoltage());
     consumption_ = calcConsumption(value_);
 #ifdef SIM_SENSORS
+    value_ = 12.34;
     consumption_ = 12.34;
 #endif
 }

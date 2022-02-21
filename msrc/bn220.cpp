@@ -70,14 +70,14 @@ void Bn220::update()
     vario_ = calcSpeed(alt_, 2000);
     dist_ = calcDistanceToHome(lat_ / 60, lon_ / 60, 1000);
 #ifdef SIM_SENSORS
-    lat_ = -630;   // 10º30" +N, -S
-    lon_ = -1250;  // 20º50" +E, -W
+    lat_ = -692.761166667;   // 11º32'45.67" +N, -S
+    lon_ = -1251.964833333;  // 20º51'57.89" +E, -W
     alt_ = 1283;   // m
     spd_ = 158;    // kts
     cog_ = 123.45; // º
     sat_ = 10;     //
-    date_ = 10101; // yymmdd
-    time_ = 20202; // hhmmss
+    date_ = 141012; // yymmdd
+    time_ = 162302; // hhmmss
     hdop_ = 12.35; //
     vario_ = 5.67; // m/s
 #endif
