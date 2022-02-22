@@ -139,9 +139,11 @@ Auto-config may be used to detect the new sensors.
 If using Teensy LC/3.1/3.5/3.6, it is feasible to use i2c_t3 library by enabling I2C_T3_TEENSY in config.h. This allows to use a second I2C port to use I2C sensors together with XBUS. Then I2C sensor to be connected to pins 23 (SDA1) and 22 (SCL1)
 
 <p align="center"><img src="./images/xbus.png" width="300"><br>
-  <i>XBUS</i><br><br></p>
+  <i>XBUS schematic</i><br><br></p>
 
-It is recommended to add pullup resistors to SDA/SCL lines
+<p align="center"><img src="./images/xbus_connector.png" width="300"><br>
+  <i>XBUS</i><br><br></p>
+}It is recommended to add pullup resistors to SDA/SCL lines
 
 If no telemetry is shown, may be MSRC is booting too slow and the first poll from the receiver is not answered. There are several ways to fix this:
 
@@ -160,7 +162,13 @@ If no telemetry is shown, may be MSRC is booting too slow and the first poll fro
 If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected to Vin/RAW instead Vcc
 
 <p align="center"><img src="./images/hitec.png" width="300"><br>
-  <i>Hitec</i><br><br></p>
+  <i>Hitec schematic</i><br><br></p>
+
+<p align="center"><img src="./images/hitec_7.jpg" width="300"><br>
+  <i>Hitec Optima 7</i><br><br></p>
+
+<p align="center"><img src="./images/hitec_9.jpg" width="300"><br>
+  <i>Hitec Optima 9</i><br><br></p>
 
 ### Jeti Ex Bus
 
