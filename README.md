@@ -141,6 +141,8 @@ If using Teensy LC/3.1/3.5/3.6, it is feasible to use i2c_t3 library by enabling
 <p align="center"><img src="./images/xbus.png" width="300"><br>
   <i>XBUS</i><br><br></p>
 
+It is recommended to add pullup resistors to SDA/SCL lines
+
 If no telemetry is shown, may be MSRC is booting too slow and the first poll from the receiver is not answered. There are several ways to fix this:
 
 1. Power on the receiver after MSRC has started
@@ -152,6 +154,13 @@ If no telemetry is shown, may be MSRC is booting too slow and the first poll fro
 
 <p align="center"><img src="./images/xbus-npn-switch.png" width="300"><br>
   <i>Clock stretch XBUS with transistor</i><br><br></p>
+
+### Hitec
+
+If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected to Vin/RAW instead Vcc
+
+<p align="center"><img src="./images/hitec.png" width="300"><br>
+  <i>Hitec</i><br><br></p>
 
 ### Jeti Ex Bus
 
