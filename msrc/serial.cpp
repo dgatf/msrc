@@ -20,6 +20,16 @@ void AbstractSerial::write(uint8_t data)
     initWrite();
 }
 
+void AbstractSerial::writeTx(uint8_t data)
+{
+    if (((writePosTx - readPosTx) & (FIFO_SIZE - 1)) < (FIFO_SIZE - 1))
+    {
+        buffTx[writePosTx] = data;
+        writePosTx++;
+        writePosTx &= (FIFO_SIZE - 1);
+    }
+}
+
 void AbstractSerial::writeRx(uint8_t data)
 {
     if (((writePosRx - readPosRx) & (FIFO_SIZE - 1)) < (FIFO_SIZE - 1))
@@ -34,6 +44,10 @@ void AbstractSerial::writeBytes(uint8_t *buff, uint8_t size)
 {
     for (uint8_t i = 0; i < size; i++)
         write(buff[i]);
+
+    /*for (uint8_t i = 0; i < size; i++)
+        writeTx(buff[i]); 
+    initWrite();*/
 }
 
 uint8_t AbstractSerial::read()

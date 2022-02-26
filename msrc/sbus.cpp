@@ -152,10 +152,12 @@ void Sbus::FTM0_IRQ_handler()
 
 void Sbus::sendSlot(uint8_t number)
 {
-    SMARTPORT_FRSKY_SBUS_SERIAL.write(slotId[number]);
     uint16_t val = sensorSbusP[number]->valueFormatted();
-    SMARTPORT_FRSKY_SBUS_SERIAL.write(val);
-    SMARTPORT_FRSKY_SBUS_SERIAL.write(val >> 8);
+    uint8_t buffer[3];
+    buffer[0] = slotId[number];
+    buffer[1] = val;
+    buffer[2] = val >> 8;
+    SMARTPORT_FRSKY_SBUS_SERIAL.writeBytes(buffer, 3);
 #ifdef DEBUG
     DEBUG_PRINT(":");
     DEBUG_PRINT_HEX(slotId[number]);

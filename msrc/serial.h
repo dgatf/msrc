@@ -29,6 +29,7 @@ public:
     virtual void begin(uint32_t baud, uint8_t format) = 0;
     virtual void initWrite() = 0;
     virtual void write(uint8_t data);
+    void writeTx(uint8_t data);
     virtual void writeBytes(uint8_t *buff, uint8_t size);
     virtual uint8_t read();
     virtual void readBytes(uint8_t *buff, uint8_t size);
