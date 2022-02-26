@@ -3,11 +3,6 @@
 
 #include "constants.h"
 #include <Arduino.h>
-#if (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
-#include <i2c_t3.h>
-#else
-#include <Wire.h>
-#endif
 
 #define I2C_BIG_ENDIAN 1
 #define I2C_LITTLE_ENDIAN 0

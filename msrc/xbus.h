@@ -19,11 +19,6 @@
 #include <Arduino.h>
 #include "softserial.h"
 #include "hardserial.h"
-#if (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY)
-#include <i2c_t3.h>
-#else
-#include <Wire.h>
-#endif
 #include "escHW3.h"
 #include "escHW4.h"
 #include "escPWM.h"

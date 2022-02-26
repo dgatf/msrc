@@ -158,18 +158,12 @@ void Xbus::begin()
 #if (CONFIG_I2C1_TYPE == I2C_BMP280) && !defined(__MK20DX128__) && defined(I2C_T3_TEENSY)
     bmp.begin();
 #endif
-#if defined(I2C_T3_TEENSY) && !defined(__IMXRT1062__)
+#if (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY) && (RX_PROTOCOL == RX_XBUS || RX_PROTOCOL == RX_HITEC)
     Wire.begin(I2C_SLAVE, XBUS_AIRSPEED, XBUS_RPM_VOLT_TEMP, I2C_PINS_18_19, I2C_PULLUP_EXT, 400000);
-#endif
-#if !defined(I2C_T3_TEENSY) && !defined(__IMXRT1062__)
+#else
     Wire.begin(XBUS_AIRSPEED);
     I2C0_RA = XBUS_RPM_VOLT_TEMP << 1;
     I2C0_C2 = 1 << 3;
-#endif
-#if defined(__IMXRT1062__)
-    Wire.begin(XBUS_AIRSPEED);
-    LPI2C1_SCFGR1 |= LPI2C_SCFGR1_ADDRCFG(B110);
-    LPI2C1_SASR |= LPI2C_SAMR_ADDR1(XBUS_RPM_VOLT_TEMP);
 #endif
     Wire.onRequest(i2c_request_handler);
 #endif
