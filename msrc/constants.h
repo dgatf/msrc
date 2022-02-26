@@ -18,10 +18,10 @@
 
 #if (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY) && (RX_PROTOCOL == RX_XBUS || RX_PROTOCOL == RX_HITEC)
 #include <i2c_t3.h>
-#define I2C_CHANNEL Wire1
+#define I2C_SENSOR Wire1
 #else
 #include <Wire.h>
-#define I2C_CHANNEL Wire
+#define I2C_SENSOR Wire
 #endif
 
 /* Version */
@@ -169,12 +169,6 @@
 #define I2C_NONE 0
 #define I2C_BMP280 1
 #define WIRE_TIMEOUT 3
-
-#if (defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY) && (RX_PROTOCOL == RX_XBUS || RX_PROTOCOL == RX_HITEC)
-#define I2C_SENSOR Wire1
-#else
-#define I2C_SENSOR Wire
-#endif
 
 #define ALPHA(ELEMENTS) (uint8_t)(2.0 / (ELEMENTS + 1) * 100)
 #define MS_TO_COMP(SCALER) (F_CPU / (SCALER * 1000.0))
