@@ -126,11 +126,6 @@ extern HardSerial hardSerial3;
 #define SERIAL_7O1 0x03
 #define SERIAL_8N1 0x00
 
-//9 bits including parity and second stop bit
-#define SERIAL_8E1 0x06
-#define SERIAL_8O1 0x07
-#define SERIAL_8N2 0x04
-
 #define SERIAL_8N2 SERIAL_8N1 | STOP_BIT_2
 #define SERIAL_8E2 SERIAL_8E1 | STOP_BIT_2
 #define SERIAL_8O2 SERIAL_8O1 | STOP_BIT_2
