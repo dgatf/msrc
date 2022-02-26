@@ -7,7 +7,7 @@
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
 
-#if defined (__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega32U4__)
 #define PCINTx_vect PCINT0_vect
 #define PCMSKx PCMSK0
 #define PCINTxn PCINT3
@@ -19,7 +19,7 @@
 #define PCIEx PCIE2
 #endif
 
-#if defined (__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
 #define PORTx PORTD
 #define PORTxn PORTD7
 #define PINx PIND
@@ -57,19 +57,23 @@ private:
     uint8_t stop_bits_;
     uint8_t parity_;
     volatile uint16_t ts = 0;
+    uint16_t tx_delay_start;
     uint16_t tx_delay;
+    uint16_t tx_delay_parity;
     uint16_t tx_delay_stop;
     uint16_t rx_delay;
     uint16_t rx_delay_centering;
     uint16_t rx_delay_stop;
     uint16_t subs(uint16_t val1, uint16_t val2);
-    inline void delay_loop(uint16_t delay);
+#if defined(__AVR_ATmega32U4__)
+    inline void _delay_loop(uint16_t delay);
+#endif
     void initWrite();
 
 public:
     SoftSerial();
     void begin(uint32_t baud, uint8_t format);
-    void begin(uint32_t baud) { begin(baud, SERIAL__8N1); }
+    void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
     uint8_t availableTimeout();
     void setTimeout(uint16_t timeout);
     uint16_t timestamp();

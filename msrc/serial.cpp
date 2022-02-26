@@ -46,8 +46,8 @@ void AbstractSerial::writeBytes(uint8_t *buff, uint8_t size)
         write(buff[i]);
 
     /*for (uint8_t i = 0; i < size; i++)
-        writeTx(buff[i]); 
-    initWrite();*/
+        writeTx(buff[i]);
+    initWrite();*/ 
 }
 
 uint8_t AbstractSerial::read()

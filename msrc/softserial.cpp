@@ -1,6 +1,6 @@
 #include "softserial.h"
 
-#if defined(__AVR_ATmega328P__) ||  defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
 
 ISR(PCINTx_vect)
 {
@@ -8,6 +8,66 @@ ISR(PCINTx_vect)
 }
 
 SoftSerial::SoftSerial() {}
+
+void SoftSerial::initWrite()
+{
+    DDRB |= _BV(DDB4);
+    bool inv = inverted_;
+    uint16_t delay_start = tx_delay_start;
+    uint16_t delay = tx_delay;
+    uint16_t delay_parity = tx_delay_parity;
+    uint16_t delay_stop = tx_delay_stop;
+    uint8_t parity = parity_;
+    uint8_t parity_value = 0;
+    uint8_t outgoingByte = readTx();
+
+    if (inv)
+        outgoingByte = ~outgoingByte;
+    uint8_t oldSREG = SREG;
+    cli();
+
+    // start bit
+    if (inv)
+        setPinHigh;
+    else
+        setPinLow;
+    _delay_loop_2(delay_start);
+
+    // data
+    for (uint8_t i = 8; i > 0; i--)
+    {
+        if (outgoingByte & 1)
+            setPinHigh;
+        else
+            setPinLow;
+        parity_value ^= outgoingByte & 1;
+        outgoingByte >>= 1;
+        _delay_loop_2(delay);
+    }
+
+    // parity
+    if (parity)
+    {
+        parity_value ^= parity & 1;
+        if (parity_value)
+            setPinHigh;
+        else
+            setPinLow;
+        _delay_loop_2(delay_parity);
+    }
+
+    // stop bit
+    if (inv)
+        setPinLow;
+    else
+        setPinHigh;
+    _delay_loop_2(delay_stop);
+
+    if (half_duplex_)
+        DDRB &= ~_BV(DDB4);
+
+    SREG = oldSREG;
+}
 
 uint8_t SoftSerial::availableTimeout()
 {
@@ -42,25 +102,14 @@ void SoftSerial::TIMER_COMP_handler()
     ts = micros();
 }
 
-inline void SoftSerial::delay_loop(uint16_t delay)
+inline void SoftSerial::_delay_loop(uint16_t delay)
 {
-    asm volatile (
-        "1: sbiw %0,1" "\n\t"
+    asm volatile(
+        "1: sbiw %0,1"
+        "\n\t"
         "brne 1b"
-        : "=w" (delay)
-        : "0" (delay)
-    );
-
-    /*uint8_t tmp = 0;
-    asm volatile("sbiw    %0, 0x01 \n\t"
-                 "ldi %1, 0xFF \n\t"
-                 "cpi %A0, 0xFF \n\t"
-                 "cpc %B0, %1 \n\t"
-                 "brne .-10 \n\t"
-                 : "+r"(delay), "+a"(tmp)
-                 : "0"(delay)
-    );*/
-
+        : "=w"(delay)
+        : "0"(delay));
 }
 
 void SoftSerial::PCINT_handler()
@@ -71,12 +120,12 @@ void SoftSerial::PCINT_handler()
         uint8_t incomingByte = 0;
 
         // start bit
-        delay_loop(rx_delay_centering);
+        _delay_loop(rx_delay_centering);
 
         // data
         for (uint8_t i = 8; i > 0; --i)
         {
-            delay_loop(rx_delay);
+            _delay_loop(rx_delay);
             incomingByte >>= 1;
             if (bit_is_set(PINx, PINxn))
                 incomingByte |= 0x80;
@@ -86,7 +135,7 @@ void SoftSerial::PCINT_handler()
             incomingByte = ~incomingByte;
 
         // stop bits
-        delay_loop(rx_delay_stop);
+        _delay_loop(rx_delay_stop);
 
         if (timedout)
             reset();
@@ -98,63 +147,6 @@ void SoftSerial::PCINT_handler()
         TIFR3 |= _BV(OCF3A);
         TIMSK3 |= _BV(OCIE3A);
     }
-}
-
-void SoftSerial::initWrite()
-{
-    DDRB |= _BV(DDB4);
-
-    uint8_t outgoingByte = readTx();
-    uint8_t oldSREG = SREG;
-    bool inv = inverted_;
-    uint16_t delay = tx_delay;
-
-    if (inv)
-        outgoingByte = ~outgoingByte;
-
-    cli();
-
-    // start bit
-    if (inv)
-    {
-        setPinHigh;
-    }
-    else
-    {
-        setPinLow;
-    }
-    delay_loop(delay);
-
-    // data
-    for (uint8_t i = 0; i < 8; i++)
-    {
-        if (outgoingByte & 1)
-        {
-            setPinHigh;
-        }
-        else
-        {
-            setPinLow;
-        }
-        delay_loop(delay);
-        outgoingByte >>= 1;
-    }
-
-    // stop bit
-    if (inv)
-    {
-        setPinLow;
-    }
-    else
-    {
-        setPinHigh;
-    }
-
-    if (half_duplex_)
-        DDRB &= ~_BV(DDB4);
-
-    SREG = oldSREG;
-    delay_loop(delay);
 }
 
 void SoftSerial::setTimeout(uint16_t timeout)
@@ -210,7 +202,7 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
 
 #endif
 
-#if defined(__AVR_ATmega328P__) ||  defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
 
 ISR(TIMER2_COMPB_vect)
 {
@@ -269,84 +261,12 @@ void SoftSerial::PCINT_handler()
     }
 }
 
-void SoftSerial::initWrite()
-{
-    DDRB |= _BV(DDB4);
-
-    uint8_t outgoingByte = readTx();
-    uint8_t oldSREG = SREG;
-    bool inv = inverted_;
-    uint16_t delay = tx_delay;
-    uint16_t delay_stop = tx_delay_stop;
-    uint8_t parity = parity_;
-    uint8_t parity_value = 0;
-
-    if (inv)
-        outgoingByte = ~outgoingByte;
-
-    cli();
-
-    // start bit
-    if (inv)
-    {
-        setPinHigh;
-    }
-    else
-    {
-        setPinLow;
-    }
-    _delay_loop_2(delay);
-
-    // data
-    for (uint8_t i = 0; i < 8; i++)
-    {
-        if (outgoingByte & 1)
-        {
-            setPinHigh;
-        }
-        else
-        {
-            setPinLow;
-        }
-        parity_value ^= outgoingByte & 1;
-        _delay_loop_2(delay);
-        outgoingByte >>= 1;
-    }
-
-    // parity
-    if (parity)
-    {
-        parity_value ^= parity & 1;
-        if (parity_value)
-            setPinHigh;
-        else
-            setPinLow;
-        _delay_loop_2(delay);
-    }
-
-    // stop bit
-    if (inv)
-    {
-        setPinLow;
-    }
-    else
-    {
-        setPinHigh;
-    }
-
-    if (half_duplex_)
-        DDRB &= ~_BV(DDB4);
-
-    SREG = oldSREG;
-    _delay_loop_2(delay_stop);
-}
-
 void SoftSerial::setTimeout(uint16_t timeout)
 {
     timeout_ = timeout * US_TO_COMP(256);
 }
 
-uint16_t SoftSerial::timestamp() 
+uint16_t SoftSerial::timestamp()
 {
     return (uint16_t)(micros() - ts) + timeout_ / US_TO_COMP(256);
 }
@@ -385,9 +305,11 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     // 1 bit delay in 4 clock cycles
     uint16_t delay = (F_CPU / baud) / 4;
     // substract overheads
-    tx_delay = subs(delay, (17 + 2) / 4); //15
-    tx_delay_stop = subs(delay * stop_bits_, 17 / 4);
-    rx_delay = subs(delay, 15 / 4); //23
+    tx_delay_start = subs(delay, 3 / 4);
+    tx_delay = subs(delay, 16 / 4);
+    tx_delay_parity = subs(delay, 12 / 4);
+    tx_delay_stop = subs(delay * stop_bits_, 60 / 4);
+    rx_delay = subs(delay, 15 / 4);
     rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 15) / 4);
     rx_delay_stop = subs(delay * 3 * stop_bits_ / 4, (37 + 11 + 12) / 4);
 
