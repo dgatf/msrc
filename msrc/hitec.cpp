@@ -284,7 +284,7 @@ void Hitec::update()
 
 void Hitec::setConfig(Config &config)
 {
-    if (config.protocol == PROTOCOL_PWM)
+    if (ESC_PROTOCOL == PROTOCOL_PWM)
     {
         EscPWM *esc;
         esc = new EscPWM(ALPHA(config.average.rpm));
@@ -293,7 +293,7 @@ void Hitec::setConfig(Config &config)
         frame_0x15_P[HITEC_FRAME_0X15_RPM1] = esc->rpmP();
         isEnabledFrame[HITEC_FRAME_0X15] = true;
     }
-    if (config.protocol == PROTOCOL_HW_V3)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V3)
     {
         EscHW3 *esc;
         esc = new EscHW3(ESC_SERIAL, ALPHA(config.average.rpm));
@@ -302,7 +302,7 @@ void Hitec::setConfig(Config &config)
         frame_0x15_P[HITEC_FRAME_0X15_RPM1] = esc->rpmP();
         isEnabledFrame[HITEC_FRAME_0X15] = true;
     }
-    if (config.protocol == PROTOCOL_HW_V4)
+    if (ESC_PROTOCOL == PROTOCOL_HW_V4)
     {
         EscHW4 *esc;
         esc = new EscHW4(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp), 0);
@@ -320,7 +320,7 @@ void Hitec::setConfig(Config &config)
         isEnabledFrame[HITEC_FRAME_0X14] = true;
         isEnabledFrame[HITEC_FRAME_0X13] = true;
     }
-    if (config.protocol == PROTOCOL_CASTLE)
+    if (ESC_PROTOCOL == PROTOCOL_CASTLE)
     {
         EscCastle *esc;
         esc = new EscCastle(ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
@@ -334,7 +334,7 @@ void Hitec::setConfig(Config &config)
         isEnabledFrame[HITEC_FRAME_0X18] = true;
         isEnabledFrame[HITEC_FRAME_0X14] = true;
     }
-    if (config.protocol == PROTOCOL_KONTRONIK)
+    if (ESC_PROTOCOL == PROTOCOL_KONTRONIK)
     {
         EscKontronik *esc;
         esc = new EscKontronik(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
@@ -348,7 +348,7 @@ void Hitec::setConfig(Config &config)
         isEnabledFrame[HITEC_FRAME_0X18] = true;
         isEnabledFrame[HITEC_FRAME_0X14] = true;
     }
-    if (config.protocol == PROTOCOL_APD_F)
+    if (ESC_PROTOCOL == PROTOCOL_APD_F)
     {
         EscApdF *esc;
         esc = new EscApdF(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));
@@ -362,7 +362,7 @@ void Hitec::setConfig(Config &config)
         isEnabledFrame[HITEC_FRAME_0X18] = true;
         isEnabledFrame[HITEC_FRAME_0X14] = true;
     }
-    if (config.protocol == PROTOCOL_APD_HV)
+    if (ESC_PROTOCOL == PROTOCOL_APD_HV)
     {
         EscApdHV *esc;
         esc = new EscApdHV(ESC_SERIAL, ALPHA(config.average.rpm), ALPHA(config.average.volt), ALPHA(config.average.curr), ALPHA(config.average.temp));

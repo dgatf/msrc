@@ -55,12 +55,6 @@
 #define SENT_SENSOR_ID 9
 #define CHANGED_SENSOR_ID 10
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
-#define ESC_PROTOCOL CONFIG_ESC_PROTOCOL
-#else
-#define ESC_PROTOCOL config.protocol
-#endif
-
 #include <Arduino.h>
 #include "softserial.h"
 #include "hardserial.h"

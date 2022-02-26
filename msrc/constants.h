@@ -14,14 +14,32 @@
 #define RX_JETIEX 7
 #define RX_HITEC 8
 
+#define PROTOCOL_NONE 0
+#define PROTOCOL_HW_V3 1
+#define PROTOCOL_HW_V4 2
+#define PROTOCOL_PWM 3
+#define PROTOCOL_CASTLE 4
+#define PROTOCOL_KONTRONIK 5
+#define PROTOCOL_APD_F 6
+#define PROTOCOL_APD_HV 7
+#define PROTOCOL_APD_F_DSHOT 8
+
 #include "config.h"
 
-#if (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) && defined(I2C_T3_TEENSY) && (RX_PROTOCOL == RX_XBUS || RX_PROTOCOL == RX_HITEC)
+#if (defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)) \
+    && defined(I2C_T3_TEENSY) \
+    && (RX_PROTOCOL == RX_XBUS || RX_PROTOCOL == RX_HITEC)
 #include <i2c_t3.h>
 #define I2C_SENSOR Wire1
 #else
 #include <Wire.h>
 #define I2C_SENSOR Wire
+#endif
+
+#if (defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)) || RX_PROTOCOL != RX_SMARTPORT
+#define ESC_PROTOCOL CONFIG_ESC_PROTOCOL
+#else
+#define ESC_PROTOCOL config.protocol
 #endif
 
 /* Version */
@@ -36,27 +54,6 @@
 
 /* RPM multiplier */
 #define RPM_MULTIPLIER (RPM_PINION_TEETH / (1.0 * RPM_MAIN_TEETH * RPM_PAIR_OF_POLES))
-
-/* Enums */
-#define RX_SMARTPORT 0
-#define RX_XBUS 1
-#define RX_SRXL 2
-#define RX_FRSKY 3
-#define RX_IBUS 4
-#define RX_SBUS 5
-#define RX_MULTIPLEX 6
-#define RX_JETIEX 7
-#define RX_HITEC 8
-
-#define PROTOCOL_NONE 0
-#define PROTOCOL_HW_V3 1
-#define PROTOCOL_HW_V4 2
-#define PROTOCOL_PWM 3
-#define PROTOCOL_CASTLE 4
-#define PROTOCOL_KONTRONIK 5
-#define PROTOCOL_APD_F 6
-#define PROTOCOL_APD_HV 7
-#define PROTOCOL_APD_F_DSHOT 8
 
 /* Pins & Serial ports */
 
