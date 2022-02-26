@@ -6,7 +6,7 @@ Bn220::Bn220(AbstractSerial &serial, uint32_t baud) : serial_(serial), baud_(bau
 
 void Bn220::begin()
 {
-    serial_.begin(baud_, SERIAL_8N1);
+    serial_.begin(baud_, SERIAL__8N1);
 }
 
 void Bn220::update()

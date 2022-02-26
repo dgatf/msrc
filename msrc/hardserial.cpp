@@ -269,7 +269,7 @@ void HardSerial::begin(uint32_t baud, uint8_t format)
     }
 
     // half duplex b7
-    if ((format & SERIAL_HALF_DUP) != 0)
+    if ((format & SERIAL__HALF_DUP) != 0)
     {
         c = *uart_c1_;
         c |= UART_C1_LOOPS | UART_C1_RSRC;

@@ -6,7 +6,7 @@ EscHW3::EscHW3(AbstractSerial &serial, uint8_t alphaRpm) : alphaRpm_(alphaRpm), 
 
 void EscHW3::begin()
 {
-    serial_.begin(19200, SERIAL_8N1);
+    serial_.begin(19200, SERIAL__8N1);
     serial_.setTimeout(ESCHWV3_ESCSERIAL_TIMEOUT);
 }
 

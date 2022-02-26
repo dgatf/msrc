@@ -6,7 +6,7 @@ EscApdHV::EscApdHV(AbstractSerial &serial, uint8_t alphaRpm, uint8_t alphaVolt, 
 
 void EscApdHV::begin()
 {
-    serial_.begin(115200, SERIAL_8N1);
+    serial_.begin(115200, SERIAL__8N1);
     serial_.setTimeout(2);
 }
 

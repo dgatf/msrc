@@ -4,7 +4,7 @@ Srxl::Srxl(AbstractSerial &serial) : serial_(serial) {}
 
 void Srxl::begin()
 {
-    serial_.begin(115200, SERIAL_8N1 | SERIAL_HALF_DUP);
+    serial_.begin(115200, SERIAL__8N1 | SERIAL__HALF_DUP);
     serial_.setTimeout(SRXL_SERIAL_TIMEOUT);
     pinMode(LED_BUILTIN, OUTPUT);
     uint8_t cont = 0;

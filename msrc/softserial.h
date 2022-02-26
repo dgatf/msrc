@@ -69,7 +69,7 @@ private:
 public:
     SoftSerial();
     void begin(uint32_t baud, uint8_t format);
-    void begin(uint32_t baud) { begin(baud, SERIAL_8N1); }
+    void begin(uint32_t baud) { begin(baud, SERIAL__8N1); }
     uint8_t availableTimeout();
     void setTimeout(uint16_t timeout);
     uint16_t timestamp();

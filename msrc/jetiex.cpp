@@ -10,7 +10,7 @@ JetiEx::~JetiEx()
 
 void JetiEx::begin()
 {
-    serial_.begin(baudRate, SERIAL_8N1 | SERIAL_HALF_DUP);
+    serial_.begin(baudRate, SERIAL__8N1 | SERIAL__HALF_DUP);
     serial_.setTimeout(JETIEX_TIMEOUT);
     pinMode(LED_BUILTIN, OUTPUT);
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
@@ -336,7 +336,7 @@ void JetiEx::update()
             baudRate = 250000L;
         else
             baudRate = 125000L;
-        serial_.begin(baudRate, SERIAL_8N1 | SERIAL_HALF_DUP);
+        serial_.begin(baudRate, SERIAL__8N1 | SERIAL__HALF_DUP);
         ts = millis();
 #ifdef DEBUG
         DEBUG_PRINT("BR:");
