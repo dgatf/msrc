@@ -208,7 +208,7 @@ void EscPWM::update()
     }
     interrupts();
 #ifdef SIM_SENSORS
-    rpm_ = 12345.67;
+    rpm_ = 2300;
 #endif
 }
 
