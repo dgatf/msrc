@@ -69,7 +69,7 @@
    Connect arduino Rx to TTL Tx for flashing, then if applicabe connect arduino Rx to esc or gps
 */
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_PACKET
 //#define DEBUG_SBUS_MS
 //#define DEBUG_EEPROM_WRITE
@@ -85,7 +85,7 @@
 //#define DEBUG_CASTLE
 //#define DEBUG_CASTLE_RX
 
-#define SIM_RX
+//#define SIM_RX
 #define SIM_SENSORS
 //#define SIM_LUA_SEND
 //#define SIM_LUA_RECEIVE
