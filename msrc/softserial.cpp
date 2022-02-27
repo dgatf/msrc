@@ -12,6 +12,9 @@ SoftSerial::SoftSerial() {}
 void SoftSerial::initWrite()
 {
     DDRB |= _BV(DDB4);
+
+    uint8_t outgoingByte = readTx();
+    uint8_t oldSREG = SREG;
     bool inv = inverted_;
     uint16_t delay_start = tx_delay_start;
     uint16_t delay = tx_delay;
@@ -19,11 +22,10 @@ void SoftSerial::initWrite()
     uint16_t delay_stop = tx_delay_stop;
     uint8_t parity = parity_;
     uint8_t parity_value = 0;
-    uint8_t outgoingByte = readTx();
 
     if (inv)
         outgoingByte = ~outgoingByte;
-    uint8_t oldSREG = SREG;
+    
     cli();
 
     // start bit
@@ -61,12 +63,12 @@ void SoftSerial::initWrite()
         setPinLow;
     else
         setPinHigh;
-    _delay_loop_2(delay_stop);
 
     if (half_duplex_)
         DDRB &= ~_BV(DDB4);
 
     SREG = oldSREG;
+    _delay_loop_2(delay_stop);
 }
 
 uint8_t SoftSerial::availableTimeout()
@@ -98,7 +100,8 @@ ISR(TIMER3_COMPA_vect)
 void SoftSerial::TIMER_COMP_handler()
 {
     TIMSK3 &= ~_BV(OCIE3A);
-    timedout = true;
+    if (timeout_)
+        timedout = true;
     ts = micros();
 }
 
@@ -212,7 +215,8 @@ ISR(TIMER2_COMPB_vect)
 void SoftSerial::TIMER_COMP_handler()
 {
     TIMSK2 &= ~_BV(OCIE2B);
-    timedout = true;
+    if (timeout_)
+        timedout = true;
     ts = micros();
 }
 
