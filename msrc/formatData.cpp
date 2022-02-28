@@ -212,15 +212,15 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
     }
     if (dataId == FASST_AIR_SPEED)
     {
-        return (uint16_t)round(value + 19);
+        return (uint16_t)round(value);
     }
     if (dataId == FASST_GPS_SPEED)
     {
-        return (uint16_t)round(value) | 0x4000;
+        return (uint16_t)round(value * 1.852) | 0x4000;
     }
     if (dataId == FASST_GPS_VARIO_SPEED)
     {
-        return (int16_t)round(value) * 10 | 0x4000;
+        return (int16_t)round(value * 10) | 0x4000;
     }
     if (dataId == FASST_GPS_ALTITUDE)
     {
