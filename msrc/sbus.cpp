@@ -223,7 +223,11 @@ void Sbus::deleteSensors()
 void Sbus::sendPacket()
 {
     digitalWrite(LED_BUILTIN, HIGH);
+#ifdef SIM_RX
+    uint16_t ts = 1500;
+#else
     uint16_t ts = SMARTPORT_FRSKY_SBUS_SERIAL.timestamp();
+#endif
 #ifdef DEBUG_SBUS_MS
     DEBUG_PRINTLN();
     DEBUG_PRINT(ts);
