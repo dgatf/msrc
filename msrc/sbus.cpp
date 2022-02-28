@@ -56,7 +56,6 @@ void Sbus::TIMER_COMP_handler()
     {
         TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
         cont = 0;
-        digitalWrite(LED_BUILTIN, LOW);
     }
 }
 
@@ -99,7 +98,6 @@ void Sbus::TIMER_COMP_handler()
     {
         TIMSK3 &= ~_BV(OCIE3B); // DISABLE TIMER2 OCRA INTERRUPT
         cont = 0;
-        digitalWrite(LED_BUILTIN, LOW);
     }
 }
 
@@ -142,7 +140,6 @@ void Sbus::FTM0_IRQ_handler()
         {
             FTM0_C0SC &= ~FTM_CSC_CHIE; // DISABLE CH0 INTERRUPT
             cont = 0;
-            digitalWrite(LED_BUILTIN, LOW);
         }
         FTM0_C0SC |= FTM_CSC_CHF; // CLEAR FLAG CH2
     }
@@ -152,12 +149,14 @@ void Sbus::FTM0_IRQ_handler()
 
 void Sbus::sendSlot(uint8_t number)
 {
+    digitalWrite(LED_BUILTIN, HIGH);
     uint16_t val = sensorSbusP[number]->valueFormatted();
     uint8_t buffer[3];
     buffer[0] = slotId[number];
     buffer[1] = val;
     buffer[2] = val >> 8;
     SMARTPORT_FRSKY_SBUS_SERIAL.writeBytes(buffer, 3);
+    digitalWrite(LED_BUILTIN, LOW);
 #ifdef DEBUG
     DEBUG_PRINT(":");
     DEBUG_PRINT_HEX(slotId[number]);
@@ -222,7 +221,6 @@ void Sbus::deleteSensors()
 
 void Sbus::sendPacket()
 {
-    digitalWrite(LED_BUILTIN, HIGH);
 #ifdef SIM_RX
     uint16_t ts = 1500;
 #else
