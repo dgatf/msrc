@@ -9,7 +9,7 @@
 #define CONFIG_GPS false
 #define GPS_BAUD_RATE 9600
 #define CONFIG_VOLTAGE1 true
-#define CONFIG_VOLTAGE2 false
+#define CONFIG_VOLTAGE2 true
 #define CONFIG_NTC1 false
 #define CONFIG_NTC2 false
 #define CONFIG_CURRENT false

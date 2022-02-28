@@ -374,8 +374,8 @@ void Sbus::setConfig(Config &config)
         addSensor(SBUS_SLOT_POWER_CONS1, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempFetP(), esc);
         addSensor(SBUS_SLOT_TEMP1, sensorSbusP);
-        //sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempBecP(), esc);
-        //addSensor(SBUS_SLOT_TEMP2, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempBecP(), esc);
+        addSensor(SBUS_SLOT_TEMP2, sensorSbusP);
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorSbusP);
     }
@@ -511,6 +511,11 @@ void Sbus::setConfig(Config &config)
         voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt), VOLTAGE1_MULTIPLIER);
         sensorSbusP = new SensorSbus(FASST_VOLT_V1, voltage->valueP(), voltage);
         addSensor(SBUS_SLOT_VOLT_V1, sensorSbusP);
+        if (config.voltage2 == false)
+        {
+            sensorSbusP = new SensorSbus(FASST_VOLT_V2, NULL, voltage);
+            addSensor(SBUS_SLOT_VOLT_V2, sensorSbusP);
+        }
     }
     if (config.voltage2 == true)
     {
@@ -519,6 +524,11 @@ void Sbus::setConfig(Config &config)
         voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt), VOLTAGE2_MULTIPLIER);
         sensorSbusP = new SensorSbus(FASST_VOLT_V2, voltage->valueP(), voltage);
         addSensor(SBUS_SLOT_VOLT_V2, sensorSbusP);
+        if (config.voltage1 == false)
+        {
+            sensorSbusP = new SensorSbus(FASST_VOLT_V1, NULL, voltage);
+            addSensor(SBUS_SLOT_VOLT_V1, sensorSbusP);
+        }
     }
     if (config.current == true)
     {
@@ -526,9 +536,11 @@ void Sbus::setConfig(Config &config)
         Current *current;
         current = new Current(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorSbusP = new SensorSbus(FASST_POWER_CURR, current->valueP(), current);
-        addSensor(SBUS_SLOT_POWER_CURR1, sensorSbusP);
+        addSensor(SBUS_SLOT_POWER_CURR2, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_CONS, current->consumptionP(), current);
-        addSensor(SBUS_SLOT_POWER_CONS1, sensorSbusP);
+        addSensor(SBUS_SLOT_POWER_CONS2, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_VOLT, NULL, current);
+        addSensor(SBUS_SLOT_POWER_VOLT2, sensorSbusP);
     }
     if (config.ntc1 == true)
     {

@@ -68,7 +68,7 @@ Sensor mapping to slots for Futaba radios:
 |0       | RX voltage (reserved)                                                                         |
 |1       | Temp1 (SBS-01T/TE)                                                                            |
 |2       | RPM (SBS-01RB/RM+/RO)                                                                         |
-|3-5     | Vario/Altitude (SBS-01A+/02A): 3-vario, 4-altitude, 5-pressure(unused)                        |
+|3-4     | Vario (Vario-F1672): 3-vario, 4-altitude                                                      |
 |6-7     | Voltage (SBS-01V+): 6-volt1, 7-volt2                                                          |
 |8-15    | GPS (SBS-01G/02G): 8-speed, 9-altitude, 10-time, 11-vario, 12-lat1, 13-lat2, 14-lon1, 15-lon2 |
 |16      | Air speed (SBS-01TAS)                                                                         |
