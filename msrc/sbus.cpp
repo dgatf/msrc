@@ -16,6 +16,8 @@ const uint8_t Sbus::slotId[32] = {0x03, 0x83, 0x43, 0xC3, 0x23, 0xA3, 0x63, 0xE3
                                   0x0B, 0x8B, 0x4B, 0xCB, 0x2B, 0xAB, 0x6B, 0xEB,
                                   0x1B, 0x9B, 0x5B, 0xDB, 0x3B, 0xBB, 0x7B, 0xFB};
 
+volatile uint8_t Sbus::slotCont = 0;
+
 uint8_t Sbus::telemetryPacket = 0;
 
 uint32_t Sbus::ts2 = 0;
@@ -25,11 +27,10 @@ uint32_t Sbus::ts2 = 0;
 void Sbus::TIMER_COMP_handler()
 {
     uint8_t ts = TCNT2;
-    static uint8_t cont = 0;
 #ifdef DEBUG_SBUS_MS
     static uint16_t msprev = 0;
     uint16_t ms = micros();
-    if (cont == 0)
+    if (slotCont == 0)
     {
         DEBUG_PRINT(" ");
         DEBUG_PRINT(micros() - ts2);
@@ -43,19 +44,19 @@ void Sbus::TIMER_COMP_handler()
 #endif
 #ifdef DEBUG
     DEBUG_PRINT(" ");
-    DEBUG_PRINT(telemetryPacket * 8 + cont);
+    DEBUG_PRINT(telemetryPacket * 8 + slotCont);
 #endif
-    if (sensorSbusP[telemetryPacket * 8 + cont] != NULL)
-        sendSlot(telemetryPacket * 8 + cont);
-    if (cont < 7)
+    if (sensorSbusP[telemetryPacket * 8 + slotCont] != NULL)
+        sendSlot(telemetryPacket * 8 + slotCont);
+    if (slotCont < 7)
     {
         OCR2A = ts + (uint8_t)(SBUS_INTER_SLOT_DELAY * US_TO_COMP(256));
-        cont++;
+        slotCont++;
     }
     else
     {
         TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
-        cont = 0;
+        slotCont = 0;
     }
 }
 
@@ -66,11 +67,10 @@ void Sbus::TIMER_COMP_handler()
 void Sbus::TIMER_COMP_handler()
 {
     uint16_t ts = TCNT3;
-    static uint8_t cont = 0;
 #ifdef DEBUG_SBUS_MS
     static uint16_t msprev = 0;
     uint16_t ms = micros();
-    if (cont == 0)
+    if (slotCont == 0)
     {
         DEBUG_PRINT(" ");
         DEBUG_PRINT(micros() - ts2);
@@ -84,20 +84,20 @@ void Sbus::TIMER_COMP_handler()
 #endif
 #ifdef DEBUG
     DEBUG_PRINT(" ");
-    DEBUG_PRINT(telemetryPacket * 8 + cont);
+    DEBUG_PRINT(telemetryPacket * 8 + slotCont);
 #endif
 
-    if (sensorSbusP[telemetryPacket * 8 + cont] != NULL)
-        sendSlot(telemetryPacket * 8 + cont);
-    if (cont < 7)
+    if (sensorSbusP[telemetryPacket * 8 + slotCont] != NULL)
+        sendSlot(telemetryPacket * 8 + slotCont);
+    if (slotCont < 7)
     {
         OCR3B = ts + (uint16_t)(SBUS_INTER_SLOT_DELAY * US_TO_COMP(1));
-        cont++;
+        slotCont++;
     }
     else
     {
         TIMSK3 &= ~_BV(OCIE3B); // DISABLE TIMER2 OCRA INTERRUPT
-        cont = 0;
+        slotCont = 0;
     }
 }
 
@@ -109,11 +109,10 @@ void Sbus::FTM0_IRQ_handler()
     if (FTM0_C0SC & FTM_CSC_CHF) // CH0 INTERRUPT
     {
         uint16_t ts = FTM0_CNT;
-        static uint8_t cont = 0;
 #ifdef DEBUG_SBUS_MS
         static uint16_t msprev = 0;
         uint16_t ms = micros();
-        if (cont == 0)
+        if (slotCont == 0)
         {
             DEBUG_PRINT(" ");
             DEBUG_PRINT(micros() - ts2);
@@ -127,19 +126,19 @@ void Sbus::FTM0_IRQ_handler()
 #endif
 #ifdef DEBUG
         DEBUG_PRINT(" ");
-        DEBUG_PRINT(telemetryPacket * 8 + cont);
+        DEBUG_PRINT(telemetryPacket * 8 + slotCont);
 #endif
-        if (sensorSbusP[telemetryPacket * 8 + cont] != NULL)
-            sendSlot(telemetryPacket * 8 + cont);
-        if (cont < 7)
+        if (sensorSbusP[telemetryPacket * 8 + slotCont] != NULL)
+            sendSlot(telemetryPacket * 8 + slotCont);
+        if (slotCont < 7)
         {
-            FTM0_C0V = ts + (uint16_t)(SBUS_INTER_SLOT_DELAY * US_TO_COMP(128));
-            cont++;
+            FTM0_C0V = (uint16_t)(ts + SBUS_INTER_SLOT_DELAY * US_TO_COMP(128));
+            slotCont++;
         }
         else
         {
             FTM0_C0SC &= ~FTM_CSC_CHIE; // DISABLE CH0 INTERRUPT
-            cont = 0;
+            slotCont = 0;
         }
         FTM0_C0SC |= FTM_CSC_CHF; // CLEAR FLAG CH2
     }
@@ -196,6 +195,7 @@ void Sbus::begin()
     delayMicroseconds(1);
     FTM0_CNT = 0;
     SIM_SCGC6 |= SIM_SCGC6_FTM0; // ENABLE CLOCK
+    FTM0_MOD = 0xFFFF;
     FTM0_SC = FTM_SC_PS(7);      // PRESCALER 128    FTM_SC_PS(5) - PRESCALER 32
     FTM0_SC |= FTM_SC_CLKS(1);   // ENABLE COUNTER
     FTM0_C0SC = 0;               // DISABLE CHANNEL
@@ -221,6 +221,7 @@ void Sbus::deleteSensors()
 
 void Sbus::sendPacket()
 {
+    slotCont = 0;
 #ifdef SIM_RX
     uint16_t ts = 1500;
 #else

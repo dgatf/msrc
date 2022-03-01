@@ -97,8 +97,9 @@ extern void (*FTM0_IRQ_handlerP)();
 class Sbus
 {
 private:
+    static volatile uint8_t slotCont;
     AbstractSerial &serial_;
-    static uint8_t telemetryPacket ;
+    static uint8_t telemetryPacket;
     static SensorSbus *sensorSbusP[32];
     static const uint8_t slotId[32];
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
