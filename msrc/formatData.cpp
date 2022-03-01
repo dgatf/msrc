@@ -192,7 +192,7 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
     }
     if (dataId == FASST_VOLT_V2)
     {
-        return (uint16_t)round(value * 10) | 0x8000;
+        return (uint16_t)round(value * 10);
     }
     if (dataId == FASST_VARIO_SPEED)
     {
