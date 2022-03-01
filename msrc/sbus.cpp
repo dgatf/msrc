@@ -16,6 +16,8 @@ const uint8_t Sbus::slotId[32] = {0x03, 0x83, 0x43, 0xC3, 0x23, 0xA3, 0x63, 0xE3
                                   0x0B, 0x8B, 0x4B, 0xCB, 0x2B, 0xAB, 0x6B, 0xEB,
                                   0x1B, 0x9B, 0x5B, 0xDB, 0x3B, 0xBB, 0x7B, 0xFB};
 
+volatile uint8_t Sbus::slotCont = 0;
+
 uint8_t Sbus::telemetryPacket = 0;
 
 uint32_t Sbus::ts2 = 0;
@@ -25,11 +27,10 @@ uint32_t Sbus::ts2 = 0;
 void Sbus::TIMER_COMP_handler()
 {
     uint8_t ts = TCNT2;
-    static uint8_t cont = 0;
 #ifdef DEBUG_SBUS_MS
     static uint16_t msprev = 0;
     uint16_t ms = micros();
-    if (cont == 0)
+    if (slotCont == 0)
     {
         DEBUG_PRINT(" ");
         DEBUG_PRINT(micros() - ts2);
@@ -43,20 +44,19 @@ void Sbus::TIMER_COMP_handler()
 #endif
 #ifdef DEBUG
     DEBUG_PRINT(" ");
-    DEBUG_PRINT(telemetryPacket * 8 + cont);
+    DEBUG_PRINT(telemetryPacket * 8 + slotCont);
 #endif
-    if (sensorSbusP[telemetryPacket * 8 + cont] != NULL)
-        sendSlot(telemetryPacket * 8 + cont);
-    if (cont < 7)
+    if (sensorSbusP[telemetryPacket * 8 + slotCont] != NULL)
+        sendSlot(telemetryPacket * 8 + slotCont);
+    if (slotCont < 7)
     {
         OCR2A = ts + (uint8_t)(SBUS_INTER_SLOT_DELAY * US_TO_COMP(256));
-        cont++;
+        slotCont++;
     }
     else
     {
         TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
-        cont = 0;
-        digitalWrite(LED_BUILTIN, LOW);
+        slotCont = 0;
     }
 }
 
@@ -67,11 +67,10 @@ void Sbus::TIMER_COMP_handler()
 void Sbus::TIMER_COMP_handler()
 {
     uint16_t ts = TCNT3;
-    static uint8_t cont = 0;
 #ifdef DEBUG_SBUS_MS
     static uint16_t msprev = 0;
     uint16_t ms = micros();
-    if (cont == 0)
+    if (slotCont == 0)
     {
         DEBUG_PRINT(" ");
         DEBUG_PRINT(micros() - ts2);
@@ -85,21 +84,20 @@ void Sbus::TIMER_COMP_handler()
 #endif
 #ifdef DEBUG
     DEBUG_PRINT(" ");
-    DEBUG_PRINT(telemetryPacket * 8 + cont);
+    DEBUG_PRINT(telemetryPacket * 8 + slotCont);
 #endif
 
-    if (sensorSbusP[telemetryPacket * 8 + cont] != NULL)
-        sendSlot(telemetryPacket * 8 + cont);
-    if (cont < 7)
+    if (sensorSbusP[telemetryPacket * 8 + slotCont] != NULL)
+        sendSlot(telemetryPacket * 8 + slotCont);
+    if (slotCont < 7)
     {
         OCR3B = ts + (uint16_t)(SBUS_INTER_SLOT_DELAY * US_TO_COMP(1));
-        cont++;
+        slotCont++;
     }
     else
     {
         TIMSK3 &= ~_BV(OCIE3B); // DISABLE TIMER2 OCRA INTERRUPT
-        cont = 0;
-        digitalWrite(LED_BUILTIN, LOW);
+        slotCont = 0;
     }
 }
 
@@ -111,11 +109,10 @@ void Sbus::FTM0_IRQ_handler()
     if (FTM0_C0SC & FTM_CSC_CHF) // CH0 INTERRUPT
     {
         uint16_t ts = FTM0_CNT;
-        static uint8_t cont = 0;
 #ifdef DEBUG_SBUS_MS
         static uint16_t msprev = 0;
         uint16_t ms = micros();
-        if (cont == 0)
+        if (slotCont == 0)
         {
             DEBUG_PRINT(" ");
             DEBUG_PRINT(micros() - ts2);
@@ -129,20 +126,19 @@ void Sbus::FTM0_IRQ_handler()
 #endif
 #ifdef DEBUG
         DEBUG_PRINT(" ");
-        DEBUG_PRINT(telemetryPacket * 8 + cont);
+        DEBUG_PRINT(telemetryPacket * 8 + slotCont);
 #endif
-        if (sensorSbusP[telemetryPacket * 8 + cont] != NULL)
-            sendSlot(telemetryPacket * 8 + cont);
-        if (cont < 7)
+        if (sensorSbusP[telemetryPacket * 8 + slotCont] != NULL)
+            sendSlot(telemetryPacket * 8 + slotCont);
+        if (slotCont < 7)
         {
-            FTM0_C0V = ts + (uint16_t)(SBUS_INTER_SLOT_DELAY * US_TO_COMP(128));
-            cont++;
+            FTM0_C0V = (uint16_t)(ts + SBUS_INTER_SLOT_DELAY * US_TO_COMP(128));
+            slotCont++;
         }
         else
         {
             FTM0_C0SC &= ~FTM_CSC_CHIE; // DISABLE CH0 INTERRUPT
-            cont = 0;
-            digitalWrite(LED_BUILTIN, LOW);
+            slotCont = 0;
         }
         FTM0_C0SC |= FTM_CSC_CHF; // CLEAR FLAG CH2
     }
@@ -152,12 +148,14 @@ void Sbus::FTM0_IRQ_handler()
 
 void Sbus::sendSlot(uint8_t number)
 {
+    digitalWrite(LED_BUILTIN, HIGH);
     uint16_t val = sensorSbusP[number]->valueFormatted();
     uint8_t buffer[3];
     buffer[0] = slotId[number];
     buffer[1] = val;
     buffer[2] = val >> 8;
     SMARTPORT_FRSKY_SBUS_SERIAL.writeBytes(buffer, 3);
+    digitalWrite(LED_BUILTIN, LOW);
 #ifdef DEBUG
     DEBUG_PRINT(":");
     DEBUG_PRINT_HEX(slotId[number]);
@@ -197,6 +195,7 @@ void Sbus::begin()
     delayMicroseconds(1);
     FTM0_CNT = 0;
     SIM_SCGC6 |= SIM_SCGC6_FTM0; // ENABLE CLOCK
+    FTM0_MOD = 0xFFFF;
     FTM0_SC = FTM_SC_PS(7);      // PRESCALER 128    FTM_SC_PS(5) - PRESCALER 32
     FTM0_SC |= FTM_SC_CLKS(1);   // ENABLE COUNTER
     FTM0_C0SC = 0;               // DISABLE CHANNEL
@@ -222,8 +221,12 @@ void Sbus::deleteSensors()
 
 void Sbus::sendPacket()
 {
-    digitalWrite(LED_BUILTIN, HIGH);
+    slotCont = 0;
+#ifdef SIM_RX
+    uint16_t ts = 1500;
+#else
     uint16_t ts = SMARTPORT_FRSKY_SBUS_SERIAL.timestamp();
+#endif
 #ifdef DEBUG_SBUS_MS
     DEBUG_PRINTLN();
     DEBUG_PRINT(ts);
@@ -374,8 +377,8 @@ void Sbus::setConfig(Config &config)
         addSensor(SBUS_SLOT_POWER_CONS1, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempFetP(), esc);
         addSensor(SBUS_SLOT_TEMP1, sensorSbusP);
-        //sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempBecP(), esc);
-        //addSensor(SBUS_SLOT_TEMP2, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempBecP(), esc);
+        addSensor(SBUS_SLOT_TEMP2, sensorSbusP);
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorSbusP);
     }
@@ -426,8 +429,8 @@ void Sbus::setConfig(Config &config)
         //addSensor(SBUS_SLOT_POWER_VOLT2, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempFetP(), esc);
         addSensor(SBUS_SLOT_TEMP1, sensorSbusP);
-        //sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempFetP(), esc);
-        //addSensor(SBUS_SLOT_TEMP2, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempBecP(), esc);
+        addSensor(SBUS_SLOT_TEMP2, sensorSbusP);
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorSbusP);
     }
@@ -511,6 +514,11 @@ void Sbus::setConfig(Config &config)
         voltage = new Voltage(PIN_VOLTAGE1, ALPHA(config.average.volt), VOLTAGE1_MULTIPLIER);
         sensorSbusP = new SensorSbus(FASST_VOLT_V1, voltage->valueP(), voltage);
         addSensor(SBUS_SLOT_VOLT_V1, sensorSbusP);
+        if (config.voltage2 == false)
+        {
+            sensorSbusP = new SensorSbus(FASST_VOLT_V2, NULL, voltage);
+            addSensor(SBUS_SLOT_VOLT_V2, sensorSbusP);
+        }
     }
     if (config.voltage2 == true)
     {
@@ -519,6 +527,11 @@ void Sbus::setConfig(Config &config)
         voltage = new Voltage(PIN_VOLTAGE2, ALPHA(config.average.volt), VOLTAGE2_MULTIPLIER);
         sensorSbusP = new SensorSbus(FASST_VOLT_V2, voltage->valueP(), voltage);
         addSensor(SBUS_SLOT_VOLT_V2, sensorSbusP);
+        if (config.voltage1 == false)
+        {
+            sensorSbusP = new SensorSbus(FASST_VOLT_V1, NULL, voltage);
+            addSensor(SBUS_SLOT_VOLT_V1, sensorSbusP);
+        }
     }
     if (config.current == true)
     {
@@ -526,9 +539,11 @@ void Sbus::setConfig(Config &config)
         Current *current;
         current = new Current(PIN_CURRENT, ALPHA(config.average.curr), CURRENT_MULTIPLIER);
         sensorSbusP = new SensorSbus(FASST_POWER_CURR, current->valueP(), current);
-        addSensor(SBUS_SLOT_POWER_CURR1, sensorSbusP);
+        addSensor(SBUS_SLOT_POWER_CURR2, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_POWER_CONS, current->consumptionP(), current);
-        addSensor(SBUS_SLOT_POWER_CONS1, sensorSbusP);
+        addSensor(SBUS_SLOT_POWER_CONS2, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_POWER_VOLT, NULL, current);
+        addSensor(SBUS_SLOT_POWER_VOLT2, sensorSbusP);
     }
     if (config.ntc1 == true)
     {

@@ -89,14 +89,15 @@ void Bmp280::update()
 #ifdef SIM_SENSORS
     temperature_ = 20;
     pressure_ = 500;
-    altitude_ += 0.1;
+    altitude_ = 1234.56;
+    vario_ = 23.45;
 #else
     readPressure();
     calcAltitude();
     if (altitude_ < 0)
         altitude_ = 0;
-#endif
     vario_ = calcSpeed(altitude_, 500);
+#endif
     ts = millis();
 }
 
