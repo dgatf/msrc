@@ -137,6 +137,10 @@ Slots sensor mapping for Futaba transmitters:
 (1) Do not select default GPS  
 (2) Non default slots
 
+Select protocol: FASSTest 18CH or T-FHSS
+
+Connect t SBUS2 port
+
 ### XBUS
 
 Auto-config may be used to detect the new sensors.
