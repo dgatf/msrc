@@ -212,7 +212,7 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
     }
     if (dataId == FASST_AIR_SPEED)
     {
-        return __builtin_bswap16((uint16_t)round(value));
+        return __builtin_bswap16((uint16_t)round(value)) | 0x4000;
     }
     if (dataId == FASST_GPS_SPEED)
     {
