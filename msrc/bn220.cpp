@@ -67,8 +67,6 @@ void Bn220::update()
             }
         }
     }
-    vario_ = calcSpeed(alt_, 2000);
-    dist_ = calcDistanceToHome(lat_ / 60, lon_ / 60, 1000);
 #ifdef SIM_SENSORS
     lat_ = -692.761166667;   // 11º32'45.67" +N, -S
     lon_ = -1251.964833333;  // 20º51'57.89" +E, -W
@@ -80,6 +78,9 @@ void Bn220::update()
     time_ = 162302; // hhmmss
     hdop_ = 12.35; //
     vario_ = 5.67; // m/s
+#else
+    vario_ = calcSpeed(alt_, 2000);
+    dist_ = calcDistanceToHome(lat_ / 60, lon_ / 60, 1000);
 #endif
 }
 

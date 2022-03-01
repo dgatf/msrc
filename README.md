@@ -615,6 +615,7 @@ v0.9
 - Current analog. Added consumption
 - Added ESC support for APD F/HV/UHV
 - Added Hitec protocol
+- Fix Futaba SBUS
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 

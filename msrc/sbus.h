@@ -63,20 +63,20 @@
 
 Sensor mapping to slots for Futaba radios:
 
-| Slot   |Sensor                                                                                         |
-| :----: | :-------------------------------------------------------------------------------------------: |
-|0       | RX voltage (reserved)                                                                         |
-|1       | Temp1 (SBS-01T/TE)                                                                            |
-|2       | RPM (SBS-01RB/RM+/RO)                                                                         |
-|3-4     | Vario (Vario-F1672): 3-vario, 4-altitude                                                      |
-|6-7     | Voltage (SBS-01V+): 6-volt1, 7-volt2                                                          |
-|8-15    | GPS (SBS-01G/02G): 8-speed, 9-altitude, 10-time, 11-vario, 12-lat1, 13-lat2, 14-lon1, 15-lon2 |
-|16      | Air speed (SBS-01TAS)                                                                         |
-|17-23   | Unused                                                                                        |
-|24-26   | Current1 (SBS-01C): 24-current, 25-voltage, 26.consumption                                    |
-|27-29(+)| Current2 (SBS-01C): 27-current, 28-voltage, 29.consumption                                    |
-|30(+)   | Temp2 (SBS-01T/TE)                                                                            |
-|31      | Unused                                                                                        |
+| Slot   | Sensor                               |
+| :----: | :----------------------------------: |
+|0       | RX voltage (reserved)                |
+|1       | Temperature 1 (SBS-01T/TE)           |
+|2       | RPM (type magnet)(SBS-01RB/RM/RO)    |
+|3-4     | Vario-F1672                          |
+|6-7     | Voltage (SBS-01V)                    |
+|8-15    | GPS-F1675                            |
+|16      | Air speed (SBS-01TAS)                |
+|17-23   | Unused                               |
+|24-26   | Current 1 (SBS-01C)                  |
+|27-29(+)| Current 2 (SBS-01C)                  |
+|30(+)   | Temperature 2 (SBS-01T/TE)           |
+|31      | Unused                               |
 
 (+) Non default slots
 
