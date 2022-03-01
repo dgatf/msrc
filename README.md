@@ -1,4 +1,4 @@
-# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS1/2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec
+# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec
 
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=9GKNBVGHKXFGW&no_recurring=0&currency_code=USD)
@@ -6,7 +6,7 @@
 
 This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors. It adds support for several ESC telemetry protocols
 
-Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky IBUS, Futaba SBUS1/2, Multiplex Sensor Bus, Jeti Ex Bus
+Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky IBUS, Futaba SBUS2, Multiplex Sensor Bus, Jeti Ex Bus
 
 Compatible ESCs: Hobbywing V3/V4/V5, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal
 
@@ -91,7 +91,7 @@ The following Rx protocols are supported:
 - Spektrum SRXL V5: serial, 115200 bps
 - Spektrum XBUS: I2C
 - Flysky IBUS: serial, 115200 bps
-- Futaba SBUS1/2: inverted serial, 100000 bps
+- Futaba SBUS2: inverted serial, 100000 bps
 - Multiplex Sensor Bus: serial, 38400 bps
 - Jeti Ex Bus: serial 125000, 250000 bps
 - Hitec: I2C
@@ -620,13 +620,13 @@ v0.9
 - Current analog. Added consumption
 - Added ESC support for APD F/HV/UHV
 - Added Hitec protocol
-- Fix Futaba SBUS
+- Fix Futaba SBUS2
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
 - Added specific drivers for hardware serial and software serial
 - Added msrc_gui to create config.h (not all options are avaiable from gui)
-- Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS1/2, Multiplex Sensor Bus, Jeti Ex Bus
+- Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2, Multiplex Sensor Bus, Jeti Ex Bus
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement
 - Added ESCs support for: Kontronik Kosmic/Kolibri/JivePro
