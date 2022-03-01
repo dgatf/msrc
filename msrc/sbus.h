@@ -61,7 +61,7 @@
 
 /*
 
-Sensor mapping to slots for Futaba radios:
+Slots sensor mapping for Futaba transmitters:
 
 | Slot   | Sensor                               |
 | :----: | :----------------------------------: |
