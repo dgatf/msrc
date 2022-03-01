@@ -429,8 +429,8 @@ void Sbus::setConfig(Config &config)
         //addSensor(SBUS_SLOT_POWER_VOLT2, sensorSbusP);
         sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempFetP(), esc);
         addSensor(SBUS_SLOT_TEMP1, sensorSbusP);
-        //sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempFetP(), esc);
-        //addSensor(SBUS_SLOT_TEMP2, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_TEMP, esc->tempBecP(), esc);
+        addSensor(SBUS_SLOT_TEMP2, sensorSbusP);
         //sensorSbusP = new SensorSbus(FASST_POWER_VOLT, esc->cellVoltageP(), esc);
         //addSensor(12, sensorSbusP);
     }
