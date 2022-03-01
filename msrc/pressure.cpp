@@ -20,6 +20,6 @@ void Pressure::update()
     value_ = calcAverage(alpha_ / 100.0F, value_, airSpeed);
 
 #ifdef SIM_SENSORS
-    value_ = 50.45;
+    value_ = 123.45;
 #endif
 }
