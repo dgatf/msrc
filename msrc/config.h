@@ -86,7 +86,7 @@
 //#define DEBUG_CASTLE_RX
 
 //#define SIM_RX
-#define SIM_SENSORS
+//#define SIM_SENSORS
 //#define SIM_LUA_SEND
 //#define SIM_LUA_RECEIVE
 
