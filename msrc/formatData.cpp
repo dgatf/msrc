@@ -257,7 +257,7 @@ uint16_t FormatData::formatSbus(uint8_t dataId, float value)
             value -= 120000;
         uint8_t hours = value / 10000;
         uint8_t minutes = (uint8_t)(value / 100) - hours * 100;
-        uint8_t seconds = (uint8_t)(value / 10000);
+        uint8_t seconds = value - hours * 10000 - minutes * 100;
         return __builtin_bswap16(hours * 3600 + minutes * 60 + seconds);
     }
     return __builtin_bswap16(round(value));
