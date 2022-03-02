@@ -105,7 +105,7 @@ void SoftSerial::TIMER_COMP_handler()
     ts = micros();
 }
 
-inline void SoftSerial::_delay_loop(uint16_t delay)
+inline void SoftSerial::_delay_loop_2(uint16_t delay)
 {
     asm volatile(
         "1: sbiw %0,1"
@@ -123,12 +123,12 @@ void SoftSerial::PCINT_handler()
         uint8_t incomingByte = 0;
 
         // start bit
-        _delay_loop(rx_delay_centering);
+        _delay_loop_2(rx_delay_centering);
 
         // data
         for (uint8_t i = 8; i > 0; --i)
         {
-            _delay_loop(rx_delay);
+            _delay_loop_2(rx_delay);
             incomingByte >>= 1;
             if (bit_is_set(PINx, PINxn))
                 incomingByte |= 0x80;
@@ -138,7 +138,7 @@ void SoftSerial::PCINT_handler()
             incomingByte = ~incomingByte;
 
         // stop bits
-        _delay_loop(rx_delay_stop);
+        _delay_loop_2(rx_delay_stop);
 
         if (timedout)
             reset();

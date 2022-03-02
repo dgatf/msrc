@@ -66,7 +66,7 @@ private:
     uint16_t rx_delay_stop;
     uint16_t subs(uint16_t val1, uint16_t val2);
 #if defined(__AVR_ATmega32U4__)
-    inline void _delay_loop(uint16_t delay);
+    inline void _delay_loop_2(uint16_t delay);
 #endif
     void initWrite();
 
