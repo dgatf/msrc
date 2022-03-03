@@ -265,16 +265,6 @@ uint16_t SoftSerial::timestamp()
 
 void SoftSerial::begin(uint32_t baud, uint8_t format)
 {
-    // FORMAT: 8N1
-
-    // RX: 328P/PB: PIN 7   (PD7,PCINT23)
-    //     2560:    PIN A15 (PK7,PCINT23)
-    //     32U4:    PIN B3  (PB3,PCINT3)
-
-    // TX: 328P/PB: PIN 12  (PB4)
-    //     2560:    PIN D10 (PB4)
-    //     32U4:    PIN B4  (PB4)
-
     PCICR |= _BV(PCIEx);    // ENABLE PCINT
     PCMSKx |= _BV(PCINTxn); // PCINT MASK
 
