@@ -44,6 +44,18 @@
 #define SOFTSERIAL_RECEIVING 1
 #define SOFTSERIAL_SENDING 2
 
+/*  
+    RX & TX Pins:
+
+    RX: 328P/PB: PIN 7   (PD7,PCINT23)
+        2560:    PIN A15 (PK7,PCINT23)
+        32U4:    PIN B3/14  (PB3,PCINT3)
+
+    TX: 328P/PB: PIN 12  (PB4)
+        2560:    PIN D10 (PB4)
+        32U4:    PIN B4/8  (PB4)
+*/
+
 #define setPinHigh PORTB |= _BV(PORTB4)
 #define setPinLow PORTB &= ~_BV(PORTB4)
 

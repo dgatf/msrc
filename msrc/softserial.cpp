@@ -25,7 +25,7 @@ void SoftSerial::initWrite()
 
     if (inv)
         outgoingByte = ~outgoingByte;
-    
+
     cli();
 
     // start bit
@@ -51,6 +51,8 @@ void SoftSerial::initWrite()
     if (parity)
     {
         parity_value ^= parity & 1;
+        if (inv)
+            parity_value = !parity_value;
         if (parity_value)
             setPinHigh;
         else
@@ -64,11 +66,12 @@ void SoftSerial::initWrite()
     else
         setPinHigh;
 
+    _delay_loop_2(delay_stop);
+
     if (half_duplex_)
         DDRB &= ~_BV(DDB4);
 
     SREG = oldSREG;
-    _delay_loop_2(delay_stop);
 }
 
 uint8_t SoftSerial::availableTimeout()
@@ -164,15 +167,6 @@ uint16_t SoftSerial::timestamp()
 
 void SoftSerial::begin(uint32_t baud, uint8_t format)
 {
-    // FORMAT: 8N1
-
-    // RX: 328P/PB: PIN 7   (PD7,PCINT23)
-    //     2560:    PIN A15 (PK7,PCINT23)
-    //     32U4:    PIN B3/14  (PB3,PCINT3)
-
-    // TX: 328P/PB: PIN 12  (PB4)
-    //     2560:    PIN D10 (PB4)
-    //     32U4:    PIN B4/8  (PB4)
 
     PCICR |= _BV(PCIEx);    // ENABLE PCINT
     PCMSKx |= _BV(PCINTxn); // PCINT MASK
@@ -194,10 +188,13 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     // 1 bit delay in 4 clock cycles
     uint16_t delay = (F_CPU / baud) / 4;
     // substract overheads
-    tx_delay = subs(delay, 17 / 4); //15
-    rx_delay = subs(delay, 15 / 4); //23
+    tx_delay_start = subs(delay, 14 / 4);
+    tx_delay = subs(delay, 19 / 4);
+    tx_delay_parity = subs(delay, 14 / 4);
+    tx_delay_stop = subs(delay * stop_bits_, (71 + 10) / 4);
+    rx_delay = subs(delay, 15 / 4);
     rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 15) / 4);
-    rx_delay_stop = subs(delay * 3 / 4, (37 + 11) / 4);
+    rx_delay_stop = subs(delay * 3 * stop_bits_ / 4, (37 + 11 + 12) / 4);
 
     TCCR3A = 0;
     TCCR3B = _BV(CS31); // SCALER 8
@@ -230,15 +227,6 @@ void SoftSerial::PCINT_handler()
         // start bit
         _delay_loop_2(rx_delay_centering);
 
-        // data
-        /*
-        for (uint8_t i = 0; i < 8; i++)
-        {
-            _delay_loop_2(rx_delay);
-            if (bit_is_set(PINx, PINxn))
-                incomingByte |= _BV(i);
-        }
-        */
         for (uint8_t i = 8; i > 0; --i)
         {
             _delay_loop_2(rx_delay);
@@ -309,10 +297,10 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
     // 1 bit delay in 4 clock cycles
     uint16_t delay = (F_CPU / baud) / 4;
     // substract overheads
-    tx_delay_start = subs(delay, 3 / 4);
-    tx_delay = subs(delay, 16 / 4);
-    tx_delay_parity = subs(delay, 12 / 4);
-    tx_delay_stop = subs(delay * stop_bits_, 60 / 4);
+    tx_delay_start = subs(delay, 14 / 4);
+    tx_delay = subs(delay, 19 / 4);
+    tx_delay_parity = subs(delay, 14 / 4);
+    tx_delay_stop = subs(delay * stop_bits_, (71 + 10) / 4);
     rx_delay = subs(delay, 15 / 4);
     rx_delay_centering = subs(delay / 2, (4 + 4 + 75 + 17 - 15) / 4);
     rx_delay_stop = subs(delay * 3 * stop_bits_ / 4, (37 + 11 + 12) / 4);
