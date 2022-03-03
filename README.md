@@ -73,13 +73,13 @@ ATmega boards at 5v (16Mhz) may not read properly serial port when using ESC ser
 | XBUS NPN clock stretch<sup>(4)</sup> | 13 | 13 | 13 | PB5(9) | 13 |
 
 (1) with 3.3k pull up resistor  
-(2) diode 1N4148. Note the inverted orientation of the diode for Frsky and SBUS. Alternatively 1k to 3.3k resistor can be used  
+(2) 1k resistor
 (3) If using i2c_t3 library connect I2C sensor to pins 23 (SDA1) and 22 (SCL1)  
 (4) optional. Only if needed. If connected, enable XBUS_CLOCK_STRECH_SWITCH in config.h  
 (5) If using serial ESC  
 (6) If using GPS  
-(7) If using serial ESC and GPS. If using a diode, the diode line towards the pin  
-(8) If using serial ESC or GPS. If using a diode, the diode line towards the pin  
+(7) If using serial ESC and GPS  
+(8) If using serial ESC or GPS
 
 
 ## 2. Receiver protocol
@@ -100,10 +100,10 @@ Depending on the receiver protocol connect to the Rx as follows
 
 ### ATmega boards
 
-1N4148 diode or 1k to 3.3k resistor
+1k resistor
 
 <p align="center"><img src="./images/frsky_smartport_sbus.png" width="400"><br>
-<i>Frsky Smartport, SBUS</br>or SRXL, IBUS, SB, Jeti Ex Bus and boards with no available UARTS, as being used for ESC serial or GPS (if using a diode, then invert orientation) </i><br><br></p>
+<i>Frsky Smartport, SBUS</br>or SRXL, IBUS, SB, Jeti Ex Bus and boards with no available UARTS, as being used for ESC serial or GPS</i><br><br></p>
 
 <p align="center"><img src="./images/srxl_ibus_sb.png" width="460"><br>
 <i>SRXL, IBUS, SB, Jeti Ex Bus</i><br><br></p>
