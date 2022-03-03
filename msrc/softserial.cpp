@@ -140,8 +140,12 @@ void SoftSerial::PCINT_handler()
         if (inverted_)
             incomingByte = ~incomingByte;
 
+        // parity
+        if (parity_)
+            _delay_loop_2(rx_delay);
+            
         // stop bits
-        _delay_loop_2(rx_delay_stop);
+        //_delay_loop_2(rx_delay_stop);
 
         if (timedout)
             reset();
@@ -238,8 +242,12 @@ void SoftSerial::PCINT_handler()
         if (inverted_)
             incomingByte = ~incomingByte;
 
+        // parity
+        if (parity_)
+            _delay_loop_2(rx_delay);
+
         // stop bits
-        _delay_loop_2(rx_delay_stop);
+        //_delay_loop_2(rx_delay_stop);
 
         if (timedout)
             reset();
