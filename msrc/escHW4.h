@@ -35,10 +35,6 @@ Gain: Amperage
 
 */
 
-#define ESCHW4_DIVISOR 11
-#define ESCHW4_AMPGAIN 10
-#define ESCHW4_CURRENT_MAX 250
-
 #include <Arduino.h>
 #include "device.h"
 

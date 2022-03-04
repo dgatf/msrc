@@ -51,13 +51,16 @@
 //#define XBUS_CLOCK_STRECH_SWITCH
 
 /* Use library I2C_T3 for Teensy LC/3.X */
-//#define I2C_T3_TEENSY
+#define I2C_T3_TEENSY
 
 /* Add init delay for FlyFun ESC. Uncomment if the ESC doesn't arm */
 //#define ESC_INIT_DELAY 10000
 
-/* HW V4/V5 current threshold throttle (0-100%) */
+/* HW V4/V5 parameters */
 #define CURRENT_THRESHOLD 25
+#define ESCHW4_DIVISOR 11
+#define ESCHW4_AMPGAIN 10
+#define ESCHW4_CURRENT_MAX 250
 
 /* Force eeprom write */
 //#define FORCE_EEPROM_WRITE // Uncomment to force write eeprom as defined in config.h. Useful when using lua and eeprom is messed up. Reflash againg with line commented or config will be reset at power up 
