@@ -29,5 +29,6 @@ private slots:
     void on_cbEsc_currentIndexChanged(const QString &arg1);
     void on_gbEsc_toggled(bool arg1);
     void on_btCopy_clicked();
+    void on_cbEscModel_currentIndexChanged(const QString &arg1);
 };
 #endif // MAINWINDOW_H

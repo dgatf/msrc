@@ -11,6 +11,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "19200", "14400", "9600","4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS", "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2", "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec"});
+    ui->cbEscModel->addItems({"Platinum PRO v4 25/40/60", "Platinum PRO v4 80A", "Platinum PRO v4 100A", "Platinum PRO v4 120A", "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A", "Platinum PRO v4 200A-HV",
+                             "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A", "FlyFun 120A", "FlyFun 110A-HV", "FlyFun 130A-HV",  "FlyFun 160A-HV"});
     QComboBox *cbEscModel = ui->gbEsc->findChild<QComboBox *>("cbEscModel");
     cbEscModel->addItems({"Custom"});
     for (uint8_t i = 0; i < 127; i++) {
@@ -216,7 +218,7 @@ void MainWindow::generateConfig()
     configString += ""
                     "\n"
                     "\n/* XBus */";
-    if (ui->cbClockStretch->isChecked()) configString += "\n//#define XBUS_CLOCK_STRECH_SWITCH";
+    if (ui->cbClockStretch->isChecked()) configString += "\n#define XBUS_CLOCK_STRECH_SWITCH";
     else configString += "\n//#define XBUS_CLOCK_STRECH_SWITCH";
 
     configString += ""
@@ -334,3 +336,82 @@ void MainWindow::on_btCopy_clicked()
     clipboard->setText(ui->txConfig->toPlainText());
 }
 
+
+void MainWindow::on_cbEscModel_currentIndexChanged(const QString &arg1)
+{
+    //QSpinBox *sbCurrentThresold = ui->gbEsc->findChild<QSpinBox *>("sbCurrentThresold");
+    QDoubleSpinBox *sbVoltageDivisor = ui->gbEsc->findChild<QDoubleSpinBox *>("sbVoltageDivisor");
+    QDoubleSpinBox *sbCurrentMultiplier = ui->gbEsc->findChild<QDoubleSpinBox *>("sbCurrentMultiplier");
+    QSpinBox *sbCurrentMax = ui->gbEsc->findChild<QSpinBox *>("sbCurrentMax");
+
+    if (arg1 == "Platinum PRO v4 25/40/60") {
+        sbVoltageDivisor->setValue(11);
+        sbCurrentMultiplier->setValue(0);
+        sbCurrentMax->setValue(0);
+    }
+    else if (arg1 == "Platinum PRO v4 80A") {
+        sbVoltageDivisor->setValue(11);
+        sbCurrentMultiplier->setValue(8);
+        sbCurrentMax->setValue(100);
+    }
+    else if (arg1 == "Platinum PRO v4 100A") {
+        sbVoltageDivisor->setValue(11);
+        sbCurrentMultiplier->setValue(9);
+        sbCurrentMax->setValue(120);
+    }
+    else if (arg1 == "Platinum PRO v4 120A") {
+        sbVoltageDivisor->setValue(11);
+        sbCurrentMultiplier->setValue(10);
+        sbCurrentMax->setValue(140);
+    }
+    else if (arg1 == "Platinum PRO v4 150A") {
+        sbVoltageDivisor->setValue(15.75);
+        sbCurrentMultiplier->setValue(10);
+        sbCurrentMax->setValue(170);
+    }
+    else if (arg1 == "Platinum PRO v4 130A-HV") {
+        sbVoltageDivisor->setValue(21);
+        sbCurrentMultiplier->setValue(11.3);
+        sbCurrentMax->setValue(150);
+    }
+    else if (arg1 == "Platinum PRO v4 200A-HV") {
+        sbVoltageDivisor->setValue(21);
+        sbCurrentMultiplier->setValue(16.9);
+        sbCurrentMax->setValue(220);
+    }
+    else if (arg1 == "FlyFun 30/40A") {
+        sbVoltageDivisor->setValue(11);
+        sbCurrentMultiplier->setValue(0);
+        sbCurrentMax->setValue(0);
+    }
+    else if (arg1 == "FlyFun 60A") {
+        sbVoltageDivisor->setValue(11);
+        sbCurrentMultiplier->setValue(6);
+        sbCurrentMax->setValue(80);
+    }
+    else if (arg1 == "FlyFun 80A") {
+        sbVoltageDivisor->setValue(15.75);
+        sbCurrentMultiplier->setValue(12.4);
+        sbCurrentMax->setValue(100);
+    }
+    else if (arg1 == "FlyFun 120A") {
+        sbVoltageDivisor->setValue(21);
+        sbCurrentMultiplier->setValue(15);
+        sbCurrentMax->setValue(140);
+    }
+    else if (arg1 == "FlyFun 110A-HV") {
+        sbVoltageDivisor->setValue(21);
+        sbCurrentMultiplier->setValue(15);
+        sbCurrentMax->setValue(130);
+    }
+    else if (arg1 == "FlyFun 130A-HV") {
+        sbVoltageDivisor->setValue(21);
+        sbCurrentMultiplier->setValue(15);
+        sbCurrentMax->setValue(150);
+    }
+    else if (arg1 == "FlyFun 160A-HV") {
+        sbVoltageDivisor->setValue(21);
+        sbCurrentMultiplier->setValue(15);
+        sbCurrentMax->setValue(180);
+    }
+}
