@@ -64,6 +64,12 @@ ISR(TIMER2_COMPA_vect)
     if (TIMER2_COMPA_handlerP)
         TIMER2_COMPA_handlerP();
 }
+void (*TIMER3_COMPA_handlerP)() = NULL;
+ISR(TIMER3_COMPA_vect)
+{
+    if (TIMER3_COMPA_handlerP)
+        TIMER3_COMPA_handlerP();
+}
 void (*TIMER4_COMPB_handlerP)() = NULL;
 ISR(TIMER4_COMPB_vect)
 {

@@ -177,11 +177,11 @@ void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
     }
 }
 
-void EscCastle::TIMER2_COMPA_handler() // START OUTPUT STATE
+void EscCastle::TIMER3_COMPA_handler() // START OUTPUT STATE
 {
     TIMSK4 &= ~_BV(ICIE4);  // DISABLE ICP4 CAPT
     DDRD |= _BV(DDD2);      // OUTPUT OC4B (PD2, 2)
-    TIMSK2 &= ~_BV(OCIE2A); // DISABLE TIMER2 OCRA INTERRUPT
+    TIMSK3 &= ~_BV(OCIE3A); // DISABLE TIMER3 OCRA INTERRUPT
     if (!castleTelemetryReceived)
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
@@ -480,7 +480,7 @@ void EscCastle::begin()
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
     TIMER1_OVF_handlerP = TIMER1_OVF_handler;
-    TIMER2_COMPA_handlerP = TIMER2_COMPA_handler;
+    TIMER3_COMPA_handlerP = TIMER3_COMPA_handler;
     TIMER4_COMPB_handlerP = TIMER4_COMPB_handler;
     TIMER4_CAPT_handlerP = TIMER4_CAPT_handler;
 
@@ -500,10 +500,10 @@ void EscCastle::begin()
     TCCR4B |= _BV(CS41);                 // SCALER 8
     OCR4A = 20 * MS_TO_COMP(8);          // 50Hz = 20ms
 
-    // TIMER 2. TOGGLE OC4B INPUT/OUTPUT
-    TCCR2A = 0;                                 // NORMAL MODE
-    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // SCALER 1024
-    OCR2A = 12 * MS_TO_COMP(1024);              // 12ms
+    // TIMER 3. TOGGLE OC4B INPUT/OUTPUT
+    TCCR3A = 0;                                 // NORMAL MODE
+    TCCR3B = _BV(CS32) | _BV(CS30);             // SCALER 1024
+    OCR3A = 12 * MS_TO_COMP(1024);              // 12ms
 #endif
 
 #if defined(__AVR_ATmega2560__)

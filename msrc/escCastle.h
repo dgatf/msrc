@@ -44,7 +44,7 @@ extern void (*TIMER2_COMPA_handlerP)();
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
 extern void (*TIMER1_CAPT_handlerP)();
 extern void (*TIMER1_OVF_handlerP)();
-extern void (*TIMER2_COMPA_handlerP)();
+extern void (*TIMER3_COMPA_handlerP)();
 extern void (*TIMER4_COMPB_handlerP)();
 extern void (*TIMER4_CAPT_handlerP)();
 #endif
@@ -88,7 +88,7 @@ private:
 #if defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
     static void TIMER1_CAPT_handler();
     static void TIMER1_OVF_handler();
-    static void TIMER2_COMPA_handler();
+    static void TIMER3_COMPA_handler();
     static void TIMER4_COMPB_handler();
     static void TIMER4_CAPT_handler();
 #endif
