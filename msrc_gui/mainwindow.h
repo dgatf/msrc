@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -23,5 +24,7 @@ private slots:
     void exitApp();
 
 
+    void on_cbReceiver_currentIndexChanged(const QString &arg1);
+    void on_cbEsc_currentIndexChanged(const QString &arg1);
 };
 #endif // MAINWINDOW_H
