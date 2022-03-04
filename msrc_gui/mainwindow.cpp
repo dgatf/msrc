@@ -43,8 +43,7 @@ void MainWindow::generateConfig()
     configString += ""
                     "\n/* Receiver protocol */"
                     "\n#define RX_PROTOCOL ";
-    switch (ui->cbReceiver->currentIndex())
-    {
+    switch (ui->cbReceiver->currentIndex()) {
     case 0:
         configString += "RX_SMARTPORT";
         break;
@@ -81,10 +80,8 @@ void MainWindow::generateConfig()
                     "\n"
                     "\n/* Sensors */"
                     "\n#define CONFIG_ESC_PROTOCOL ";
-    if (ui->gbEsc->isChecked())
-    {
-        switch (ui->cbEsc->currentIndex())
-        {
+    if (ui->gbEsc->isChecked()) {
+        switch (ui->cbEsc->currentIndex()) {
         case 0:
             configString += "PROTOCOL_HW_V3";
             break;
@@ -101,8 +98,7 @@ void MainWindow::generateConfig()
             configString += "PROTOCOL_KONTRONIK";
             break;
         }
-    }
-    else
+    } else
         configString +="PROTOCOL_NONE";
 
     // GPS
@@ -155,15 +151,14 @@ void MainWindow::generateConfig()
     configString += ""
                     "\n"
                     "\n/* Refresh rate in 0.1s (1 = 100ms) */";
-    QGroupBox *gbRate = ui->gbReceiver->findChild<QGroupBox *>("gbRate");
     QSpinBox *sbRpmRate = ui->gbRate->findChild<QSpinBox *>("sbRpmRate");
     QSpinBox *sbVoltageRate = ui->gbRate->findChild<QSpinBox *>("sbVoltageRate");
     QSpinBox *sbCurrentRate = ui->gbRate->findChild<QSpinBox *>("sbCurrentRate");
     QSpinBox *sbTemperatureRate = ui->gbRate->findChild<QSpinBox *>("sbTemperatureRate");
-    configString += "\n#define CONFIG_REFRESH_RPM " + QString::number(sbRpmRate->value());
-    configString += "\n#define CONFIG_REFRESH_VOLT " + QString::number(sbVoltageRate->value());
-    configString += "\n#define CONFIG_REFRESH_CURR " + QString::number(sbCurrentRate->value());
-    configString += "\n#define CONFIG_REFRESH_TEMP " + QString::number(sbTemperatureRate->value());
+    configString += "\n#define CONFIG_REFRESH_RPM " + QString::number(sbRpmRate->value() / 100);
+    configString += "\n#define CONFIG_REFRESH_VOLT " + QString::number(sbVoltageRate->value() / 100);
+    configString += "\n#define CONFIG_REFRESH_CURR " + QString::number(sbCurrentRate->value() / 100);
+    configString += "\n#define CONFIG_REFRESH_TEMP " + QString::number(sbTemperatureRate->value() / 100);
 
     // Averaging
     configString += ""
@@ -183,12 +178,9 @@ void MainWindow::generateConfig()
     configString += ""
                     "\n"
                     "\n/* Analog multipliers */";
-    QGroupBox *gbVoltage1 = ui->gbSensors->findChild<QGroupBox *>("gbVoltage1");
-    QGroupBox *gbVoltage2 = ui->gbSensors->findChild<QGroupBox *>("gbVoltage2");
-    QGroupBox *gbCurrent = ui->gbSensors->findChild<QGroupBox *>("gbCurrent");
-    QDoubleSpinBox *sbVoltage1Mult = gbVoltage1->findChild<QDoubleSpinBox *>("sbVoltage1Mult");
-    QDoubleSpinBox *sbVoltage2Mult = gbVoltage2->findChild<QDoubleSpinBox *>("sbVoltage2Mult");
-    QDoubleSpinBox *sbCurrentMult = gbCurrent->findChild<QDoubleSpinBox *>("sbCurrentMult");
+    QDoubleSpinBox *sbVoltage1Mult = ui->gbVoltage1->findChild<QDoubleSpinBox *>("sbVoltage1Mult");
+    QDoubleSpinBox *sbVoltage2Mult = ui->gbVoltage2->findChild<QDoubleSpinBox *>("sbVoltage2Mult");
+    QDoubleSpinBox *sbCurrentMult = ui->gbCurrent->findChild<QDoubleSpinBox *>("sbCurrentMult");
     configString += "\n#define VOLTAGE1_MULTIPLIER " + QString::number(sbVoltage1Mult->value());
     configString += "\n#define VOLTAGE2_MULTIPLIER " + QString::number(sbVoltage2Mult->value());
     configString += "\n#define CURRENT_MULTIPLIER " + QString::number(sbCurrentMult->value());
@@ -217,7 +209,6 @@ void MainWindow::generateConfig()
                     "\n//#define ESC_SIGNATURE // HW V4 signature (only smartport). This outputs esc signature and raw current to sensors 5100, 5101 and 5102";
 
     // Lua Config
-    QCheckBox *cbLuaConfig = ui->cbReceiver->findChild<QCheckBox *>("cbLuaConfig");
     if (ui->cbLuaConfig->isChecked()) configString += "\n#define CONFIG_LUA";
     else configString += "\n//#define CONFIG_LUA";
 
@@ -225,8 +216,7 @@ void MainWindow::generateConfig()
     configString += ""
                     "\n"
                     "\n/* XBus */";
-    QCheckBox *cbClockStretch = ui->cbReceiver->findChild<QCheckBox *>("cbClockStretch");
-    if (ui->cbLuaConfig->isChecked()) configString += "\n//#define XBUS_CLOCK_STRECH_SWITCH";
+    if (ui->cbClockStretch->isChecked()) configString += "\n//#define XBUS_CLOCK_STRECH_SWITCH";
     else configString += "\n//#define XBUS_CLOCK_STRECH_SWITCH";
 
     configString += ""
@@ -238,18 +228,16 @@ void MainWindow::generateConfig()
     configString += ""
                     "\n"
                     "\n/* Add init delay for FlyFun ESC. Uncomment if the ESC doesn't arm */";
-    QGroupBox *gbEsc = ui->gbSensors->findChild<QGroupBox *>("gbEsc");
-    QGroupBox *gbEscParameters = gbEsc->findChild<QGroupBox *>("gbEscParameters");
-    QCheckBox *cbInitDelay = gbEscParameters->findChild<QCheckBox *>("cbInitDelay");
+    QCheckBox *cbInitDelay = ui->gbEscParameters->findChild<QCheckBox *>("cbInitDelay");
     if (cbInitDelay->isChecked()) configString += "\n#define ESC_INIT_DELAY 10000";
     else configString += "\n//#define ESC_INIT_DELAY 10000";
     configString += ""
                     "\n"
                     "\n/* HW V4/V5 parameters */";
-    QSpinBox *sbCurrentThresold = gbEscParameters->findChild<QSpinBox *>("sbCurrentThresold");
-    QDoubleSpinBox *sbVoltageDivisor = gbEscParameters->findChild<QDoubleSpinBox *>("sbVoltageDivisor");
-    QDoubleSpinBox *sbCurrentMultiplier = gbEscParameters->findChild<QDoubleSpinBox *>("sbCurrentMultiplier");
-    QSpinBox *sbCurrentMax = gbEscParameters->findChild<QSpinBox *>("sbCurrentMax");
+    QSpinBox *sbCurrentThresold = ui->gbEscParameters->findChild<QSpinBox *>("sbCurrentThresold");
+    QDoubleSpinBox *sbVoltageDivisor = ui->gbEscParameters->findChild<QDoubleSpinBox *>("sbVoltageDivisor");
+    QDoubleSpinBox *sbCurrentMultiplier = ui->gbEscParameters->findChild<QDoubleSpinBox *>("sbCurrentMultiplier");
+    QSpinBox *sbCurrentMax = ui->gbEscParameters->findChild<QSpinBox *>("sbCurrentMax");
     configString += "\n#define CURRENT_THRESHOLD " + QString::number(sbCurrentThresold->value());
     configString += "\n#define ESCHW4_DIVISOR " + QString::number(sbVoltageDivisor->value());
     configString += "\n#define ESCHW4_AMPGAIN " + QString::number(sbCurrentMultiplier->value());
@@ -302,30 +290,23 @@ MainWindow::~MainWindow()
 void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
 {
     QGroupBox *gbRate = ui->gbReceiver->findChild<QGroupBox *>("gbRate");
-    if (arg1 == "Spektrum XBUS")
-    {
+    if (arg1 == "Spektrum XBUS") {
         ui->cbClockStretch->setVisible(true);
         gbRate->setVisible(false);
-    }
-    else
-    {
+    } else {
         ui->cbClockStretch->setVisible(false);
         gbRate->setVisible(true);
     }
 
-    if (arg1 == "Frsky D" || arg1 == "Frsky Smartport")
-    {
+    if (arg1 == "Frsky D" || arg1 == "Frsky Smartport") {
         ui->cbLuaConfig->setVisible(true);
         gbRate->setVisible(true);
-    }
-    else
-    {
+    } else {
         ui->cbLuaConfig->setVisible(false);
         gbRate->setVisible(false);
     }
 
 }
-
 
 void MainWindow::on_cbEsc_currentIndexChanged(const QString &arg1)
 {
@@ -335,5 +316,21 @@ void MainWindow::on_cbEsc_currentIndexChanged(const QString &arg1)
     else
         gbEscParameters->setVisible(false);
 
+}
+
+void MainWindow::on_gbEsc_toggled(bool arg1)
+{
+    QGroupBox *gbRpmMultipliers = ui->gbEsc->findChild<QGroupBox *>("gbRpmMultipliers");
+    if (arg1 ==  true)
+        gbRpmMultipliers->setVisible(true);
+    else
+        gbRpmMultipliers->setVisible(false);
+
+}
+
+void MainWindow::on_btCopy_clicked()
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(ui->txConfig->toPlainText());
 }
 

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QDebug>
+#include <QClipboard>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -26,5 +27,7 @@ private slots:
 
     void on_cbReceiver_currentIndexChanged(const QString &arg1);
     void on_cbEsc_currentIndexChanged(const QString &arg1);
+    void on_gbEsc_toggled(bool arg1);
+    void on_btCopy_clicked();
 };
 #endif // MAINWINDOW_H
