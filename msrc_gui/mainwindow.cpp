@@ -336,82 +336,96 @@ void MainWindow::on_btCopy_clicked()
     clipboard->setText(ui->txConfig->toPlainText());
 }
 
-
 void MainWindow::on_cbEscModel_currentIndexChanged(const QString &arg1)
 {
     //QSpinBox *sbCurrentThresold = ui->gbEsc->findChild<QSpinBox *>("sbCurrentThresold");
     QDoubleSpinBox *sbVoltageDivisor = ui->gbEsc->findChild<QDoubleSpinBox *>("sbVoltageDivisor");
     QDoubleSpinBox *sbCurrentMultiplier = ui->gbEsc->findChild<QDoubleSpinBox *>("sbCurrentMultiplier");
     QSpinBox *sbCurrentMax = ui->gbEsc->findChild<QSpinBox *>("sbCurrentMax");
+    QCheckBox *cbInitDelay = ui->gbEsc->findChild<QCheckBox *>("cbInitDelay");
 
     if (arg1 == "Platinum PRO v4 25/40/60") {
         sbVoltageDivisor->setValue(11);
         sbCurrentMultiplier->setValue(0);
         sbCurrentMax->setValue(0);
+        cbInitDelay->setChecked(false);
     }
     else if (arg1 == "Platinum PRO v4 80A") {
         sbVoltageDivisor->setValue(11);
         sbCurrentMultiplier->setValue(8);
         sbCurrentMax->setValue(100);
+        cbInitDelay->setChecked(false);
     }
     else if (arg1 == "Platinum PRO v4 100A") {
         sbVoltageDivisor->setValue(11);
         sbCurrentMultiplier->setValue(9);
         sbCurrentMax->setValue(120);
+        cbInitDelay->setChecked(false);
     }
     else if (arg1 == "Platinum PRO v4 120A") {
         sbVoltageDivisor->setValue(11);
         sbCurrentMultiplier->setValue(10);
         sbCurrentMax->setValue(140);
+        cbInitDelay->setChecked(false);
     }
     else if (arg1 == "Platinum PRO v4 150A") {
         sbVoltageDivisor->setValue(15.75);
         sbCurrentMultiplier->setValue(10);
         sbCurrentMax->setValue(170);
+        cbInitDelay->setChecked(false);
     }
     else if (arg1 == "Platinum PRO v4 130A-HV") {
         sbVoltageDivisor->setValue(21);
         sbCurrentMultiplier->setValue(11.3);
         sbCurrentMax->setValue(150);
+        cbInitDelay->setChecked(false);
     }
     else if (arg1 == "Platinum PRO v4 200A-HV") {
         sbVoltageDivisor->setValue(21);
         sbCurrentMultiplier->setValue(16.9);
         sbCurrentMax->setValue(220);
+        cbInitDelay->setChecked(false);
     }
     else if (arg1 == "FlyFun 30/40A") {
         sbVoltageDivisor->setValue(11);
         sbCurrentMultiplier->setValue(0);
         sbCurrentMax->setValue(0);
+        cbInitDelay->setChecked(true);
     }
     else if (arg1 == "FlyFun 60A") {
         sbVoltageDivisor->setValue(11);
         sbCurrentMultiplier->setValue(6);
         sbCurrentMax->setValue(80);
+        cbInitDelay->setChecked(true);
     }
     else if (arg1 == "FlyFun 80A") {
         sbVoltageDivisor->setValue(15.75);
         sbCurrentMultiplier->setValue(12.4);
         sbCurrentMax->setValue(100);
+        cbInitDelay->setChecked(true);
     }
     else if (arg1 == "FlyFun 120A") {
         sbVoltageDivisor->setValue(21);
         sbCurrentMultiplier->setValue(15);
         sbCurrentMax->setValue(140);
+        cbInitDelay->setChecked(true);
     }
     else if (arg1 == "FlyFun 110A-HV") {
         sbVoltageDivisor->setValue(21);
         sbCurrentMultiplier->setValue(15);
         sbCurrentMax->setValue(130);
+        cbInitDelay->setChecked(true);
     }
     else if (arg1 == "FlyFun 130A-HV") {
         sbVoltageDivisor->setValue(21);
         sbCurrentMultiplier->setValue(15);
         sbCurrentMax->setValue(150);
+        cbInitDelay->setChecked(true);
     }
     else if (arg1 == "FlyFun 160A-HV") {
         sbVoltageDivisor->setValue(21);
         sbCurrentMultiplier->setValue(15);
         sbCurrentMax->setValue(180);
+        cbInitDelay->setChecked(true);
     }
 }
