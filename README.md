@@ -625,6 +625,7 @@ v0.9
 - Added ESC support for APD F/HV/UHV
 - Added Hitec protocol
 - Fix Futaba SBUS2
+- Fix Pololu compilation in Arduino IDE
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
