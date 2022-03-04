@@ -22,7 +22,7 @@ uint8_t Sbus::telemetryPacket = 0;
 
 uint32_t Sbus::ts2 = 0;
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega2560__)
 
 void Sbus::TIMER_COMP_handler()
 {
@@ -175,7 +175,7 @@ void Sbus::begin()
     Config config = {CONFIG_AIRSPEED, CONFIG_GPS, CONFIG_VOLTAGE1, CONFIG_VOLTAGE2, CONFIG_CURRENT, CONFIG_NTC1, CONFIG_NTC2, CONFIG_PWMOUT, {CONFIG_REFRESH_RPM, CONFIG_REFRESH_VOLT, CONFIG_REFRESH_CURR, CONFIG_REFRESH_TEMP}, {CONFIG_AVERAGING_ELEMENTS_RPM, CONFIG_AVERAGING_ELEMENTS_VOLT, CONFIG_AVERAGING_ELEMENTS_CURR, CONFIG_AVERAGING_ELEMENTS_TEMP}, CONFIG_ESC_PROTOCOL, CONFIG_I2C1_TYPE, CONFIG_I2C1_ADDRESS, 0, 0, SENSOR_ID};
     setConfig(config);
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega2560__)
     // TIMER 2 - shared with softserial
     TIMER2_COMPA_handlerP = TIMER_COMP_handler;
     TCCR2B = _BV(CS22) | _BV(CS21); // SCALER 256
@@ -234,7 +234,7 @@ void Sbus::sendPacket()
     ts2 = micros();
 #endif
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega2560__)
     // configure timer
     OCR2A = TCNT2 + (SBUS_SLOT_0_DELAY - ts) * US_TO_COMP(256); // complete 2ms
     TIFR2 |= _BV(OCF2A);                                        // CLEAR TIMER2 OCRA CAPTURE FLAG

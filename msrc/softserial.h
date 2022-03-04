@@ -5,7 +5,7 @@
 #include "serial.h"
 #include "hardserial.h"
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
 
 #if defined(__AVR_ATmega32U4__)
 #define PCINTx_vect PCINT0_vect
@@ -19,7 +19,7 @@
 #define PCIEx PCIE2
 #endif
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
 #define PORTx PORTD
 #define PORTxn PORTD7
 #define PINx PIND

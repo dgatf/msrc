@@ -7,7 +7,7 @@ volatile uint8_t EscPWM::cycles_ = 0;
 
 EscPWM::EscPWM(uint8_t alphaRpm) : alphaRpm_(alphaRpm) {}
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega32U4__)
 void EscPWM::TIMER1_CAPT_handler()
 {
     static uint16_t ts = 0;
@@ -124,7 +124,7 @@ void EscPWM::FTM0_IRQ_handler()
 
 void EscPWM::begin()
 {
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega32U4__)
     // TIMER1: MODE 0 (NORMAL), SCALER 1, CAPTURE AND OVERFLOW INTERRUPT. ICP1, PB0, PIN 8
     PORTB |= _BV(PB0); // PULL UP
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;

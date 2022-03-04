@@ -1,6 +1,6 @@
 #include "softserial.h"
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
 
 ISR(PCINTx_vect)
 {
@@ -206,7 +206,7 @@ void SoftSerial::begin(uint32_t baud, uint8_t format)
 
 #endif
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega2560__)
 
 ISR(TIMER2_COMPB_vect)
 {

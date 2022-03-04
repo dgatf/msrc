@@ -6,7 +6,7 @@
 #include <Arduino.h>
 #include "device.h"
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega32U4__)
 extern void (*TIMER1_CAPT_handlerP)();
 extern void (*TIMER1_COMPB_handlerP)();
 #endif
@@ -26,7 +26,7 @@ private:
     static volatile uint8_t cycles_;
     uint8_t alphaRpm_;
     float rpm_ = 0;
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega32U4__)
     static void TIMER1_CAPT_handler();
     static void TIMER1_COMPB_handler();
 #endif

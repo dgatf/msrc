@@ -124,7 +124,7 @@ delta_3000ms;// delta last 3.0 seconds
 class Xbus
 {
 private:
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
     uint8_t addressMask = 0;
 #endif
     static void i2c_request_handler();

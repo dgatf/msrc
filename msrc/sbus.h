@@ -82,7 +82,7 @@ Slots sensor mapping for Futaba transmitters:
 
 */
 
-#if defined(__AVR_ATmega328P__) ||  defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__)
+#if defined(__AVR_ATmega328P__) ||  defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega2560__)
 extern void (*TIMER2_COMPA_handlerP)();
 #endif
 
@@ -102,7 +102,7 @@ private:
     static uint8_t telemetryPacket;
     static SensorSbus *sensorSbusP[32];
     static const uint8_t slotId[32];
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__)
     static void TIMER_COMP_handler();
 #endif
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)

@@ -1,6 +1,6 @@
 #include "msrc.h"
 
-#if !defined(__AVR_ATmega328P__) && !defined(__AVR_ATmega328PB__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__MKL26Z64__) && !defined(__MK20DX128__) && !defined(__MK20DX256__) && !defined(__MK64FX512__) && !defined(__MK66FX1M0__)
+#if !defined(__AVR_ATmega328P__) && !defined(__AVR_ATmega328PB__) && !defined(ARDUINO_AVR_A_STAR_328PB) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__MKL26Z64__) && !defined(__MK20DX128__) && !defined(__MK20DX256__) && !defined(__MK64FX512__) && !defined(__MK66FX1M0__)
 #warning "MCU not supported"
 #endif
 
@@ -205,7 +205,7 @@ void setup()
     I2C_SENSOR.begin();
     I2C_SENSOR.setTimeout(WIRE_TIMEOUT);
 #if defined(ESC_INIT_DELAY)
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328PB__) || defined(ARDUINO_AVR_A_STAR_328PB)
     pinMode(0, OUTPUT);
     digitalWrite(0, LOW);
 #endif
