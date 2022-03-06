@@ -375,7 +375,6 @@ void EscCastle::FTM1_IRQ_handler()
     {
         if (FTM1_C0V < 5000)
         {
-            FTM0_C0V = FTM1_C0V;
             FTM0_C0SC |= FTM_CSC_CHIE;
             castlePwmRx = FTM0_C0V;
 #ifdef DEBUG_CASTLE_RX
@@ -443,6 +442,7 @@ void EscCastle::FTM0_IRQ_handler()
     }
     if (FTM0_C2SC & FTM_CSC_CHF) // CH2 INTERRUPT (TOGGLE CH0 TO OUTPUT)
     {
+        FTM0_C0V = castlePwmRx;
         PORTD_PCR0 = PORT_PCR_MUX(4); // TPM0_CH0 MUX 4 -> PTD0 -> 2(PWM OUT)
         FTM0_C4SC &= ~FTM_CSC_CHIE;   // DISABLE INTERRUPT CH4
         FTM0_C2SC &= ~FTM_CSC_CHIE;   // DISABLE INTERRUPT CH2
