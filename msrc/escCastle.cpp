@@ -373,19 +373,19 @@ void EscCastle::FTM1_IRQ_handler()
 {
     if (FTM1_C0SC & FTM_CSC_CHF) // TIMER INPUT CAPTURE INTERRUPT RX
     {
-        static uint16_t ts = 0;
-        if ((uint16_t)(FTM1_C0V - ts) * COMP_TO_MS(32) < 5)
+        if (FTM1_C0V < 5000)
         {
-            FTM0_C0V = (uint16_t)(FTM1_C0V - ts); // UPDATE FTM0 PWM
+            FTM0_C0V = 1500; //FTM1_C0V;
             FTM0_C0SC |= FTM_CSC_CHIE;
-            castlePwmRx = FTM0_C0V; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
-            FTM1_CNT = 0;
+            castlePwmRx = FTM0_C0V;
 #ifdef DEBUG_CASTLE_RX
             DEBUG_PRINT(castlePwmRx);
             DEBUG_PRINTLN();
 #endif
         }
-        ts = FTM1_C0V;
+        FTM1_CNT = 0;
+        FTM1_C0SC ^= FTM_CSC_ELSA;
+        FTM1_C0SC ^= FTM_CSC_ELSB;
         FTM1_C0SC |= FTM_CSC_CHF; // CLEAR FLAG
     }
     else if (FTM1_SC & FTM_SC_TOF) // TIMER OVERFLOW INTERRUPT
@@ -574,7 +574,7 @@ void EscCastle::begin()
     // CH0: INPUT CAPTURE
     FTM1_C0SC = 0;
     delayMicroseconds(1);
-    FTM1_C0SC = FTM_CSC_ELSB | FTM_CSC_ELSA | FTM_CSC_CHIE; // CAPTURE RISING AND FALLING
+    FTM1_C0SC = FTM_CSC_ELSA | FTM_CSC_CHIE; // CAPTURE RISING
     // SET PIN
     PORTB_PCR0 = PORT_PCR_PE | PORT_PCR_PS | PORT_PCR_MUX(3); // TPM1_CH0 MUX 3 -> PTB0 -> 16/A2 (CAPTURE INPUT RX)
 
@@ -604,7 +604,7 @@ void EscCastle::begin()
     // SET PINS
     PORTD_PCR0 = PORT_PCR_MUX(4);               // TPM0_CH0 MUX 4 -> PTD0 -> 2 (PWM OUT)
     PORTD_PCR4 = PORT_PCR_MUX(4) | PORT_PCR_PE; // TPM0_CH4 MUX 4 -> PTD4 -> 6 (CAPTURE), PULLUP
-
+    FTM0_C0V = 1500;
     NVIC_ENABLE_IRQ(IRQ_FTM0);
 #endif
 }
