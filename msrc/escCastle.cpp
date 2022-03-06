@@ -375,7 +375,7 @@ void EscCastle::FTM1_IRQ_handler()
     {
         if (FTM1_C0V < 5000)
         {
-            FTM0_C0V = 1500; //FTM1_C0V;
+            FTM0_C0V = FTM1_C0V;
             FTM0_C0SC |= FTM_CSC_CHIE;
             castlePwmRx = FTM0_C0V;
 #ifdef DEBUG_CASTLE_RX
