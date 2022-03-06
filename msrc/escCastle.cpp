@@ -153,13 +153,14 @@ void EscCastle::TIMER1_OVF_handler() // NO RX INPUT
 
 void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
 {
-    DDRD &= ~_BV(DDD2);                    // INPUT OC4B (PD2, 2)
-    PORTD |= _BV(PD2);                     // PD2 PULLUP
-    TIFR4 |= _BV(ICF4);                    // CLEAR ICP4 CAPTURE FLAG
-    TIMSK4 |= _BV(ICIE4);                  // ENABLE ICP4 CAPT
-    OCR2A = TCNT2 + 12 * MS_TO_COMP(1024); // 12ms AHEAD
-    TIFR2 |= _BV(OCF2A);                   // CLEAR TIMER2 OCRA CAPTURE FLAG
-    TIMSK2 |= _BV(OCIE2A);                 // ENABLE TIMER2 OCRA INTERRUPT
+    DDRD &= ~_BV(DDD2);   // INPUT OC4B (PD2, 2)
+    PORTD |= _BV(PD2);    // PD2 PULLUP
+    TIFR4 |= _BV(ICF4);   // CLEAR ICP4 CAPTURE FLAG
+    TIMSK4 |= _BV(ICIE4); // ENABLE ICP4 CAPT
+
+    TCNT3 = 0;             // RESET COUNTER
+    TIFR3 |= _BV(OCF3A);   // CLEAR TIMER3 OCRA CAPTURE FLAG
+    TIMSK3 |= _BV(OCIE3A); // ENABLE TIMER3 OCRA INTERRUPT
 }
 
 void EscCastle::TIMER4_CAPT_handler() // READ TELEMETRY
@@ -298,10 +299,12 @@ void EscCastle::TIMER3_CAPT_handler() // RX INPUT
             DDRB |= _BV(DDB6);     // OUTPUT OC1B (PB6, 10)
             TIFR1 |= _BV(OCF1B);   // CLEAR OCRB/OCRC FLAGS
             TIMSK1 |= _BV(OCIE1B); // ENABLE OCRB1 MATCH INTERRUPT
+            TIFR3 |= _BV(TOV3);    // CLEAR OVERFLOW FLAG
             TIMSK3 |= _BV(TOIE3);  // ENABLE OVERFLOW INTERRUPT
         }
         OCR1B = ICR3 - ts;
         castlePwmRx = OCR1B; // KEEP PWM STATE FOR TELEMETRY PULSE LENGHT
+        TCNT3 = 0;           // RESET COUNTER
 #ifdef DEBUG_CASTLE_RX
         DEBUG_PRINT(castlePwmRx);
         DEBUG_PRINTLN();
@@ -325,10 +328,10 @@ void EscCastle::TIMER3_OVF_handler() // NO RX INPUT
 
 void EscCastle::TIMER1_COMPB_handler() // START INPUT STATE
 {
-    DDRB &= ~_BV(DDB6);   // INPUT OC1B (PB6)
-    PORTB |= _BV(PB6);    // PD2 PULLUP
-    TIFR1 |= _BV(ICF1);   // CLEAR ICP1 CAPTURE FLAG
-    TIMSK1 |= _BV(ICIE1); // ENABLE ICP1 CAPT
+    DDRB &= ~_BV(DDB6);                 // INPUT OC1B (PB6)
+    PORTB |= _BV(PB6);                  // PD2 PULLUP
+    TIFR1 |= _BV(OCF1C) | _BV(ICF1);    // CLEAR ICP1 CAPTURE/OC1C FLAG
+    TIMSK1 |= _BV(OCIE1C) | _BV(ICIE1); // ENABLE ICP1 CAPT/OC1C MATCH
 }
 
 void EscCastle::TIMER1_CAPT_handler() // READ TELEMETRY
@@ -348,9 +351,8 @@ void EscCastle::TIMER1_CAPT_handler() // READ TELEMETRY
 
 void EscCastle::TIMER1_COMPC_handler() // START OUTPUT STATE
 {
-    TIMSK1 &= ~_BV(ICIE1);  // DISABLE ICP1 CAPT
-    DDRB |= _BV(DDB6);      // OUTPUT OC1B (PB6)
-    TIMSK1 &= ~_BV(OCIE1C); // DISABLE TIMER1 OCRC INTERRUPT
+    TIMSK1 &= ~_BV(ICIE1); // DISABLE ICP1 CAPT
+    DDRB |= _BV(DDB6);     // OUTPUT OC1B (PB6,10)
     if (!castleTelemetryReceived)
     {
         castleCompsPerMilli = castleTelemetry[0] / 2 + (castleTelemetry[9] < castleTelemetry[10] ? castleTelemetry[9] : castleTelemetry[10]);
@@ -498,12 +500,13 @@ void EscCastle::begin()
     TCCR4A |= _BV(COM4B1) | _BV(COM4B0); // TOGGLE OC4B ON OCR4B (INVERTING)
     TCCR4B &= ~_BV(ICES4);               // FALLING EDGE
     TCCR4B |= _BV(CS41);                 // SCALER 8
+    TCCR4B |= _BV(ICNC4);                // NOISE CANCELLER
     OCR4A = 20 * MS_TO_COMP(8);          // 50Hz = 20ms
 
     // TIMER 3. TOGGLE OC4B INPUT/OUTPUT
-    TCCR3A = 0;                                 // NORMAL MODE
-    TCCR3B = _BV(CS32) | _BV(CS30);             // SCALER 1024
-    OCR3A = 12 * MS_TO_COMP(1024);              // 12ms
+    TCCR3A = 0;                     // NORMAL MODE
+    TCCR3B = _BV(CS32) | _BV(CS30); // SCALER 1024
+    OCR3A = 12 * MS_TO_COMP(1024);  // 12ms
 #endif
 
 #if defined(__AVR_ATmega2560__)
@@ -514,7 +517,7 @@ void EscCastle::begin()
     TIMER5_CAPT_handlerP = TIMER5_CAPT_handler;
 
     // TIMER4. RX INPUT. ICP4 (PL0, PIN 49)
-    PORTL |= _BV(PL0);    // ICP3 PULLUP
+    PORTL |= _BV(PL0);    // ICP4 PULLUP
     TCCR4A = 0;           //
     TCCR4B = 0;           // MODE 0 (NORMAL)
     TCCR4B |= _BV(ICES4); // RISING EDGE
@@ -527,6 +530,7 @@ void EscCastle::begin()
     TCCR5A |= _BV(COM5B1) | _BV(COM5B0); // TOGGLE OC5B ON OCR5B (INVERTING)
     TCCR5B &= ~_BV(ICES5);               // FALLING EDGE
     TCCR5B |= _BV(CS51);                 // SCALER 8
+    TCCR5B |= _BV(ICNC5);                // NOISE CANCELLER
     OCR5A = 20 * MS_TO_COMP(8);          // 50Hz = 20ms
     OCR5C = 12 * MS_TO_COMP(8);          // TOGGLE OC5B OUTPUT
 #endif
@@ -538,7 +542,7 @@ void EscCastle::begin()
     TIMER1_COMPB_handlerP = TIMER1_COMPB_handler;
     TIMER1_CAPT_handlerP = TIMER1_CAPT_handler;
 
-    // TIMER3. RX INPUT. ICP3 (PC7)
+    // TIMER3. RX INPUT. ICP3 (PC7,13)
     PORTC |= _BV(PC7);    // ICP3 PULLUP
     TCCR3A = 0;           //
     TCCR3B = 0;           // MODE 0 (NORMAL)
@@ -546,14 +550,15 @@ void EscCastle::begin()
     TCCR3B |= _BV(CS31);  // SCALER 8
     TIMSK3 = _BV(ICIE3);  // CAPTURE INTERRUPT
 
-    // TIMER1. ESC: PWM OUTPUT, TELEMETRY INPUT. ICP1 (PD4). OC1B (PB6) -> OUTPUT/INPUT PULL UP
-    TCCR1A = _BV(WGM11) | _BV(WGM10);    // MODE 15 (TOP OCR4A)
+    // TIMER1. ESC: PWM OUTPUT, TELEMETRY INPUT. ICP1 (PD4,4). OC1B (PB6,10) -> OUTPUT/INPUT PULL UP
+    TCCR1A = _BV(WGM11) | _BV(WGM10);    // MODE 15 (TOP OCR1A)
     TCCR1B = _BV(WGM13) | _BV(WGM12);    //
-    TCCR1A |= _BV(COM4B1) | _BV(COM4B0); // TOGGLE OC4B ON OCR4B (INVERTING)
+    TCCR1A |= _BV(COM1B1) | _BV(COM1B0); // TOGGLE OC4B ON OCR4B (INVERTING)
     TCCR1B &= ~_BV(ICES1);               // FALLING EDGE
     TCCR1B |= _BV(CS11);                 // SCALER 8
+    TCCR1B |= _BV(ICNC1);                // NOISE CANCELLER
     OCR1A = 20 * MS_TO_COMP(8);          // 50Hz = 20ms
-    OCR1C = 12 * MS_TO_COMP(8);          // TOGGLE OC1B OUTPUT
+    OCR1C = 12 * MS_TO_COMP(8);          // TOGGLE OC1C OUTPUT
 #endif
 
 #if defined(__MKL26Z64__) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || defined(__MK66FX1M0__)
@@ -575,7 +580,7 @@ void EscCastle::begin()
 
     NVIC_ENABLE_IRQ(IRQ_FTM1);
 
-    // FTM0 (6 CH): INVERTED PWM AT 20MHZ AND CAPTURE TELEMETRY (PINS: CH0 PWM OUTPUT (PTC1 -> 22/A8), CH4 MUX 4 CAPTURE INPUT (PTD4 -> 6))
+    // FTM0 (6 CH): INVERTED PWM AT 20MHZ AND CAPTURE TELEMETRY (PINS: CH0 PWM OUTPUT (PTD0 -> 2), CH4 MUX 4 CAPTURE INPUT (PTD4 -> 6))
     FTM0_IRQ_handlerP = FTM0_IRQ_handler;
     FTM0_SC = 0;
     delayMicroseconds(1);
