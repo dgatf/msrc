@@ -216,7 +216,7 @@ Optionally, for Hobbywing Flyfun (V5) and APD F-series, a PWM signal can be gene
 - Check firmware installed is NOT VBAR version
 - Values for current when throttle is low (up to 25%, depending on model) may not be reliable. If getting high or noisy current values when throttle is low, adjust CURRENT_THRESHOLD in config.h. Below this throttle percentage (0-100%), current values will be 0A
 - Set ESCHW4_CURRENT_MAX to the peak current of the ESC (eg: 80A: ESCHW4_CURRENT_MAX 100)
-- Adjust ESCHW4_DIVISOR and ESCHW4_AMPGAIN in escHW4.h, depending on model:
+- Adjust ESCHW4_DIVISOR and ESCHW4_AMPGAIN, depending on model:
  
 | Cells range | ESCHW4_DIVISOR |
 | :---: | :---: |
