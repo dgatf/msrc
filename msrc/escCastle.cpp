@@ -376,7 +376,7 @@ void EscCastle::FTM1_IRQ_handler()
         if (FTM1_C0V < 5000)
         {
             FTM0_C0SC |= FTM_CSC_CHIE;
-            castlePwmRx = FTM0_C0V;
+            castlePwmRx = FTM1_C0V;
 #ifdef DEBUG_CASTLE_RX
             DEBUG_PRINT(castlePwmRx);
             DEBUG_PRINTLN();
@@ -604,7 +604,7 @@ void EscCastle::begin()
     // SET PINS
     PORTD_PCR0 = PORT_PCR_MUX(4);               // TPM0_CH0 MUX 4 -> PTD0 -> 2 (PWM OUT)
     PORTD_PCR4 = PORT_PCR_MUX(4) | PORT_PCR_PE; // TPM0_CH4 MUX 4 -> PTD4 -> 6 (CAPTURE), PULLUP
-    FTM0_C0V = 1500;
+
     NVIC_ENABLE_IRQ(IRQ_FTM0);
 #endif
 }
