@@ -376,6 +376,7 @@ void EscCastle::FTM1_IRQ_handler()
         if (FTM1_C0V < 5000)
         {
             FTM0_C0SC |= FTM_CSC_CHIE;
+            FTM0_C0V = castlePwmRx;
             castlePwmRx = FTM1_C0V;
 #ifdef DEBUG_CASTLE_RX
             DEBUG_PRINT(castlePwmRx);
@@ -412,7 +413,6 @@ void EscCastle::FTM0_IRQ_handler()
         FTM0_C2SC |= FTM_CSC_CHF;     // CLEAR FLAG CH2
         FTM0_C2SC |= FTM_CSC_CHIE;    // ENABLE INTERRUPT CH2
         FTM0_C0SC |= FTM_CSC_CHF;     // CLEAR FLAG CH0
-        FTM0_C0V = castlePwmRx;
         if (!castleTelemetryReceived)
         {
             castleCont = 0;
