@@ -31,11 +31,11 @@ void EscPWM::TIMER1_CAPT_handler()
 void EscPWM::TIMER1_COMPB_handler()
 {
     cycles_++;
-    if (cycles_ > ESCPWM_MAX_CYCLES)
+    if (cycles_ == ESCPWM_MAX_CYCLES)
     {
         escPwmRunning = false;
         escPwmDuration = 0xFFFFFFFF;
-        TIMSK1 ^= _BV(OCIE1B); // DISABLE TIMER1 OCRA INTERRUPT
+        TIMSK1 ^= _BV(OCIE1B); // DISABLE TIMER1 OCRB INTERRUPT
 #ifdef DEBUG_PWM
         DEBUG_PRINT("X");
         DEBUG_PRINTLN();
@@ -68,11 +68,11 @@ void EscPWM::TIMER4_CAPT_handler()
 void EscPWM::TIMER4_COMPB_handler()
 {
     cycles_++;
-    if (cycles_ > ESCPWM_MAX_CYCLES)
+    if (cycles_ == ESCPWM_MAX_CYCLES)
     {
         escPwmRunning = false;
         escPwmDuration = 0xFFFFFFFF;
-        TIMSK4 ^= _BV(OCIE4B); // DISABLE TIMER4 OCRA INTERRUPT
+        TIMSK4 ^= _BV(OCIE4B); // DISABLE TIMER4 OCRB INTERRUPT
 #ifdef DEBUG_PWM
         DEBUG_PRINT("X");
         DEBUG_PRINTLN();
@@ -104,10 +104,10 @@ void EscPWM::FTM0_IRQ_handler()
         DEBUG_PRINTLN();
 #endif
     }
-    if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH4
+    if (FTM0_C0SC & FTM_CSC_CHF) // TIMER CAPTURE INTERRUPT CH0
     {
         cycles_++;
-        if (cycles_ > ESCPWM_MAX_CYCLES)
+        if (cycles_ == ESCPWM_MAX_CYCLES)
         {
             escPwmRunning = false;
             escPwmDuration = 0xFFFFFFFF;
