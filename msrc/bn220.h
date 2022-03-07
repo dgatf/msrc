@@ -45,7 +45,7 @@ private:
     void parser(uint8_t type, char *data);
     void processField(const uint8_t *command);
     float degreesToRadians(float degrees);
-    float calcDistanceToHome(float lat, float lon, uint16_t intervalMin); // distance in meters
+    float calcDistanceToHome(float lat, float lon, float alt, uint16_t intervalMin);
 
 public:
     Bn220(AbstractSerial &serial, uint32_t baud);

@@ -80,7 +80,7 @@ void Bn220::update()
     vario_ = 5.67; // m/s
 #else
     vario_ = calcSpeed(alt_, 2000);
-    //dist_ = calcDistanceToHome(lat_ / 60, lon_ / 60, 1000);
+    //dist_ = calcDistanceToHome(lat_ / 60, lon_ / 60, alt_, 1000);
 #endif
 }
 
@@ -89,13 +89,14 @@ float Bn220::degreesToRadians(float degrees)
     return degrees * PI / 180;
 }
 
-float Bn220::calcDistanceToHome(float lat, float lon, uint16_t intervalMin)
+float Bn220::calcDistanceToHome(float lat, float lon, float alt, uint16_t intervalMin)
 {
     static uint16_t msPrev = 0;
     static float distance = 10000;
     static float latInit = 0;
     static float lonInit = 0;
     static float dLatInit = 0;
+    static float altInit = 0;
     if ((uint16_t)(millis() - msPrev) > intervalMin && sat_ > 9)
     {
         if (latInit == 0 && lonInit == 0)
@@ -103,6 +104,7 @@ float Bn220::calcDistanceToHome(float lat, float lon, uint16_t intervalMin)
             latInit = lat;
             lonInit = lon;
             dLatInit = degreesToRadians(latInit);
+            altInit = alt;
         }
         uint16_t earthRadiusKm = 6371;
         float dLatDelta = degreesToRadians(latInit - lat);
@@ -110,7 +112,8 @@ float Bn220::calcDistanceToHome(float lat, float lon, uint16_t intervalMin)
         float dLat = degreesToRadians(lat);
         float a = sin(dLatDelta / 2) * sin(dLatDelta / 2) + sin(dLonDelta / 2) * sin(dLonDelta / 2) * cos(dLat) * cos(dLatInit);
         float c = 2 * atan2(sqrt(a), sqrt(1 - a));
-        distance = earthRadiusKm * c * 1000; // distance in meters
+        float distanceOnGound = earthRadiusKm * c * 1000;
+        distance = sqrt(distanceOnGound * distanceOnGound + (alt-altInit) * (alt-altInit)); // meters
         msPrev = millis();
     }
     return distance;
