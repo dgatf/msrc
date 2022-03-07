@@ -376,11 +376,13 @@ void EscCastle::FTM1_IRQ_handler()
         if (FTM1_C0V < 5000)
         {
             FTM0_C0SC |= FTM_CSC_CHIE;
-            FTM0_C0V = castlePwmRx;
-            castlePwmRx = FTM1_C0V;
+            FTM0_C0V = FTM1_C0V;
 #ifdef DEBUG_CASTLE_RX
-            DEBUG_PRINT(castlePwmRx);
-            DEBUG_PRINTLN();
+            //if (FTM1_C0V < 1500 || FTM1_C0V > 1600)
+            {
+                DEBUG_PRINT(FTM1_C0V);
+                DEBUG_PRINTLN();
+            }
 #endif
         }
         FTM1_CNT = 0;
@@ -413,6 +415,7 @@ void EscCastle::FTM0_IRQ_handler()
         FTM0_C2SC |= FTM_CSC_CHF;     // CLEAR FLAG CH2
         FTM0_C2SC |= FTM_CSC_CHIE;    // ENABLE INTERRUPT CH2
         FTM0_C0SC |= FTM_CSC_CHF;     // CLEAR FLAG CH0
+        castlePwmRx = FTM0_C0V;
         if (!castleTelemetryReceived)
         {
             castleCont = 0;
@@ -606,7 +609,7 @@ void EscCastle::begin()
     FTM0_C2SC = FTM_CSC_MSA;        // SOFTWARE COMPARE
     FTM0_C2V = 12 * MS_TO_COMP(32); // 12ms TOGGLE CH0 TO OUTPUT
     // SET PINS
-    PORTD_PCR0 = PORT_PCR_MUX(4);               // TPM0_CH0 MUX 4 -> PTD0 -> 2 (PWM OUT)
+    //PORTD_PCR0 = PORT_PCR_MUX(0); // PTD0 MUX 0 -> DISABLE
     PORTD_PCR4 = PORT_PCR_MUX(4) | PORT_PCR_PE; // TPM0_CH4 MUX 4 -> PTD4 -> 6 (CAPTURE), PULLUP
 
     NVIC_ENABLE_IRQ(IRQ_FTM0);
