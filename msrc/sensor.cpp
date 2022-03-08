@@ -14,7 +14,7 @@ void Sensor::update()
 uint32_t Sensor::valueFormatted()
 {
 #ifdef ESC_SIGNATURE
-    if (dataId_ > DIY_STREAM_FIRST_ID && dataId_  < DIY_LAST_ID)
+    if (dataId_ > DIY_STREAM_FIRST_ID && dataId_ < DIY_LAST_ID)
     {
         uint32_t buffer;
         memcpy(&buffer, valueLP_, 4);
@@ -55,8 +55,10 @@ uint32_t SensorDouble::valueFormatted()
 {
     float valueLP = 0;
     float valueMP = 0;
-    if (valueLP_ != NULL) valueLP = *valueLP_;
-    if (valueMP_ != NULL) valueMP = *valueMP_;
+    if (valueLP_ != NULL)
+        valueLP = *valueLP_;
+    if (valueMP_ != NULL)
+        valueMP = *valueMP_;
     return formatData(dataId_, valueLP, valueMP);
 }
 
@@ -98,7 +100,6 @@ uint32_t SensorCell::valueFormatted()
 {
     return formatCell(cellIndex_, *valueMP_, *valueLP_);
 }
-
 
 Sensord::Sensord(uint8_t dataId, float *valueP, uint8_t refresh, AbstractDevice *deviceP) : dataId_(dataId), valueP_(valueP), refresh_(refresh), deviceP_(deviceP) {}
 
@@ -144,7 +145,8 @@ SensorIbus::~SensorIbus()
 
 void SensorIbus::update()
 {
-    deviceP_->update();
+    if (deviceP_)
+        deviceP_->update();
 }
 
 uint8_t SensorIbus::dataId()
@@ -159,7 +161,10 @@ uint8_t SensorIbus::type()
 
 uint8_t *SensorIbus::valueFormatted()
 {
-    valueFormatted_ = formatIbus(dataId_, *valueP_);
+    if (valueP_)
+    {
+        valueFormatted_ = formatIbus(dataId_, *valueP_);
+    }
     return (uint8_t *)&valueFormatted_;
 }
 

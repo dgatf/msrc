@@ -34,7 +34,7 @@ class Bn220 : public AbstractDevice, Vario
 private:
     const uint8_t gga[10] = {0, 0, 0, 0, 0, 0, BN220_SAT, BN220_HDOP, BN220_ALT, BN220_END}; // GGA
     const uint8_t rmc[10] = {BN220_TIME, 0, BN220_LAT, BN220_LAT_SIGN, BN220_LON, BN220_LON_SIGN, BN220_SPD, BN220_COG, BN220_DATE, BN220_END}; // RMC
-    float lat_ = 0, lon_ = 0, alt_ = 0, spd_ = 0, cog_ = 0, hdop_ = 0, sat_ = 0, vario_ = 0, dist_ = 10000;
+    float lat_ = 0, lon_ = 0, alt_ = 0, spd_ = 0, cog_ = 0, hdop_ = 0, sat_ = 0, vario_ = 0, dist_ = 0;
     int8_t latDir_ = 1, lonDir_ = 1;
     float time_ = 0, date_ = 0;
     uint8_t nmeaCmd_ = 0;

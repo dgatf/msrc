@@ -94,7 +94,7 @@ protected:
     uint8_t dataId_;
     uint8_t type_;
     float *valueP_;
-    int32_t valueFormatted_;
+    int32_t valueFormatted_ = 0;
 
 public:
     AbstractDevice *deviceP_;

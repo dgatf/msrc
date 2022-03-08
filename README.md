@@ -620,12 +620,12 @@ v0.9
 - GPS. Added HDOP, sats, vario and distance to home
 - IBUS. Fixed S32 type bug (GPS values)
 - XBUS. Added analog voltage2/ntc2 sensor
-- BMP280. Added vertical speed calculation (vario)
+- BMP280 and GPS. Added vertical speed calculation (vario)
 - Current analog. Added consumption
 - Added ESC support for APD F/HV/UHV
 - Added Hitec protocol
-- Fix Futaba SBUS2
-- Fix Pololu compilation in Arduino IDE
+- Fixed Futaba SBUS2
+- Fixed Pololu compilation in Arduino IDE
 - Improved msrc_gui
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
