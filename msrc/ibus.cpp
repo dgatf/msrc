@@ -189,6 +189,12 @@ void Ibus::update()
 
 void Ibus::setConfig(Config &config)
 {
+     /*
+     - Sensor at address 0x00 is reserved
+     - Sensor at address 0x01 is dummy to give enough time to MSRC to init (depends on the MSRC board speed)
+       Otherwise initial poll may not answered and sensor does not appear. But some receivers requires thus poll to be answered
+       Poll is every 7ms. If needed this sensor, comment this dummy sensor and power the receiver after or flash without bootloader
+    */
     SensorIbus *sensorIbusP;
     sensorIbusP = new SensorIbus(AFHDS2A_ID_END, 0, NULL, NULL);
     addSensor(sensorIbusP);
