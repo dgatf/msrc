@@ -189,6 +189,9 @@ void Ibus::update()
 
 void Ibus::setConfig(Config &config)
 {
+    SensorIbus *sensorIbusP;
+    sensorIbusP = new SensorIbus(AFHDS2A_ID_END, 0, NULL, NULL);
+    addSensor(sensorIbusP);
     if (config.protocol == PROTOCOL_PWM)
     {
         SensorIbus *sensorIbusP;
