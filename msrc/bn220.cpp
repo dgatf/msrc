@@ -92,7 +92,7 @@ float Bn220::degreesToRadians(float degrees)
 float Bn220::calcDistanceToHome(float lat, float lon, float alt, uint16_t intervalMin)
 {
     static uint16_t msPrev = 0;
-    static float distance = 10000;
+    static float distance = 0;
     static float latInit = 0;
     static float lonInit = 0;
     static float dLatInit = 0;
