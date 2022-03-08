@@ -80,7 +80,7 @@ void Bn220::update()
     vario_ = 5.67; // m/s
 #else
     vario_ = calcSpeed(alt_, 2000);
-    //dist_ = calcDistanceToHome(lat_ / 60, lon_ / 60, alt_, 1000);
+    dist_ = calcDistanceToHome(lat_ / 60, lon_ / 60, alt_, 1000);
 #endif
 }
 
