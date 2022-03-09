@@ -1,6 +1,11 @@
 #ifndef BMP280_H
 #define BMP280_H
 
+
+#include <Arduino.h>
+#include "device.h"
+#include "i2c.h"
+
 #define BMP280_REGISTER_DIG_T1 0x88
 #define BMP280_REGISTER_DIG_T2 0x8A
 #define BMP280_REGISTER_DIG_T3 0x8C
@@ -49,9 +54,8 @@
 #define STANDBY_MS_2000 0x06
 #define STANDBY_MS_4000 0x07
 
-#include <Arduino.h>
-#include "device.h"
-#include "i2c.h"
+#define BMP280_VARIO_INTERVAL 500
+#define BMP280_MEASUREMENT_INTERVAL 30
 
 class Bmp280 : public AbstractDevice, I2C, Vario
 {

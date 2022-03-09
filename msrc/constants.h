@@ -1,8 +1,6 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#include "config.h"
-
 /* Enums */
 #define RX_SMARTPORT 0
 #define RX_XBUS 1

@@ -4,8 +4,8 @@ Bmp280::Bmp280(uint8_t device, uint8_t alphaTemp, uint8_t alphaDef) : device_(de
 
 void Bmp280::begin()
 {
-    uint8_t configReg[1] = {(STANDBY_MS_250 << 5) | (FILTER_X8 << 2) | 0};
-    uint8_t measureReg[1] = {(BMP280_OVERSAMPLING_X4 << 5) | (BMP280_OVERSAMPLING_X4 << 2) | BMP280_NORMAL};
+    uint8_t configReg[1] = {(STANDBY_MS_1 << 5) | ((BMP280_FILTER + 1) << 2) | 0};
+    uint8_t measureReg[1] = {(BMP280_OVERSAMPLING_X2 << 5) | (BMP280_OVERSAMPLING_X16 << 2) | BMP280_NORMAL};
     writeBytes(device_, BMP280_REGISTER_CONFIG, configReg, 1);
     writeBytes(device_, BMP280_REGISTER_CONTROL, measureReg, 1);
     T1_ = readUInt(device_, 0x88, I2C_LITTLE_ENDIAN);
@@ -84,7 +84,7 @@ void Bmp280::calcAltitude()
 void Bmp280::update()
 {
     static uint16_t ts = 0;
-    if ((uint16_t)(millis() - ts) < 20)
+    if ((uint16_t)(millis() - ts) < BMP280_MEASUREMENT_INTERVAL)
         return;
 #ifdef SIM_SENSORS
     temperature_ = 20;
@@ -94,9 +94,9 @@ void Bmp280::update()
 #else
     readPressure();
     calcAltitude();
-    if (altitude_ < 0)
-        altitude_ = 0;
-    vario_ = calcSpeed(altitude_, 500);
+    //if (altitude_ < 0)
+    //    altitude_ = 0;
+    vario_ = calcSpeed(altitude_, BMP280_VARIO_INTERVAL);
 #endif
     ts = millis();
 }

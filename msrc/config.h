@@ -36,7 +36,8 @@
 #define RPM_PAIR_OF_POLES 1
 #define RPM_PINION_TEETH 1  // For helis
 #define RPM_MAIN_TEETH 1    // For helis
-
+/* BMP Filter. Higher filter = lower noise: 1 - low, 2 - medium, 3 - high */
+#define BMP280_FILTER 3
 /* Pwm out */
 #define CONFIG_PWMOUT false
 #define PWMOUT_DUTY 0.5 // 0.5 = 50%

@@ -13,8 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS", "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2", "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec"});
     ui->cbEscModel->addItems({"Platinum PRO v4 25/40/60", "Platinum PRO v4 80A", "Platinum PRO v4 100A", "Platinum PRO v4 120A", "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A", "Platinum PRO v4 200A-HV",
                              "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A", "FlyFun 120A", "FlyFun 110A-HV", "FlyFun 130A-HV",  "FlyFun 160A-HV"});
-    QComboBox *cbEscModel = ui->gbEsc->findChild<QComboBox *>("cbEscModel");
-    cbEscModel->addItems({"Custom"});
+    ui->cbAltitudeFilter->addItems({"Low", "Medium", "High"});
+    ui->cbAltitudeFilter->setCurrentIndex(2);
     for (uint8_t i = 0; i < 127; i++) {
         QString hex;
         hex.setNum(i,16);
@@ -197,6 +197,12 @@ void MainWindow::generateConfig()
     configString += "\n#define RPM_PAIR_OF_POLES " + QString::number(sbPairOfPoles->value());
     configString += "\n#define RPM_PINION_TEETH " + QString::number(sbMainTeeth->value());
     configString += "\n#define RPM_MAIN_TEETH " + QString::number(sbPinionTeeth->value());
+
+    // Altitude filter
+    configString += ""
+                    "\n"
+                    "\n/* BMP filter. Higher filter = lower noise: 1 - low, 2 - medium, 3 - high */"
+                    "\n#define BMP280_FILTER " + QString::number(ui->cbAltitudeFilter->currentIndex() + 1);
 
     //
     configString += ""
