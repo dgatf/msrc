@@ -696,7 +696,7 @@ For questions use the forums:
 
 [RCGroups](https://www.rcgroups.com/forums/showthread.php?4088405-DIY-MSRC-Multi-sensor-telemetry-for-several-Rx-protocols#post48830585) 
 
-[Helifreak](https://www.helifreak.com/showthread.php?t=835243)
+[Helifreak](https://www.helifreak.com/showthread.php?t=908371)
 
 [Openrcforums](https://www.openrcforums.com/forum/viewtopic.php?f=84&t=11911)
 
