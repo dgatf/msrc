@@ -251,6 +251,8 @@ The telemetry is send over the ESC signal. *Castle Link* has to be enabled in th
 
 If using ATmega328P telemetry values are not accurate all the time. Some readings are increased by 5-10%. This is a hardware limitation
 
+Remark: currently not compatible with Teensy3.x and ATmega328PB
+
 <p align="center"><img src="./images/castle_teensy2.png" width="420"><br>
   <i>Castle Link with Teensy 2</i><br><br></p>
 
@@ -686,13 +688,19 @@ v0.9
 
 ## 11. Support
 
-For questions, issues or new protocol request (use this [sketch](./sniffer/sniffer.ino)) please post in the forums:
+For issues use github:
+
+[Issues](https://github.com/dgatf/msrc/issues)
+
+For questions use the forums:
+
+[RCGroups](https://www.rcgroups.com/forums/showthread.php?4088405-DIY-MSRC-Multi-sensor-telemetry-for-several-Rx-protocols#post48830585) 
 
 [Helifreak](https://www.helifreak.com/showthread.php?t=835243)
 
 [Openrcforums](https://www.openrcforums.com/forum/viewtopic.php?f=84&t=11911)
 
-Or open an [Issue](https://github.com/dgatf/msrc/issues) in Github
+If you want to add support for new receiver protocol or new sensor, ask for it
 
 
 ## 12. Acknowledgements
