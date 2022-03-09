@@ -149,6 +149,10 @@ void EscCastle::TIMER1_OVF_handler() // NO RX INPUT
     TIMSK4 = 0;            // DISABLE INTERRUPTS
     TCCR1B |= _BV(ICES1);  // RISING EDGE
     TIMSK1 &= ~_BV(TOIE1); // DISABLE OVERFLOW INTERRUPT
+#ifdef DEBUG_CASTLE_RX
+    DEBUG_PRINT("X");
+    DEBUG_PRINTLN();
+#endif
 }
 
 void EscCastle::TIMER4_COMPB_handler() // START INPUT STATE
