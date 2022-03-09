@@ -587,7 +587,6 @@ The voltage drop in the shunt resistor is amplified by a differential amplifier 
 
 <p align="center"><img src="./images/High-Side-Current-Sensing.png" width="200"></p>
 
-
 ### 9.8. Air Speed
 
 Air speed is measured with a differential pressure sensor 
@@ -607,6 +606,22 @@ Adjust constants in *pressure.h*:
 
 - TRANSFER_SLOPE (B) as per sensor datasheet
 - For fine tuning measure the Vcc on the sensor and adjust TRANSFER_VCC
+
+### 9.8. Altitude
+
+Altitude is calculated using the barometric formula:
+
+<img src="https://latex.codecogs.com/svg.latex?h=(1-\frac{P}{Po}^{\frac{RL}{gM}})\frac{T}{L}" title="h=(1-P/Po^RL/gM)T/L" />
+
+R = universal gas constant: 8.3144598 J/(mol·K)
+g = gravitational acceleration: 9.80665 m/s2
+M = molar mass of Earth's air: 0.0289644 kg/mol
+L = temperature lapse rate (K/m): 6.5 C/km
+T = temperature at h (K)
+Po = pressure at ground (Pa)
+
+5 seconds after boot, pressure reference, Po, is set
+
 
 ## 10. Change log
 

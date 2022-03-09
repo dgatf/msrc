@@ -78,7 +78,7 @@ void Bmp280::calcAltitude()
         altitude_ = 0;
         return;
     }
-    altitude_ = 44330.0 * (1 - pow(pressure_ / P0_, 1 / 5.255));
+    altitude_ = (temperature_ + 273.15) * (1000 / 6.5) * (1 - pow(pressure_ / P0_, 1 / 5.256));
 }
 
 void Bmp280::update()
