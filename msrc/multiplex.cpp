@@ -306,4 +306,17 @@ void Multiplex::setConfig(Config &config)
         sensorMultiplexP = new SensorMultiplex(FHSS_VARIO, bmp->varioP(), bmp);
         addSensor(sensorMultiplexP);
     }
+    if (config.deviceI2C1Type == I2C_MS5611)
+    {
+        SensorMultiplex *sensorMultiplexP;
+        MS5611 *bmp;
+        bmp = new MS5611(config.deviceI2C1Address, ALPHA(config.average.temp), ALPHA(1));
+        bmp->begin();
+        sensorMultiplexP = new SensorMultiplex(FHSS_TEMP, bmp->temperatureP(), bmp);
+        addSensor(sensorMultiplexP);
+        sensorMultiplexP = new SensorMultiplex(FHSS_ALTITUDE, bmp->altitudeP(), bmp);
+        addSensor(sensorMultiplexP);
+        sensorMultiplexP = new SensorMultiplex(FHSS_VARIO, bmp->varioP(), bmp);
+        addSensor(sensorMultiplexP);
+    }
 }

@@ -568,6 +568,19 @@ void Smartport::setConfig(Config &config)
         sensorP = new Sensor(VARIO_FIRST_ID, bmp->varioP(), 5, bmp);
         addSensor(sensorP);
     }
+        if (config.deviceI2C1Type == I2C_MS5611)
+    {
+        Sensor *sensorP;
+        MS5611 *bmp;
+        bmp = new MS5611(config.deviceI2C1Address, ALPHA(config.average.temp), ALPHA(1));
+        bmp->begin();
+        sensorP = new Sensor(T1_FIRST_ID + 1, bmp->temperatureP(), config.refresh.temp, bmp);
+        addSensor(sensorP);
+        sensorP = new Sensor(ALT_FIRST_ID, bmp->altitudeP(), CONFIG_AVERAGING_ELEMENTS_DEF, bmp);
+        addSensor(sensorP);
+        sensorP = new Sensor(VARIO_FIRST_ID, bmp->varioP(), 5, bmp);
+        addSensor(sensorP);
+    }
 }
 
 void Smartport::processPacket(uint8_t frameId, uint16_t dataId, uint32_t value)

@@ -454,5 +454,14 @@ void Hitec::setConfig(Config &config)
         frame_0x1B_P[HITEC_FRAME_0X14_GPS_ALT] = bmp->altitudeP();
         isEnabledFrame[HITEC_FRAME_0X14] = true;
     }
+    if (config.deviceI2C1Type == I2C_MS5611)
+    {
+        MS5611 *bmp;
+        bmp = new MS5611(config.deviceI2C1Address, ALPHA(config.average.temp), ALPHA(1));
+        bmp->begin();
+        addDevice(bmp);
+        frame_0x1B_P[HITEC_FRAME_0X14_GPS_ALT] = bmp->altitudeP();
+        isEnabledFrame[HITEC_FRAME_0X14] = true;
+    }
 #endif
 }

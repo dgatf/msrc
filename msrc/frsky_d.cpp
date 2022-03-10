@@ -371,4 +371,19 @@ void Frsky::setConfig(Config &config)
         sensorP = new Sensord(VARIO_ID, bmp->varioP(), 5, bmp);
         addSensor(sensorP);
     }
+    if (config.deviceI2C1Type == I2C_MS5611)
+    {
+        Sensord *sensorP;
+        MS5611 *bmp;
+        bmp = new MS5611(config.deviceI2C1Address, ALPHA(config.average.temp), ALPHA(1));
+        bmp->begin();
+        sensorP = new Sensord(TEMP1_ID, bmp->temperatureP(), config.refresh.temp, bmp);
+        addSensor(sensorP);
+        sensorP = new Sensord(BARO_ALT_BP_ID, bmp->altitudeP(), CONFIG_AVERAGING_ELEMENTS_DEF, bmp);
+        addSensor(sensorP);
+        sensorP = new Sensord(BARO_ALT_AP_ID, bmp->altitudeP(), CONFIG_AVERAGING_ELEMENTS_DEF, bmp);
+        addSensor(sensorP);
+        sensorP = new Sensord(VARIO_ID, bmp->varioP(), 5, bmp);
+        addSensor(sensorP);
+    }
 }

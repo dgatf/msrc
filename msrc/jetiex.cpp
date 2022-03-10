@@ -693,6 +693,25 @@ void JetiEx::setConfig(Config &config)
         sensorJetiExP->setText("Vario");
         sensorJetiExP->setUnit("m/s");
     }
+    if (config.deviceI2C1Type == I2C_MS5611)
+    {
+        SensorJetiEx *sensorJetiExP;
+        BMS5611 *bmp;
+        bmp = new MS5611(config.deviceI2C1Address, ALPHA(config.average.temp), ALPHA(1));
+        bmp->begin();
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, bmp->altitudeP(), bmp);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Altitude");
+        sensorJetiExP->setUnit("m");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, bmp->temperatureP(), bmp);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Temperature");
+        sensorJetiExP->setUnit("C");
+        sensorJetiExP = new SensorJetiEx(JETIEX_TYPE_INT14, 1, bmp->varioP(), bmp);
+        sensorJetiExP->setSensorId(addSensor(sensorJetiExP));
+        sensorJetiExP->setText("Vario");
+        sensorJetiExP->setUnit("m/s");
+    }
 }
 
 uint8_t JetiEx::crc8(uint8_t *crc, uint8_t crc_length)

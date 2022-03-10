@@ -572,4 +572,15 @@ void Sbus::setConfig(Config &config)
         sensorSbusP = new SensorSbus(FASST_VARIO_ALT, bmp->altitudeP(), bmp);
         addSensor(SBUS_SLOT_VARIO_ALT, sensorSbusP);
     }
+    if (config.deviceI2C1Type == I2C_MS5611)
+    {
+        SensorSbus *sensorSbusP;
+        MS5611 *bmp;
+        bmp = new MS5611(config.deviceI2C1Address, ALPHA(config.average.temp), ALPHA(1));
+        bmp->begin();
+        sensorSbusP = new SensorSbus(FASST_VARIO_SPEED, bmp->varioP(), bmp);
+        addSensor(SBUS_SLOT_VARIO_SPEED, sensorSbusP);
+        sensorSbusP = new SensorSbus(FASST_VARIO_ALT, bmp->altitudeP(), bmp);
+        addSensor(SBUS_SLOT_VARIO_ALT, sensorSbusP);
+    }
 }
