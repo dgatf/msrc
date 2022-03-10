@@ -70,15 +70,6 @@ private:
     void calcAltitude();
 
 public:
-    enum sensor_sampling
-    {
-        SAMPLING_NONE = 0x00,
-        SAMPLING_X1 = 0x01,
-        SAMPLING_X2 = 0x02,
-        SAMPLING_X4 = 0x03,
-        SAMPLING_X8 = 0x04,
-        SAMPLING_X16 = 0x05
-    };
     Bmp280(uint8_t device, uint8_t alphaTemp, uint8_t alphaDef);
     void begin();
     void update();

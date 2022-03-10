@@ -26,6 +26,7 @@ private:
     float speed = 0;
 public:
     float calcSpeed(float altitude, uint16_t intervalMin = 0);
+    float calcAltitude(float pressure, float temperature, float P0);
 };
 
 #endif
