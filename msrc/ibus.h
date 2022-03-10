@@ -37,6 +37,7 @@
 #include "ntc.h"
 #include "pressure.h"
 #include "bmp280.h"
+#include "ms5611.h"
 #include "bn220.h"
 #include "configeeprom.h"
 #include "pwmout.h"
