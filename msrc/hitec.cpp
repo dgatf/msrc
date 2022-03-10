@@ -448,7 +448,7 @@ void Hitec::setConfig(Config &config)
     if (config.deviceI2C1Type == I2C_BMP280)
     {
         Bmp280 *bmp;
-        bmp = new Bmp280(config.deviceI2C1Address, ALPHA(config.average.temp), 10);
+        bmp = new Bmp280(config.deviceI2C1Address, ALPHA(config.average.temp), ALPHA(1));
         bmp->begin();
         addDevice(bmp);
         frame_0x1B_P[HITEC_FRAME_0X14_GPS_ALT] = bmp->altitudeP();

@@ -559,7 +559,7 @@ void Smartport::setConfig(Config &config)
     {
         Sensor *sensorP;
         Bmp280 *bmp;
-        bmp = new Bmp280(config.deviceI2C1Address, ALPHA(config.average.temp), 10);
+        bmp = new Bmp280(config.deviceI2C1Address, ALPHA(config.average.temp), ALPHA(1));
         bmp->begin();
         sensorP = new Sensor(T1_FIRST_ID + 1, bmp->temperatureP(), config.refresh.temp, bmp);
         addSensor(sensorP);
