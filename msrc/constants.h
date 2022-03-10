@@ -163,6 +163,7 @@
 // i2c
 #define I2C_NONE 0
 #define I2C_BMP280 1
+#define I2C_MS5611 2
 #define WIRE_TIMEOUT 3
 
 #define ALPHA(ELEMENTS) (uint8_t)(2.0 / (ELEMENTS + 1) * 100)

@@ -34,9 +34,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-601</y>
+             <y>-755</y>
              <width>603</width>
-             <height>1477</height>
+             <height>1590</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -549,25 +549,35 @@
                   <bool>false</bool>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_7">
-                  <item row="0" column="2">
-                   <widget class="QComboBox" name="cbAddress"/>
+                  <item row="2" column="1">
+                   <widget class="QLabel" name="lbAltitudeFilter">
+                    <property name="text">
+                     <string>Filter</string>
+                    </property>
+                   </widget>
                   </item>
-                  <item row="0" column="1">
+                  <item row="2" column="2">
+                   <widget class="QComboBox" name="cbAltitudeFilter"/>
+                  </item>
+                  <item row="1" column="1">
                    <widget class="QLabel" name="label_13">
                     <property name="text">
                      <string>Address</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="1">
-                   <widget class="QLabel" name="label_25">
+                  <item row="1" column="2">
+                   <widget class="QComboBox" name="cbAddress"/>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLabel" name="label_26">
                     <property name="text">
-                     <string>Filter</string>
+                     <string>Model</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="2">
-                   <widget class="QComboBox" name="cbAltitudeFilter"/>
+                  <item row="0" column="2">
+                   <widget class="QComboBox" name="cbBarometerType"/>
                   </item>
                  </layout>
                 </widget>
@@ -710,7 +720,7 @@
      <x>0</x>
      <y>0</y>
      <width>1267</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMSRC">

@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS", "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2", "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec"});
     ui->cbEscModel->addItems({"Platinum PRO v4 25/40/60", "Platinum PRO v4 80A", "Platinum PRO v4 100A", "Platinum PRO v4 120A", "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A", "Platinum PRO v4 200A-HV",
                              "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A", "FlyFun 120A", "FlyFun 110A-HV", "FlyFun 130A-HV",  "FlyFun 160A-HV"});
+    ui->cbBarometerType->addItems({"BMP280", "MS5611"});
     ui->cbAltitudeFilter->addItems({"Low", "Medium", "High"});
     ui->cbAltitudeFilter->setCurrentIndex(2);
     for (uint8_t i = 0; i < 127; i++) {
@@ -144,7 +145,7 @@ void MainWindow::generateConfig()
 
     // Altitude
     configString += " \n#define CONFIG_I2C1_TYPE ";
-    if (ui->gbAltitude->isChecked()) configString += "I2C_BMP280";
+    if (ui->gbAltitude->isChecked()) configString += ui->cbBarometerType->currentText();
     else configString += "I2C_NONE";
     configString += " \n#define CONFIG_I2C1_ADDRESS ";
     configString += ui->cbAddress->currentText();
@@ -435,3 +436,19 @@ void MainWindow::on_cbEscModel_currentIndexChanged(const QString &arg1)
         cbInitDelay->setChecked(true);
     }
 }
+
+void MainWindow::on_cbBarometerType_currentIndexChanged(const QString &arg1)
+{
+    QLabel *lbAltitudeFilter = ui->gbAltitude->findChild<QLabel *>("lbAltitudeFilter");
+    if (arg1 == "BMP280")
+    {
+        ui->cbAltitudeFilter->setVisible(true);
+        lbAltitudeFilter->setVisible(true);
+    }
+    else
+    {
+        ui->cbAltitudeFilter->setVisible(false);
+        lbAltitudeFilter->setVisible(false);
+    }
+}
+

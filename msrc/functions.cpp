@@ -43,3 +43,10 @@ float Vario::calcSpeed(float altitude, uint16_t intervalMin)
     prevMs = millis();
     return speed;
 }
+
+float Vario::calcAltitude(float pressure, float temperature, float P0)
+{
+    if (P0 == 0)
+        return 0;
+    return (temperature + 273.15) * (1000 / 6.5) * (1 - pow(pressure / P0, 1 / 5.256));
+}
