@@ -18,17 +18,18 @@ void MS5611::calcPressure()
 {
     int32_t dT, TEMP, T2;
     int64_t OFF, SENS, OFF2, SENS2;
-    dT = D2_ - C5_ * 256;
-    TEMP = 2000 + dT * C6_ / 8388608;    
-    OFF = C2_ * 8192 + (C4_ + dT) / 256;
-    SENS = C1_ * 32768 + (C3_ / dT) / 256;
-    if (temperature_ < 20)
+    dT = D2_ - ((uint32_t)C5_ << 8);
+    TEMP = 2000 + ((dT * C6_) >> 23);
+    OFF = ((uint32_t)C2_ << 16) + ((C4_ * dT) >> 7);
+    SENS = ((uint32_t)C1_ << 15) + ((C3_ * dT) >> 8);
+    
+    if (TEMP < 2000)
     {
         T2 = dT * dT / 2147483648;
         OFF2 = 5 * (TEMP - 2000) * (TEMP - 2000) / 2;
         SENS2 = 5 * (TEMP - 2000) * (TEMP - 2000) / 2;
     }
-    if (temperature_ < 15)
+    if (TEMP < 1500)
     {
         OFF2 = OFF2 + 7 * (TEMP + 1500) * (TEMP + 1500);
         SENS2 = SENS2 + 11 * (TEMP + 1500) * (TEMP + 1500) / 2;
@@ -36,9 +37,9 @@ void MS5611::calcPressure()
     TEMP = TEMP - T2;
     OFF = OFF - OFF2;
     SENS = SENS - SENS2;
-    int32_t P = (D1_ * SENS / 2097152 - OFF) / 32768;
+    int32_t P = (((D1_ * SENS) >> 21) - OFF) >> 15;
     temperature_ = (float)TEMP / 100; // °C
-    pressure_ = P / 100;
+    pressure_ = (float)P / 100;
 
     if (P0_ == 0 && millis() > 5000)
 #ifdef SIM_SENSORS
