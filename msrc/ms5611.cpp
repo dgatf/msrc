@@ -22,7 +22,7 @@ void MS5611::calcPressure()
     TEMP = 2000 + ((dT * C6_) >> 23);
     OFF = ((uint32_t)C2_ << 16) + ((C4_ * dT) >> 7);
     SENS = ((uint32_t)C1_ << 15) + ((C3_ * dT) >> 8);
-    
+
     if (TEMP < 2000)
     {
         T2 = (dT * dT) >> 31;
@@ -58,10 +58,7 @@ void MS5611::update()
         return;
     readBytes(device_, MS5611_CMD_ADC_READ, data, 3);
     if (isConvertingPressure)
-    {
         D1_ = (uint32_t)data[0] << 16 | (uint32_t)data[1] << 8 | data[2]; // pressure
-        return;
-    }
     else
         D2_ = (uint32_t)data[0] << 16 | (uint32_t)data[1] << 8 | data[2]; // temperature
 #ifdef SIM_SENSORS
@@ -70,14 +67,17 @@ void MS5611::update()
     altitude_ = 1234.56;
     vario_ = 23.45;
 #else
-    calcPressure();
-    altitude_ = calcAltitude(pressure_, temperature_, P0_);
-    vario_ = calcSpeed(altitude_, MS5611_VARIO_INTERVAL);
     isConvertingPressure = !isConvertingPressure;
     if (isConvertingPressure)
         writeBytes(device_, MS5611_CMD_CONV_D1); // pressure
     else
         writeBytes(device_, MS5611_CMD_CONV_D2); // temperature
+    if (!isConvertingPressure)
+    {
+        calcPressure();
+        altitude_ = calcAltitude(pressure_, temperature_, P0_);
+        vario_ = calcSpeed(altitude_, MS5611_VARIO_INTERVAL);
+    }
 #endif
     ts = millis();
 }
