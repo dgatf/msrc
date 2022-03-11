@@ -46,9 +46,9 @@ local config = {
     queueVolt = {selected = 1, elements = 16},
     queueCurr = {selected = 1, elements = 16},
     queueTemp = {selected = 1, elements = 16},
-    i2c1 = {selected = 3, list = {"NONE", "BMP280", ""}, elements = 2},
+    i2c1 = {selected = 4, list = {"NONE", "BMP280", "MS5611", ""}, elements = 3},
     i2c1Address = {selected = 1, elements = 128},
-    i2c2 = {selected = 3, list = {"NONE", "BMP280", ""}, elements = 2},
+    i2c2 = {selected = 4, list = {"NONE", "BMP280", "MS5611", ""}, elements = 3},
     i2c2Address = {selected = 1, elements = 128}
 }
 local selection = {
@@ -197,13 +197,13 @@ local function readConfig()
                 readConfigState = state["PACKET_3"]
             end
             if bit32.extract(value, 0, 8) == 0xF4 and readConfigState == state["PACKET_3"] then
-                if bit32.extract(value, 8, 4) >= 0 and bit32.extract(value, 8, 4) <= 2 then
+                if bit32.extract(value, 8, 4) >= 0 and bit32.extract(value, 8, 4) <= 3 then
                     config.i2c1.selected = bit32.extract(value, 8, 4) + 1 -- bits 9-12
                 end
                 if bit32.extract(value, 12, 8) >= 0 and bit32.extract(value, 12, 8) <= 127 then
                     config.i2c1Address.selected = bit32.extract(value, 12, 8) + 1 -- bits 13-20
                 end
-                if bit32.extract(value, 20, 4) >= 0 and bit32.extract(value, 20, 4) <= 2 then
+                if bit32.extract(value, 20, 4) >= 0 and bit32.extract(value, 20, 4) <= 3 then
                     config.i2c2.selected = bit32.extract(value, 20, 4) + 1 -- bits 21-24
                 end
                 if bit32.extract(value, 24, 8) >= 0 and bit32.extract(value, 24, 8) <= 127 then
