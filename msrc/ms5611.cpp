@@ -27,7 +27,7 @@ void MS5611::calcPressure()
     {
         T2 = (dT * dT) >> 31;
         OFF2 = 5 * (TEMP - 2000) * (TEMP - 2000) / 2;
-        SENS2 = 5 * (TEMP - 2000) * (TEMP - 2000) / 2;
+        SENS2 = 5 * (TEMP - 2000) * (TEMP - 2000) / 4;
     }
     if (TEMP < 1500)
     {
