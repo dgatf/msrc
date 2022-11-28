@@ -48,4 +48,5 @@
     "cortex-debug.openocdPath": "/home/daniel/src/pico/openocd/src/openocd",
     "cortex-debug.armToolchainPath": "/home/daniel/.platformio/packages/toolchain-gccarmnoneeabi/bin",
     "cortex-debug.variableUseNaturalFormat": true,
+    "cmake.sourceDirectory": "${workspaceFolder}/board",
 }
