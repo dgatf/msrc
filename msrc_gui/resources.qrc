@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/castle_rp2040_zero.png</file>
+        <file>res/gps_rp2040_zero.png</file>
+        <file>res/ntc_rp2040_zero.png</file>
+        <file>res/pwm_rp2040_zero.png</file>
+        <file>res/receiver_frsky_d_rp2040_zero.png</file>
+        <file>res/receiver_serial_rp2040_zero.png</file>
+        <file>res/rp2040_zero.png</file>
+        <file>res/vario_rp2040_zero.png</file>
+        <file>res/voltage_rp2040_zero.png</file>
+        <file>res/esc_rp2040_zero.png</file>
+        <file>res/current_rp2040_zero.png</file>
+        <file>res/airspeed_rp2040_zero.png</file>
+        <file>res/receiver_xbus_rp2040_zero.png</file>
+        <file>res/receiver_hitec_rp2040_zero.png</file>
+        <file>res/clock_stretch_xbus_rp2040_zero.png</file>
+        <file>res/msrc.png</file>
+        <file>res/msrc.ico</file>
+    </qresource>
+</RCC>

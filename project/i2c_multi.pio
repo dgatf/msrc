@@ -1,0 +1,120 @@
+/**
+ * -------------------------------------------------------------------------------
+ * 
+ * Copyright (c) 2022, Daniel Gorbea
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT-style license found in the
+ * LICENSE file in the root directory of this source tree. 
+ * 
+ * -------------------------------------------------------------------------------
+ * 
+ *  I2C slave multi - answer to multiple addresses
+ * 
+ *  SDA = pin
+ *  SCL = pin + 1
+ *
+ *  Add external pull ups, 1k - 3.3k
+ *
+ *  Define handlers and write buffer
+ * 
+ * -------------------------------------------------------------------------------
+ */
+ 
+ // sda 0, scl 1
+
+.program start_condition  // 4
+do_irq:
+    irq 4
+public start:
+.wrap_target
+    wait 1 pin 0
+    wait 0 pin 0
+    jmp pin do_irq
+.wrap
+
+.program stop_condition  // 4
+do_irq:
+    irq 1
+public start:
+.wrap_target
+    wait 0 pin 0
+    wait 1 pin 0
+    jmp pin do_irq
+.wrap
+
+.program read_byte  // 13
+.side_set 1 opt
+    wait irq 4
+read:
+    set pindirs 0
+    set x 7
+bit_loop:
+    wait 0 pin 1
+    wait 1 pin 1
+    in pins 1
+    jmp x-- bit_loop
+    mov isr ::isr
+    push noblock
+do_ack:
+    out exec 16
+    out exec 16
+    jmp do_ack
+do_irq:
+    irq 5
+
+.program do_ack
+    nop
+    wait 0 pin 1
+    set pindirs 3 side 0
+    irq wait 0
+    set pindirs 1
+    wait 1 pin 1
+    wait 0 pin 1
+
+    // read (receive request)
+    jmp 1 
+
+    // write (write request)
+    jmp 12
+
+    // address not enabled
+    set pindirs 0 [31]
+    jmp 0
+
+    // fill up to 12 instructions to allow compilation
+    nop
+    nop
+
+.program write_byte  // 11
+    wait irq 5
+write:
+    set pindirs 1
+    set x 7
+bit_loop:
+    wait 0 pin 1 [31]
+    out pins 1
+    wait 1 pin 1
+    jmp x-- bit_loop
+    out null 32
+wait_ack:
+    out exec 16
+    out exec 16
+    jmp wait_ack
+
+.program wait_ack
+    wait 0 pin 1 [31]
+    set pindirs 2
+    set pins 0
+    irq wait 0
+    set pindirs 0 [31]
+    wait 1 pin 1
+    nop
+    jmp pin 0
+    nop
+    jmp 1
+
+    set pindirs 0
+    out null 32
+
+

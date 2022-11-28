@@ -1,0 +1,51 @@
+{
+    // These settings tweaks to the cmake plugin will ensure
+    // that you debug using cortex-debug instead of trying to launch
+    // a Pico binary on the host
+    "files.associations": {
+        "type_traits": "c",
+        "config.h": "c",
+        "frsky_d.h": "c",
+        "ibus.h": "c",
+        "sbus.h": "c",
+        "bmp280.h": "c",
+        "esc_apd_hv.h": "c",
+        "nmea.h": "c",
+        "esc_pwm.h": "c",
+        "multiplex.h": "c",
+        "main.h": "c",
+        "jetiex.h": "c",
+        "capture_edge_pio.h": "c",
+        "optional": "c",
+        "istream": "c",
+        "ostream": "c",
+        "system_error": "c",
+        "array": "c",
+        "functional": "c",
+        "tuple": "c",
+        "utility": "c",
+        "string_view": "c",
+        "string": "c",
+        "sim_rx.h": "c",
+        "random": "c"
+    },
+    "cmake.statusbar.advanced": {
+        "debug": {
+            "visibility": "hidden"
+        },
+        "launch": {
+            "visibility": "hidden"
+        },
+        "build": {
+            "visibility": "default"
+        },
+        "buildTarget": {
+            "visibility": "hidden"
+        }
+    },
+    "cmake.buildBeforeRun": true,
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "cortex-debug.openocdPath": "/home/daniel/src/pico/openocd/src/openocd",
+    "cortex-debug.armToolchainPath": "/home/daniel/.platformio/packages/toolchain-gccarmnoneeabi/bin",
+    "cortex-debug.variableUseNaturalFormat": true,
+}

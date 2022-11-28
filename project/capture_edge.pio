@@ -1,0 +1,43 @@
+/**
+ * Copyright (c) 2022, Daniel Gorbea
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT-style license found in the
+ * LICENSE file in the root directory of this source tree. 
+ */
+
+.define PUBLIC CAPTURE_EDGE_PIN_COUNT 1   // use 1 to 32
+.define PUBLIC CAPTURE_EDGE_IRQ_NUM 2     // use 0 to 3
+
+.define PUBLIC COUNTER_CYCLES 9
+
+.program capture_edge
+.define ZERO_COUNT 32-CAPTURE_EDGE_PIN_COUNT
+intr:
+    mov osr isr        // bk counter
+    mov isr ~isr
+    push noblock       // send counter
+    mov isr x
+    push noblock       // send pins
+    mov isr y
+    push noblock       // send prev
+    mov y osr          // restore counter
+    mov osr x          // pins to prev
+    irq CAPTURE_EDGE_IRQ_NUM        // capture irq
+    jmp y-- decr       // adjust counter
+decr:
+    jmp y-- loop       // adjust counter
+.wrap_target
+loop:
+    in pins CAPTURE_EDGE_PIN_COUNT  // read pins
+    in null ZERO_COUNT // fill with zeros
+    mov x isr          // pins to x
+    mov isr y          // bk counter
+    mov y osr          // prev to y
+    jmp x!=y intr      // capture irq
+    mov y isr          // restore counter
+    mov osr x          // prev to osr
+    jmp y-- loop       // counter decrement every 9 cycles
+public start:
+    mov y ~null        // init counter
+.wrap
