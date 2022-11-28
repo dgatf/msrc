@@ -1,8 +1,8 @@
 # Remark: This is the new version for the RP2040 board #
 
-For previous versions see branch [legacy-arduino](https://github.com/dgatf/msrc/tree/legacy-arduino)
+For previous versions see branch [legacy_arduino](https://github.com/dgatf/msrc/tree/legacy_arduino)
 
-- More powerful board for less price: Cortex M0+ 32bits, 133MHz, 2MB RAM, 256kB, 3xUARTS, 2xI2C, PIO
+- More powerful board for less price: Cortex M0+ 32bits, 133MHz, 2MB flash, 256kB RAM, 3xUARTS, 2xI2C, PIO
 - Same board for all configurations
 - Easier to upload firmware: drag and drop
 - Config through USB
@@ -10,16 +10,15 @@ For previous versions see branch [legacy-arduino](https://github.com/dgatf/msrc/
 - No bit bang libraries like softserial
 
 
-# MSRC - Multi Sensor for RC - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec
-
+# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=9GKNBVGHKXFGW&no_recurring=0&currency_code=USD)
 
-This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors. It adds support for several ESC telemetry protocols
+This is a DIY project to send sensors telemetry for a fraction of the weight and cost of the stock sensors. It adds support for several ESC telemetry protocols.
 
-Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky IBUS, Futaba SBUS2, Multiplex Sensor Bus, Jeti Ex Bus
+Compatible RX protocols: Frsky Smartport, FrSky D, Spektrum XBUS, Spektrum SRXL V5, Flysky IBUS, Futaba SBUS2, Multiplex Sensor Bus, Jeti Ex Bus.
 
-Compatible ESCs: Hobbywing V3/V4/V5, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal
+Compatible ESCs: Hobbywing V3/V4/V5, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal.
 
 Compatible MCUs: RP2040. Any model is compatible. Recommended [RP2040 Zero](https://www.mischianti.org/wp-content/uploads/2022/09/Waveshare-rp2040-zero-Raspberry-Pi-Pico-alternative-pinout.jpg), for size and GPIO selection.
 
@@ -33,17 +32,19 @@ Implemented sensors:
 - I2C sensors: BMP180, BMP280, MS5611
 - Analog sensors: voltage, temperature, current, air speed
 
-All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with msrc_gui, or with a lua script if using smartport or manually in config.h 
+All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with msrc_gui.
 
-(1) HW V5 = HW FlyFun. If ESC doesn't arm, in config.h enable ESC_INIT_DELAY or connect arduino after the ESC is armed  
-(2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive
+(1) HW V5 = HW FlyFun. If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the ESC is armed  
+(2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive.
 
 
 ## 1. Connections
 
 Connections to RP2040 in the table bellow are GPIO numbers, which are the same for all RP2040 boards. Pin numbers are different depending on the board.
 
-| Sensor                                    | GPIO|
+<center>
+
+| Sensor/Receiver                           | Board GPIO|
 | :---:                                     | :---:            |
 | Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex  | 0<sup>(1)</sup> & 1 |
 | Frsky D                                   | 0                |
@@ -63,19 +64,36 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | NTC                                       | 28               |
 | Airspeed                                  | 29               |
 
+</center>
+
 (1) with 1k resistor  
 (2) with 1k-3.3k pull up resistor  
 (3) Optional  
 
 Status led of the board blinks when sending telemetry. If it doesn't blink check connections and config
 
+
+<p align="center"><img src="./images/rp2040_zero_pinout.jpg" width="500"><br>
+  <i>RP2040 Zero pinout</i><br><br></p>
+
 ## 2. Power source
 
-All receivers provide 3.3V at the telemetry port. Connect Vcc at telemetry port to RP2040 VSYS pin. Alternatively you can feed the RP2040 from the BEC or receiver if the voltage is less than 5.5V
+All receivers provide 3.3V at the telemetry port. Connect Vcc at telemetry port to RP2040 V5/VSYS pin. Alternatively you can feed the RP2040 from the BEC or receiver if the voltage is less than 5.5V
 
 ## 3. Flash firmware to RP2040
 
 Press BOOT button during startup and paste the binary file [MSRC-RP2040.uf2](binaries/MSRC-RP2040.uf2) to RP2040 folder
+
+If you want to build the firmware for the RP2040 yourself:
+
+- Install [RP2040 SDK](https://github.com/raspberrypi/pico-sdk)
+- Clone this repo with *git clone --recurse-submodules https://github.com/dgatf/msrc.git* as this repo contains submodules.
+- _cd board_
+- _mkdir build_
+- _cd build_
+- _cmake .._
+- _make_
+- File to flash: _project/MSRC-RP2040.uf2_
 
 ## 4. Configuration
 
@@ -85,11 +103,14 @@ Connect RP2040 to USB and update config with msrc_gui. [msrc_gui.AppImage](binar
 
 <p align="center"><img src="./images/msrc_gui.png" width="600"><br>
 
-Or build msrc_gui:
+If you want to build msrc_gui:
 
-- Install QT
-- cd to msrc_gui
-- _qmake_
+- Install [QT](https://www.qt.io/)
+- Install Qt serial port library (Use _Maintenance Tool_ or in Ubuntu *sudo apt install libqt5serialport5-dev*)
+- _cd msrc_gui_
+- _mkdir build_
+- _cd build_
+- _qmake .._
 - _make_
 
 ### 4.2. From transmitter using lua script (only Smartport)
@@ -136,7 +157,7 @@ Auto-config may be used to detect the new sensors.
 If no telemetry is shown, may be MSRC is booting too slow and the first poll from the receiver is not answered. There are several ways to fix this:
 
 1. Power on the receiver after MSRC has started
-3. I2C clock stretch. Pull down the SCL line until MSRC has started, then open the switch. You can use a manual switch or a NPN transistor (e.g. PN2222ABU). If using a transistor you need to enable XBUS_CLOCK_STRECH_SWITCH in config.h to open the switch after boot. If using manual switch, open the switch after boot, to finish the clock stretch
+3. I2C clock stretch. Pull down the SCL line until MSRC has started, then open the switch. You can use a manual switch or a NPN transistor (e.g. PN2222ABU). If using a transistor you need to enable _XBUS Clock Stretch_ to open the transistor switch after boot. If using manual switch, open the switch after boot, to finish the clock stretch
 
 <p align="center"><img src="./images/xbus_connector.png" width="300"><br>
   <i>XBUS port</i><br><br></p>
@@ -148,6 +169,8 @@ If no telemetry is shown, may be MSRC is booting too slow and the first poll fro
 ### SBUS 2
 
 Slots sensor mapping for Futaba transmitters:
+
+<center>
 
 | Slot   | Sensor                               |
 | :----: | :----------------------------------: |
@@ -163,6 +186,8 @@ Slots sensor mapping for Futaba transmitters:
 |27-29<sup>(2)</sup>| Current 2 (SBS-01C)                  |
 |30<sup>(2)</sup>   | Temperature 2 (SBS-01T/TE)           |
 |31      | Unused                               |
+
+</center>
 
 (1) Do not select default GPS  
 (2) Non default slots
@@ -212,18 +237,20 @@ Optionally, for Hobbywing Flyfun (V5) and APD F-series, a PWM signal can be gene
 
 - The telemetry port is a wired servo female plug. Don't confuse with RPM PWM signal connector or the program port
 - Check firmware installed is NOT VBAR version
-- Values for current when throttle is low (up to 25%, depending on model) may not be reliable. If getting high or noisy current values when throttle is low, adjust CURRENT_THRESHOLD in config.h. Below this throttle percentage (0-100%), current values will be 0A
-- Set ESCHW4_CURRENT_MAX to the peak current of the ESC (eg: 80A: ESCHW4_CURRENT_MAX 100)
-- Adjust ESCHW4_DIVISOR and ESCHW4_AMPGAIN, depending on model:
+- Values for current when throttle is low (up to 25%, depending on model) may not be reliable. If getting high or noisy current values when throttle is low, adjust _Current_thresold_. Below this throttle percentage (0-100%), current values will be 0A
+- Set _Max Current_ to the peak current of the ESC (eg: 80A: _Max Current_ 100)
+- Adjust _Voltage Divisor__ and _Current Multiplier__, depending on model:
  
-| Cells range | ESCHW4_DIVISOR |
+<center>
+
+| Cells range | Voltage divisor |
 | :---: | :---: |
 | 3-6S (LV) | 11 |
 | 3-8S (LV v2) | 15.75 |
 | 5-12s (HV) | 21 |
 | 6-14s (HV v2) | unknown |
 
-| Amperage | ESCHW4_AMPGAIN |
+| Amperage | Current multiplier |
 | :---: | :---: |
 | FlyFun 60A | 6
 | FlyFun 80A | 12.4 |
@@ -233,6 +260,8 @@ Optionally, for Hobbywing Flyfun (V5) and APD F-series, a PWM signal can be gene
 | 150A | 12.9<sup>(1)</sup> |
 | 160A | 13.7<sup>(1)</sup> |
 | Platinum V4 200A | 16.9 |
+
+</center>
 
 (1) Extrapolated from confirmed models. If you find discrepancy adjust gain parameter and send gain and ESC model to update the table
 
@@ -282,10 +311,10 @@ If current is available, battery consumption is calculated in mAh
 
 #### 6.1.5. RPM multipliers
 
-Adjust RPMs in *msrc_gui* or *config.h*:
+Adjust RPMs in *msrc_gui*:
 
-- Set the number of pair of poles of the motor, RPM_PAIR_OF_POLES
-- For helis also set the pinion and main gear teeth: RPM_PINION_TEETH, RPM_MAIN_TEETH
+- Set the number of pair of poles of the motor, _Pair of poles_
+- For helis also set the pinion and main gear teeth: _Pinion teeth_, _Main teeth_
 
 Alternatively this can be done in the transmitter
 
@@ -299,7 +328,7 @@ The following analog sensors are supported:
 
 #### 6.3.1. Voltage divider
 
-Calibrate voltage analog sensors with VOLTAGE1_MULTIPLIER and VOLTAGE2_MULTIPLIER in msrc_gui or in config.h. Or from opentx, but it is recommended in order to increase sensor resolution
+Calibrate voltage analog sensors with _Voltage multiplier_. Or from opentx, but it is recommended in order to increase sensor resolution
 
 Multiplier = (R1+R2)/ R2
 
@@ -309,7 +338,7 @@ No need to calibrate. For fine tuning adjust in ntc.h: NTC_R_REF, NTC_R1, NTC_BE
 
 #### 6.3.3. Current sensor
 
-Calibrate current analog sensor from msrc_gui or config.h. Or from opentx, but it is recommended in order to increase sensor resolution
+Calibrate current analog sensor from msrc_gui. Or from opentx, but it is recommended in order to increase sensor resolution
 
 Set sensor type:
 
@@ -319,7 +348,7 @@ Set sensor type:
 
 #### 6.3.4. Airspeed sensor (MPXV7002)
 
-No need to calibrate. For fine tuning adjust in pressure.h: TRANSFER_SLOPE,TRANSFER_VCC
+No need to calibrate. For fine tuning adjust in airspeed.h: TRANSFER_SLOPE,TRANSFER_VCC
 
 ### 6.4. I2C sensors
 
@@ -337,7 +366,7 @@ ESC:
 
 - ESC RPM: Erpm (0x0b60)
 - ESC voltage: EscV (0x0b50)
-- ESC cell average: VFAS (0x0210)
+- ESC cell average: Cells (0x300)
 - ESC current: EscA (0x0b50)
 - ESC consumption: EscC (0x0b60)
 - ESC temp FET (HW) or ESC temp linear (Castle): EscT (0x0b70)
@@ -360,10 +389,8 @@ Calculated:
 
 Analog:
 
-- Voltage 1: A3 (0x0900)
-- Voltage 2: A4 (0x0910)
-- Thermistor 1: Tmp1 (0x0400)
-- Thermistor 2: Tmp2 (0x0410)
+- Voltage: A3 (0x0900)
+- Thermistor: Tmp1 (0x0400)
 - Current: Curr (0x020f)
 - AirSpeed: ASpd (0x0a00)
 
@@ -385,13 +412,13 @@ If not adjusted in MSRC config you can adjust in the sensor parameters in opentx
 
 ### 7.2. Adjust voltage sensors (A3, A4)
 
-Remark: Instead of adjusting the sensor in opentx, it is recommended to use VOLTAGE1_MULTIPLIER and VOLTAGE2_MULTIPLIER in config.h to increase the sensor resolution. Though voltage resolution in opentx is 10 times the current resolution, so less critical
+Remark: Instead of adjusting the sensor in opentx, it is recommended to use _Voltage multiplier_ to increase the sensor resolution.
 
-Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4 sensor
+Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4 sensor.
 
 ### 7.3. Adjust analog current sensor (Curr)
 
-Remark: Instead of adjusting the sensor in opentx, it is recommended to use CURRENT_MULTIPLIER in config.h to increase the sensor resolution
+Remark: Instead of adjusting the sensor in opentx, it is recommended to use _Current multiplier_ to increase the sensor resolution
 
 If using a hall effect sensor, adjust the ratio: *25.5 x 1000 / output sensitivity (mV/A)*
 
@@ -482,7 +509,7 @@ To obtain the voltage at the analog pin it is required the ADC bits (b) and the 
 
 Two battery voltages can be measured through the analog pins A2 and A3
 Metal resistors are recommended as gives more accurate readings (0.1W or higher)
-Arduino can read up to 3.3V/5V and is optimized for signal inputs with 10K impedance
+Maximum voltage is 3.3V
 
 <p align="center"><img src="./images/Resistive_divider.png" width="200"></p>
 
@@ -500,7 +527,7 @@ For 6S battery (or lower) and Pro Mini 3.3v:
 
 In this case ratio is 7.8
 
-If more than 6S change R values or you may burn the Arduino!
+If more than 6S change R values or you may burn the board!
 
 ### 9.7. Temperature sensors. Thermistors
 
