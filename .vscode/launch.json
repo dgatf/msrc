@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Pico Debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            //"gdbPath" : "/home/daniel/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-gdb",
+            "gdbPath" : "/home/daniel/src/gcc-arm-none-eabi-10/bin/arm-none-eabi-gdb",
+            "device": "RP2040",
+            "configFiles": [
+                "interface/picoprobe.cfg",
+                "target/rp2040.cfg"
+            ],
+            "svdFile": "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
+            "runToMain": true,
+            // Work around for stopping at main on restart
+            "postRestartCommands": [
+                "break main",
+                "continue"
+            ],
+            "searchDir": ["/home/daniel/src/pico/openocd/tcl"],
+            //"showDevDebugOutput": true,
+        }
+    ]
+}

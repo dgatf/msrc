@@ -1,0 +1,47 @@
+/**
+ * Copyright (c) 2022, Daniel Gorbea
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT-style license found in the
+ * LICENSE file in the root directory of this source tree. 
+ */
+ 
+.define PUBLIC CASTLE_LINK_IRQ_NUM 2        // use 0 to 3
+
+// 0 RX input
+// 1 PWM input/output
+// in base = 0
+// set base = 1
+
+.program pulse
+.wrap_target
+    wait 1 pin 0       // rx pulse start -> esc is output 
+    set pindirs 1      // set pin 0 output (1)
+    wait 0 pin 0       // end of pwm rx -> esc is input. start counter (irq 4)
+    set pindirs 0 [31] // set pin 0 input (0)
+    irq 4
+.wrap
+
+// 0 RX input
+// 1 PWM input
+// in base = 0
+
+.program counter
+capture:
+    in pins 1               // read rx
+    in null 31
+    push noblock            // send rx state
+    mov isr ~y              // copy counter to isr
+    push noblock            // send counter to fifo
+    irq CASTLE_LINK_IRQ_NUM  // raise irq
+.wrap_target
+public start:
+    mov y ~null       // init counter
+    wait irq 4
+loop:
+    in pins 2         // read pins
+    in null 31        // fill with zeros and shift to esc pin
+    mov x isr
+    jmp !x capture    // jmp if x=0
+    jmp y-- loop      // decrement counter
+.wrap

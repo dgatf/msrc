@@ -1,0 +1,23 @@
+/**
+ * Copyright (c) 2022, Daniel Gorbea
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT-style license found in the
+ * LICENSE file in the root directory of this source tree. 
+ */
+
+.define PUBLIC UART_RX_IRQ_NUM 0  // use 0 to 3
+
+.program uart_rx  // 1 bit every 8 cycles
+start:
+    wait 0 pin 0
+    set x 7 [10]
+bit_loop:
+    in pins 1
+    jmp x-- bit_loop [6]
+    jmp pin good_stop
+    wait 1 pin 0
+    jmp start
+good_stop:
+    push
+    irq UART_RX_IRQ_NUM
