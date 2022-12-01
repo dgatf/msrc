@@ -104,9 +104,9 @@
 #define SBUS_SLOT_POWER_CONS2 29
 #define SBUS_SLOT_TEMP2 30
 
-#define SBUS_SLOT_0_DELAY 2000
+#define SBUS_TIMEOUT_US 500
+#define SBUS_SLOT_0_DELAY (2000 - SBUS_TIMEOUT_US)
 #define SBUS_INTER_SLOT_DELAY 700
-#define SBUS_TIMEOUT_US 1000
 #define SBUS_PACKET_LENGHT 25
 
 typedef struct sensor_sbus_t
@@ -117,8 +117,7 @@ typedef struct sensor_sbus_t
 
 typedef struct sbus_parameters_t
 {
-    uint8_t *packet_id;
-    uint8_t (*slot_id)[32];
+    uint8_t packet_id;
     sensor_sbus_t **sensor;
 } sbus_parameters_t;
 
