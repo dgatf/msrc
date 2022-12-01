@@ -1,21 +1,17 @@
 #include "sbus.h"
 
 static void process(sbus_parameters_t *parameter);
-static int64_t send_slot_callback(alarm_id_t id, void *user_data);
-static void send_slot(uint8_t slot_id, sensor_sbus_t *sensor);
+static int64_t send_slot_callback(alarm_id_t id, void *parameters);
+static void send_slot(uint8_t slot, sensor_sbus_t *sensor);
 static uint16_t format(uint8_t data_id, float value);
-static void add_sensor(uint8_t number, sensor_sbus_t *new_sensor, sensor_sbus_t **sensor);
+static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor, sensor_sbus_t **sensor);
 static void set_config(sensor_sbus_t **sensor);
+static uint8_t get_slot_id(uint8_t slot);
 
 void sbus_task(void *parameters)
 {
-    uint8_t packet_id;
-    uint8_t slot_id[32] = {0x03, 0x83, 0x43, 0xC3, 0x23, 0xA3, 0x63, 0xE3,
-                           0x13, 0x93, 0x53, 0xD3, 0x33, 0xB3, 0x73, 0xF3,
-                           0x0B, 0x8B, 0x4B, 0xCB, 0x2B, 0xAB, 0x6B, 0xEB,
-                           0x1B, 0x9B, 0x5B, 0xDB, 0x3B, 0xBB, 0x7B, 0xFB};
     sensor_sbus_t *sensor[32] = {NULL};
-    sbus_parameters_t parameter = {&packet_id, &slot_id, sensor};
+    sbus_parameters_t parameter = {0, sensor};
     led_cycle_duration = 200;
     led_cycles = 1;
     set_config(sensor);
@@ -36,8 +32,8 @@ static void process(sbus_parameters_t *parameter)
         uint8_t data[SBUS_PACKET_LENGHT];
         uart_read_bytes(UART_RECEIVER, data, SBUS_PACKET_LENGHT);
         if (debug)
-            printf("\nSbus (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         {
+            printf("\nSbus (%u) < ", uxTaskGetStackHighWaterMark(NULL));
             for (uint8_t i = 0; i < SBUS_PACKET_LENGHT; i++)
             {
                 printf("%X ", data[i]);
@@ -47,7 +43,7 @@ static void process(sbus_parameters_t *parameter)
         {
             if (data[24] == 0x04 || data[24] == 0x14 || data[24] == 0x24 || data[24] == 0x34)
             {
-                *parameter->packet_id = data[24] >> 4;
+                parameter->packet_id = data[24] >> 4;
                 add_alarm_in_us(SBUS_SLOT_0_DELAY /*- uart_get_time_elapsed(UART_RECEIVER)*/, send_slot_callback, parameter, true);
                 // vTaskResume(led_task_handle);
                 //  printf("\nTE: %u", uart_get_time_elapsed(UART_RECEIVER));
@@ -62,19 +58,8 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters)
 {
     sbus_parameters_t *parameter = (sbus_parameters_t *)parameters;
     static uint8_t index = 0;
-    uint8_t slot_index = index + *parameter->packet_id * 8;
-    if (debug)
-        printf(" (%u)", slot_index);
-    send_slot(*parameter->slot_id[slot_index], parameter->sensor[slot_index]);
-    if (debug == 2)
-    {
-        static uint32_t timestamp;
-        if (!index)
-            printf(" %u ", uart_get_time_elapsed(UART_RECEIVER));
-        else
-            printf(" %u ", time_us_32() - timestamp);
-        timestamp = time_us_32();
-    }
+    uint8_t slot = index + parameter->packet_id * 8;
+    send_slot(slot, parameter->sensor[slot]);
     if (index < 7)
     {
         index++;
@@ -84,15 +69,26 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters)
     return 0;
 }
 
-static void send_slot(uint8_t slot_id, sensor_sbus_t *sensor)
+static void send_slot(uint8_t slot, sensor_sbus_t *sensor)
 {
+    if (debug == 2)
+    {
+        static uint32_t timestamp;
+        if (slot == 0 || slot == 8 || slot == 16 || slot == 24)
+            printf(" %u", uart_get_time_elapsed(UART_RECEIVER));
+        else
+            printf(" %u", time_us_32() - timestamp);
+        timestamp = time_us_32();
+    }
+    if (debug)
+        printf(" (%u)", slot);
     uint16_t value = 0;
     if (sensor)
     {
         if (sensor->value)
             value = format(sensor->data_id, *sensor->value);
         uint8_t data[3];
-        data[0] = slot_id;
+        data[0] = get_slot_id(slot);
         data[1] = value;
         data[2] = value >> 8;
         uart_write_bytes(UART_RECEIVER, data, 3);
@@ -188,9 +184,18 @@ static uint16_t format(uint8_t data_id, float value)
     return __builtin_bswap16(round(value));
 }
 
-static void add_sensor(uint8_t number, sensor_sbus_t *new_sensor, sensor_sbus_t **sensor)
+static uint8_t get_slot_id(uint8_t slot)
 {
-    sensor[number] = new_sensor;
+    uint8_t slot_id[32] = {0x03, 0x83, 0x43, 0xC3, 0x23, 0xA3, 0x63, 0xE3,
+                           0x13, 0x93, 0x53, 0xD3, 0x33, 0xB3, 0x73, 0xF3,
+                           0x0B, 0x8B, 0x4B, 0xCB, 0x2B, 0xAB, 0x6B, 0xEB,
+                           0x1B, 0x9B, 0x5B, 0xDB, 0x3B, 0xBB, 0x7B, 0xFB};
+    return slot_id[slot];
+}
+
+static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor, sensor_sbus_t **sensor)
+{
+    sensor[slot] = new_sensor;
 }
 
 static void set_config(sensor_sbus_t **sensor)

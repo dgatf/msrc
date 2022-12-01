@@ -65,9 +65,9 @@
 #define ANALOG_CURRENT_SENSITIVITY 1000
 
 /* RPM multipliers (optional, this may be done in transmitter*/
-#define RPM_PAIR_OF_POLES 2
-#define RPM_PINION_TEETH 3 // For helis
-#define RPM_MAIN_TEETH 4   // For helis
+#define RPM_PAIR_OF_POLES 1
+#define RPM_PINION_TEETH 1 // For helis
+#define RPM_MAIN_TEETH 1   // For helis
 
 /* Vario */
 #define VARIO_AUTO_OFFSET false
