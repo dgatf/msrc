@@ -1,31 +1,32 @@
 #include "sbus.h"
 
-static void process(sbus_parameters_t *parameter);
+static sensor_sbus_t *sbus_sensor[32] = {NULL};
+static uint packet_id;
+
+static void process();
 static int64_t send_slot_callback(alarm_id_t id, void *parameters);
-static void send_slot(uint8_t slot, sensor_sbus_t *sensor);
+static void send_slot(uint8_t slot);
 static uint16_t format(uint8_t data_id, float value);
-static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor, sensor_sbus_t **sensor);
-static void set_config(sensor_sbus_t **sensor);
+static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor);
+static void set_config();
 static uint8_t get_slot_id(uint8_t slot);
 
 void sbus_task(void *parameters)
 {
-    sensor_sbus_t *sensor[32] = {NULL};
-    sbus_parameters_t parameter = {0, sensor};
     led_cycle_duration = 200;
     led_cycles = 1;
-    set_config(sensor);
+    set_config();
     uart_begin(UART_RECEIVER, 100000, UART_RECEIVER_TX, UART_RECEIVER_RX, SBUS_TIMEOUT_US, 8, 2, UART_PARITY_EVEN, true);
     if (debug)
         printf("\nSbus init");
     while (1)
     {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
-        process(&parameter);
+        process();
     }
 }
 
-static void process(sbus_parameters_t *parameter)
+static void process()
 {
     if (uart_available(UART_RECEIVER) == SBUS_PACKET_LENGHT)
     {
@@ -43,8 +44,8 @@ static void process(sbus_parameters_t *parameter)
         {
             if (data[24] == 0x04 || data[24] == 0x14 || data[24] == 0x24 || data[24] == 0x34)
             {
-                parameter->packet_id = data[24] >> 4;
-                add_alarm_in_us(SBUS_SLOT_0_DELAY /*- uart_get_time_elapsed(UART_RECEIVER)*/, send_slot_callback, parameter, true);
+                packet_id = data[24] >> 4;
+                add_alarm_in_us(SBUS_SLOT_0_DELAY /*- uart_get_time_elapsed(UART_RECEIVER)*/, send_slot_callback, NULL, true);
                 // vTaskResume(led_task_handle);
                 //  printf("\nTE: %u", uart_get_time_elapsed(UART_RECEIVER));
                 if (debug)
@@ -56,10 +57,9 @@ static void process(sbus_parameters_t *parameter)
 
 static int64_t send_slot_callback(alarm_id_t id, void *parameters)
 {
-    sbus_parameters_t *parameter = (sbus_parameters_t *)parameters;
     static uint8_t index = 0;
-    uint8_t slot = index + parameter->packet_id * 8;
-    send_slot(slot, parameter->sensor[slot]);
+    uint8_t slot = index + packet_id * 8;
+    send_slot(slot);
     if (index < 7)
     {
         index++;
@@ -69,7 +69,7 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters)
     return 0;
 }
 
-static void send_slot(uint8_t slot, sensor_sbus_t *sensor)
+static void send_slot(uint8_t slot)
 {
     if (debug == 2)
     {
@@ -83,10 +83,10 @@ static void send_slot(uint8_t slot, sensor_sbus_t *sensor)
     if (debug)
         printf(" (%u)", slot);
     uint16_t value = 0;
-    if (sensor)
+    if (sbus_sensor[slot])
     {
-        if (sensor->value)
-            value = format(sensor->data_id, *sensor->value);
+        if (sbus_sensor[slot]->value)
+            value = format(sbus_sensor[slot]->data_id, *sbus_sensor[slot]->value);
         uint8_t data[3];
         data[0] = get_slot_id(slot);
         data[1] = value;
@@ -193,12 +193,12 @@ static uint8_t get_slot_id(uint8_t slot)
     return slot_id[slot];
 }
 
-static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor, sensor_sbus_t **sensor)
+static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor)
 {
-    sensor[slot] = new_sensor;
+    sbus_sensor[slot] = new_sensor;
 }
 
-static void set_config(sensor_sbus_t **sensor)
+static void set_config(sensor_sbus_t *sensor[])
 {
     config_t *config = config_read();
     TaskHandle_t task_handle;
@@ -211,7 +211,7 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_RPM, parameter.rpm};
-        add_sensor(SBUS_SLOT_RPM, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_RPM, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_HW3)
@@ -223,7 +223,7 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_RPM, parameter.rpm};
-        add_sensor(SBUS_SLOT_RPM, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_RPM, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_HW4)
@@ -246,25 +246,25 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_RPM, parameter.rpm};
-        add_sensor(SBUS_SLOT_RPM, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_RPM, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_VOLT, parameter.voltage};
-        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CURR, parameter.current};
-        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CONS, parameter.consumption};
-        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_TEMP, parameter.temperature_fet};
-        add_sensor(SBUS_SLOT_TEMP1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_TEMP1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_TEMP, parameter.temperature_bec};
-        add_sensor(SBUS_SLOT_TEMP2, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_TEMP2, new_sensor);
         // new_sensor = malloc(sizeof(sensor_sbus_t));
         //*new_sensor = (sensor_sbus_t){AFHDS2A_ID_CELL_VOLTAGE, parameter.cell_voltage};
-        // add_sensor(new_sensor, sensor);
+        // add_sensor(new_sensor);
     }
     if (config->esc_protocol == ESC_CASTLE)
     {
@@ -275,28 +275,28 @@ static void set_config(sensor_sbus_t **sensor)
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_RPM, parameter.rpm};
-        add_sensor(SBUS_SLOT_RPM, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_RPM, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_VOLT, parameter.voltage};
-        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CURR, parameter.current};
-        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_VOLT, parameter.voltage_bec};
-        add_sensor(SBUS_SLOT_POWER_VOLT3, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_VOLT3, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CURR, parameter.current_bec};
-        add_sensor(SBUS_SLOT_POWER_CURR3, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CURR3, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CONS, parameter.consumption};
-        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_TEMP, parameter.temperature};
-        add_sensor(SBUS_SLOT_TEMP1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_TEMP1, new_sensor);
         // new_sensor = malloc(sizeof(sensor_sbus_t));
         //*new_sensor = (sensor_sbus_t){AFHDS2A_ID_CELL_VOLTAGE, parameter.cell_voltage};
-        // add_sensor(new_sensor, sensor);
+        // add_sensor(new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_KONTRONIK)
@@ -310,34 +310,34 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_RPM, parameter.rpm};
-        add_sensor(SBUS_SLOT_RPM, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_RPM, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_VOLT, parameter.voltage};
-        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CURR, parameter.current};
-        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CONS, parameter.consumption};
-        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_VOLT, parameter.voltage_bec};
-        add_sensor(SBUS_SLOT_POWER_VOLT3, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_VOLT3, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CURR, parameter.current_bec};
-        add_sensor(SBUS_SLOT_POWER_CURR3, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CURR3, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CONS, parameter.consumption};
-        add_sensor(SBUS_SLOT_POWER_CONS3, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CONS3, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_TEMP, parameter.temperature_fet};
-        add_sensor(SBUS_SLOT_TEMP1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_TEMP1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_TEMP, parameter.temperature_bec};
-        add_sensor(SBUS_SLOT_TEMP2, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_TEMP2, new_sensor);
         // new_sensor = malloc(sizeof(sensor_sbus_t));
         //*new_sensor = (sensor_sbus_t){AFHDS2A_ID_CELL_VOLTAGE, parameter.cell_voltage};
-        // add_sensor(new_sensor, sensor);
+        // add_sensor(new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_APD_F)
@@ -351,22 +351,22 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_RPM, parameter.rpm};
-        add_sensor(SBUS_SLOT_RPM, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_RPM, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_VOLT, parameter.voltage};
-        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CURR, parameter.current};
-        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CONS, parameter.consumption};
-        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_TEMP, parameter.temperature};
-        add_sensor(SBUS_SLOT_TEMP1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_TEMP1, new_sensor);
         // new_sensor = malloc(sizeof(sensor_sbus_t));
         //*new_sensor = (sensor_sbus_t){AFHDS2A_ID_CELL_VOLTAGE, parameter.cell_voltage};
-        // add_sensor(new_sensor, sensor);
+        // add_sensor(new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_APD_HV)
@@ -380,22 +380,22 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_RPM, parameter.rpm};
-        add_sensor(SBUS_SLOT_RPM, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_RPM, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_VOLT, parameter.voltage};
-        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CURR, parameter.current};
-        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CONS, parameter.consumption};
-        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_TEMP, parameter.temperature};
-        add_sensor(SBUS_SLOT_TEMP1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_TEMP1, new_sensor);
         // new_sensor = malloc(sizeof(sensor_sbus_t));
         //*new_sensor = (sensor_sbus_t){AFHDS2A_ID_CELL_VOLTAGE, parameter.cell_voltage};
-        // add_sensor(new_sensor, sensor);
+        // add_sensor(new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps)
@@ -408,28 +408,28 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_GPS_LATITUDE1, parameter.lat};
-        add_sensor(SBUS_SLOT_GPS_LAT1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_GPS_LAT1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_GPS_LATITUDE2, parameter.lat};
-        add_sensor(SBUS_SLOT_GPS_LAT2, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_GPS_LAT2, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_GPS_LONGITUDE1, parameter.lon};
-        add_sensor(SBUS_SLOT_GPS_LON1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_GPS_LON1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_GPS_LONGITUDE2, parameter.lon};
-        add_sensor(SBUS_SLOT_GPS_LON2, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_GPS_LON2, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_GPS_ALTITUDE, parameter.alt};
-        add_sensor(SBUS_SLOT_GPS_ALT, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_GPS_ALT, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_GPS_SPEED, parameter.spd};
-        add_sensor(SBUS_SLOT_GPS_SPD, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_GPS_SPD, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_GPS_VARIO_SPEED, parameter.vspeed};
-        add_sensor(SBUS_SLOT_GPS_VARIO, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_GPS_VARIO, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_GPS_TIME, parameter.time};
-        add_sensor(SBUS_SLOT_GPS_TIME, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_GPS_TIME, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_voltage)
@@ -440,10 +440,10 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_VOLT_V1, parameter.voltage};
-        add_sensor(SBUS_SLOT_VOLT_V1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_VOLT_V1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_VOLT_V2, NULL};
-        add_sensor(SBUS_SLOT_VOLT_V2, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_VOLT_V2, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_current)
@@ -454,13 +454,13 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CURR, parameter.current};
-        add_sensor(SBUS_SLOT_POWER_CURR2, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CURR2, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_CONS, parameter.consumption};
-        add_sensor(SBUS_SLOT_POWER_CONS2, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_CONS2, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_POWER_VOLT, NULL};
-        add_sensor(SBUS_SLOT_POWER_VOLT2, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_POWER_VOLT2, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_ntc)
@@ -471,7 +471,7 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_TEMP, parameter.ntc};
-        add_sensor(SBUS_SLOT_TEMP1, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_TEMP1, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_airspeed)
@@ -482,7 +482,7 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_AIR_SPEED, parameter.airspeed};
-        add_sensor(SBUS_SLOT_AIR_SPEED, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_AIR_SPEED, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP280)
@@ -493,10 +493,10 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_VARIO_ALT, parameter.altitude};
-        add_sensor(SBUS_SLOT_VARIO_ALT, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_VARIO_ALT, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_VARIO_SPEED, parameter.vspeed};
-        add_sensor(SBUS_SLOT_VARIO_SPEED, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_VARIO_SPEED, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_MS5611)
@@ -507,10 +507,10 @@ static void set_config(sensor_sbus_t **sensor)
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_VARIO_ALT, parameter.altitude};
-        add_sensor(SBUS_SLOT_VARIO_ALT, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_VARIO_ALT, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_VARIO_SPEED, parameter.vspeed};
-        add_sensor(SBUS_SLOT_VARIO_SPEED, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_VARIO_SPEED, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180)
@@ -520,10 +520,10 @@ static void set_config(sensor_sbus_t **sensor)
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_VARIO_ALT, parameter.altitude};
-        add_sensor(SBUS_SLOT_VARIO_ALT, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_VARIO_ALT, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_VARIO_SPEED, parameter.vspeed};
-        add_sensor(SBUS_SLOT_VARIO_SPEED, new_sensor, sensor);
+        add_sensor(SBUS_SLOT_VARIO_SPEED, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }

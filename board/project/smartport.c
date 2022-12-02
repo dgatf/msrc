@@ -43,9 +43,9 @@ void smartport_task(void *parameters)
     packet_queue_handle = xQueueCreate(32, sizeof(smartport_packet_t));
     xTaskCreate(packet_task, "packet_task", STACK_SMARTPORT_PACKET_TASK, (void *)&parameter.data_id, 3, &packet_task_handle);
     xQueueSendToBack(tasks_queue_handle, packet_task_handle, 0);
-    //TaskHandle_t task_handle;
-    //xTaskCreate(sensor_void_task, "sensor_void_task", STACK_SMARTPORT_SENSOR_VOID_TASK, NULL, 2, &task_handle);
-    //xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+    // TaskHandle_t task_handle;
+    // xTaskCreate(sensor_void_task, "sensor_void_task", STACK_SMARTPORT_SENSOR_VOID_TASK, NULL, 2, &task_handle);
+    // xQueueSendToBack(tasks_queue_handle, task_handle, 0);
     if (debug)
         printf("\nSmartport init");
     while (1)
@@ -61,11 +61,14 @@ static void process(smartport_parameters_t *parameter)
     if (lenght)
     {
         uint8_t data[lenght];
-        if (lenght != 2)
+        if (debug == 2)
         {
-            printf("\n");
-            for (int i = 0; i < lenght; i++)
-                printf("%X ", data[i]);
+            if (lenght != 2)
+            {
+                printf("\n");
+                for (int i = 0; i < lenght; i++)
+                    printf("%X ", data[i]);
+            }
         }
         uart_read_bytes(UART_RECEIVER, data, lenght);
         if (data[0] == 0x7E && data[1] == sensor_id_to_crc(parameter->sensor_id))

@@ -115,12 +115,6 @@ typedef struct sensor_sbus_t
     float *value;
 } sensor_sbus_t;
 
-typedef struct sbus_parameters_t
-{
-    uint8_t packet_id;
-    sensor_sbus_t **sensor;
-} sbus_parameters_t;
-
 extern QueueHandle_t sensors_queue_handle, tasks_queue_handle;
 extern TaskHandle_t pwm_out_task_handle, led_task_handle;
 extern uint16_t led_cycle_duration;
