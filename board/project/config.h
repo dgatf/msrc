@@ -25,7 +25,7 @@
 #define ESC_PROTOCOL ESC_NONE // ESC_NONE, ESC_HW3, ESC_HW4, ESC_PWM, ESC_CASTLE, ESC_KONTRONIK, ESC_APD_F, ESC_APD_HV
 #define ENABLE_GPS false
 #define GPS_BAUD_RATE 9600
-#define ENABLE_ANALOG_VOLTAGE true
+#define ENABLE_ANALOG_VOLTAGE false
 #define ENABLE_ANALOG_CURRENT false
 #define ENABLE_ANALOG_NTC false
 #define ENABLE_ANALOG_AIRSPEED false
@@ -106,7 +106,7 @@
 #define MSRC_DEBUG 0  // 0 = no debug, 1 = debug level 1, 2 = debug level 2
 
 //#define SIM_RX
-#define SIM_SENSORS
+//#define SIM_SENSORS
 
 //#define SIM_SMARTPORT_SEND_CONFIG_LUA
 //#define SIM_SMARTPORT_RECEIVE_CONFIG_LUA
