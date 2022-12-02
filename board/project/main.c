@@ -5,6 +5,14 @@ QueueHandle_t uart0_queue_handle = NULL, uart1_queue_handle = NULL, uart_pio_que
 alarm_pool_t *uart_alarm_pool = NULL;
 uint8_t debug;
 
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char * pcTaskName )
+{
+	printf("stack overflow %x %s\r\n", xTask, (portCHAR *)pcTaskName);
+	
+	for (;;) {
+	}
+}
+
 int main()
 {
     stdio_init_all();

@@ -100,7 +100,6 @@
    Debug
    Disconnect Vcc from the RC model to the board before connecting USB
    Telemetry may not work properly in debug mode
-   Do not use USB (msrc_gui) to update config when debugging
 */
 
 #define MSRC_DEBUG 0  // 0 = no debug, 1 = debug level 1, 2 = debug level 2
