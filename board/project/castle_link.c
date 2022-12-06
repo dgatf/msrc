@@ -9,7 +9,7 @@ static inline void handler_pio();
 void castle_link_init(PIO pio, uint pin, uint irq)
 {
     pio_ = pio;
-    float clk_div = 1;
+    float clk_div = 100;
     sm_pulse_ = pio_claim_unused_sm(pio_, true);
     offset_pulse_ = pio_add_program(pio_, &pulse_program);
     pio_gpio_init(pio_, pin + 1);
