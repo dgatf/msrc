@@ -405,6 +405,7 @@ static void set_config(sensor_sbus_t *sensor[])
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         uart_pio_task_handle = task_handle;
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){FASST_GPS_LATITUDE1, parameter.lat};

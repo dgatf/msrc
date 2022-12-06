@@ -124,26 +124,27 @@ static void send_packet(uint8_t packet_id, sensor_jetiex_t **sensor)
 
 static uint8_t create_telemetry_buffer(uint8_t *buffer, bool packet_type, sensor_jetiex_t **sensor)
 {
-    static uint8_t sensor_index_value = 1;
-    static uint8_t sensor_index_text = 1;
+    static uint8_t sensor_index_value = 0;
+    static uint8_t sensor_index_text = 0;
     uint8_t buffer_index = 7;
     if (sensor[0] == NULL)
         return 0;
     if (packet_type)
     {
-        while (add_sensor_value(buffer, &buffer_index, sensor_index_value, sensor[sensor_index_value]) && sensor[sensor_index_value] != NULL)
+        while (add_sensor_value(buffer, &buffer_index, sensor_index_value + 1, sensor[sensor_index_value]) && sensor[sensor_index_value] != NULL)
         {
-            sensor_index_value;
+            sensor_index_value++;
         }
         if (sensor[sensor_index_value] == NULL)
-            sensor_index_value = 1;
+            sensor_index_value = 0;
         buffer[1] = 0x40;
     }
     else
     {
-        /*while*/ (add_sensor_text(buffer, &buffer_index, sensor_index_text, sensor[sensor_index_text]) && sensor[sensor_index_text] != NULL);
+        /*while*/ (add_sensor_text(buffer, &buffer_index, sensor_index_text + 1, sensor[sensor_index_text]) && sensor[sensor_index_text] != NULL);
+        sensor_index_text++;
         if (sensor[sensor_index_text] == NULL)
-            sensor_index_text = 1;
+            sensor_index_text = 0;
     }
     buffer[0] = 0x0F;
     buffer[1] |= buffer_index - 1;
@@ -160,7 +161,6 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
 {
     if (sensor)
     {
-        float value = *sensor->value;
         uint8_t format = sensor->format << 5;
         if (sensor->type == JETIEX_TYPE_INT6)
         {
@@ -168,7 +168,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 return false;
             else
             {
-                int8_t value = value * pow(10, sensor->format);
+                int8_t value = *sensor->value * pow(10, sensor->format);
                 if (value > 0x1F)
                     value = 0x1F;
                 else if (value < -0x1F)
@@ -186,7 +186,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 return false;
             else
             {
-                int16_t value = value * pow(10, sensor->format);
+                int16_t value = *sensor->value * pow(10, sensor->format);
                 if (value > 0x1FFF)
                     value = 0x1FFF;
                 if (value < -0x1FFF)
@@ -205,7 +205,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 return false;
             else
             {
-                int32_t value = value * pow(10, sensor->format);
+                int32_t value = *sensor->value * pow(10, sensor->format);
                 if (value > 0x1FFFFF)
                     value = 0x1FFFFF;
                 else if (value < -0x1FFFFF)
@@ -225,7 +225,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 return false;
             else
             {
-                int32_t value = value * pow(10, sensor->format);
+                int32_t value = *sensor->value * pow(10, sensor->format);
                 if (value > 0x1FFFFFFF)
                     value = 0x1FFFFFFF;
                 else if (value < -0x1FFFFFFF)
@@ -251,7 +251,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 // byte 2: month/minute
                 // byte 3(bits 1-5): year/hour
                 // byte 3(bit 6): 0=time 1=date
-                uint32_t value = value;
+                uint32_t value = *sensor->value;
                 uint8_t hourYearFormat = format;
                 hourYearFormat |= value / 10000;                             // hour, year
                 uint8_t minuteMonth = (value / 100 - (value / 10000) * 100); // minute, month
@@ -274,6 +274,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 // byte 3: degrees (integer)
                 // byte 4(bit 6): 0=lat 1=lon
                 // byte 4(bit 7): 0=+(N,E), 1=-(S,W)
+                uint32_t value = *sensor->value;
                 if (value < 0)
                     format |= 1 << 6;
                 *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
@@ -289,7 +290,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
     }
     else
         return false;
-    sensor_index++;
+    //printf("[%i %s]", sensor_index, sensor->text);
     return true;
 }
 
@@ -309,7 +310,7 @@ static bool add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sens
             *buffer_index += lenText;
             strcpy((char *)buffer + *buffer_index, sensor->unit);
             *buffer_index += lenUnit;
-            sensor_index++;
+            //printf("[%i %s]", sensor_index, sensor->text);
             return true;
         }
     }
