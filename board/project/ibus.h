@@ -93,7 +93,7 @@
 #define IBUS_COMMAND_TYPE 0x9
 #define IBUS_COMMAND_MEASURE 0xA
 
-#define IBUS_TIMEOUT_US 10000
+#define IBUS_TIMEOUT_US 1000
 #define IBUS_PACKET_LENGHT 4
 
 typedef struct sensor_ibus_t
