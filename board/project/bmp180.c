@@ -31,10 +31,9 @@ void bmp180_task(void *parameters)
     begin(&parameter, &calibration);
     while (1)
     {
-        vTaskDelay(1000 / portTICK_PERIOD_MS); // TO REMOVE
         read(&parameter, &calibration, &pressure_offset);
-        //if (debug)
-            //printf("\nBMP180 (%u) < Temp: %.2f Pressure: %.0f Altitude: %.2f Vspeed: %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.temperature, *parameter.pressure, *parameter.altitude, *parameter.vspeed);
+        if (debug)
+            printf("\nBMP180 (%u) < Temp: %.2f Pressure: %.0f Altitude: %.2f Vspeed: %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.temperature, *parameter.pressure, *parameter.altitude, *parameter.vspeed);
     }
 }
 

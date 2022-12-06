@@ -36,7 +36,7 @@
 #define MS5611_OVERSAMPLING_256 0x00
 
 #define MS5611_VARIO_INTERVAL 500
-#define MS5611_SENSOR_INTERVAL_MS 10
+#define MS5611_SENSOR_INTERVAL_MS 100 // min 10
 
 typedef struct ms5611_parameters_t
 {

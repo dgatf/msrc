@@ -81,7 +81,7 @@
 #define IBUS_GPS_ALTERNATIVE_COORDINATES false
 
 /* XBus */
-#define XBUS_CLOCK_STRECH_SWITCH true
+#define XBUS_CLOCK_STRECH_SWITCH false
 
 /* Jeti Ex */
 #define JETI_GPS_SPEED_UNITS_KMH true
