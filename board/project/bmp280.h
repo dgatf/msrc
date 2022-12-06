@@ -61,7 +61,7 @@
 #define STANDBY_MS_4000 0x07
 
 #define BMP280_VARIO_INTERVAL 500
-#define BMP280_SENSOR_INTERVAL_MS 30
+#define BMP280_SENSOR_INTERVAL_MS 100 // min 30
 
 typedef struct bmp280_parameters_t
 {

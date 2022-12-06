@@ -32,8 +32,8 @@ void ms5611_task(void *parameters)
     while (1)
     {
         read(&parameter, &calibration, &pressure_offset);
-if (debug)        printf("\nMS5611 (%u) < Temp: %.2f Pressure: %.0f Altitude: %0.2f Vspeed: %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.temperature, *parameter.pressure, *parameter.altitude, *parameter.vspeed);
-        vTaskDelay(1000 / portTICK_PERIOD_MS); // TO REMOVE
+        if (debug)
+            printf("\nMS5611 (%u) < Temp: %.2f Pressure: %.0f Altitude: %0.2f Vspeed: %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.temperature, *parameter.pressure, *parameter.altitude, *parameter.vspeed);
     }
 }
 

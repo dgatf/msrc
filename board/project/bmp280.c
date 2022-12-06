@@ -37,7 +37,6 @@ void bmp280_task(void *parameters)
         {
             printf("\nBMP280 (%u) < Temp: %.2f Pressure: %.0f Altitude: %0.2f Vspeed: %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.temperature, *parameter.pressure, *parameter.altitude, *parameter.vspeed);
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS); // TO REMOVE
         vTaskDelay(BMP280_SENSOR_INTERVAL_MS / portTICK_PERIOD_MS);
     }
 }
