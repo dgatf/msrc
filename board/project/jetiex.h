@@ -50,7 +50,7 @@
 #define JETIEX_SEND 1
 
 #define JETIEX_PACKET_LENGHT 8
-#define JETIEX_TIMEOUT_US 15000
+#define JETIEX_TIMEOUT_US 500
 #define JETIEX_BAUDRATE_TIMEOUT_MS 5000
 
 typedef struct sensor_jetiex_t
