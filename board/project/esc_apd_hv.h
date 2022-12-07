@@ -12,7 +12,7 @@
 #include "common.h"
 #include "config.h"
 
-#define ESC_APD_HV_TIMEOUT 10000
+#define ESC_APD_HV_TIMEOUT_US 1000
 #define ESC_APD_HV_PACKET_LENGHT 22
 
 typedef struct esc_apd_hv_parameters_t

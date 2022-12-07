@@ -31,7 +31,7 @@ void esc_apd_hv_task(void *parameters)
     xTaskCreate(cell_count_task, "cell_count_task", STACK_CELL_COUNT, (void *)&cell_count_parameters, 1, &task_handle);
     xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
-    uart_begin(UART_ESC, 115200, UART1_TX_GPIO, UART_ESC_RX, ESC_APD_HV_TIMEOUT, 8, 1, UART_PARITY_NONE, false);
+    uart_begin(UART_ESC, 115200, UART1_TX_GPIO, UART_ESC_RX, ESC_APD_HV_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
 
     while (1)
     {
