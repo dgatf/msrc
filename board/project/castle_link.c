@@ -71,11 +71,12 @@ static inline void handler_pio()
     if (sync)
         {
             index = 0;
+            //printf("\n");
             return;
         }
     value[index] = pio_sm_get_blocking(pio_, sm_counter_);
     
-    //printf("\n%2u %7u", index, value[index]);
+    //printf("(%u)%u ", index, value[index]);
     
     if (index == 10)
     {
