@@ -10,7 +10,7 @@
 #include "uart.h"
 #include "common.h"
 
-#define ESC_HW3_TIMEOUT_US 5000
+#define ESC_HW3_TIMEOUT_US 1000
 #define ESC_HW3_PACKET_LENGHT 10
 #define ESC_HW3_NO_SIGNAL_TIMEOUT_MS 500
 
