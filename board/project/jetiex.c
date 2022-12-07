@@ -676,7 +676,7 @@ static void set_config(sensor_jetiex_t **sensor)
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
-        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Air temperature", "mAh", parameter.temperature};
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Air temperature", "C", parameter.temperature};
         add_sensor(new_sensor, sensor);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Altitude", "m", parameter.altitude};
@@ -692,7 +692,7 @@ static void set_config(sensor_jetiex_t **sensor)
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
-        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Air temperature", "mAh", parameter.temperature};
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Air temperature", "C", parameter.temperature};
         add_sensor(new_sensor, sensor);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Altitude", "m", parameter.altitude};
@@ -708,7 +708,7 @@ static void set_config(sensor_jetiex_t **sensor)
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
-        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Air temperature", "mAh", parameter.temperature};
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Air temperature", "C", parameter.temperature};
         add_sensor(new_sensor, sensor);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Altitude", "m", parameter.altitude};
