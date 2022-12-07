@@ -13,7 +13,7 @@
 #include "common.h"
 #include "config.h"
 
-#define ESC_HW4_TIMEOUT_US 5000
+#define ESC_HW4_TIMEOUT_US 1000
 #define ESC_HW4_PACKET_LENGHT 19
 #define ESC_HW4_SIGNATURE_LENGHT 13
 #define ESC_HW4_CURRENT_OFFSET_DELAY 15000

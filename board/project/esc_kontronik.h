@@ -12,7 +12,7 @@
 #include "common.h"
 #include "config.h"
 
-#define ESC_KONTRONIK_TIMEOUT 10000
+#define ESC_KONTRONIK_TIMEOUT_US 1000
 #define ESC_KONTRONIK_PACKET_LENGHT 35
 
 typedef struct esc_kontronik_parameters_t

@@ -12,7 +12,7 @@
 #include "common.h"
 #include "config.h"
 
-#define ESC_APD_F_TIMEOUT 10000
+#define ESC_APD_F_TIMEOUT_US 1000
 #define ESC_APD_F_PACKET_LENGHT 12
 #define ESC_KISS_PACKET_LENGHT 10
 
