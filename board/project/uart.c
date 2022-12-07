@@ -13,6 +13,7 @@ void uart_begin(uart_inst_t *uart, uint baudrate, uint gpio_tx, uint gpio_rx, ui
     if (uart_alarm_pool == NULL)
         uart_alarm_pool = alarm_pool_create(2, 10);
     uart_init(uart, baudrate);
+    uart_set_fifo_enabled(uart, false);
     gpio_set_function(gpio_tx, GPIO_FUNC_UART);
     gpio_set_function(gpio_rx, GPIO_FUNC_UART);
     if (inverted)
@@ -108,7 +109,9 @@ static void uart1_rx_handler()
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     static alarm_id_t uart1_timeout_alarm_id = 0;
     if (uart1_timeout_alarm_id)
+    {
         alarm_pool_cancel_alarm(uart_alarm_pool, uart1_timeout_alarm_id);
+    }
     if (uart1_is_timedout)
     {
         xQueueReset(uart1_queue_handle);
