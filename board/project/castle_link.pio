@@ -28,15 +28,16 @@
 
 .program counter
 capture:
-    in pins 1               // read rx
-    in null 31
-    push noblock            // send rx state
+    //in pins 1               // read rx
+    //in null 31
+    //push noblock            // send rx state
     mov isr ~y              // copy counter to isr
     push noblock            // send counter to fifo
     irq CASTLE_LINK_IRQ_NUM  // raise irq
 .wrap_target
 public start:
-    mov y ~null       // init counter
+    mov y ~null [31]      // init counter
+    irq clear 4 
     wait irq 4
 loop:
     in pins 2         // read pins

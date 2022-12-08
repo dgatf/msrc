@@ -9,7 +9,7 @@ static inline void handler_pio();
 void castle_link_init(PIO pio, uint pin, uint irq)
 {
     pio_ = pio;
-    float clk_div = 50;
+    float clk_div = 5;
     sm_pulse_ = pio_claim_unused_sm(pio_, true);
     offset_pulse_ = pio_add_program(pio_, &pulse_program);
     pio_gpio_init(pio_, pin + 1);
@@ -67,15 +67,21 @@ static inline void handler_pio()
         pio_sm_clear_fifos(pio_, sm_counter_);
         return;
     }
-    bool sync = pio_sm_get_blocking(pio_, sm_counter_);
+    /*bool sync = pio_sm_get_blocking(pio_, sm_counter_);
     if (sync)
-        {
-            index = 0;
-            //printf("\n");
-            return;
-        }
-    value[index] = pio_sm_get_blocking(pio_, sm_counter_);
-    
+    {
+        index = 0;
+        printf("\n");
+        return;
+    }*/
+    uint data = pio_sm_get_blocking(pio_, sm_counter_);
+    if (data > 60000)
+    {
+        index = 0;
+        //printf("%i \n", data);
+        return;
+    }
+    value[index] = data;
     //printf("(%u)%u ", index, value[index]);
     
     if (index == 10)
