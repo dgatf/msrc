@@ -5,7 +5,7 @@ static uint packet_id;
 
 static void process();
 static int64_t send_slot_callback(alarm_id_t id, void *parameters);
-static void send_slot(uint8_t slot);
+static inline void send_slot(uint8_t slot);
 static uint16_t format(uint8_t data_id, float value);
 static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor);
 static void set_config();
@@ -69,7 +69,7 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters)
     return 0;
 }
 
-static void send_slot(uint8_t slot)
+static inline void send_slot(uint8_t slot)
 {
     if (debug == 2)
     {
