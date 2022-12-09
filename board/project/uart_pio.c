@@ -21,7 +21,7 @@ static int64_t uart_pio_timeout_callback(alarm_id_t id, void *user_data)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     uart_pio_is_timedout = true;
-    printf("\n");
+    //printf("\n");
     vTaskNotifyGiveIndexedFromISR(uart_pio_notify_task_handle, 1, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return 0;
@@ -38,7 +38,7 @@ static void uart_pio_handler(uint8_t data)
         xQueueReset(uart_pio_queue_handle);
         uart_pio_is_timedout = false;
     }
-    printf("%X ", data);
+    //printf("%X ", data);
     xQueueSendToBackFromISR(uart_pio_queue_handle, &data, &xHigherPriorityTaskWoken);
     if (uart_pio_timeout)
     {
