@@ -8,12 +8,12 @@ static int64_t uart1_timeout_callback(alarm_id_t id, void *user_data);
 static void uart0_rx_handler();
 static void uart1_rx_handler();
 
-void uart_begin(uart_inst_t *uart, uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity, bool inverted)
+void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity, bool inverted)
 {
     if (uart_alarm_pool == NULL)
         uart_alarm_pool = alarm_pool_create(2, 10);
-    uart_init(uart, baudrate);
-    uart_set_fifo_enabled(uart, false);
+    uart_init(uart0, baudrate);
+    uart_set_fifo_enabled(uart0, false);
     gpio_set_function(gpio_tx, GPIO_FUNC_UART);
     gpio_set_function(gpio_rx, GPIO_FUNC_UART);
     if (inverted)
@@ -21,33 +21,41 @@ void uart_begin(uart_inst_t *uart, uint baudrate, uint gpio_tx, uint gpio_rx, ui
         gpio_set_outover(gpio_tx, GPIO_OVERRIDE_INVERT);
         gpio_set_inover(gpio_rx, GPIO_OVERRIDE_INVERT);
     }
-    uart_set_format(uart, databits, stopbits, parity);
+    uart_set_format(uart0, databits, stopbits, parity);
+    irq_set_exclusive_handler(UART0_IRQ, uart0_rx_handler);
+    irq_set_enabled(UART0_IRQ, true);
+    uart0_timeout = timeout;
+    uart0_queue_handle = xQueueCreate(UART0_BUFFER_SIZE, sizeof(uint8_t));
+    uart_set_irq_enables(uart0, true, false);
+    uart_get_hw(uart0)->cr |= UART_UARTCR_SIREN_BITS;
+}
 
-    if (uart == uart0)
+void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity, bool inverted)
+{
+    if (uart_alarm_pool == NULL)
+        uart_alarm_pool = alarm_pool_create(2, 10);
+    uart_init(uart1, baudrate);
+    uart_set_fifo_enabled(uart1, false);
+    gpio_set_function(gpio_tx, GPIO_FUNC_UART);
+    gpio_set_function(gpio_rx, GPIO_FUNC_UART);
+    if (inverted)
     {
-        irq_set_exclusive_handler(UART0_IRQ, uart0_rx_handler);
-        irq_set_enabled(UART0_IRQ, true);
-        uart0_timeout = timeout;
-        uart0_queue_handle = xQueueCreate(UART0_BUFFER_SIZE, sizeof(uint8_t));
+        gpio_set_outover(gpio_tx, GPIO_OVERRIDE_INVERT);
+        gpio_set_inover(gpio_rx, GPIO_OVERRIDE_INVERT);
     }
-    else
-    {
-        irq_set_exclusive_handler(UART1_IRQ, uart1_rx_handler);
-        irq_set_enabled(UART1_IRQ, true);
-        uart1_timeout = timeout;
-        uart1_queue_handle = xQueueCreate(UART1_BUFFER_SIZE, sizeof(uint8_t));
-    }
-    uart_set_irq_enables(uart, true, false);
-    uart_get_hw(uart)->cr |= UART_UARTCR_SIREN_BITS;
+    uart_set_format(uart1, databits, stopbits, parity);
+    irq_set_exclusive_handler(UART1_IRQ, uart1_rx_handler);
+    irq_set_enabled(UART1_IRQ, true);
+    uart1_timeout = timeout;
+    uart1_queue_handle = xQueueCreate(UART1_BUFFER_SIZE, sizeof(uint8_t));
+    uart_set_irq_enables(uart1, true, false);
+    uart_get_hw(uart1)->cr |= UART_UARTCR_SIREN_BITS;
 }
 
 static int64_t uart0_timeout_callback(alarm_id_t id, void *user_data)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     uart0_is_timedout = true;
-    // printf("\nTimeout %i %i", time_us_32(), id);
-    // printf("\nReceived uart0 size: %i", uxQueueMessagesWaiting(uart1_queue_handle));
-    // vTaskNotifyGiveFromISR(uart0_notify_task_handle, &xHigherPriorityTaskWoken);
     vTaskNotifyGiveIndexedFromISR(uart0_notify_task_handle, 1, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return 0;
@@ -57,9 +65,6 @@ static int64_t uart1_timeout_callback(alarm_id_t id, void *user_data)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     uart1_is_timedout = true;
-    // printf("\nTimeout %i %i", time_us_32(), id);
-    // printf("\nReceived uart1 size: %i", uxQueueMessagesWaiting(uart1_queue_handle));
-    // vTaskNotifyGiveFromISR(uart1_notify_task_handle, &xHigherPriorityTaskWoken);
     vTaskNotifyGiveIndexedFromISR(uart1_notify_task_handle, 1, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return 0;
@@ -94,7 +99,6 @@ static void uart0_rx_handler()
         uart0_timeout_alarm_id = alarm_pool_add_alarm_in_us(uart_alarm_pool, uart0_timeout, uart0_timeout_callback, NULL, true);
     }
     uart0_timestamp = time_us_32();
-    // printf("\nSet %i %i", time_us_32(), timeout_alarm_id);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
@@ -120,7 +124,7 @@ static void uart1_rx_handler()
     while (uart_is_readable(uart1))
     {
         uint8_t data = uart_getc(uart1);
-        // printf("-%X-", data);
+        // printf("%X ", data);
         xQueueSendToBackFromISR(uart1_queue_handle, &data, &xHigherPriorityTaskWoken);
         // printf("-%X/%i-", data, uxQueueMessagesWaiting(uart1_queue_handle));
     }
@@ -129,70 +133,83 @@ static void uart1_rx_handler()
         uart1_timeout_alarm_id = alarm_pool_add_alarm_in_us(uart_alarm_pool, uart1_timeout, uart1_timeout_callback, NULL, true);
     }
     uart1_timestamp = time_us_32();
-    // printf("\nSet %i %i", time_us_32(), timeout_alarm_id);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
-uint8_t uart_read(uart_inst_t *uart)
+uint8_t uart0_read()
 {
     uint8_t value = 0;
-    QueueHandle_t uart_queue_handle;
-    if (uart == uart0)
-        uart_queue_handle = uart0_queue_handle;
-    else
-        uart_queue_handle = uart1_queue_handle;
-    xQueueReceive(uart_queue_handle, &value, 0);
+    xQueueReceive(uart0_queue_handle, &value, 0);
     return value;
 }
 
-void uart_read_bytes(uart_inst_t *uart, uint8_t *data, uint8_t lenght)
+uint8_t uart1_read()
 {
-    QueueHandle_t uart_queue_handle;
-    if (uart == uart0)
-        uart_queue_handle = uart0_queue_handle;
-    else
-        uart_queue_handle = uart1_queue_handle;
+    uint8_t value = 0;
+    xQueueReceive(uart1_queue_handle, &value, 0);
+    return value;
+}
+
+void uart0_read_bytes(uint8_t *data, uint8_t lenght)
+{
     for (uint8_t i = 0; i < lenght; i++)
-    {
-        xQueueReceive(uart_queue_handle, data + i, 0);
-    }
+        xQueueReceive(uart0_queue_handle, data + i, 0);
 }
 
-void uart_write(uart_inst_t *uart, uint8_t data)
+void uart1_read_bytes(uint8_t *data, uint8_t lenght)
 {
-    uart_putc_raw(uart, data);
+    for (uint8_t i = 0; i < lenght; i++)
+        xQueueReceive(uart1_queue_handle, data + i, 0);
 }
 
-void uart_write_bytes(uart_inst_t *uart, uint8_t *data, uint8_t lenght)
+void uart0_write(uint8_t data)
 {
-    uart_write_blocking(uart, data, lenght);
+    uart_putc_raw(uart0, data);
 }
 
-uint8_t uart_available(uart_inst_t *uart)
+void uart1_write(uint8_t data)
 {
-    QueueHandle_t uart_queue_handle;
-    if (uart == uart0)
-        uart_queue_handle = uart0_queue_handle;
-    else
-        uart_queue_handle = uart1_queue_handle;
-    return uxQueueMessagesWaiting(uart_queue_handle);
+    uart_putc_raw(uart1, data);
 }
 
-uint uart_get_time_elapsed(uart_inst_t *uart)
+void uart0_write_bytes(uint8_t *data, uint8_t lenght)
 {
-    uint time_elapsed;
-    if (uart == uart0)
-        time_elapsed = time_us_32() - uart0_timestamp;
-    else
-        time_elapsed = time_us_32() - uart1_timestamp;
-    return time_elapsed;
+    uart_write_blocking(uart0, data, lenght);
+}
+
+void uart1_write_bytes(uint8_t *data, uint8_t lenght)
+{
+    uart_write_blocking(uart1, data, lenght);
+}
+
+uint8_t uart0_available()
+{
+    return uxQueueMessagesWaiting(uart0_queue_handle);
+}
+
+uint8_t uart1_available()
+{
+    return uxQueueMessagesWaiting(uart1_queue_handle);
+}
+
+uint uart0_get_time_elapsed()
+{
+    return time_us_32() - uart0_timestamp;
+}
+
+uint uart1_get_time_elapsed()
+{
+    return time_us_32() - uart1_timestamp;
 }
 
 /* Use with sim rx */
-void uart_set_timestamp(uart_inst_t *uart)
+
+void uart0_set_timestamp()
 {
-    if (uart == uart0)
-        uart0_timestamp = time_us_32();
-    else
-        uart1_timestamp = time_us_32();
+    uart0_timestamp = time_us_32();
+}
+
+void uart1_set_timestamp()
+{
+    uart1_timestamp = time_us_32();
 }

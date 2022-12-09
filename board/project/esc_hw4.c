@@ -38,7 +38,8 @@ void esc_hw4_task(void *parameters)
     xTaskCreate(auto_offset_task, "esc_hw4_current_offset_task", STACK_AUTO_OFFSET, (void *)&current_offset_parameters, 1, &task_handle);
     xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
-    uart_begin(UART_ESC, 19200, UART1_TX_GPIO, UART_ESC_RX, ESC_HW4_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart_pio_begin(19200, 5, ESC_HW4_TIMEOUT_US, pio0, PIO0_IRQ_1);
+    //uart1_begin(19200, UART1_TX_GPIO, UART_ESC_RX, ESC_HW4_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
 
     while (1)
     {
@@ -51,11 +52,13 @@ static void process(esc_hw4_parameters_t *parameter, float *current_offset)
 {
     uint16_t pwm, throttle;
     static uint32_t timestamp = 0;
-    uint8_t lenght = uart_available(UART_ESC);
+    //uint8_t lenght = uart1_available();
+    uint8_t lenght = uart_pio_available();
     if (lenght == ESC_HW4_PACKET_LENGHT || lenght == ESC_HW4_PACKET_LENGHT + 1)
     {
         uint8_t data[ESC_HW4_PACKET_LENGHT];
-        uart_read_bytes(UART_ESC, data, ESC_HW4_PACKET_LENGHT);
+        //uart1_read_bytes(data, ESC_HW4_PACKET_LENGHT);
+        uart_pio_read_bytes(data, ESC_HW4_PACKET_LENGHT);
         throttle = (uint16_t)data[4] << 8 | data[5]; // 0-1024
         pwm = (uint16_t)data[6] << 8 | data[7];      // 0-1024
         float rpm = (uint32_t)data[8] << 16 | (uint16_t)data[9] << 8 | data[10];

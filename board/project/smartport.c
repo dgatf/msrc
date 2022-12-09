@@ -36,7 +36,7 @@ void smartport_task(void *parameters)
     smartport_parameters_t parameter;
     led_cycle_duration = 200;
     led_cycles = 1;
-    uart_begin(UART_RECEIVER, 57600, UART_RECEIVER_TX, UART_RECEIVER_RX, SMARTPORT_TIMEOUT_US, 8, 1, UART_PARITY_NONE, true);
+    uart0_begin(57600, UART_RECEIVER_TX, UART_RECEIVER_RX, SMARTPORT_TIMEOUT_US, 8, 1, UART_PARITY_NONE, true);
     semaphore_sensor = xSemaphoreCreateBinary();
     xSemaphoreTake(semaphore_sensor, 0);
     set_config(&parameter);
@@ -57,7 +57,7 @@ void smartport_task(void *parameters)
 
 static void process(smartport_parameters_t *parameter)
 {
-    uint lenght = uart_available(UART_RECEIVER);
+    uint lenght = uart0_available();
     if (lenght)
     {
         uint8_t data[lenght];
@@ -70,7 +70,7 @@ static void process(smartport_parameters_t *parameter)
                     printf("%X ", data[i]);
             }
         }
-        uart_read_bytes(UART_RECEIVER, data, lenght);
+        uart0_read_bytes(data, lenght);
         if (data[0] == 0x7E && data[1] == sensor_id_to_crc(parameter->sensor_id))
         {
             if (lenght == SMARTPORT_PACKET_LENGHT)
@@ -478,10 +478,10 @@ static void send_byte(uint8_t c, uint16_t *crcp)
     }
     if (c == 0x7D || c == 0x7E)
     {
-        uart_write(UART_RECEIVER, c);
+        uart0_write(c);
         c ^= 0x20;
     }
-    uart_write(UART_RECEIVER, c);
+    uart0_write(c);
     if (debug)
         printf("%X ", c);
 }
@@ -779,7 +779,7 @@ static void set_config(smartport_parameters_t *parameter)
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
-        uart_pio_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         smartport_sensor_coordinate_parameters_t parameter_sensor_coordinate;

@@ -409,7 +409,7 @@ static void set_config()
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
-        uart_pio_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
 
         sensor->gps_loc[XBUS_GPS_LOC_ALTITUDE] = parameter.alt;
         sensor->gps_loc[XBUS_GPS_LOC_LATITUDE] = parameter.lat;

@@ -1,6 +1,6 @@
 #include "main.h"
 
-TaskHandle_t pwm_out_task_handle, uart0_notify_task_handle = NULL, uart1_notify_task_handle = NULL, uart_pio_task_handle = NULL, receiver_task_handle = NULL, led_task_handle = NULL, usb_task_handle = NULL;
+TaskHandle_t pwm_out_task_handle, uart0_notify_task_handle = NULL, uart1_notify_task_handle = NULL, uart_pio_notify_task_handle = NULL, receiver_task_handle = NULL, led_task_handle = NULL, usb_task_handle = NULL;
 QueueHandle_t uart0_queue_handle = NULL, uart1_queue_handle = NULL, uart_pio_queue_handle = NULL, tasks_queue_handle = NULL, sensors_queue_handle = NULL;
 alarm_pool_t *uart_alarm_pool = NULL;
 uint8_t debug;

@@ -16,7 +16,7 @@ void sbus_task(void *parameters)
     led_cycle_duration = 200;
     led_cycles = 1;
     set_config();
-    uart_begin(UART_RECEIVER, 100000, UART_RECEIVER_TX, UART_RECEIVER_RX, SBUS_TIMEOUT_US, 8, 2, UART_PARITY_EVEN, true);
+    uart0_begin(100000, UART_RECEIVER_TX, UART_RECEIVER_RX, SBUS_TIMEOUT_US, 8, 2, UART_PARITY_EVEN, true);
     if (debug)
         printf("\nSbus init");
     while (1)
@@ -28,10 +28,10 @@ void sbus_task(void *parameters)
 
 static void process()
 {
-    if (uart_available(UART_RECEIVER) == SBUS_PACKET_LENGHT)
+    if (uart0_available() == SBUS_PACKET_LENGHT)
     {
         uint8_t data[SBUS_PACKET_LENGHT];
-        uart_read_bytes(UART_RECEIVER, data, SBUS_PACKET_LENGHT);
+        uart0_read_bytes(data, SBUS_PACKET_LENGHT);
         if (debug)
         {
             printf("\nSbus (%u) < ", uxTaskGetStackHighWaterMark(NULL));
@@ -45,9 +45,9 @@ static void process()
             if (data[24] == 0x04 || data[24] == 0x14 || data[24] == 0x24 || data[24] == 0x34)
             {
                 packet_id = data[24] >> 4;
-                add_alarm_in_us(SBUS_SLOT_0_DELAY /*- uart_get_time_elapsed(UART_RECEIVER)*/, send_slot_callback, NULL, true);
+                add_alarm_in_us(SBUS_SLOT_0_DELAY /*- uart0_get_time_elapsed()*/, send_slot_callback, NULL, true);
                 // vTaskResume(led_task_handle);
-                //  printf("\nTE: %u", uart_get_time_elapsed(UART_RECEIVER));
+                //  printf("\nTE: %u", uart0_get_time_elapsed());
                 if (debug)
                     printf("\nSbus (%u) > ", uxTaskGetStackHighWaterMark(NULL));
             }
@@ -75,7 +75,7 @@ static inline void send_slot(uint8_t slot)
     {
         static uint32_t timestamp;
         if (slot == 0 || slot == 8 || slot == 16 || slot == 24)
-            printf(" %u", uart_get_time_elapsed(UART_RECEIVER));
+            printf(" %u", uart0_get_time_elapsed());
         else
             printf(" %u", time_us_32() - timestamp);
         timestamp = time_us_32();
@@ -91,7 +91,7 @@ static inline void send_slot(uint8_t slot)
         data[0] = get_slot_id(slot);
         data[1] = value;
         data[2] = value >> 8;
-        uart_write_bytes(UART_RECEIVER, data, 3);
+        uart0_write_bytes(data, 3);
         if (debug)
             printf("%X:%X:%X ", data[0], data[1], data[2]);
     }
@@ -404,7 +404,7 @@ static void set_config(sensor_sbus_t *sensor[])
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
-        uart_pio_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
         new_sensor = malloc(sizeof(sensor_sbus_t));

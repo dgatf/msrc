@@ -40,7 +40,7 @@ void nmea_task(void *parameters)
     distance_parameters_t parameters_distance = {parameter.dist, parameter.lat, parameter.lon, parameter.alt, parameter.sat};
     xTaskCreate(distance_task, "distance_task", STACK_DISTANCE, (void *)&parameters_distance, 2, &task_handle);
     xQueueSendToBack(tasks_queue_handle, task_handle, 0);
-    // uart_begin(UART_ESC, parameter.baudrate, UART1_TX_GPIO, UART_ESC_RX, NMEA_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    // uart1_begin(parameter.baudrate, UART1_TX_GPIO, UART_ESC_RX, NMEA_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
     uart_pio_begin(parameter.baudrate, UART_RX_PIO_GPIO, NMEA_TIMEOUT_US, pio0, PIO0_IRQ_1);
 
     while (1)

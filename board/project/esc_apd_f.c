@@ -30,7 +30,7 @@ void esc_apd_f_task(void *parameters)
     xTaskCreate(cell_count_task, "cell_count_task", STACK_CELL_COUNT, (void *)&cell_count_parameters, 1, &task_handle);
     xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
-    uart_begin(UART_ESC, 115200, UART1_TX_GPIO, UART_ESC_RX, ESC_APD_F_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart1_begin(115200, UART1_TX_GPIO, UART_ESC_RX, ESC_APD_F_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
 
     while (1)
     {
@@ -42,11 +42,11 @@ void esc_apd_f_task(void *parameters)
 static void process(esc_apd_f_parameters_t *parameter)
 {
     static uint32_t timestamp = 0;
-    uint8_t lenght = uart_available(UART_ESC);
+    uint8_t lenght = uart1_available();
     if (lenght == ESC_APD_F_PACKET_LENGHT || lenght == ESC_KISS_PACKET_LENGHT)
     {
         uint8_t data[ESC_KISS_PACKET_LENGHT];
-        uart_read_bytes(UART_ESC, data, ESC_KISS_PACKET_LENGHT);
+        uart1_read_bytes(data, ESC_KISS_PACKET_LENGHT);
         if (get_crc8(data, ESC_KISS_PACKET_LENGHT - 1) == data[9])
         {
             float temperature = data[0];

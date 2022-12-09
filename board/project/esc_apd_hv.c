@@ -31,7 +31,7 @@ void esc_apd_hv_task(void *parameters)
     xTaskCreate(cell_count_task, "cell_count_task", STACK_CELL_COUNT, (void *)&cell_count_parameters, 1, &task_handle);
     xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
-    uart_begin(UART_ESC, 115200, UART1_TX_GPIO, UART_ESC_RX, ESC_APD_HV_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart1_begin(115200, UART1_TX_GPIO, UART_ESC_RX, ESC_APD_HV_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
 
     while (1)
     {
@@ -43,10 +43,10 @@ void esc_apd_hv_task(void *parameters)
 static void process(esc_apd_hv_parameters_t *parameter)
 {
     static uint32_t timestamp = 0;
-    if (uart_available(UART_ESC) == ESC_APD_HV_PACKET_LENGHT)
+    if (uart1_available() == ESC_APD_HV_PACKET_LENGHT)
     {
         uint8_t data[ESC_APD_HV_PACKET_LENGHT];
-        uart_read_bytes(UART_ESC, data, ESC_APD_HV_PACKET_LENGHT);
+        uart1_read_bytes(data, ESC_APD_HV_PACKET_LENGHT);
         if (get_crc16(data) == (((uint16_t)data[19] << 8) | data[18]))
         {
             float voltage = ((uint16_t)data[1] << 8 | data[0]) / 100.0;

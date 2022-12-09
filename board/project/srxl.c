@@ -16,7 +16,7 @@ void srxl_task(void *parameters)
     led_cycle_duration = 200;
     led_cycles = 1;
 
-    uart_begin(UART_RECEIVER, 115200, UART_RECEIVER_TX, UART_RECEIVER_RX, SRXL_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, SRXL_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
     set_config();
     if (debug)
         printf("\nSRXL init");
@@ -31,11 +31,11 @@ void srxl_task(void *parameters)
 static void process()
 {
     static bool mute = true;
-    uint8_t length = uart_available(UART_RECEIVER);
+    uint8_t length = uart0_available();
     if (length == SRXL_FRAMELEN)
     {
         uint8_t data[SRXL_FRAMELEN];
-        uart_read_bytes(UART_RECEIVER, data, SRXL_FRAMELEN);
+        uart0_read_bytes(data, SRXL_FRAMELEN);
         if (data[0] == SRXL_HEADER)
         {
             if (debug)
@@ -67,7 +67,7 @@ static void send_packet()
     if (max_cont == XBUS_RPMVOLTTEMP)
         return;
     uint8_t buffer[3] = {SRXL_HEADER, 0x80, 015};
-    uart_write_bytes(UART_RECEIVER, buffer, 3);
+    uart0_write_bytes(buffer, 3);
     if (debug)
         printf("\nSRXL (%u) > %X %X %X", uxTaskGetStackHighWaterMark(NULL), buffer[0], buffer[1], buffer[2]);
     switch (cont)
@@ -75,7 +75,7 @@ static void send_packet()
     case XBUS_AIRSPEED:
     {
         xbus_format_sensor(XBUS_AIRSPEED_ID);
-        uart_write_bytes(UART_RECEIVER, (uint8_t *)&sensor_formatted->airspeed, sizeof(xbus_airspeed_t));
+        uart0_write_bytes((uint8_t *)&sensor_formatted->airspeed, sizeof(xbus_airspeed_t));
         if (debug)
         {
             uint8_t buffer[sizeof(xbus_airspeed_t)];
@@ -90,7 +90,7 @@ static void send_packet()
     case XBUS_BATTERY:
     {
         xbus_format_sensor(XBUS_AIRSPEED_ID);
-        uart_write_bytes(UART_RECEIVER, (uint8_t *)&sensor_formatted->battery, sizeof(xbus_battery_t));
+        uart0_write_bytes((uint8_t *)&sensor_formatted->battery, sizeof(xbus_battery_t));
         if (debug)
         {
             uint8_t buffer[sizeof(xbus_battery_t)];
@@ -105,7 +105,7 @@ static void send_packet()
     case XBUS_ESC:
     {
         xbus_format_sensor(XBUS_ESC_ID);
-        uart_write_bytes(UART_RECEIVER, (uint8_t *)&sensor_formatted->esc, sizeof(xbus_esc_t));
+        uart0_write_bytes((uint8_t *)&sensor_formatted->esc, sizeof(xbus_esc_t));
         if (debug)
         {
             uint8_t buffer[sizeof(xbus_esc_t)];
@@ -120,7 +120,7 @@ static void send_packet()
     case XBUS_GPS_LOC:
     {
         xbus_format_sensor(XBUS_GPS_LOC_ID);
-        uart_write_bytes(UART_RECEIVER, (uint8_t *)&sensor_formatted->gps_loc, sizeof(xbus_gps_loc_t));
+        uart0_write_bytes((uint8_t *)&sensor_formatted->gps_loc, sizeof(xbus_gps_loc_t));
         if (debug)
         {
             uint8_t buffer[sizeof(xbus_gps_loc_t)];
@@ -135,7 +135,7 @@ static void send_packet()
     case XBUS_GPS_STAT:
     {
         xbus_format_sensor(XBUS_GPS_STAT_ID);
-        uart_write_bytes(UART_RECEIVER, (uint8_t *)&sensor_formatted->gps_stat, sizeof(xbus_gps_stat_t));
+        uart0_write_bytes((uint8_t *)&sensor_formatted->gps_stat, sizeof(xbus_gps_stat_t));
         if (debug)
         {
             uint8_t buffer[sizeof(xbus_gps_stat_t)];
@@ -150,7 +150,7 @@ static void send_packet()
     case XBUS_RPMVOLTTEMP:
     {
         xbus_format_sensor(XBUS_RPMVOLTTEMP_ID);
-        uart_write_bytes(UART_RECEIVER, (uint8_t *)&sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
+        uart0_write_bytes((uint8_t *)&sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
         if (debug)
         {
             uint8_t buffer[sizeof(xbus_rpm_volt_temp_t)];
@@ -165,7 +165,7 @@ static void send_packet()
     }
     uint16_t crc;
     crc = __builtin_bswap16(get_crc(buffer, 19)); // all bytes, including header
-    uart_write_bytes(UART_RECEIVER, (uint8_t *)&crc, 2);
+    uart0_write_bytes((uint8_t *)&crc, 2);
     if (debug)
         printf("%X ", crc);
     cont++;
@@ -319,7 +319,7 @@ static void set_config()
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
-        uart_pio_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
         sensor->gps_loc[XBUS_GPS_LOC_ALTITUDE] = parameter.alt;
         sensor->gps_loc[XBUS_GPS_LOC_LATITUDE] = parameter.lat;
         sensor->gps_loc[XBUS_GPS_LOC_LONGITUDE] = parameter.lon;

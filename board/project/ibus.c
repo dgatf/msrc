@@ -14,7 +14,7 @@ void ibus_task(void *parameters)
     uint16_t sensor_mask = 0B1111111111111110;
     led_cycle_duration = 200;
     led_cycles = 1;
-    uart_begin(UART_RECEIVER, 115200, UART_RECEIVER_TX, UART_RECEIVER_RX, IBUS_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, IBUS_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
     set_config(sensor, sensor_mask);
     if (debug)
         printf("\nIbus init");
@@ -27,12 +27,12 @@ void ibus_task(void *parameters)
 
 static void process(sensor_ibus_t **sensor)
 {
-    if (uart_available(UART_RECEIVER) == IBUS_PACKET_LENGHT)
+    if (uart0_available() == IBUS_PACKET_LENGHT)
     {
         uint8_t command = 0;
         uint8_t address = 0;
         uint8_t data[IBUS_PACKET_LENGHT];
-        uart_read_bytes(UART_RECEIVER, data, IBUS_PACKET_LENGHT);
+        uart0_read_bytes(data, IBUS_PACKET_LENGHT);
         if (data[0] == IBUS_PACKET_LENGHT)
         {
             if (debug)
@@ -127,7 +127,7 @@ static void send_byte(uint8_t c, uint16_t *crc_p)
         crc += c;
         *crc_p = crc;
     }
-    uart_write(UART_RECEIVER, c);
+    uart0_write(c);
     if (debug)
         printf("%X ", c);
 }
@@ -402,7 +402,7 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask)
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
-        uart_pio_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
         new_sensor = malloc(sizeof(sensor_ibus_t));
         *new_sensor = (sensor_ibus_t){AFHDS2A_ID_GPS_STATUS, IBUS_TYPE_U16, parameter.sat};
         add_sensor(new_sensor, sensor, sensormask);

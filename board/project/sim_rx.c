@@ -307,7 +307,7 @@ static void process(rx_protocol_t rx_protocol)
         hitec_i2c_handler();
     }
 
-    uart_set_timestamp(UART_RECEIVER);
+    uart0_set_timestamp();
     vTaskDelay(SIM_RX_TIMEOUT_MS / portTICK_PERIOD_MS);
     xTaskNotifyGiveIndexed(uart0_notify_task_handle, 1);
 #endif

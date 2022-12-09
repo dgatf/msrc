@@ -13,7 +13,7 @@ void esc_hw3_task(void *parameters)
 #ifdef SIM_SENSORS
     *parameter.rpm = 12345.67;
 #endif
-    uart_begin(UART_ESC, 19200, UART1_TX_GPIO, UART_ESC_RX, ESC_HW3_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart1_begin(19200, UART1_TX_GPIO, UART_ESC_RX, ESC_HW3_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
     while (1)
     {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
@@ -24,12 +24,12 @@ void esc_hw3_task(void *parameters)
 static void process(esc_hw3_parameters_t *parameter)
 {
     static alarm_id_t timeout_alarm_id = 0;
-    if (uart_available(UART_ESC) == ESC_HW3_PACKET_LENGHT)
+    if (uart1_available() == ESC_HW3_PACKET_LENGHT)
     {
         if (timeout_alarm_id)
             cancel_alarm(timeout_alarm_id);
         uint8_t data[ESC_HW3_PACKET_LENGHT];
-        uart_read_bytes(UART_ESC, data, ESC_HW3_PACKET_LENGHT);
+        uart1_read_bytes(data, ESC_HW3_PACKET_LENGHT);
         if (data[0] == 0x9B && data[4] == 0 && data[6] == 0)
         {
             uint16_t rpmCycle = (uint16_t)data[8] << 8 | data[9];
