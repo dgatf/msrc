@@ -32,7 +32,7 @@ void esc_kontronik_task(void *parameters)
     xTaskCreate(cell_count_task, "cell_count_task", STACK_CELL_COUNT, (void *)&cell_count_parameters, 1, &task_handle);
     xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
-    uart_begin(UART_ESC, 115200, UART1_TX_GPIO, UART_ESC_RX, ESC_KONTRONIK_TIMEOUT_US, 8, 1, UART_PARITY_EVEN, false);
+    uart1_begin(115200, UART1_TX_GPIO, UART_ESC_RX, ESC_KONTRONIK_TIMEOUT_US, 8, 1, UART_PARITY_EVEN, false);
     while (1)
     {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
@@ -43,10 +43,10 @@ void esc_kontronik_task(void *parameters)
 static void process(esc_kontronik_parameters_t *parameter)
 {
     static uint32_t timestamp = 0;
-    if (uart_available(UART_ESC) == ESC_KONTRONIK_PACKET_LENGHT)
+    if (uart1_available() == ESC_KONTRONIK_PACKET_LENGHT)
     {
         uint8_t data[ESC_KONTRONIK_PACKET_LENGHT];
-        uart_read_bytes(UART_ESC, data, ESC_KONTRONIK_PACKET_LENGHT);
+        uart1_read_bytes(data, ESC_KONTRONIK_PACKET_LENGHT);
         if (data[0] == 0x4B && data[1] == 0x4F && data[2] == 0x44 && data[3] == 0x4C)
         {
             float rpm = (uint32_t)data[7] << 24 | (uint32_t)data[6] << 16 | (uint16_t)data[5] << 8 | data[4];

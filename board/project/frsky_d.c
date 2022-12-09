@@ -12,7 +12,7 @@ void frsky_d_task(void *parameters)
 {
     led_cycle_duration = 200;
     led_cycles = 1;
-    uart_begin(UART_RECEIVER, 9600, UART_RECEIVER_TX, UART_RECEIVER_RX, 0, 8, 1, UART_PARITY_NONE, true);
+    uart0_begin(9600, UART_RECEIVER_TX, UART_RECEIVER_RX, 0, 8, 1, UART_PARITY_NONE, true);
     semaphore = xSemaphoreCreateMutex();
     xSemaphoreTake(semaphore, 0);
     set_config();
@@ -137,10 +137,10 @@ static void send_byte(uint8_t c, bool header)
 {
     if ((c == 0x5D || c == 0x5E) && !header)
     {
-        uart_write(UART_RECEIVER, 0x5D);
+        uart0_write(0x5D);
         c ^= 0x60;
     }
-    uart_write(UART_RECEIVER, c);
+    uart0_write(c);
     if (debug)
         printf("%X ", c);
 }
@@ -488,7 +488,7 @@ static void set_config()
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
-        uart_pio_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_GPS_LONG_BP_ID;

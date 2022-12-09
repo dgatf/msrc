@@ -16,14 +16,23 @@ extern TaskHandle_t uart0_notify_task_handle, uart1_notify_task_handle;
 extern QueueHandle_t uart0_queue_handle, uart1_queue_handle;
 extern alarm_pool_t *uart_alarm_pool;
 
-void uart_begin(uart_inst_t *uart, uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity, bool inverted);
-uint8_t uart_read(uart_inst_t *uart);
-void uart_read_bytes(uart_inst_t *uart, uint8_t *data, uint8_t lenght);
-uint8_t uart_available(uart_inst_t *uart);
-uint uart_get_time_elapsed(uart_inst_t *uart);
-void uart_write(uart_inst_t *uart, uint8_t data);
-void uart_write_bytes(uart_inst_t *uart, uint8_t *data, uint8_t lenght);
+void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity, bool inverted);
+uint8_t uart0_read();
+void uart0_read_bytes(uint8_t *data, uint8_t lenght);
+uint8_t uart0_available();
+uint uart0_get_time_elapsed();
+void uart0_write(uint8_t data);
+void uart0_write_bytes(uint8_t *data, uint8_t lenght);
 
-void uart_set_timestamp(uart_inst_t *uart);
+void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity, bool inverted);
+uint8_t uart1_read();
+void uart1_read_bytes(uint8_t *data, uint8_t lenght);
+uint8_t uart1_available();
+uint uart1_get_time_elapsed();
+void uart1_write(uint8_t data);
+void uart1_write_bytes(uint8_t *data, uint8_t lenght);
+
+void uart0_set_timestamp();
+void uart1_set_timestamp();
 
 #endif

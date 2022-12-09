@@ -397,7 +397,7 @@ static void set_config()
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
-        uart_pio_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
 
         sensor->frame_0x17[HITEC_FRAME_0X17_SATS] = parameter.sat;
         sensor->frame_0x12[HITEC_FRAME_0X12_GPS_LAT] = parameter.lat;

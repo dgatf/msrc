@@ -12,7 +12,7 @@
 
 #define UART_PIO_BUFFER_SIZE 256
 
-extern TaskHandle_t uart_pio_task_handle;
+extern TaskHandle_t uart_pio_notify_task_handle;
 extern QueueHandle_t uart_pio_queue_handle;
 extern alarm_pool_t *uart_alarm_pool;
 

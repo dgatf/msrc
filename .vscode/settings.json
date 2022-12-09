@@ -27,7 +27,8 @@
         "string_view": "c",
         "string": "c",
         "sim_rx.h": "c",
-        "random": "c"
+        "random": "c",
+        "ranges": "c"
     },
     "cmake.statusbar.advanced": {
         "debug": {

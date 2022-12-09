@@ -75,7 +75,7 @@ static inline void handler_pio()
         return;
     }*/
     uint data = pio_sm_get_blocking(pio_, sm_counter_);
-    if (data > 60000)
+    if (data > 50000)
     {
         index = 0;
         //printf("%i \n", data);

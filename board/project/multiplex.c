@@ -12,7 +12,7 @@ void multiplex_task(void *parameters)
     sensor_multiplex_t *sensor[16] = {NULL};
     led_cycle_duration = 200;
     led_cycles = 1;
-    uart_begin(UART_RECEIVER, 38400, UART_RECEIVER_TX, UART_RECEIVER_RX, MULTIPLEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(38400, UART_RECEIVER_TX, UART_RECEIVER_RX, MULTIPLEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
     set_config(sensor);
     if (debug)
         printf("\nMultiplex init");
@@ -26,9 +26,9 @@ void multiplex_task(void *parameters)
 static void process(sensor_multiplex_t **sensor)
 {
     uint8_t address = 0;
-    if (uart_available(UART_RECEIVER) == MULTIPLEX_PACKET_LENGHT)
+    if (uart0_available() == MULTIPLEX_PACKET_LENGHT)
     {
-        uart_read_bytes(UART_RECEIVER, &address, MULTIPLEX_PACKET_LENGHT);
+        uart0_read_bytes(&address, MULTIPLEX_PACKET_LENGHT);
         if (debug)
             printf("\nMultiplex (%u) < %X", uxTaskGetStackHighWaterMark(NULL), address);
 
@@ -44,9 +44,9 @@ static void send_packet(uint8_t address, sensor_multiplex_t *sensor)
     if (!sensor)
         return;
     uint8_t sensor_id = address << 4 | sensor->data_id;
-    uart_write(UART_RECEIVER, sensor_id);
+    uart0_write(sensor_id);
     int16_t value = format(sensor->data_id, *sensor->value);
-    uart_write_bytes(UART_RECEIVER, (uint8_t *)&value, 2);
+    uart0_write_bytes((uint8_t *)&value, 2);
 
     vTaskResume(led_task_handle);
 
@@ -284,7 +284,7 @@ static void set_config(sensor_multiplex_t **sensors)
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
-        uart_pio_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
         new_sensor = malloc(sizeof(sensor_multiplex_t));
         *new_sensor = (sensor_multiplex_t){FHSS_ALTITUDE, parameter.alt};
         add_sensor(new_sensor, sensors);

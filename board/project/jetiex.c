@@ -19,7 +19,7 @@ void jetiex_task(void *parameters)
     sensor_jetiex_t *sensor[32] = {NULL};
     led_cycle_duration = 200;
     led_cycles = 1;
-    uart_begin(UART_RECEIVER, baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, JETIEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, JETIEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
     set_config(sensor);
     if (debug)
         printf("\nJeti Ex init");
@@ -35,11 +35,11 @@ static void process(uint *baudrate, sensor_jetiex_t **sensor)
     static alarm_id_t timeout_alarm_id = 0;
     static bool mute = true;
     uint8_t packetId;
-    uint8_t length = uart_available(UART_RECEIVER);
+    uint8_t length = uart0_available();
     if (length)
     {
         uint8_t data[length];
-        uart_read_bytes(UART_RECEIVER, data, length);
+        uart0_read_bytes(data, length);
         if (debug == 2)
         {
             printf("\nJeti Ex(%u) < ", uxTaskGetStackHighWaterMark(NULL));
@@ -101,7 +101,7 @@ static void send_packet(uint8_t packet_id, sensor_jetiex_t **sensor)
     uint16_t crc = crc16(ex_buffer, length_telemetry_buffer + 6);
     ex_buffer[length_telemetry_buffer + 6] = crc;
     ex_buffer[length_telemetry_buffer + 7] = crc >> 8;
-    uart_write_bytes(UART_RECEIVER, ex_buffer, length_telemetry_buffer + 8);
+    uart0_write_bytes(ex_buffer, length_telemetry_buffer + 8);
     if (debug)
     {
         char type[7];
@@ -335,7 +335,7 @@ static int64_t timeout_callback(alarm_id_t id, void *parameters)
         *baudrate = 250000L;
     else
         *baudrate = 125000L;
-    uart_begin(UART_RECEIVER, *baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, JETIEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(*baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, JETIEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
     if (debug)
         printf("\nJeti Ex timeout. Baudrate");
     return 0;
@@ -419,7 +419,8 @@ static void set_config(sensor_jetiex_t **sensor)
                                           config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature, config->esc_hw4_divisor, config->esc_hw4_ampgain, config->esc_hw4_current_thresold, config->esc_hw4_current_max,
                                           malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw4_task, "esc_hw4_task", STACK_ESC_HW4, (void *)&parameter, 2, &task_handle);
-        uart1_notify_task_handle = task_handle;
+        //uart1_notify_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
@@ -589,7 +590,7 @@ static void set_config(sensor_jetiex_t **sensor)
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
-        uart1_notify_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT6, JETIEX_FORMAT_0_DECIMAL, "Sats", "", parameter.sat};
         add_sensor(new_sensor, sensor);

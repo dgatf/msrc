@@ -13,7 +13,9 @@
 #include "common.h"
 #include "config.h"
 
-#define ESC_HW4_TIMEOUT_US 1000
+#include "uart_pio.h"
+
+#define ESC_HW4_TIMEOUT_US 2000
 #define ESC_HW4_PACKET_LENGHT 19
 #define ESC_HW4_SIGNATURE_LENGHT 13
 #define ESC_HW4_CURRENT_OFFSET_DELAY 15000

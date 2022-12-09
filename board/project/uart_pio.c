@@ -21,9 +21,8 @@ static int64_t uart_pio_timeout_callback(alarm_id_t id, void *user_data)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     uart_pio_is_timedout = true;
-    // printf("\nTimeout %i %i", time_us_32(), id);
-    // printf("\nReceived uart_pio size: %i", uxQueueMessagesWaiting(uart1_queue_handle));
-    vTaskNotifyGiveIndexedFromISR(uart_pio_task_handle, 1, &xHigherPriorityTaskWoken);
+    printf("\n");
+    vTaskNotifyGiveIndexedFromISR(uart_pio_notify_task_handle, 1, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return 0;
 }
@@ -39,13 +38,13 @@ static void uart_pio_handler(uint8_t data)
         xQueueReset(uart_pio_queue_handle);
         uart_pio_is_timedout = false;
     }
+    printf("%X ", data);
     xQueueSendToBackFromISR(uart_pio_queue_handle, &data, &xHigherPriorityTaskWoken);
     if (uart_pio_timeout)
     {
         uart_pio_timeout_alarm_id = alarm_pool_add_alarm_in_us(uart_alarm_pool, uart_pio_timeout, uart_pio_timeout_callback, NULL, true);
     }
     uart_pio_timestamp = time_us_32();
-    //printf("\nSet %i %i", time_us_32(), timeout_alarm_id);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
