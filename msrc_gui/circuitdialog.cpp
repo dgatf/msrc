@@ -29,6 +29,5 @@ void CircuitDialog::resizeEvent(QResizeEvent* event)
     Q_UNUSED(event);
     ui->lbCircuit->resize(this->size());
     mainWindow->generateCircuit(ui->lbCircuit);
-    ui->scrollArea->setAlignment(Qt::AlignCenter);
 }
 
