@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openConfig()));
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(saveConfig()));
 
-    ui->lbCircuit->resize(621, 400); //(ui->lbCircuit->parentWidget()->width(),
+   ui->lbCircuit->resize(2589/4, 1797/4); //(ui->lbCircuit->parentWidget()->width(),
     // ui->lbCircuit->parentWidget()->height());
     generateCircuit(ui->lbCircuit);
 
@@ -261,7 +261,7 @@ void MainWindow::setUiFromConfig()
     // GPS
 
     ui->gbGps->setChecked(config.enable_gps);
-    ui->cbGpsBaudrate->currentText() = config.gps_baudrate;
+    ui->cbGpsBaudrate->currentText() = (QChar)config.gps_baudrate;
 
     // Voltage 1
 
@@ -737,7 +737,9 @@ void MainWindow::on_btCircuit_clicked()
 {
     CircuitDialog circuitDialog;
     circuitDialog.setModal(true);
+
     circuitDialog.mainWindow = this;
+    circuitDialog.showMaximized();
     generateCircuit(circuitDialog.lbCircuit);
     circuitDialog.exec();
 }

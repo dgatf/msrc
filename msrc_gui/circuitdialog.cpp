@@ -6,7 +6,11 @@ CircuitDialog::CircuitDialog(QWidget *parent) :
     ui(new Ui::CircuitDialog)
 {
     ui->setupUi(this);
-    this->setWindowFlags(Qt::SubWindow);
+    setWindowFlags(windowFlags() | Qt::SubWindow | Qt::CustomizeWindowHint |
+                                   Qt::WindowMinimizeButtonHint |
+                                   Qt::WindowMaximizeButtonHint |
+                                   Qt::WindowCloseButtonHint);
+    ui->lbCircuit->resize(this->size());
     lbCircuit = ui->lbCircuit;
 }
 
@@ -23,6 +27,8 @@ void CircuitDialog::on_btClose_clicked()
 void CircuitDialog::resizeEvent(QResizeEvent* event)
 {
     Q_UNUSED(event);
+    ui->lbCircuit->resize(this->size());
     mainWindow->generateCircuit(ui->lbCircuit);
+    ui->scrollArea->setAlignment(Qt::AlignCenter);
 }
 
