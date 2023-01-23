@@ -36,8 +36,10 @@ void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint d
         uart_alarm_pool = alarm_pool_create(2, 10);
     uart_init(uart1, baudrate);
     uart_set_fifo_enabled(uart1, false);
+    gpio_pull_up(gpio_rx);
     gpio_set_function(gpio_tx, GPIO_FUNC_UART);
     gpio_set_function(gpio_rx, GPIO_FUNC_UART);
+
     if (inverted)
     {
         gpio_set_outover(gpio_tx, GPIO_OVERRIDE_INVERT);
