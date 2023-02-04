@@ -63,7 +63,6 @@ static void process(esc_hw4_parameters_t *parameter, float *current_offset)
         pwm = (uint16_t)data[6] << 8 | data[7];      // 0-1024
         float rpm = (uint32_t)data[8] << 16 | (uint16_t)data[9] << 8 | data[10];
         // try to filter invalid data frames
-        printf("\n!!!RPM: %.0f, Multiplier: %.2f, Alpha: %.2f", rpm, parameter->rpm_multiplier, parameter->alpha_rpm);
         if (throttle < 1024 &&
             pwm < 1024 &&
             rpm < 200000 &&
@@ -81,7 +80,7 @@ static void process(esc_hw4_parameters_t *parameter, float *current_offset)
                 current = 0;
             float temperature_fet = get_temperature((uint16_t)data[15] << 8 | data[16]);
             float temperature_bec = get_temperature((uint16_t)data[17] << 8 | data[18]);
-            // rpm *= parameter->rpm_multiplier;
+            rpm *= parameter->rpm_multiplier;
             if (parameter->pwm_out)
                 xTaskNotifyGive(pwm_out_task_handle);
             *parameter->rpm = get_average(parameter->alpha_rpm, *parameter->rpm, rpm);

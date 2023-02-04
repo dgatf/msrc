@@ -4,7 +4,7 @@ float get_average(float alpha, float prev_value, float new_value)
 {
     if (isnan(new_value))
         return prev_value;
-    if (alpha == 1)
+    if (alpha > 1)
         return new_value;
     else
         return (1 - alpha) * prev_value + alpha * new_value;
