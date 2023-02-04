@@ -91,7 +91,7 @@ int main()
     vTaskStartScheduler();
 
     vTaskResume(led_task_handle);
-printf("\nOK");
+    printf("\nOK");
     while (1)
     {
     };
