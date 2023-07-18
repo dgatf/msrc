@@ -27,7 +27,6 @@ void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint d
     uart0_timeout = timeout;
     uart0_queue_handle = xQueueCreate(UART0_BUFFER_SIZE, sizeof(uint8_t));
     uart_set_irq_enables(uart0, true, false);
-    uart_get_hw(uart0)->cr |= UART_UARTCR_SIREN_BITS;
 }
 
 void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity, bool inverted)
@@ -49,7 +48,6 @@ void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint d
     uart1_timeout = timeout;
     uart1_queue_handle = xQueueCreate(UART1_BUFFER_SIZE, sizeof(uint8_t));
     uart_set_irq_enables(uart1, true, false);
-    uart_get_hw(uart1)->cr |= UART_UARTCR_SIREN_BITS;
 }
 
 static int64_t uart0_timeout_callback(alarm_id_t id, void *user_data)
