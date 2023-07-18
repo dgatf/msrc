@@ -449,7 +449,7 @@ void MainWindow::getConfigFromUi()
     config.alpha_rpm = 2.0 / (ui->sbRpmAvg->value() + 1);
     config.alpha_voltage = 2.0 / (ui->sbVoltageAvg->value() + 1);
     config.alpha_current = 2.0 / (ui->sbCurrentAvg->value() + 1);
-    config.alpha_temperature = 2.0 / (ui->sbTemperatureAvg->value());
+    config.alpha_temperature = 2.0 / (ui->sbTemperatureAvg->value() + 1);
     config.alpha_vario = 2.0 / (ui->sbVarioAvg->value() + 1);
     config.alpha_airspeed = 2.0 / (ui->sbAirspeedAvg->value() + 1);
 
