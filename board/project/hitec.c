@@ -20,7 +20,7 @@ void hitec_task(void *parameters)
     sensor = malloc(sizeof(sensor_hitec_t));
     *sensor = (sensor_hitec_t){{0}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}};
 
-    led_cycle_duration = 200;
+    led_cycle_duration = 6;
     led_cycles = 1;
 
     i2c_init(i2c1, 100 * 1000);

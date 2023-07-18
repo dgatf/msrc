@@ -10,7 +10,7 @@ void multiplex_task(void *parameters)
 {
     
     sensor_multiplex_t *sensor[16] = {NULL};
-    led_cycle_duration = 200;
+    led_cycle_duration = 6;
     led_cycles = 1;
     uart0_begin(38400, UART_RECEIVER_TX, UART_RECEIVER_RX, MULTIPLEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
     set_config(sensor);

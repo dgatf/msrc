@@ -13,7 +13,7 @@ static uint8_t get_slot_id(uint8_t slot);
 
 void sbus_task(void *parameters)
 {
-    led_cycle_duration = 200;
+    led_cycle_duration = 6;
     led_cycles = 1;
     set_config();
     uart0_begin(100000, UART_RECEIVER_TX, UART_RECEIVER_RX, SBUS_TIMEOUT_US, 8, 2, UART_PARITY_EVEN, true);

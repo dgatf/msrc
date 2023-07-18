@@ -34,7 +34,7 @@ static int64_t reboot_callback(alarm_id_t id, void *user_data);
 void smartport_task(void *parameters)
 {
     smartport_parameters_t parameter;
-    led_cycle_duration = 200;
+    led_cycle_duration = 6;
     led_cycles = 1;
     uart0_begin(57600, UART_RECEIVER_TX, UART_RECEIVER_RX, SMARTPORT_TIMEOUT_US, 8, 1, UART_PARITY_NONE, true);
     semaphore_sensor = xSemaphoreCreateBinary();

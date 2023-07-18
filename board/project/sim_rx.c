@@ -38,6 +38,7 @@ static void process(rx_protocol_t rx_protocol)
     xQueueReset(uart1_queue_handle);
     if (rx_protocol == RX_SMARTPORT)
     {
+        vTaskResume(led_task_handle);
         uint8_t c[10] = {0};
         c[0] = 0x7E;
         c[1] = 0xE9; // sensor id 10 = 0xE9

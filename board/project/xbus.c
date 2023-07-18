@@ -21,7 +21,7 @@ void xbus_task(void *parameters)
     sensor_formatted = malloc(sizeof(xbus_sensor_formatted_t));
     *sensor_formatted = (xbus_sensor_formatted_t){NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-    led_cycle_duration = 200;
+    led_cycle_duration = 6;
     led_cycles = 1;
 
     PIO pio = pio1;

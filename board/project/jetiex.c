@@ -17,7 +17,7 @@ void jetiex_task(void *parameters)
 {
     uint baudrate = 125000L;
     sensor_jetiex_t *sensor[32] = {NULL};
-    led_cycle_duration = 200;
+    led_cycle_duration = 6;
     led_cycles = 1;
     uart0_begin(baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, JETIEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
     set_config(sensor);
@@ -419,8 +419,8 @@ static void set_config(sensor_jetiex_t **sensor)
                                           config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature, config->esc_hw4_divisor, config->esc_hw4_ampgain, config->esc_hw4_current_thresold, config->esc_hw4_current_max,
                                           malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw4_task, "esc_hw4_task", STACK_ESC_HW4, (void *)&parameter, 2, &task_handle);
-        uart1_notify_task_handle = task_handle;
-        //uart_pio_notify_task_handle = task_handle;
+        //uart1_notify_task_handle = task_handle;
+        uart_pio_notify_task_handle = task_handle;
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
