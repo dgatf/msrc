@@ -39,8 +39,13 @@ void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint d
     gpio_set_function(gpio_rx, GPIO_FUNC_UART);
     if (inverted)
     {
+        gpio_pull_down(gpio_rx);
         gpio_set_outover(gpio_tx, GPIO_OVERRIDE_INVERT);
         gpio_set_inover(gpio_rx, GPIO_OVERRIDE_INVERT);
+    }
+    else
+    {
+        gpio_pull_up(gpio_rx);
     }
     uart_set_format(uart1, databits, stopbits, parity);
     irq_set_exclusive_handler(UART1_IRQ, uart1_rx_handler);

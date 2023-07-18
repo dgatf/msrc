@@ -481,7 +481,7 @@ void MainWindow::getConfigFromUi()
     config.pairOfPoles = ui->sbPairOfPoles->value();
     config.mainTeeth = ui->sbMainTeeth->value();
     config.pinionTeeth = ui->sbPinionTeeth->value();
-    config.rpm_multiplier = config.pinionTeeth / (config.mainTeeth * config.pairOfPoles);
+    config.rpm_multiplier = config.pinionTeeth / (1.0 * config.mainTeeth * config.pairOfPoles);
 
     // PWM out
 

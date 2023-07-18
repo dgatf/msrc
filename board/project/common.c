@@ -4,7 +4,10 @@ float get_average(float alpha, float prev_value, float new_value)
 {
     if (isnan(new_value))
         return prev_value;
-    return (1 - alpha) * prev_value + alpha * new_value;
+    if (alpha > 1)
+        return new_value;
+    else
+        return (1 - alpha) * prev_value + alpha * new_value;
 }
 
 float get_consumption(float current, uint16_t current_max, uint32_t *timestamp)
