@@ -28,7 +28,7 @@ int main()
     if (debug)
         printf("\n\nMSRC init");
 
-    tasks_queue_handle = xQueueCreate(32, sizeof(QueueHandle_t));
+    tasks_queue_handle = xQueueCreate(64, sizeof(QueueHandle_t));
 
     led_cycle_duration = 200;
     led_cycles = 3;
