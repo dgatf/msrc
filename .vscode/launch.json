@@ -8,8 +8,8 @@
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
-            //"gdbPath" : "/home/daniel/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-gdb",
-            "gdbPath" : "/home/daniel/src/gcc-arm-none-eabi-10/bin/arm-none-eabi-gdb",
+            //"gdbPath" : "${env:HOME}/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-gdb",
+            "gdbPath" : "${env:HOME}/src/gcc-arm-none-eabi-10/bin/arm-none-eabi-gdb",
             "device": "RP2040",
             "configFiles": [
                 "interface/picoprobe.cfg",
@@ -22,7 +22,7 @@
                 "break main",
                 "continue"
             ],
-            "searchDir": ["/home/daniel/src/pico/openocd/tcl"],
+            "searchDir": ["${env:HOME}/src/pico/openocd/tcl"],
             //"showDevDebugOutput": true,
         }
     ]

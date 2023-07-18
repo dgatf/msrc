@@ -46,8 +46,8 @@
     },
     "cmake.buildBeforeRun": true,
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-    "cortex-debug.openocdPath": "/home/daniel/src/pico/openocd/src/openocd",
-    "cortex-debug.armToolchainPath": "/home/daniel/.platformio/packages/toolchain-gccarmnoneeabi/bin",
+    "cortex-debug.openocdPath": "${env:HOME}/src/pico/openocd/src/openocd",
+    "cortex-debug.armToolchainPath": "${env:HOME}/.platformio/packages/toolchain-gccarmnoneeabi/bin",
     "cortex-debug.variableUseNaturalFormat": true,
     "cmake.sourceDirectory": "${workspaceFolder}/board",
 }
