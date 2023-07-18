@@ -23,13 +23,14 @@
  
  // sda 0, scl 1
 
-.program start_condition  // 4
+.program start_condition  // 5
 do_irq:
+    irq 1 // Ensure a stop has been handled, in case this is a repeat start
     irq 4
 public start:
 .wrap_target
     wait 1 pin 0
-    wait 0 pin 0
+    wait 0 pin 0 [12] // Wait for falling edge of SDA + 1us before checking SCL
     jmp pin do_irq
 .wrap
 
@@ -39,12 +40,11 @@ do_irq:
 public start:
 .wrap_target
     wait 0 pin 0
-    wait 1 pin 0
+    wait 1 pin 0 [12] // 1us@12.5MHz before checking SCL
     jmp pin do_irq
 .wrap
 
-.program read_byte  // 13
-.side_set 1 opt
+.program read_byte  // 12
     wait irq 4
 read:
     set pindirs 0
@@ -54,7 +54,6 @@ bit_loop:
     wait 1 pin 1
     in pins 1
     jmp x-- bit_loop
-    mov isr ::isr
     push noblock
 do_ack:
     out exec 16
@@ -64,9 +63,9 @@ do_irq:
     irq 5
 
 .program do_ack
-    nop
     wait 0 pin 1
-    set pindirs 3 side 0
+    set pindirs 3
+    set pins 0 [15] // Drive SCL low for clock stretching and SDA low to force ACK
     irq wait 0
     set pindirs 1
     wait 1 pin 1
@@ -76,7 +75,7 @@ do_irq:
     jmp 1 
 
     // write (write request)
-    jmp 12
+    jmp 11
 
     // address not enabled
     set pindirs 0 [31]

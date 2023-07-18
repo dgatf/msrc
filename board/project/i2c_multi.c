@@ -185,7 +185,6 @@ static inline void read_byte_program_init(PIO pio, uint sm, uint offset, uint pi
     pio_sm_config c = read_byte_program_get_default_config(offset);
     sm_config_set_in_pins(&c, pin);
     sm_config_set_clkdiv(&c, 10);
-    sm_config_set_sideset_pins(&c, pin);
     sm_config_set_out_shift(&c, true, true, 32);
     pio_set_irq0_source_enabled(pio, pis_interrupt0, true);
     pio_interrupt_clear(pio, 0);
@@ -216,7 +215,7 @@ static inline void byte_handler_pio()
     i2c_multi->bytes_count++;
     if (i2c_multi->status != I2C_WRITE)
     {
-        received = pio_sm_get_blocking(i2c_multi->pio, i2c_multi->sm_read);
+        received = transpond_byte(pio_sm_get_blocking(i2c_multi->pio, i2c_multi->sm_read) >> 24); // Do the bit-reverse here as PIO instructions are scarce
     }
     if (i2c_multi->status == I2C_IDLE)
     {
