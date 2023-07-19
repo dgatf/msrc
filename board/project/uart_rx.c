@@ -13,6 +13,7 @@ uint uart_rx_init(PIO pio, uint pin, uint baudrate, uint irq)
 
     pio_sm_set_consecutive_pindirs(pio_, sm_, pin, 1, false);
     pio_gpio_init(pio_, pin);
+    gpio_pull_up(pin);
 
     uint offset = pio_add_program(pio_, &uart_rx_program);
     pio_sm_config c = uart_rx_program_get_default_config(offset);
