@@ -274,9 +274,12 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 // byte 3: degrees (integer)
                 // byte 4(bit 6): 0=lat 1=lon
                 // byte 4(bit 7): 0=+(N,E), 1=-(S,W)
-                uint32_t value = *sensor->value;
+                int32_t value = *sensor->value;
                 if (value < 0)
+                {
                     format |= 1 << 6;
+                    value *= -1;
+                }
                 *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
                 uint8_t degrees = value / 60;
                 uint16_t degreesDecimals = (value / 60 - degrees) * 10000;
