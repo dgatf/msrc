@@ -143,13 +143,15 @@ static void i2c_request_handler(uint8_t address)
         i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->airspeed);
         vTaskResume(led_task_handle);
         if (debug)
-            {printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
-        uint8_t buffer[sizeof(xbus_airspeed_t)];
-        memcpy(buffer, sensor_formatted->airspeed, sizeof(xbus_airspeed_t));
-        for (int i = 0; i < sizeof(xbus_airspeed_t); i++)
         {
-            printf("%X ", buffer[i]);
-        }}
+            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
+            uint8_t buffer[sizeof(xbus_airspeed_t)];
+            memcpy(buffer, sensor_formatted->airspeed, sizeof(xbus_airspeed_t));
+            for (int i = 0; i < sizeof(xbus_airspeed_t); i++)
+            {
+                printf("%X ", buffer[i]);
+            }
+        }
         break;
     }
     case XBUS_ALTIMETER_ID:
@@ -166,13 +168,15 @@ static void i2c_request_handler(uint8_t address)
         i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->gps_loc);
         vTaskResume(led_task_handle);
         if (debug)
-           { printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
-        uint8_t buffer[sizeof(xbus_gps_loc_t)];
-        memcpy(buffer, sensor_formatted->gps_loc, sizeof(xbus_gps_loc_t));
-        for (int i = 0; i < sizeof(xbus_gps_loc_t); i++)
         {
-            printf("%X ", buffer[i]);
-        }}
+            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
+            uint8_t buffer[sizeof(xbus_gps_loc_t)];
+            memcpy(buffer, sensor_formatted->gps_loc, sizeof(xbus_gps_loc_t));
+            for (int i = 0; i < sizeof(xbus_gps_loc_t); i++)
+            {
+                printf("%X ", buffer[i]);
+            }
+        }
         break;
     }
     case XBUS_GPS_STAT_ID:
@@ -202,13 +206,15 @@ static void i2c_request_handler(uint8_t address)
         i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->esc);
         vTaskResume(led_task_handle);
         if (debug)
-           { printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
-        uint8_t buffer[sizeof(xbus_esc_t)];
-        memcpy(buffer, sensor_formatted->esc, sizeof(xbus_esc_t));
-        for (int i = 0; i < sizeof(xbus_esc_t); i++)
         {
-            printf("%X ", buffer[i]);
-        }}
+            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
+            uint8_t buffer[sizeof(xbus_esc_t)];
+            memcpy(buffer, sensor_formatted->esc, sizeof(xbus_esc_t));
+            for (int i = 0; i < sizeof(xbus_esc_t); i++)
+            {
+                printf("%X ", buffer[i]);
+            }
+        }
         break;
     }
     case XBUS_BATTERY_ID:
@@ -238,13 +244,15 @@ static void i2c_request_handler(uint8_t address)
         i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->vario);
         vTaskResume(led_task_handle);
         if (debug)
-            {printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
-        uint8_t buffer[sizeof(xbus_vario_t)];
-        memcpy(buffer, sensor_formatted->vario, sizeof(xbus_vario_t));
-        for (int i = 0; i < sizeof(xbus_vario_t); i++)
         {
-            printf("%X ", buffer[i]);
-        }}
+            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
+            uint8_t buffer[sizeof(xbus_vario_t)];
+            memcpy(buffer, sensor_formatted->vario, sizeof(xbus_vario_t));
+            for (int i = 0; i < sizeof(xbus_vario_t); i++)
+            {
+                printf("%X ", buffer[i]);
+            }
+        }
         break;
     }
     case XBUS_RPMVOLTTEMP_ID:
@@ -255,13 +263,15 @@ static void i2c_request_handler(uint8_t address)
         i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->rpm_volt_temp);
         vTaskResume(led_task_handle);
         if (debug)
-          {  printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
-        uint8_t buffer[sizeof(xbus_rpm_volt_temp_t)];
-        memcpy(buffer, sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
-        for (int i = 0; i < sizeof(xbus_rpm_volt_temp_t); i++)
         {
-            printf("%X ", buffer[i]);
-        }}
+            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
+            uint8_t buffer[sizeof(xbus_rpm_volt_temp_t)];
+            memcpy(buffer, sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
+            for (int i = 0; i < sizeof(xbus_rpm_volt_temp_t); i++)
+            {
+                printf("%X ", buffer[i]);
+            }
+        }
         break;
     }
     }
