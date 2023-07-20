@@ -270,11 +270,11 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
             else
             {
                 // rawvalue: minutes
-                // byte 1-2: degrees (decimals)
-                // byte 3: degrees (integer)
+                // byte 1-2: MMmmm
+                // byte 3: DD
                 // byte 4(bit 6): 0=lat 1=lon
                 // byte 4(bit 7): 0=+(N,E), 1=-(S,W)
-                int32_t value = *sensor->value;
+                float value = *sensor->value;
                 if (value < 0)
                 {
                     format |= 1 << 6;
@@ -282,11 +282,11 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 }
                 *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
                 uint8_t degrees = value / 60;
-                uint16_t degreesDecimals = (value / 60 - degrees) * 10000;
-                *(buffer + *buffer_index + 1) = degreesDecimals;      // degrees (dec, l)
-                *(buffer + *buffer_index + 2) = degreesDecimals >> 8; // degrees (dec, h)
-                *(buffer + *buffer_index + 3) = degrees;              // degrees (int)
-                *(buffer + *buffer_index + 4) = format;               // format
+                uint16_t minutes = (value - degrees * 60) * 1000;
+                *(buffer + *buffer_index + 1) = minutes;
+                *(buffer + *buffer_index + 2) = minutes >> 8;
+                *(buffer + *buffer_index + 3) = degrees;
+                *(buffer + *buffer_index + 4) = format;
                 *buffer_index += 5;
             }
         }
