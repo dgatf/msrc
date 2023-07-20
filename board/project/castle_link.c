@@ -9,7 +9,6 @@ static inline void handler_pio();
 void castle_link_init(PIO pio, uint pin, uint irq)
 {
     pio_ = pio;
-    float clk_div = 5;
     sm_pulse_ = pio_claim_unused_sm(pio_, true);
     offset_pulse_ = pio_add_program(pio_, &pulse_program);
     pio_gpio_init(pio_, pin + 1);
@@ -17,7 +16,7 @@ void castle_link_init(PIO pio, uint pin, uint irq)
     pio_sm_set_pins(pio, sm_pulse_, 0);
     
     pio_sm_config c_pulse = pulse_program_get_default_config(offset_pulse_);
-    sm_config_set_clkdiv(&c_pulse, clk_div);
+    sm_config_set_clkdiv(&c_pulse, 10);
     sm_config_set_in_pins(&c_pulse, pin);
     sm_config_set_set_pins(&c_pulse, pin + 1, 1);
     
@@ -28,7 +27,7 @@ void castle_link_init(PIO pio, uint pin, uint irq)
     offset_counter_ = pio_add_program(pio_, &counter_program);
     
     pio_sm_config c_counter = counter_program_get_default_config(offset_counter_);
-    sm_config_set_clkdiv(&c_counter, clk_div);
+    sm_config_set_clkdiv(&c_counter, 5);
     sm_config_set_in_pins(&c_counter, pin);
     if (irq == PIO0_IRQ_0 || irq == PIO1_IRQ_0)
         pio_set_irq0_source_enabled(pio_, (enum pio_interrupt_source)(pis_interrupt0 + CASTLE_LINK_IRQ_NUM), true);

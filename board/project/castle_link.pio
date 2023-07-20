@@ -16,7 +16,7 @@
 .program pulse
 .wrap_target
     wait 1 pin 0       // rx pulse start -> esc is output 
-    set pindirs 1      // set pin 0 output (1)
+    set pindirs 1 [31] // set pin 0 output (1)
     wait 0 pin 0       // end of pwm rx -> esc is input. start counter (irq 4)
     set pindirs 0 [31] // set pin 0 input (0)
     irq 4
@@ -36,8 +36,7 @@ capture:
     irq CASTLE_LINK_IRQ_NUM  // raise irq
 .wrap_target
 public start:
-    mov y ~null [31]      // init counter
-    irq clear 4 
+    mov y ~null       // init counter
     wait irq 4
 loop:
     in pins 2         // read pins
