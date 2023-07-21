@@ -1,6 +1,6 @@
 #include "uart_rx.h"
 
-static uint sm_;
+static uint sm_, offset_;
 static PIO pio_;
 static void (*handler_)(uint8_t data) = NULL;
 
@@ -15,8 +15,8 @@ uint uart_rx_init(PIO pio, uint pin, uint baudrate, uint irq)
     pio_gpio_init(pio_, pin);
     gpio_pull_up(pin);
 
-    uint offset = pio_add_program(pio_, &uart_rx_program);
-    pio_sm_config c = uart_rx_program_get_default_config(offset);
+    offset_ = pio_add_program(pio_, &uart_rx_program);
+    pio_sm_config c = uart_rx_program_get_default_config(offset_);
     sm_config_set_in_pins(&c, pin);
     sm_config_set_jmp_pin(&c, pin);
     sm_config_set_in_shift(&c, true, false, 32);
@@ -30,7 +30,7 @@ uint uart_rx_init(PIO pio, uint pin, uint baudrate, uint irq)
         pio_set_irq1_source_enabled(pio_, (enum pio_interrupt_source)(pis_interrupt0 + UART_RX_IRQ_NUM), true);
     pio_interrupt_clear(pio_, UART_RX_IRQ_NUM);
 
-    pio_sm_init(pio_, sm_, offset, &c);
+    pio_sm_init(pio_, sm_, offset_, &c);
     pio_sm_set_enabled(pio_, sm_, true);
     irq_set_exclusive_handler(irq, handler_pio);
     irq_set_enabled(irq, true);
@@ -41,6 +41,13 @@ uint uart_rx_init(PIO pio, uint pin, uint baudrate, uint irq)
 void uart_rx_set_handler(uart_rx_handler_t handler)
 {
     handler_ = handler;
+}
+
+void uart_rx_remove()
+{
+    uart_rx_set_handler(NULL);
+    pio_remove_program(pio_, &uart_rx_program, offset_);
+    pio_sm_unclaim(pio_, sm_);
 }
 
 static inline void handler_pio()
