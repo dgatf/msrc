@@ -61,18 +61,12 @@ static inline void handler_pio()
     static const float scaler[11] = {0, 20, 4, 50, 1, 0.2502, 20416.7, 4, 4, 30, 63.8125};
     static uint value[12];
 
+    pio_interrupt_clear(pio_, CASTLE_LINK_IRQ_NUM);
     if (pio_sm_is_rx_fifo_full(pio_, sm_counter_))
     {
         pio_sm_clear_fifos(pio_, sm_counter_);
         return;
     }
-    /*bool sync = pio_sm_get_blocking(pio_, sm_counter_);
-    if (sync)
-    {
-        index = 0;
-        printf("\n");
-        return;
-    }*/
     uint data = pio_sm_get_blocking(pio_, sm_counter_);
     if (data > 50000)
     {
@@ -80,9 +74,10 @@ static inline void handler_pio()
         //printf("%i \n", data);
         return;
     }
+    if (index > 10)
+        return;
     value[index] = data;
     //printf("(%u)%u ", index, value[index]);
-    
     if (index == 10)
     {
         uint calibration;
@@ -111,5 +106,4 @@ static inline void handler_pio()
         handler_(packet);
     }
     index++;
-    pio_interrupt_clear(pio_, CASTLE_LINK_IRQ_NUM);
 }
