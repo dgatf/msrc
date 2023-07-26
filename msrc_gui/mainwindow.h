@@ -13,6 +13,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QTimer>
+#include <QMessageBox>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -134,6 +135,7 @@ private:
     QByteArray data;
     bool isConnected = false;
     config_t config;
+    bool isDebug = false;
 
     void requestSerialConfig();
     void getConfigFromUi();
@@ -143,6 +145,8 @@ private:
 
 private slots:
     void buttonSerialPort();
+    void buttonDebug();
+    void readSerial();
     void readSerialConfig();
     QStringList fillPortsInfo();
     void writeSerialConfig();

@@ -35,8 +35,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbAddress->setCurrentIndex(0x77);
 
     connect(ui->btConnect, SIGNAL(released()),  this, SLOT(buttonSerialPort()));
+    connect(ui->btDebug, SIGNAL(released()),  this, SLOT(buttonDebug()));
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(exitApp()));
-    connect(serial, &QSerialPort::readyRead, this, &MainWindow::readSerialConfig);
+    connect(serial, &QSerialPort::readyRead, this, &MainWindow::readSerial);
     connect(ui->btUpdate, SIGNAL(released()), this, SLOT(writeSerialConfig()));
     connect(ui->actionUpdateConfig, SIGNAL(triggered()), this, SLOT(writeSerialConfig()));
 
@@ -150,13 +151,14 @@ void MainWindow::openConfig()
 
 void MainWindow::saveConfig()
 {
-    QString filename = QFileDialog::getSaveFileName(this, "Save Config", "", "Config Files (*.cfg)");
+   QString filename = QFileDialog::getSaveFileName(this, "Save Config", "", "Config Files (*.cfg)");
 
     /*QJsonObject json_obj;
     json_obj["version"] = config.version;
     json_obj["rx_protocol"] = config.rx_protocol;
     QJsonDocument json_doc(json_obj);
     QString json_string = json_doc.toJson();*/
+
     QFile file(filename);
     if(file.open(QIODevice::WriteOnly)) {
         //file.write(json_string.toLocal8Bit());
@@ -178,6 +180,31 @@ void MainWindow::buttonSerialPort()
         closeSerialPort();
     else
         openSerialPort();
+}
+
+void MainWindow::buttonDebug()
+{
+    if (ui->btDebug->text() == "Enable Debug")
+    {
+        if(!isConnected) return;
+        ui->btDebug->setText("Disable Debug");
+        serial->readAll();
+        char header = 0x30;
+        serial->write(&header, 1);
+        char command = 0x33;
+        serial->write(&command, 1);
+        isDebug = true;
+    }
+    else if (ui->btDebug->text() == "Disable Debug")
+    {
+        if(!isConnected) return;
+        ui->btDebug->setText("Enable Debug");
+        char header = 0x30;
+        serial->write(&header, 1);
+        char command = 0x34;
+        serial->write(&command, 1);
+        isDebug = false;
+    }
 }
 
 void MainWindow::openSerialPort()
@@ -219,14 +246,32 @@ void MainWindow::closeSerialPort()
     ui->saConfig->setEnabled(false);
 }
 
-void MainWindow::readSerialConfig()
+void MainWindow::readSerial()
 {
-    if(serial->bytesAvailable() == sizeof(config_t) + 2) {
-        data = serial->readAll();
-        if(data.at(0) == 0x30 && data.at(1) == 0x32) {
-            memcpy(&config, data.data() + 2, sizeof(config_t));
-            setUiFromConfig();
+    /*
+       header - 0x30
+       command - 0x30 - msrc to read config from usb
+                 0x31 - msrc to request to send config to usb
+                 0x32 - msrc answer to send config
+                 0x33 - debug on
+                 0x34 - debug off
+    */
+
+    if (isDebug == false)
+    {
+        if (serial->bytesAvailable() == sizeof(config_t) + 2)
+        {
+            data = serial->readAll();
+            if(data.at(0) == 0x30 && data.at(1) == 0x32) {
+                memcpy(&config, data.data() + 2, sizeof(config_t));
+                setUiFromConfig();
+            }
         }
+    }
+    else
+    {
+        data = serial->readAll();
+        ui->ptDebug->insertPlainText(data);
     }
 }
 
@@ -239,6 +284,10 @@ void MainWindow::writeSerialConfig()
     char command = 0x30;
     serial->write(&command, 1);
     serial->write((char *)&config, sizeof(config_t));
+    /*QMessageBox msgBox;
+    msgBox.setText("Reset RP2040 to apply settings.");
+    msgBox.exec();*/
+    QMessageBox::warning(this, tr("Information"), tr("Reset RP2040 to apply settings."), QMessageBox::Close);
 }
 
 void MainWindow::setUiFromConfig()
@@ -368,11 +417,6 @@ void MainWindow::setUiFromConfig()
     ui->sbVoltageDivisor->setValue(config.esc_hw4_divisor);
     ui->sbCurrentMultiplier->setValue(config.esc_hw4_ampgain);
     ui->sbCurrentMax->setValue(config.esc_hw4_current_max);
-
-    // Debug
-
-    ui->cbDebug->setChecked(config.debug);
-
 }
 
 void MainWindow::getConfigFromUi()
@@ -511,7 +555,6 @@ void MainWindow::getConfigFromUi()
 
     config.enable_esc_hw4_init_delay = ui->cbInitDelay->isChecked();
     //config.esc_hw4_init_delay_duration = 10000;
-
     config.esc_hw4_current_thresold = ui->sbCurrentThresold->value();
     config.esc_hw4_divisor = ui->sbVoltageDivisor->value();
     config.esc_hw4_ampgain = ui->sbCurrentMultiplier->value();
@@ -519,12 +562,24 @@ void MainWindow::getConfigFromUi()
 
     // Debug
 
-    config.debug = ui->cbDebug->isChecked();
+    config.debug = 0; // disabled from msrc_gui
 }
 
 void MainWindow::requestSerialConfig()
 {
-    //serial->readAll();
+    // disable debug
+    char header = 0x30;
+    serial->write(&header, 1);
+    char command = 0x34;
+    serial->write(&command, 1);
+    isDebug = false;
+    QTimer::singleShot(2000, this, SLOT(readSerialConfig()));
+}
+
+void MainWindow::readSerialConfig()
+{
+    serial->readAll();
+    // request config
     char header = 0x30;
     serial->write(&header, 1);
     char command = 0x31;

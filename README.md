@@ -103,6 +103,10 @@ Connect RP2040 to USB and update config with msrc_gui. [msrc_gui.AppImage](binar
 
 <p align="center"><img src="./images/msrc_gui.png" width="600"><br>
 
+Debug mode can be enabled and viewed with msrc_gui.
+
+<p align="center"><img src="./images/msrc_gui_debug.png" width="600"><br>
+
 If you want to build msrc_gui:
 
 - Install [QT](https://www.qt.io/)

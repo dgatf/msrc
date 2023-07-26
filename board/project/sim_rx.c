@@ -41,7 +41,7 @@ static void process(rx_protocol_t rx_protocol)
         vTaskResume(led_task_handle);
         uint8_t c[10] = {0};
         c[0] = 0x7E;
-        c[1] = 0xE9; // sensor id 10 = 0xE9
+        c[1] = 0x71; // sensor id 18 = 0x71 (10 = 0xE9)
         xQueueSendToBack(uart_queue_handle, &c[0], 0);
         xQueueSendToBack(uart_queue_handle, &c[1], 0);
 #ifdef SIM_SMARTPORT_SEND_CONFIG_LUA

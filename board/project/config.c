@@ -24,6 +24,7 @@ void config_write(config_t *config)
 void config_get(config_t *config)
 {
     memcpy(config, (config_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET), sizeof(config_t));
+    config->debug = MSRC_DEBUG;
 }
 
 void config_forze_write()

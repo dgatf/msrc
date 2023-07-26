@@ -14,3 +14,5 @@ msrc_gui/Makefile*
 msrc_gui/msrc_gui.pro.*
 msrc_gui/msrc_gui_plugin_import.cpp
 build*
+msrc_gui/*.o
+msrc_gui/msrc_gui
