@@ -93,8 +93,10 @@ typedef enum xbus_esc_enum_t
 
 typedef enum xbus_battery_enum_t
 {
-    XBUS_BATTERY_CURRENT1,
-    XBUS_BATTERY_CURRENT2
+    XBUS_BATTERY_CURRENT1,    
+    XBUS_BATTERY_CONSUMPTION1,
+    XBUS_BATTERY_CURRENT2,
+    XBUS_BATTERY_CONSUMPTION2
 } xbus_battery_enum_t;
 
 typedef enum xbus_vario_enum_t
@@ -120,7 +122,7 @@ typedef struct xbus_airspeed_t
 
 typedef struct xbus_altitude_t
 {
-    uint8_t identifierx12; // Source device 0x12
+    uint8_t identifier; // Source device 0x12
     uint8_t s_id;          // Secondary ID
     int16_t altitude;      // .1m increments
     int16_t max_altitude;  // .1m increments
@@ -171,7 +173,7 @@ typedef struct xbus_battery_t
     int16_t charge_used_a; // Integrated mAh used, 1mAh (0-32.766Ah)
     uint16_t temp_a;       // Temperature, 0.1C (0-150.0C, // 0x7FFF indicates not populated)
     int16_t current_b;     // Instantaneous current, 0.1A (0-6553.4A)
-    int16_t chargeUsed_b;  // Integrated mAh used, 1mAh (0-65.534Ah)
+    int16_t charge_used_b;  // Integrated mAh used, 1mAh (0-65.534Ah)
     uint16_t temp_b;       // Temperature, 0.1C (0-150.0C,// 0x7FFF indicates not populated)
 } xbus_battery_t;
 

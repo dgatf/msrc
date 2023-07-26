@@ -43,13 +43,13 @@ static void process_usb(int lenght)
             config_t *config = (config_t *)(buffer_rx + 2);
             if (config->version == CONFIG_VERSION)
             {
-            led_cycles = 3;
-            led_cycle_duration = 1000;
-            vTaskResume(led_task_handle);
-            vTaskDelay(3000 / portTICK_PERIOD_MS);
-            led_cycles = 1;
-            led_cycle_duration = 6;
-            vTaskResume(led_task_handle);
+                led_cycles = 3;
+                led_cycle_duration = 1000;
+                vTaskResume(led_task_handle);
+                vTaskDelay(3000 / portTICK_PERIOD_MS);
+                led_cycles = 1;
+                led_cycle_duration = 6;
+                vTaskResume(led_task_handle);
                 config_write(config);
                 if (debug)
                     printf("\nUSB. Updated config");

@@ -209,7 +209,6 @@ static inline void write_byte_program_init(PIO pio, uint sm, uint offset, uint p
 
 static inline void byte_handler_pio()
 {
-    pio_interrupt_clear(i2c_multi->pio, 0);
     uint8_t received = 0;
     bool is_address = false;
     i2c_multi->bytes_count++;
@@ -226,6 +225,7 @@ static inline void byte_handler_pio()
             pio_sm_put_blocking(i2c_multi->pio, i2c_multi->sm_read, (((uint32_t)do_ack_program_instructions[10] + i2c_multi->offset_read) << 16) | do_ack_program_instructions[9]);
             pio_sm_put_blocking(i2c_multi->pio, i2c_multi->sm_read, (((uint32_t)do_ack_program_instructions[1]) << 16) | do_ack_program_instructions[0]);
             pio_sm_put_blocking(i2c_multi->pio, i2c_multi->sm_read, (((uint32_t)do_ack_program_instructions[3]) << 16) | do_ack_program_instructions[2]);
+            pio_interrupt_clear(i2c_multi->pio, 0);
             return;
         }
         if (received & 1)
@@ -287,6 +287,7 @@ static inline void byte_handler_pio()
         pio_sm_put_blocking(i2c_multi->pio, i2c_multi->sm_write, (((uint32_t)wait_ack_program_instructions[1]) << 16) | wait_ack_program_instructions[0]);
         pio_sm_put_blocking(i2c_multi->pio, i2c_multi->sm_write, (((uint32_t)wait_ack_program_instructions[3]) << 16) | wait_ack_program_instructions[2]);
     }
+    pio_interrupt_clear(i2c_multi->pio, 0);
 }
 
 static inline void stop_handler_pio()
