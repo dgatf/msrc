@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "config.h"
+#include "ws2812.h"
 
 extern uint16_t led_cycle_duration;
 extern uint8_t led_cycles;
