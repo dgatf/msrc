@@ -82,24 +82,26 @@ All receivers provide 3.3V at the telemetry port. Connect Vcc at telemetry port 
 
 ## 3. Flash firmware to RP2040
 
-Press BOOT button during startup and paste the binary file [MSRC-RP2040.uf2](binaries/MSRC-RP2040.uf2) to RP2040 folder
+Press BOOT button during startup and paste the binary file [MSRC-RP2040.uf2](https://drive.google.com/file/d/1pzIt4XdcLxiSUfSTfyoh_w5tLTFd9JN2/view?usp=sharing) to RP2040 folder
 
 If you want to build the firmware for the RP2040 yourself:
 
-- Install [RP2040 SDK](https://github.com/raspberrypi/pico-sdk)
-- Clone this repo with *git clone --recurse-submodules https://github.com/dgatf/msrc.git* as this repo contains submodules.
-- _cd board_
-- _mkdir build_
-- _cd build_
-- _cmake .._
-- _make_
-- File to flash: _project/MSRC-RP2040.uf2_
+Install [RP2040 SDK](https://github.com/raspberrypi/pico-sdk)  
+
+<code>git clone --recurse-submodules https://github.com/dgatf/msrc.git  
+cd board  
+mkdir build  
+cd build  
+cmake ..  
+make</code>
+
+File to flash: _project/MSRC-RP2040.uf2_
 
 ## 4. Configuration
 
 ### 4.1. From PC - MSRC gui
 
-Connect RP2040 to USB and update config with msrc_gui. [msrc_gui.AppImage](binaries/msrc_gui.AppImage) for Linux and [msrc_gui.exe](binaries/msrc_gui.exe) for windows. After update reboot RP2040 manually.
+Connect RP2040 to USB and update config with msrc_gui. [msrc_gui.AppImage](https://drive.google.com/file/d/1G5A5ucQUb3tXk_KQKVdSJNhs5huyyZiU/view?usp=sharing) for Linux and [msrc_gui.exe](https://drive.google.com/file/d/1WogFyMToZI1BenxwAIU2i_oVkPFHTB7D/view?usp=sharing) for windows. After update reboot RP2040 manually.
 
 <p align="center"><img src="./images/msrc_gui.png" width="600"><br>
 
