@@ -1,6 +1,6 @@
 # Remark: This is the new version for the RP2040 board #
 
-For previous versions see branch [legacy_arduino](https://github.com/dgatf/msrc/tree/legacy_arduino)
+For previous versions see repository [msrc_arduino](https://github.com/dgatf/msrc_arduino)
 
 - More powerful board for less price: Cortex M0+ 32bits, 133MHz, 2MB flash, 256kB RAM, 3xUARTS, 2xI2C, PIO
 - Same board for all configurations
