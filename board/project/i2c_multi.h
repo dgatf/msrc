@@ -6,6 +6,7 @@
 #include "hardware/pio.h"
 #include "hardware/irq.h"
 #include "i2c_multi.pio.h"
+#include <stdio.h>
 
 typedef enum i2c_multi_status_t
 {
@@ -27,6 +28,8 @@ typedef struct i2c_multi_t
     uint8_t bytes_count;
     uint address[4];
 } i2c_multi_t;
+
+extern uint8_t debug;
 
 void i2c_multi_init(PIO pio, uint pin);
 void i2c_multi_set_write_buffer(uint8_t *buffer);

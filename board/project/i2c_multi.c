@@ -236,6 +236,8 @@ static inline void byte_handler_pio()
         {
             i2c_multi->status = I2C_READ;
         }
+        if (debug)
+            printf("\nI2C: 0x%X", received >> 1);
         is_address = true;
     }
     if (i2c_multi->status == I2C_READ)
@@ -247,7 +249,9 @@ static inline void byte_handler_pio()
         if (receive_handler)
         {
             if (is_address)
+            {
                 receive_handler(received >> 1, true);
+            }
             else
                 receive_handler(received, false);
         }
