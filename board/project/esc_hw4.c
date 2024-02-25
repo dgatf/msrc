@@ -66,10 +66,10 @@ static void process(esc_hw4_parameters_t *parameter, float *current_offset)
         if (throttle < 1024 &&
             pwm < 1024 &&
             rpm < 200000 &&
-            data[11] < 0xF &&
-            data[13] < 0xF &&
-            data[15] < 0xF &&
-            data[17] < 0xF)
+            data[11] <= 0xF &&
+            data[13] <= 0xF &&
+            data[15] <= 0xF &&
+            data[17] <= 0xF)
         {
             uint16_t current_raw = (uint16_t)data[13] << 8 | data[14];
             float voltage = get_voltage((uint16_t)data[11] << 8 | data[12], parameter);
@@ -94,6 +94,15 @@ static void process(esc_hw4_parameters_t *parameter, float *current_offset)
             {
                 uint32_t packet = (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
                 printf("\nEsc HW4 (%u) < Packet: %i Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f Cons: %.0f CellV: %.2f", uxTaskGetStackHighWaterMark(NULL), packet, *parameter->rpm, *parameter->voltage, *parameter->current, *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption, *parameter->cell_voltage);
+            }
+        }
+        else
+        {
+            if (debug)
+            {
+                printf("\nEsc HW4 packet error (%u): ", uxTaskGetStackHighWaterMark(NULL));
+                for (uint i = 0; i < ESC_HW4_PACKET_LENGHT; i++)
+                    printf("0x%X ", data[i]);
             }
         }
     }
