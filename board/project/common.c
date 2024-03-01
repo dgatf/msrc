@@ -32,11 +32,11 @@ float voltage_read(uint8_t adc_num)
     return adc_read() * BOARD_VCC / ADC_RESOLUTION;
 }
 
-float get_altitude(float pressure, float temperature, float P0)
+float get_altitude(float pressure, float temperature, float pressure_initial)
 {
-    if (P0 == 0)
+    if (pressure_initial == 0)
         return 0;
-    return (temperature + 273.15) * (1000 / 6.5) * (1 - pow(pressure / P0, 1 / 5.256));
+    return (temperature + 273.15) * (1 - pow(pressure / pressure_initial, 1 / 5.256)) / 0.0065;
 }
 
 

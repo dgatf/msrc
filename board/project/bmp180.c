@@ -1,25 +1,25 @@
 #include "bmp180.h"
 
-static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibration, float *pressure_offset);
+static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibration);
 static void begin(bmp180_parameters_t *parameter, bmp180_calibration_t *calibration);
 
 void bmp180_task(void *parameters)
 {
     bmp180_parameters_t parameter = *(bmp180_parameters_t *)parameters;
     xTaskNotifyGive(receiver_task_handle);
-    *parameter.temperature = 0;
-    *parameter.pressure = 0;
     *parameter.altitude = 0;
     *parameter.vspeed = 0;
+    *parameter.temperature = 0;
+    *parameter.pressure = 0;
 
     TaskHandle_t task_handle;
-    float pressure_offset = 0;
-    if (parameter.auto_offset)
+
+    /*if (parameter.auto_offset)
     {
         uint pressure_offset_delay = 15000;
         auto_offset_parameters_t pressure_offset_parameters = {pressure_offset_delay, parameter.pressure, &pressure_offset};
         xTaskCreate(auto_offset_task, "bmp180_pressure_offset_task", STACK_AUTO_OFFSET, (void *)&pressure_offset_parameters, 1, &task_handle);
-    }
+    }*/
 
     uint vspeed_interval = 500;
     vspeed_parameters_t parameters_vspeed = {vspeed_interval, parameter.altitude, parameter.vspeed};
@@ -31,18 +31,19 @@ void bmp180_task(void *parameters)
     begin(&parameter, &calibration);
     while (1)
     {
-        read(&parameter, &calibration, &pressure_offset);
+        read(&parameter, &calibration);
         if (debug)
             printf("\nBMP180 (%u) < Temp: %.2f Pressure: %.0f Altitude: %.2f Vspeed: %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.temperature, *parameter.pressure, *parameter.altitude, *parameter.vspeed);
     }
 }
 
-static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibration, float *pressure_offset)
+static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibration)
 {
     uint8_t register_address, register_value;
     uint8_t data[3];
     int32_t X1, X2, X3, B5, T, UT, UP, B6, B3, p;
     uint32_t B4, B7;
+    static float pressure_initial = 0;
 
     data[0] = BMP180_REGISTER_CONTROL;
     data[1] = BMP180_READ_TEMPERATURE;
@@ -90,7 +91,9 @@ static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibrati
     p = p + ((X1 + X2 + 3791) >> 4);
 
     *parameter->pressure = p; // Pa    calcAverage((float)alphaVario_ / 100, pressure_, p);
-    *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, *pressure_offset);
+    if (pressure_initial == 0 && *parameter->pressure > 50000)
+        pressure_initial = *parameter->pressure;
+    *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
 #ifdef SIM_SENSORS
     *parameter->temperature = 12.34;
     *parameter->pressure = 1234.56;

@@ -1,26 +1,27 @@
 #include "ms5611.h"
 
-static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibration, float *pressure_offset);
+static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibration);
 static void begin(ms5611_parameters_t *parameter, ms5611_calibration_t *calibration);
 
 void ms5611_task(void *parameters)
 {
     ms5611_parameters_t parameter = *(ms5611_parameters_t *)parameters;
+    xTaskNotifyGive(receiver_task_handle);
     *parameter.altitude = 0;
     *parameter.vspeed = 0;
     *parameter.temperature = 0;
     *parameter.pressure = 0;
-    xTaskNotifyGive(receiver_task_handle);
-
+    
     TaskHandle_t task_handle;
-    float pressure_offset = 0;
-    if (parameter.auto_offset)
+    
+    /*if (parameter.auto_offset)
     {
         float pressure_offset = 0;
         uint pressure_offset_delay = 15000;
         auto_offset_parameters_t pressure_offset_parameters = {pressure_offset_delay, parameter.pressure, &pressure_offset};
         xTaskCreate(auto_offset_task, "ms5611_pressure_offset_task", STACK_AUTO_OFFSET, (void *)&pressure_offset_parameters, 1, &task_handle);
-    }
+    }*/
+
     uint vspeed_interval = 500;
     vspeed_parameters_t parameters_vspeed = {vspeed_interval, parameter.altitude, parameter.vspeed};
     xTaskCreate(vspeed_task, "vspeed_task", STACK_VSPEED, (void *)&parameters_vspeed, 2, &task_handle);
@@ -31,14 +32,15 @@ void ms5611_task(void *parameters)
     begin(&parameter, &calibration);
     while (1)
     {
-        read(&parameter, &calibration, &pressure_offset);
+        read(&parameter, &calibration);
         if (debug)
             printf("\nMS5611 (%u) < Temp: %.2f Pressure: %.0f Altitude: %0.2f Vspeed: %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.temperature, *parameter.pressure, *parameter.altitude, *parameter.vspeed);
     }
 }
 
-static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibration, float *pressure_offset)
+static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibration)
 {
+    static float pressure_initial = 0;
     /* Read sensor data */
     uint32_t D1, D2;
     uint8_t data[3];
@@ -82,7 +84,9 @@ static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibrati
     int32_t P = (((D1 * SENS) >> 21) - OFF) >> 15;
     *parameter->temperature = (float)TEMP / 100; // °C
     *parameter->pressure = (float)P;             // Pa
-    *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, *pressure_offset);
+    if (pressure_initial == 0 && *parameter->pressure > 50000)
+        pressure_initial = *parameter->pressure;
+    *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
 
 #ifdef SIM_SENSORS
     *parameter->temperature = 12.34;

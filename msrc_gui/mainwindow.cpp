@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbAltitudeFilter->setCurrentIndex(2);
     ui->cbSpeedUnitsGps->addItems({"km/h", "kts"});
     ui->lbQuiescentVoltage->setText("Zero current output voltage, V<sub>IOUT</sub> (V)");
+    ui->cbVarioAutoOffset->setVisible(false);
     for(uint8_t i = 0; i < 127; i++) {
         QString hex;
         hex.setNum(i, 16);

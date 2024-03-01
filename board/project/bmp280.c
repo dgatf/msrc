@@ -1,6 +1,6 @@
 #include "bmp280.h"
 
-static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibration, float *pressure_offset);
+static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibration);
 static void begin(bmp280_parameters_t *parameter, bmp280_calibration_t *calibration);
 
 void bmp280_task(void *parameters)
@@ -13,14 +13,14 @@ void bmp280_task(void *parameters)
     *parameter.pressure = 0;
 
     TaskHandle_t task_handle;
-    float pressure_offset = 0;
-    if (parameter.auto_offset)
+    
+    /*if (parameter.auto_offset)
     {
-        float pressure_offset = 0;
+        float pressure_initial = 0;
         uint pressure_offset_delay = 15000;
-        auto_offset_parameters_t pressure_offset_parameters = {pressure_offset_delay, parameter.pressure, &pressure_offset};
+        auto_offset_parameters_t pressure_offset_parameters = {pressure_offset_delay, parameter.pressure, &pressure_initial};
         xTaskCreate(auto_offset_task, "bmp280_pressure_offset_task", STACK_AUTO_OFFSET, (void *)&pressure_offset_parameters, 1, &task_handle);
-    }
+    }*/
 
     uint vspeed_interval = 500;
     vspeed_parameters_t parameters_vspeed = {vspeed_interval, parameter.altitude, parameter.vspeed};
@@ -32,7 +32,7 @@ void bmp280_task(void *parameters)
     begin(&parameter, &calibration);
     while (1)
     {
-        read(&parameter, &calibration, &pressure_offset);
+        read(&parameter, &calibration);
         if (debug)
         {
             printf("\nBMP280 (%u) < Temp: %.2f Pressure: %.0f Altitude: %0.2f Vspeed: %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.temperature, *parameter.pressure, *parameter.altitude, *parameter.vspeed);
@@ -41,11 +41,12 @@ void bmp280_task(void *parameters)
     }
 }
 
-static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibration, float *pressure_offset)
+static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibration)
 {
     int64_t var1, var2, p;
     uint8_t data[3];
     uint32_t adc_T, adc_P, t_fine, t;
+    static float pressure_initial = 0;
 
     data[0] = BMP280_REGISTER_TEMPDATA;
     i2c_write_blocking(i2c0, parameter->address, data, 1, true);
@@ -81,7 +82,10 @@ static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibrati
         *parameter->pressure = (float)p / 256; // Pa
         // pressure_ = calcAverage((float)alphaVario_ / 100, pressure_, (float)p / 256);
     }
-    *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, *pressure_offset);
+
+    if (pressure_initial == 0 && *parameter->pressure > 50000)
+        pressure_initial = *parameter->pressure;
+    *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
 #ifdef SIM_SENSORS
     *parameter->temperature = 12.34;
     *parameter->pressure = 1234.56;
