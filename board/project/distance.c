@@ -7,13 +7,16 @@ void distance_task(void *parameters)
 {
     distance_parameters_t *parameter = (distance_parameters_t *)parameters;
     *parameter->distance = 0;
-    vTaskDelay(DISTANCE_INIT_DELAY_MS / portTICK_PERIOD_MS);
+    while (*parameter->sat < 4)
+    {
+        vTaskDelay(DISTANCE_INIT_DELAY_MS / portTICK_PERIOD_MS);
+    }
     float latitude_init = *parameter->latitude;
     float longitude_init = *parameter->longitude;
     float altitude_init = *parameter->altitude;
     while (1)
     {
-        if (*parameter->sat)
+        if (*parameter->sat >= 4)
             *parameter->distance = get_distance_to_home(*parameter->latitude, *parameter->longitude, *parameter->altitude, latitude_init, longitude_init, altitude_init);
 #ifdef SIM_SENSORS
         *parameter->distance = 1234.56;

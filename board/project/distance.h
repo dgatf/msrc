@@ -8,7 +8,7 @@
 #include "pico/stdlib.h"
 #include "config.h"
 
-#define DISTANCE_INIT_DELAY_MS 10000
+#define DISTANCE_INIT_DELAY_MS 1000
 #define DISTANCE_INTERVAL_MS 500
 
 typedef struct distance_parameters_t

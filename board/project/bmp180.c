@@ -44,6 +44,7 @@ static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibrati
     int32_t X1, X2, X3, B5, T, UT, UP, B6, B3, p;
     uint32_t B4, B7;
     static float pressure_initial = 0;
+    static uint discard_readings = 5;
 
     data[0] = BMP180_REGISTER_CONTROL;
     data[1] = BMP180_READ_TEMPERATURE;
@@ -91,9 +92,13 @@ static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibrati
     p = p + ((X1 + X2 + 3791) >> 4);
 
     *parameter->pressure = p; // Pa    calcAverage((float)alphaVario_ / 100, pressure_, p);
-    if (pressure_initial == 0 && *parameter->pressure > 50000)
+    if (pressure_initial == 0 && discard_readings == 0)
         pressure_initial = *parameter->pressure;
     *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
+    if (discard_readings > 0)
+        discard_readings--;
+    if (debug)
+        printf("\nBMP180 P0: %.0f", pressure_initial);
 #ifdef SIM_SENSORS
     *parameter->temperature = 12.34;
     *parameter->pressure = 1234.56;

@@ -41,6 +41,7 @@ void ms5611_task(void *parameters)
 static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibration)
 {
     static float pressure_initial = 0;
+    static uint discard_readings = 5;
     /* Read sensor data */
     uint32_t D1, D2;
     uint8_t data[3];
@@ -84,10 +85,13 @@ static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibrati
     int32_t P = (((D1 * SENS) >> 21) - OFF) >> 15;
     *parameter->temperature = (float)TEMP / 100; // °C
     *parameter->pressure = (float)P;             // Pa
-    if (pressure_initial == 0 && *parameter->pressure > 50000)
+    if (pressure_initial == 0 && discard_readings == 0)
         pressure_initial = *parameter->pressure;
     *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
-
+    if (discard_readings > 0)
+        discard_readings--;
+    if (debug)
+        printf("\nMS5611 P0: %.0f", pressure_initial);
 #ifdef SIM_SENSORS
     *parameter->temperature = 12.34;
     *parameter->pressure = 1234.56;

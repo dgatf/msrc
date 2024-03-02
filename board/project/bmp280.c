@@ -47,6 +47,7 @@ static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibrati
     uint8_t data[3];
     uint32_t adc_T, adc_P, t_fine, t;
     static float pressure_initial = 0;
+    static uint discard_readings = 5;
 
     data[0] = BMP280_REGISTER_TEMPDATA;
     i2c_write_blocking(i2c0, parameter->address, data, 1, true);
@@ -83,9 +84,13 @@ static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibrati
         // pressure_ = calcAverage((float)alphaVario_ / 100, pressure_, (float)p / 256);
     }
 
-    if (pressure_initial == 0 && *parameter->pressure > 50000)
+    if (pressure_initial == 0 && discard_readings == 0)
         pressure_initial = *parameter->pressure;
     *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
+    if (discard_readings > 0)
+        discard_readings--;
+    if (debug)
+        printf("\nBMP280 P0: %.0f", pressure_initial);
 #ifdef SIM_SENSORS
     *parameter->temperature = 12.34;
     *parameter->pressure = 1234.56;
