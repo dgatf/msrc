@@ -311,7 +311,30 @@ void MainWindow::setUiFromConfig()
     // GPS
 
     ui->gbGps->setChecked(config.enable_gps);
-    ui->cbGpsBaudrate->currentText() = config.gps_baudrate;
+    switch (config.gps_baudrate)
+    {
+    case 115200:
+        ui->cbGpsBaudrate->setCurrentIndex(0);
+        break;
+    case 57600:
+        ui->cbGpsBaudrate->setCurrentIndex(1);
+        break;
+    case 38400:
+        ui->cbGpsBaudrate->setCurrentIndex(2);
+        break;
+    case 19200:
+        ui->cbGpsBaudrate->setCurrentIndex(3);
+        break;
+    case 14400:
+        ui->cbGpsBaudrate->setCurrentIndex(4);
+        break;
+    case 9600:
+        ui->cbGpsBaudrate->setCurrentIndex(5);
+        break;
+    case 4800:
+        ui->cbGpsBaudrate->setCurrentIndex(6);
+        break;
+    }
 
     // Voltage 1
 

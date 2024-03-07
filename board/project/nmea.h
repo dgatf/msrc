@@ -36,7 +36,7 @@
 #define NMEA_END 12
 #define NMEA_LAT 13
 
-#define NMEA_TIMEOUT_US 20000
+#define NMEA_TIMEOUT_US 5000
 
 typedef struct nmea_parameters_t
 {

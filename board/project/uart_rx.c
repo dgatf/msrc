@@ -9,8 +9,9 @@ static inline void handler_pio();
 uint uart_rx_init(PIO pio, uint pin, uint baudrate, uint irq)
 {
     pio_ = pio;
-    sm_ = pio_claim_unused_sm(pio_, true);
-
+    //sm_ = pio_claim_unused_sm(pio_, true);
+    sm_ = 1;
+    pio_sm_claim(pio, sm_);
     pio_sm_set_consecutive_pindirs(pio_, sm_, pin, 1, false);
     pio_gpio_init(pio_, pin);
     gpio_pull_up(pin);

@@ -10,7 +10,7 @@
 #include "hardware/pio.h"
 #include "uart_rx.h"
 
-#define UART_PIO_BUFFER_SIZE 256
+#define UART_PIO_BUFFER_SIZE 5000
 
 extern TaskHandle_t uart_pio_notify_task_handle;
 extern QueueHandle_t uart_pio_queue_handle;
