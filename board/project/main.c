@@ -17,15 +17,15 @@ int main()
 {
     stdio_init_all();
 
-    sleep_ms(1000);
-
     if (CONFIG_FORZE_WRITE)
     {
         config_forze_write();
     }
     config_t *config = config_read();
+    
     debug = config->debug;
     if (debug)
+        sleep_ms(1000);
         printf("\n\nMSRC init");
 
     tasks_queue_handle = xQueueCreate(64, sizeof(QueueHandle_t));
@@ -38,6 +38,10 @@ int main()
 
     switch (config->rx_protocol)
     {
+    case RX_XBUS:
+        xTaskCreate(xbus_task, "xbus_task", STACK_RX_XBUS, NULL, 3, &receiver_task_handle);
+        xQueueSendToBack(tasks_queue_handle, receiver_task_handle, 0);
+        break;
     case RX_IBUS:
         xTaskCreate(ibus_task, "ibus_task", STACK_RX_IBUS, NULL, 3, &receiver_task_handle);
         uart0_notify_task_handle = receiver_task_handle;
@@ -70,10 +74,6 @@ int main()
         break;
     case RX_HITEC:
         xTaskCreate(hitec_task, "hitec_task", STACK_RX_HITEC, NULL, 3, &receiver_task_handle);
-        xQueueSendToBack(tasks_queue_handle, receiver_task_handle, 0);
-        break;
-    case RX_XBUS:
-        xTaskCreate(xbus_task, "xbus_task", STACK_RX_XBUS, NULL, 3, &receiver_task_handle);
         xQueueSendToBack(tasks_queue_handle, receiver_task_handle, 0);
         break;
     case RX_SRXL:
