@@ -35,7 +35,7 @@ static void process(rx_protocol_t rx_protocol)
 {
 #ifdef SIM_RX
     // printf("\nSim (%u) < ", uxTaskGetStackHighWaterMark(NULL));
-    xQueueReset(uart1_queue_handle);
+    xQueueReset(uart_queue_handle);
     if (rx_protocol == RX_SMARTPORT)
     {
         vTaskResume(led_task_handle);
