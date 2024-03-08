@@ -149,22 +149,25 @@ static uint16_t format(uint8_t data_id, float value)
     }
     if (data_id == FASST_GPS_LATITUDE1 || data_id == FASST_GPS_LONGITUDE1)
     {
-        // FFFF = (deg,deg,S/W,min) -> min *10000 (prec 4)
-        uint16_t lat;
+        // bits 1-4: bits 17-20 from minutes precision 4 (minutes*10000 = 20 bits)
+        // bit 5: S/W bit
+        // bits 9-16: degrees
+        uint16_t lat_lon = 0;
         if (value < 0)
         {
-            lat = 1 << FASST_SOUTH_WEST_BIT;
-            value *= -1;
+            lat_lon = 1 << FASST_SOUTH_WEST_BIT;
+            value *= -1; 
         }
+        
         uint8_t degrees = value / 60;
-        lat |= degrees << 8;
+        lat_lon |= degrees << 8;
         uint32_t minutes = fmod(value, 60) * 10000; // minutes precision 4
-        lat |= minutes >> 16;
-        return __builtin_bswap16(lat);
+        lat_lon |= minutes >> 16;
+        return __builtin_bswap16(lat_lon);
     }
     if (data_id == FASST_GPS_LATITUDE2 || data_id == FASST_GPS_LONGITUDE2)
     {
-        // FFFF = (min) -> min *10000 (prec 4)
+        // bits 1-16 from minutes precision 4 (minutes*10000 = 20 bits)
         if (value < 0)
         {
             value *= -1;
