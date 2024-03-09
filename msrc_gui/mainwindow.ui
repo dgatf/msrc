@@ -940,16 +940,31 @@
            <attribute name="title">
             <string>Debug</string>
            </attribute>
-           <layout class="QGridLayout" name="gridLayout_10">
-            <item row="1" column="0">
-             <widget class="QPushButton" name="btDebug">
-              <property name="text">
-               <string>Enable Debug</string>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QPlainTextEdit" name="ptDebug">
+              <property name="readOnly">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QPlainTextEdit" name="ptDebug"/>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <item>
+               <widget class="QPushButton" name="btDebug">
+                <property name="text">
+                 <string>Enable Debug</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btClearDebug">
+                <property name="text">
+                 <string>Clear Debug</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>

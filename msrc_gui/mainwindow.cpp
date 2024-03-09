@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->btConnect, SIGNAL(released()),  this, SLOT(buttonSerialPort()));
     connect(ui->btDebug, SIGNAL(released()),  this, SLOT(buttonDebug()));
+    connect(ui->btClearDebug, SIGNAL(released()),  this, SLOT(buttonClearDebug()));
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(exitApp()));
     connect(serial, &QSerialPort::readyRead, this, &MainWindow::readSerial);
     connect(ui->btUpdate, SIGNAL(released()), this, SLOT(writeSerialConfig()));
@@ -208,9 +209,14 @@ void MainWindow::buttonDebug()
     }
 }
 
+void MainWindow::buttonClearDebug()
+{
+    ui->ptDebug->clear();
+}
+
 void MainWindow::openSerialPort()
 {
-    QString portName = ui->cbPortList->currentText();
+    QString portName = ui->cbPortList->currentData().toString();
     serial->setPortName(portName);
     serial->setBaudRate(QSerialPort::BaudRate::Baud115200);
     serial->setDataBits(QSerialPort::DataBits::Data8);
@@ -218,7 +224,7 @@ void MainWindow::openSerialPort()
     serial->setStopBits(QSerialPort::StopBits::OneStop);
     serial->setFlowControl(QSerialPort::FlowControl::NoFlowControl);
     if(serial->open(QIODevice::ReadWrite)) {
-        statusBar()->showMessage("Connected " + portName);
+        statusBar()->showMessage("Connected " + ui->cbPortList->currentText());
         isConnected = true;
         requestSerialConfig();
         serial->setDataTerminalReady(true);
@@ -616,7 +622,7 @@ QStringList MainWindow::fillPortsInfo()
     QStringList list;
     for(const QSerialPortInfo& info : infos) {
         list.append(info.portName());
-        ui->cbPortList->addItem(info.portName());
+        ui->cbPortList->addItem(info.portName() + " (" + info.manufacturer() + " " + info.description() + ")", info.portName());
     }
     return list;
 }

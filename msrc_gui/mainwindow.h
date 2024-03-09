@@ -146,6 +146,7 @@ private:
 private slots:
     void buttonSerialPort();
     void buttonDebug();
+    void buttonClearDebug();
     void readSerial();
     void readSerialConfig();
     QStringList fillPortsInfo();
