@@ -45,9 +45,7 @@ static void process()
             if (data[24] == 0x04 || data[24] == 0x14 || data[24] == 0x24 || data[24] == 0x34)
             {
                 packet_id = data[24] >> 4;
-                add_alarm_in_us(SBUS_SLOT_0_DELAY /*- uart0_get_time_elapsed()*/, send_slot_callback, NULL, true);
-                // vTaskResume(led_task_handle);
-                //  printf("\nTE: %u", uart0_get_time_elapsed());
+                add_alarm_in_us(SBUS_SLOT_0_DELAY - uart0_get_time_elapsed(), send_slot_callback, NULL, true);
                 if (debug)
                     printf("\nSbus (%u) > ", uxTaskGetStackHighWaterMark(NULL));
             }
@@ -57,29 +55,30 @@ static void process()
 
 static int64_t send_slot_callback(alarm_id_t id, void *parameters)
 {
+    static uint timestamp;
     static uint8_t index = 0;
     uint8_t slot = index + packet_id * 8;
+    if (debug == 2)
+    {
+        if (slot == 0 || slot == 8 || slot == 16 || slot == 24)
+            printf("\nT:%u\n", uart0_get_time_elapsed());
+        else
+            printf("\nT:%u\n", time_us_32() - timestamp);
+    }
+    timestamp = time_us_32();
     send_slot(slot);
     if (index < 7)
     {
         index++;
-        return SBUS_INTER_SLOT_DELAY;
+        return SBUS_INTER_SLOT_DELAY - (time_us_32() - timestamp);
     }
     index = 0;
+    vTaskResume(led_task_handle);
     return 0;
 }
 
 static inline void send_slot(uint8_t slot)
 {
-    if (debug == 2)
-    {
-        static uint32_t timestamp;
-        if (slot == 0 || slot == 8 || slot == 16 || slot == 24)
-            printf(" %u", uart0_get_time_elapsed());
-        else
-            printf(" %u", time_us_32() - timestamp);
-        timestamp = time_us_32();
-    }
     if (debug)
         printf(" (%u)", slot);
     uint16_t value = 0;
