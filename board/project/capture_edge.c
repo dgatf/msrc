@@ -11,9 +11,7 @@ static inline uint bit_value(uint pos);
 uint capture_edge_init(PIO pio, uint pin_base, float clk_div, uint irq)
 {
     pio_ = pio;
-    //sm_ = pio_claim_unused_sm(pio_, true);
-    sm_ = 0;
-    pio_sm_claim(pio, sm_);
+    sm_ = pio_claim_unused_sm(pio_, true);
     uint offset = pio_add_program(pio_, &capture_edge_program);
     pio_sm_set_consecutive_pindirs(pio_, sm_, pin_base, CAPTURE_EDGE_PIN_COUNT, false);
     pio_sm_config c = capture_edge_program_get_default_config(offset);

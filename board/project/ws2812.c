@@ -1,15 +1,15 @@
 #include "ws2812.h"
 
+static uint sm_;
+
 static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b);
 
 void ws2812_init(PIO pio, uint pin, float freq)
 {
     uint offset = pio_add_program(pio, &ws2812_program);
-    //uint sm = pio_claim_unused_sm(pio, true);
-    uint sm = 2;
-    pio_sm_claim(pio, sm);
+    sm_ = pio_claim_unused_sm(pio, true);
     pio_gpio_init(pio, pin);
-    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+    pio_sm_set_consecutive_pindirs(pio, sm_, pin, 1, true);
     pio_sm_config c = ws2812_program_get_default_config(offset);
     sm_config_set_sideset_pins(&c, pin);
     sm_config_set_out_shift(&c, false, true, 24);
@@ -19,13 +19,13 @@ void ws2812_init(PIO pio, uint pin, float freq)
     float div = clock_get_hz(clk_sys) / (freq * cycles_per_bit);
     sm_config_set_clkdiv(&c, div);
 
-    pio_sm_init(pio, sm, offset, &c);
-    pio_sm_set_enabled(pio, sm, true);
+    pio_sm_init(pio, sm_, offset, &c);
+    pio_sm_set_enabled(pio, sm_, true);
 }
 
 void put_pixel_rgb(uint8_t r, uint8_t g, uint8_t b)
 {
-    pio_sm_put_blocking(pio0, 0, urgb_u32(r, g, b) << 8u);
+    pio_sm_put_blocking(pio0, sm_, urgb_u32(r, g, b) << 8u);
 }
 
 static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b)
