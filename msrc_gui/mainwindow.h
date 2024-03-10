@@ -134,6 +134,7 @@ private:
     QSerialPort *serial = nullptr;
     QByteArray data;
     bool isConnected = false;
+    QStringList portsList;
     config_t config;
     bool isDebug = false;
 
@@ -150,6 +151,7 @@ private slots:
     void readSerial();
     void readSerialConfig();
     QStringList fillPortsInfo();
+    void checkPorts();
     void writeSerialConfig();
     void openConfig();
     void saveConfig();

@@ -50,9 +50,13 @@ MainWindow::MainWindow(QWidget *parent)
     // ui->lbCircuit->parentWidget()->height());
     generateCircuit(ui->lbCircuit);
 
-    fillPortsInfo();
+    portsList = fillPortsInfo();
 
     statusBar()->showMessage("Not connected");
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &MainWindow::checkPorts);
+    timer->start(1000);
 }
 
 MainWindow::~MainWindow()
@@ -232,6 +236,7 @@ void MainWindow::openSerialPort()
         ui->btConnect->setText("Disconnect");
         ui->actionUpdateConfig->setEnabled(true);
         ui->saConfig->setEnabled(true);
+        ui->cbPortList->setDisabled(true);
     } else {
         statusBar()->showMessage("Not connected: " + serial->errorString());
         isConnected = false;
@@ -251,6 +256,7 @@ void MainWindow::closeSerialPort()
     ui->btConnect->setText("Connect");
     ui->actionUpdateConfig->setEnabled(false);
     ui->saConfig->setEnabled(false);
+    ui->cbPortList->setDisabled(false);
 }
 
 void MainWindow::readSerial()
@@ -620,11 +626,34 @@ QStringList MainWindow::fillPortsInfo()
 {
     const QList<QSerialPortInfo> infos = QSerialPortInfo::availablePorts();
     QStringList list;
+    ui->cbPortList->clear();
     for(const QSerialPortInfo& info : infos) {
-        list.append(info.portName());
+        list.append(info.portName() + " (" + info.manufacturer() + " " + info.description() + ")");
         ui->cbPortList->addItem(info.portName() + " (" + info.manufacturer() + " " + info.description() + ")", info.portName());
     }
     return list;
+}
+
+void MainWindow::checkPorts()
+{
+    const QList<QSerialPortInfo> infos = QSerialPortInfo::availablePorts();
+    QStringList list;
+    for(const QSerialPortInfo& info : infos) {
+        list.append(info.portName() + " (" + info.manufacturer() + " " + info.description() + ")");
+    }
+
+    std::sort(portsList.begin(), portsList.end());
+    std::sort(list.begin(), list.end());
+
+    if (portsList != list) {
+        QString currentPort = ui->cbPortList->currentText();
+        if (isConnected && !list.contains(currentPort))
+            closeSerialPort();
+        portsList = fillPortsInfo();
+        ui->cbPortList->setCurrentIndex(ui->cbPortList->findText(currentPort));
+        if (ui->cbPortList->currentIndex() == -1 && ui->cbPortList->count())
+            ui->cbPortList->setCurrentIndex(0);
+    }
 }
 
 void MainWindow::exitApp()
