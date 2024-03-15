@@ -223,6 +223,11 @@ If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected 
 <p align="center"><img src="./images/hitec_9.jpg" width="300"><br>
   <i>Hitec Optima 9</i><br><br></p>
 
+### Spektrum SRXL
+
+<p align="center"><img src="./images/spektrum_srxl.jpg" width="300"><br>
+  <i>Spektrum SRXL</i><br><br></p>
+
 ## 6. Sensors
 
 ### 6.1. ESC
