@@ -204,7 +204,9 @@ Connect to SBUS2 port
 
 ### Multiplex M-Link
 
-<p align="center"><img src="./images/mlink.png" width="300"><br>
+Connect to *Sensor* port
+
+<p align="center"><img src="./images/mlink.jpg" width="300"><br>
   <i>M-Link port</i><br><br></p>
 
 ### Jeti Ex Bus
