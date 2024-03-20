@@ -23,7 +23,7 @@ Compatible RX protocols:
 - Spektrum SRXL V5
 - Flysky IBUS
 - Futaba SBUS2
-- Multiplex Sensor Bus
+- Multiplex Sensor Bus (MSB)
 - Jeti Ex Bus
 
 Compatible ESCs: Hobbywing V3/V4/V5, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal.
@@ -210,12 +210,12 @@ Select protocol: FASSTest 18CH or T-FHSS
 
 Connect to SBUS2 port
 
-### Multiplex M-Link
+### Multiplex Sensor Bus (MSB)
 
 Connect to *Sensor* port
 
-<p align="center"><img src="./images/mlink.jpg" width="300"><br>
-  <i>M-Link port</i><br><br></p>
+<p align="center"><img src="./images/multiplex_sensorbus.jpg" width="300"><br>
+  <i>Sensor bus port</i><br><br></p>
 
 ### Jeti Ex Bus
 
@@ -232,6 +232,8 @@ If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected 
   <i>Hitec Optima 9</i><br><br></p>
 
 ### Spektrum SRXL
+
+Spektrum SRXL is bidirectional with telemetry, other SRXL are unidirectional. See [SRXL](https://wiki.beastx.com/index.php?title=SRXL_-_Serial_Receiver_Link_protocol/en).  
 
 <p align="center"><img src="./images/spektrum_srxl.jpg" width="300"><br>
   <i>Spektrum SRXL</i><br><br></p>
