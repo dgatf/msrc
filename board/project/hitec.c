@@ -2,9 +2,6 @@
 
 #define I2C_INTR_MASK_RD_REQ 0x00000020
 
-static volatile uint32_t *const I2C1_INTR_MASK = (volatile uint32_t *const)(I2C1_BASE + 0x30);
-static volatile uint32_t *const I2C1_CLR_RD_REQ = (volatile uint32_t *const)(I2C1_BASE + 0x50);
-
 static sensor_hitec_t *sensor;
 
 static void i2c_handler();
@@ -23,15 +20,16 @@ void hitec_task(void *parameters)
     led_cycle_duration = 6;
     led_cycles = 1;
 
-    i2c_init(i2c1, 100 * 1000);
+    i2c_init(i2c1, 100000L);
     i2c_set_slave_mode(i2c1, true, HITEC_I2C_ADDRESS);
     gpio_set_function(I2C1_SDA_GPIO, GPIO_FUNC_I2C);
     gpio_set_function(I2C1_SCL_GPIO, GPIO_FUNC_I2C);
     gpio_pull_up(I2C1_SDA_GPIO);
     gpio_pull_up(I2C1_SCL_GPIO);
-    *I2C1_INTR_MASK = I2C_INTR_MASK_RD_REQ;
+    i2c1->hw->intr_mask = I2C_INTR_MASK_RD_REQ;
     irq_set_exclusive_handler(I2C1_IRQ, i2c_handler);
     irq_set_enabled(I2C1_IRQ, true);
+
     set_config();
     if (debug)
         printf("\nHitec init");
@@ -42,7 +40,7 @@ void hitec_task(void *parameters)
 
 static void i2c_handler()
 {
-    *I2C1_CLR_RD_REQ;
+    i2c1->hw->clr_rd_req;
     if (uxQueueMessagesWaiting(tasks_queue_handle) > 1)
     {
         static uint8_t frame = 0;
@@ -245,7 +243,8 @@ static void i2c_handler()
             break;
         }
 
-        i2c_write_raw_blocking(i2c1, buffer, 7);
+        for (uint8_t i = 0; i < 7; i++)
+            i2c_write_byte_raw(i2c1, buffer[i]);
 
         // blink led
         vTaskResume(led_task_handle);
