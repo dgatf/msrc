@@ -1,13 +1,15 @@
 #include "esc_hw4.h"
 
-static void process(esc_hw4_parameters_t *parameter, float *current_offset);
+static void process(esc_hw4_parameters_t *parameter);
 float get_voltage(uint16_t voltage_raw, esc_hw4_parameters_t *parameter);
 float get_temperature(uint16_t temperature_raw);
-float get_current(uint16_t current_raw, float current_offset, esc_hw4_parameters_t *parameter);
+float get_current(esc_hw4_parameters_t *parameter);
 
 void esc_hw4_task(void *parameters)
 {
     esc_hw4_parameters_t parameter = *(esc_hw4_parameters_t *)parameters;
+    *parameter.current_offset = -1;
+    *parameter.current_raw = 0;
     *parameter.rpm = 0;
     *parameter.voltage = 0;
     *parameter.current = 0;
@@ -34,8 +36,8 @@ void esc_hw4_task(void *parameters)
 
     float current_offset = 0;
     uint current_delay = 15000;
-    auto_offset_parameters_t current_offset_parameters = {current_delay, parameter.current, &current_offset};
-    xTaskCreate(auto_offset_task, "esc_hw4_current_offset_task", STACK_AUTO_OFFSET, (void *)&current_offset_parameters, 1, &task_handle);
+    auto_offset_parameters_t current_offset_parameters = {current_delay, parameter.current_raw, parameter.current_offset};
+    xTaskCreate(auto_offset_task, "esc_hw4_current_offset_task", STACK_AUTO_OFFSET, &current_offset_parameters, 1, &task_handle);
     xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
     //uart_pio_begin(19200, 5, ESC_HW4_TIMEOUT_US, pio0, PIO0_IRQ_1);
@@ -44,11 +46,11 @@ void esc_hw4_task(void *parameters)
     while (1)
     {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
-        process(&parameter, &current_offset);
+        process(&parameter);
     }
 }
 
-static void process(esc_hw4_parameters_t *parameter, float *current_offset)
+static void process(esc_hw4_parameters_t *parameter)
 {
     uint16_t pwm, throttle;
     static uint32_t timestamp = 0;
@@ -71,20 +73,23 @@ static void process(esc_hw4_parameters_t *parameter, float *current_offset)
             data[15] <= 0xF &&
             data[17] <= 0xF)
         {
-            uint16_t current_raw = (uint16_t)data[13] << 8 | data[14];
+            *parameter->current_raw = (uint16_t)data[13] << 8 | data[14];
             float voltage = get_voltage((uint16_t)data[11] << 8 | data[12], parameter);
             float current = 0;
-            if (throttle > parameter->current_thresold / 100.0 * 1024)
-                current = get_current(current_raw, *current_offset, parameter);
-            if (current > parameter->current_max)
-                current = 0;
+            if (throttle > parameter->current_thresold / 100.0 * 1024 && *parameter->current_offset != -1)
+            {
+                current = get_current(parameter);
+                if (current > parameter->current_max)
+                    current = parameter->current_max;
+            }
             float temperature_fet = get_temperature((uint16_t)data[15] << 8 | data[16]);
             float temperature_bec = get_temperature((uint16_t)data[17] << 8 | data[18]);
             rpm *= parameter->rpm_multiplier;
             if (parameter->pwm_out)
                 xTaskNotifyGive(pwm_out_task_handle);
             *parameter->rpm = get_average(parameter->alpha_rpm, *parameter->rpm, rpm);
-            *parameter->consumption += get_consumption(*parameter->current, parameter->current_max, &timestamp);
+            if (*parameter->current_offset != -1)
+                *parameter->consumption += get_consumption(*parameter->current, parameter->current_max, &timestamp);
             *parameter->voltage = get_average(parameter->alpha_voltage, *parameter->voltage, voltage);
             *parameter->current = get_average(parameter->alpha_current, *parameter->current, current);
             *parameter->temperature_fet = get_average(parameter->alpha_temperature, *parameter->temperature_fet, temperature_fet);
@@ -93,7 +98,7 @@ static void process(esc_hw4_parameters_t *parameter, float *current_offset)
             if (debug)
             {
                 uint32_t packet = (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
-                printf("\nEsc HW4 (%u) < Packet: %i Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f Cons: %.0f CellV: %.2f", uxTaskGetStackHighWaterMark(NULL), packet, *parameter->rpm, *parameter->voltage, *parameter->current, *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption, *parameter->cell_voltage);
+                printf("\nEsc HW4 (%u) < Packet: %i Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f Cons: %.0f CellV: %.2f CRaw %i CRawOffset: %i", uxTaskGetStackHighWaterMark(NULL), packet, *parameter->rpm, *parameter->voltage, *parameter->current, *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption, *parameter->cell_voltage, *parameter->current_raw, *parameter->current_offset);
             }
         }
         else
@@ -125,9 +130,9 @@ float get_temperature(uint16_t temperature_raw)
     return temperature;
 }
 
-float get_current(uint16_t current_raw, float current_offset, esc_hw4_parameters_t *parameter)
+float get_current(esc_hw4_parameters_t *parameter)
 {
-    float current = current_raw * ESC_HW4_V_REF / (parameter->ampgain * ESC_HW4_DIFFAMP_SHUNT * ESC_HW4_ADC_RES) - current_offset;
+    float current = (*parameter->current_raw - *parameter->current_offset) * ESC_HW4_V_REF / (parameter->ampgain * ESC_HW4_DIFFAMP_SHUNT * ESC_HW4_ADC_RES);
     if (current < 0)
         return 0;
     return current;

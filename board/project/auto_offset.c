@@ -7,7 +7,7 @@ void auto_offset_task(void *parameters)
     *parameter->offset = *parameter->value;
     if (debug)
     {
-        printf("\nAuto offset (%u): %.3f", uxTaskGetStackHighWaterMark(NULL), *parameter->offset);
+        printf("\nAuto offset (%u): Raw offset %i", uxTaskGetStackHighWaterMark(NULL), *parameter->offset);
     }
     vTaskDelete(NULL);
 }

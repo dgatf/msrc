@@ -56,15 +56,12 @@ typedef struct esc_hw4_parameters_t
     bool pwm_out;
     float alpha_rpm, alpha_voltage, alpha_current, alpha_temperature;
     float divisor, ampgain, current_thresold, current_max;
+    int *current_offset;
+    uint *current_raw;
     float *rpm, *voltage, *current, *temperature_fet, *temperature_bec, *cell_voltage, *consumption;
     uint8_t *cell_count;
 } esc_hw4_parameters_t;
 
-typedef struct esc_hw4_current_offset_parameters_t
-{
-    float *current_offset;
-    float *current;
-} esc_hw4_current_offset_parameters_t;
 
 extern TaskHandle_t pwm_out_task_handle, receiver_task_handle;
 extern QueueHandle_t tasks_queue_handle;

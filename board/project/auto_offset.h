@@ -10,8 +10,8 @@
 typedef struct auto_offset_parameters_t
 {
     uint delay;
-    float *value;
-    float *offset;
+    int *value;
+    uint *offset;
     
 } auto_offset_parameters_t;
 
