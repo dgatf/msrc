@@ -16,8 +16,7 @@ typedef struct current_parameters_t
     uint8_t adc_num;
     float alpha, multiplier, offset;
     bool auto_offset;
-    float *current, *consumption;
-
+    float *current, *consumption, *voltage;
 } current_parameters_t;
 
 extern TaskHandle_t receiver_task_handle;

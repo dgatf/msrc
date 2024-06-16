@@ -77,7 +77,7 @@ void config_forze_write()
     config.esc_hw4_current_thresold = ESC_HW4_CURRENT_THRESHOLD;
     config.esc_hw4_current_max = ESC_HW4_CURRENT_MAX;
     config.esc_hw4_divisor = ESC_HW4_DIVISOR;
-    config.esc_hw4_ampgain = ESC_HW4_AMPGAIN;
+    config.esc_hw4_current_multiplier = ESC_HW4_CURRENT_MULTIPLIER;
     config.esc_hw4_current_max = ESC_HW4_CURRENT_MAX;
     config.ibus_alternative_coordinates = IBUS_GPS_ALTERNATIVE_COORDINATES;
     config.debug = MSRC_DEBUG;

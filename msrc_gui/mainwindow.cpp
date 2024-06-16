@@ -451,7 +451,7 @@ void MainWindow::setUiFromConfig()
     //config.esc_hw4_init_delay_duration = 10000;
     ui->sbCurrentThresold->setValue(config.esc_hw4_current_thresold);
     ui->sbVoltageDivisor->setValue(config.esc_hw4_divisor);
-    ui->sbCurrentMultiplier->setValue(config.esc_hw4_ampgain);
+    ui->sbCurrentMultiplier->setValue(config.esc_hw4_current_multiplier);
     ui->sbCurrentMax->setValue(config.esc_hw4_current_max);
 }
 
@@ -593,7 +593,7 @@ void MainWindow::getConfigFromUi()
     //config.esc_hw4_init_delay_duration = 10000;
     config.esc_hw4_current_thresold = ui->sbCurrentThresold->value();
     config.esc_hw4_divisor = ui->sbVoltageDivisor->value();
-    config.esc_hw4_ampgain = ui->sbCurrentMultiplier->value();
+    config.esc_hw4_current_multiplier = ui->sbCurrentMultiplier->value();
     config.esc_hw4_current_max = ui->sbCurrentMax->value();
 
     // Debug

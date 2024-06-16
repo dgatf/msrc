@@ -13,14 +13,6 @@ void ms5611_task(void *parameters)
     *parameter.pressure = 0;
     
     TaskHandle_t task_handle;
-    
-    /*if (parameter.auto_offset)
-    {
-        float pressure_offset = 0;
-        uint pressure_offset_delay = 15000;
-        auto_offset_parameters_t pressure_offset_parameters = {pressure_offset_delay, parameter.pressure, &pressure_offset};
-        xTaskCreate(auto_offset_task, "ms5611_pressure_offset_task", STACK_AUTO_OFFSET, (void *)&pressure_offset_parameters, 1, &task_handle);
-    }*/
 
     uint vspeed_interval = 500;
     vspeed_parameters_t parameters_vspeed = {vspeed_interval, parameter.altitude, parameter.vspeed};

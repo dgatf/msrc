@@ -228,7 +228,7 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask)
     if (config->esc_protocol == ESC_HW4)
     {
         esc_hw4_parameters_t parameter = {config->rpm_multiplier, config->enable_pwm_out,
-                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature, config->esc_hw4_divisor, config->esc_hw4_ampgain, config->esc_hw4_current_thresold, config->esc_hw4_current_max,
+                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature, config->esc_hw4_divisor, config->esc_hw4_current_multiplier, config->esc_hw4_current_thresold, config->esc_hw4_current_max,
                                           malloc(sizeof(int)), malloc(sizeof(uint)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw4_task, "esc_hw4_task", STACK_ESC_HW4, (void *)&parameter, 2, &task_handle);
         uart1_notify_task_handle = task_handle;
@@ -450,7 +450,7 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask)
     }
     if (config->enable_analog_current)
     {
-        current_parameters_t parameter = {1, config->alpha_current, config->analog_current_multiplier, config->analog_current_offset, config->analog_current_autoffset, malloc(sizeof(float)), malloc(sizeof(float))};
+        current_parameters_t parameter = {1, config->alpha_current, config->analog_current_multiplier, config->analog_current_offset, config->analog_current_autoffset, malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(current_task, "current_task", STACK_CURRENT, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_ibus_t));

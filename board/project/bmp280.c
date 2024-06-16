@@ -14,14 +14,6 @@ void bmp280_task(void *parameters)
 
     TaskHandle_t task_handle;
     
-    /*if (parameter.auto_offset)
-    {
-        float pressure_initial = 0;
-        uint pressure_offset_delay = 15000;
-        auto_offset_parameters_t pressure_offset_parameters = {pressure_offset_delay, parameter.pressure, &pressure_initial};
-        xTaskCreate(auto_offset_task, "bmp280_pressure_offset_task", STACK_AUTO_OFFSET, (void *)&pressure_offset_parameters, 1, &task_handle);
-    }*/
-
     uint vspeed_interval = 500;
     vspeed_parameters_t parameters_vspeed = {vspeed_interval, parameter.altitude, parameter.vspeed};
     xTaskCreate(vspeed_task, "vspeed_task", STACK_VSPEED, (void *)&parameters_vspeed, 2, &task_handle);

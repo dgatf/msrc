@@ -36,7 +36,7 @@ void esc_hw4_task(void *parameters)
 
     float current_offset = 0;
     uint current_delay = 15000;
-    auto_offset_parameters_t current_offset_parameters = {current_delay, parameter.current_raw, parameter.current_offset};
+    auto_offset_parameters_t current_offset_parameters = {current_delay, (float *)parameter.current_raw, (float *)parameter.current_offset};
     xTaskCreate(auto_offset_task, "esc_hw4_current_offset_task", STACK_AUTO_OFFSET, &current_offset_parameters, 1, &task_handle);
     xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
@@ -98,7 +98,7 @@ static void process(esc_hw4_parameters_t *parameter)
             if (debug)
             {
                 uint32_t packet = (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
-                printf("\nEsc HW4 (%u) < Packet: %i Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f Cons: %.0f CellV: %.2f CRaw %i CRawOffset: %i", uxTaskGetStackHighWaterMark(NULL), packet, *parameter->rpm, *parameter->voltage, *parameter->current, *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption, *parameter->cell_voltage, *parameter->current_raw, *parameter->current_offset);
+                printf("\nEsc HW4 (%u) < Packet: %i Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f Cons: %.0f CellV: %.2f CRaw: %i CRawOffset: %i CurrMult: %.2f", uxTaskGetStackHighWaterMark(NULL), packet, *parameter->rpm, *parameter->voltage, *parameter->current, *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption, *parameter->cell_voltage, *parameter->current_raw, *parameter->current_offset, parameter->current_multiplier);
             }
         }
         else
@@ -132,7 +132,8 @@ float get_temperature(uint16_t temperature_raw)
 
 float get_current(esc_hw4_parameters_t *parameter)
 {
-    float current = (*parameter->current_raw - *parameter->current_offset) * ESC_HW4_V_REF / (parameter->ampgain * ESC_HW4_DIFFAMP_SHUNT * ESC_HW4_ADC_RES);
+    //float current = (*parameter->current_raw - *parameter->current_offset) * ESC_HW4_V_REF / (parameter->ampgain * ESC_HW4_DIFFAMP_SHUNT * ESC_HW4_ADC_RES);
+    float current = (*parameter->current_raw - *parameter->current_offset) * ESC_HW4_V_REF / ESC_HW4_ADC_RES * parameter->current_multiplier;
     if (current < 0)
         return 0;
     return current;

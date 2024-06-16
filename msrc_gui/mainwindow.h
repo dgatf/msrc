@@ -109,7 +109,7 @@ typedef struct config_t // 122 bytes
     uint8_t esc_hw4_current_thresold;
     uint16_t esc_hw4_current_max;
     float esc_hw4_divisor;
-    float esc_hw4_ampgain;
+    float esc_hw4_current_multiplier;
     bool ibus_alternative_coordinates;
     uint8_t debug;
     uint32_t spare1;
