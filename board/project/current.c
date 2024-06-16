@@ -14,20 +14,22 @@ void current_task(void *parameters)
 
     if (parameter.auto_offset)
     {
-        auto_offset_parameters_t parameter_auto_offset = {10000, parameter.voltage, &parameter.offset};
+        parameter.offset = -1;
+        auto_offset_parameters_t parameter_auto_offset = {5000, parameter.voltage, &parameter.offset};
         TaskHandle_t task_handle;
-        xTaskCreate(auto_offset_task, "analog_current_offset_task", STACK_AUTO_OFFSET, &parameter_auto_offset, 2, &task_handle);
+        xTaskCreate(auto_offset_task, "analog_current_auto_offset_task", STACK_AUTO_OFFSET, &parameter_auto_offset, 2, &task_handle);
     }
 
     while (1)
     {
         *parameter.voltage = voltage_read(parameter.adc_num);
-        *parameter.current = get_average(parameter.alpha, *parameter.current, (*parameter.voltage - parameter.offset) * parameter.multiplier);
+        if (parameter.offset != -1)
+            *parameter.current = get_average(parameter.alpha, *parameter.current, (*parameter.voltage - parameter.offset) * parameter.multiplier);
 #ifdef SIM_SENSORS
         *parameter.current = 12.34;
         //*parameter.consumption = 120.34;
 #endif
-        if (time_us_32() > 5000000)
+        if (time_us_32() > 6000000)
         {
             *parameter.consumption += get_consumption(*parameter.current, 0, &timestamp);
         }
