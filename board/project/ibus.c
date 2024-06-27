@@ -456,6 +456,7 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask)
         new_sensor = malloc(sizeof(sensor_ibus_t));
         *new_sensor = (sensor_ibus_t){AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, parameter.current};
         add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
         *new_sensor = (sensor_ibus_t){AFHDS2A_ID_FUEL, IBUS_TYPE_U16, parameter.consumption};
         add_sensor(new_sensor, sensor, sensormask);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
