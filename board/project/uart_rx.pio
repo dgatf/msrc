@@ -7,16 +7,17 @@
  */
 
 .define PUBLIC UART_RX_IRQ_NUM 0  // use 0 to 3
+.define PUBLIC UART_RX_CYCLES_PER_BIT 16  // we want here resolution to reduce the error when sampling. more cycles less error
 
-.program uart_rx  // 1 bit every 8 cycles
+.program uart_rx  // 1 bit every 16 cycles
 start:
     wait 0 pin 0
-    set x 7 [10]
+    set x 7 [16+16/2-2]
 bit_loop:
     in pins 1
-    jmp x-- bit_loop [6]
+    jmp x-- bit_loop [16-2]
     jmp pin good_stop
-    wait 1 pin 0
+    wait 1 pin 0 [4]
     jmp start
 good_stop:
     push

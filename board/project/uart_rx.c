@@ -4,7 +4,7 @@ static uint sm_, offset_;
 static PIO pio_;
 static void (*handler_)(uint8_t data) = NULL;
 
-static inline void handler_pio();
+static inline void handler_pio(void);
 
 uint uart_rx_init(PIO pio, uint pin, uint baudrate, uint irq)
 {
@@ -20,7 +20,7 @@ uint uart_rx_init(PIO pio, uint pin, uint baudrate, uint irq)
     sm_config_set_jmp_pin(&c, pin);
     sm_config_set_in_shift(&c, true, false, 32);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
-    float div = (float)clock_get_hz(clk_sys) / (8 * baudrate);
+    float div = (float)clock_get_hz(clk_sys) / (UART_RX_CYCLES_PER_BIT * baudrate);
     sm_config_set_clkdiv(&c, div);
 
     if (irq == PIO0_IRQ_0 || irq == PIO1_IRQ_0)
@@ -42,19 +42,22 @@ void uart_rx_set_handler(uart_rx_handler_t handler)
     handler_ = handler;
 }
 
-void uart_rx_remove()
+void uart_rx_remove(void)
 {
     uart_rx_set_handler(NULL);
     pio_remove_program(pio_, &uart_rx_program, offset_);
     pio_sm_unclaim(pio_, sm_);
 }
 
-static inline void handler_pio()
+static inline void handler_pio(void)
 {
     pio_interrupt_clear(pio_, UART_RX_IRQ_NUM);
     if (handler_)
     {
-        uint data = pio_sm_get_blocking(pio_, sm_);
-        handler_(data >> 24);
+        while (pio_sm_get_rx_fifo_level(pio_, sm_))
+        {
+            uint data = pio_sm_get_blocking(pio_, sm_);
+            handler_(data >> 24);
+        }
     }
 }
