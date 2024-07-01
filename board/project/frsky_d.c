@@ -265,6 +265,66 @@ static void set_config()
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
+    if (config->esc_protocol == ESC_VBAR)
+    {
+        esc_vbar_parameters_t parameter = {config->rpm_multiplier,
+                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature,
+                                          malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        
+        parameter_sensor.data_id = FRSKY_D_RPM_ID;
+        parameter_sensor.value = parameter.rpm;
+        parameter_sensor.rate = config->refresh_rate_rpm;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
+        parameter_sensor.value = parameter.voltage;
+        parameter_sensor.rate = config->refresh_rate_voltage;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
+        parameter_sensor.value = parameter.voltage;
+        parameter_sensor.rate = config->refresh_rate_voltage;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
+        parameter_sensor.value = parameter.current;
+        parameter_sensor.rate = config->refresh_rate_current;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
+        parameter_sensor.value = parameter.temperature_fet;
+        parameter_sensor.rate = config->refresh_rate_temperature;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = FRSKY_D_TEMP2_ID;
+        parameter_sensor.value = parameter.temperature_bec;
+        parameter_sensor.rate = config->refresh_rate_temperature;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor_cell.voltage = parameter.cell_voltage;
+        parameter_sensor_cell.count = parameter.cell_count;
+        parameter_sensor_cell.rate = config->refresh_rate_voltage;
+        xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = FRSKY_D_FUEL_ID;
+        parameter_sensor.value = parameter.consumption;
+        parameter_sensor.rate = config->refresh_rate_consumption;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+
     if (config->esc_protocol == ESC_CASTLE)
     {
         esc_castle_parameters_t parameter = {config->rpm_multiplier,

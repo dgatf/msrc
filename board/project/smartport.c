@@ -601,6 +601,68 @@ static void set_config(smartport_parameters_t *parameter)
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
+    if (config->esc_protocol == ESC_VBAR)
+    {
+        esc_vbar_parameters_t parameter = {config->rpm_multiplier,
+                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature,
+                                          malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        smartport_sensor_parameters_t parameter_sensor;
+        smartport_sensor_double_parameters_t parameter_sensor_double;
+        smartport_sensor_cell_parameters_t parameter_sensor_cell;
+        parameter_sensor_double.data_id = ESC_RPM_CONS_FIRST_ID;
+        parameter_sensor_double.value_l = parameter.rpm;
+        parameter_sensor_double.value_h = parameter.consumption;
+        parameter_sensor_double.rate = config->refresh_rate_rpm;
+        xTaskCreate(sensor_double_task, "sensor_double_task", STACK_SENSOR_SMARTPORT_DOUBLE, (void *)&parameter_sensor_double, 3, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor_double.data_id = ESC_POWER_FIRST_ID;
+        parameter_sensor_double.value_l = parameter.voltage;
+        parameter_sensor_double.value_h = parameter.current;
+        parameter_sensor_double.rate = config->refresh_rate_voltage;
+        xTaskCreate(sensor_double_task, "sensor_double_task", STACK_SENSOR_SMARTPORT_DOUBLE, (void *)&parameter_sensor_double, 3, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = ESC_TEMPERATURE_FIRST_ID;
+        parameter_sensor.value = parameter.temperature_fet;
+        parameter_sensor.rate = config->refresh_rate_temperature;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = ESC_TEMPERATURE_FIRST_ID + 1;
+        parameter_sensor.value = parameter.temperature_bec;
+        parameter_sensor.rate = config->refresh_rate_temperature;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        parameter_sensor.data_id = ESC_TEMPERATURE_FIRST_ID + 2;
+        parameter_sensor.value = parameter.temperature_motor;
+        parameter_sensor.rate = config->refresh_rate_temperature;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        parameter_sensor_double.data_id = ESC_POWER_FIRST_ID + 1;
+        parameter_sensor_double.value_l = parameter.voltage_bec;
+        parameter_sensor_double.value_h = parameter.current_bec;
+        parameter_sensor_double.rate = config->refresh_rate_voltage;
+        xTaskCreate(sensor_double_task, "sensor_double_task", STACK_SENSOR_SMARTPORT_DOUBLE, (void *)&parameter_sensor_double, 3, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        parameter_sensor_cell.cell_count = parameter.cell_count;
+        parameter_sensor_cell.cell_voltage = parameter.cell_voltage;
+        parameter_sensor_cell.rate = config->refresh_rate_voltage;
+        xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3, &task_handle);
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
     if (config->esc_protocol == ESC_CASTLE)
     {
         esc_castle_parameters_t parameter = {config->rpm_multiplier,

@@ -268,6 +268,44 @@ static void set_config(sensor_sbus_t *sensor[])
         //*new_sensor = (sensor_sbus_t){AFHDS2A_ID_CELL_VOLTAGE, parameter.cell_voltage};
         // add_sensor(new_sensor);
     }
+        if (config->esc_protocol == ESC_VBAR)
+    {
+        esc_vbar_parameters_t parameter = {config->rpm_multiplier,
+                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature,
+                                          malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){FASST_RPM, parameter.rpm};
+        add_sensor(SBUS_SLOT_RPM, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){FASST_POWER_VOLT, parameter.voltage};
+        add_sensor(SBUS_SLOT_POWER_VOLT1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){FASST_POWER_CURR, parameter.current};
+        add_sensor(SBUS_SLOT_POWER_CURR1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){FASST_POWER_CONS, parameter.consumption};
+        add_sensor(SBUS_SLOT_POWER_CONS1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){FASST_TEMP, parameter.temperature_fet};
+        add_sensor(SBUS_SLOT_TEMP1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){FASST_TEMP, parameter.temperature_bec};
+        add_sensor(SBUS_SLOT_TEMP2, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){FASST_POWER_VOLT, parameter.voltage_bec};
+        add_sensor(SBUS_SLOT_POWER_VOLT3, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){FASST_POWER_CURR, parameter.current_bec};
+        add_sensor(SBUS_SLOT_POWER_CURR3, new_sensor);
+        // new_sensor = malloc(sizeof(sensor_sbus_t));
+        //*new_sensor = (sensor_sbus_t){AFHDS2A_ID_CELL_VOLTAGE, parameter.cell_voltage};
+        // add_sensor(new_sensor);
+    }
     if (config->esc_protocol == ESC_CASTLE)
     {
         esc_castle_parameters_t parameter = {config->rpm_multiplier,

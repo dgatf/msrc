@@ -48,6 +48,8 @@ Gain: Amperage
 
 (1) Extrapolated from confirmed models
 
+Current multiplier = 1 / (ampgain* 0.25/1000) = 4000 / ampgain
+
 */
 
 typedef struct esc_hw4_parameters_t

@@ -456,6 +456,47 @@ static void set_config(sensor_jetiex_t **sensor)
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Consumption", "mAh", parameter.consumption};
         add_sensor(new_sensor, sensor);
     }
+    if (config->esc_protocol == ESC_VBAR)
+    {
+        esc_vbar_parameters_t parameter = {config->rpm_multiplier,
+                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature,
+                                          malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current", "A", parameter.current};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Voltage", "V", parameter.voltage};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Temp FET", "C", parameter.temperature_fet};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Temp BEC", "C", parameter.temperature_bec};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Temp Motor", "C", parameter.temperature_motor};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Voltage BEC", "C", parameter.voltage_bec};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current BEC", "C", parameter.current_bec};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_2_DECIMAL, "Cell Voltage", "V", parameter.cell_voltage};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Consumption", "mAh", parameter.consumption};
+        add_sensor(new_sensor, sensor);
+    }
     if (config->esc_protocol == ESC_CASTLE)
     {
         esc_castle_parameters_t parameter = {config->rpm_multiplier,

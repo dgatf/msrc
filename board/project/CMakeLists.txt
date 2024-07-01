@@ -41,6 +41,7 @@ add_executable(${PROJECT_NAME}
         srxl.c
         pwm_out.c
         ws2812.c
+        esc_vbar.c
 )
 
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/capture_edge.pio)

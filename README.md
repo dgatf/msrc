@@ -1,15 +1,3 @@
-# Remark: This is the new version for the RP2040 board #
-
-For previous versions see repository [msrc_arduino](https://github.com/dgatf/msrc_arduino)
-
-- More powerful board for less price: Cortex M0+ 32bits, 133MHz, 2MB flash, 256kB RAM, 3xUARTS, 2xI2C, PIO
-- Same board for all configurations
-- Easier to upload firmware: drag and drop
-- Config through USB
-- Rewritten in C with FreeRTOS (Not C++ and Arduino framework)
-- No bit bang libraries like softserial
-
-
 # MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=9GKNBVGHKXFGW&no_recurring=0&currency_code=USD)
@@ -33,7 +21,7 @@ Compatible MCUs: RP2040. Any model is compatible. Recommended [RP2040 Zero](http
 Implemented sensors:
 
 - ESC
-  - ESCs with serial telemetry (Hobbywing V3/V4/V5<sup>(1)</sup>, Kontronik<sup>(2)</sup>), APD F/HV/UHV
+  - ESCs with serial telemetry: VBAR compatible ESCs (Hobbywing, OMP Hobby...), Hobbywing V3/V4/FlyFun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, APD F/HV/UHV
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
@@ -42,7 +30,7 @@ Implemented sensors:
 
 All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with msrc_gui.
 
-(1) HW V5 = HW FlyFun. If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the ESC is armed  
+(1) If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the ESC is armed  
 (2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive.
 
 
@@ -240,26 +228,50 @@ Spektrum SRXL is bidirectional with telemetry, other SRXL are unidirectional. Se
 
 ## 6. Sensors
 
+Available sensors:
+
+- ESC
+  - ESCs with serial telemetry: VBAR compatible, Hobbywing V3/V4/V5/Flyfun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, APD F/HV/UHV
+  - ESC with PWM signal or phase sensor
+  - ESC Castle Link
+- GPS serial (NMEA)
+- I2C sensors: BMP180, BMP280, MS5611
+- Analog sensors: voltage, temperature, current, air speed
+
+All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with msrc_gui.
+
+(1) HW V5 = HW FlyFun. If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the ESC is armed  
+(2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive.
+
 ### 6.1. ESC
 
 #### 6.1.1. Serial telemetry
 
 Compatible ESC serial protocols:
 
- - Hobbywing V3/V4/V5. Serial 19200
+ - VBAR compatible ESCs (Hobbywing, OMP Hobby...). Serial 115200
+ - Hobbywing V3/V4/Flyfun. Old protocol. Serial 19200
  - Kontronik Kosmic/Kolibri/JivePro. Serial 115200, even parity
  - APD F/HV/UHV. Serial 115200
 
-Optionally, for Hobbywing Flyfun (V5) and APD F-series, a PWM signal can be generated from the RPM telemetry value
+Optionally, for Hobbywing Flyfun and APD F-series, a PWM signal can be generated from the RPM telemetry value
+
+<ins>VBAR compatible ESCs</ins>
+
+ - Hobbywing ESCs with VBAR firmware
+ - OMP Hobby ESCs compatible with VBAR
+ - Others ESC compatible with VBAR
 
 <ins>Hobbywing Platinum V3</ins>
  
  Telemetry port is the program port. It is a servo male plug on the ESC
 
-<ins>Hobbywing Platinum V4 / FlyFun V5</ins>
+<ins>Hobbywing Platinum V4 / V5 / FlyFun</ins>
 
-- The telemetry port is a wired servo female plug. Don't confuse with RPM PWM signal connector or the program port
-- Check firmware installed is NOT VBAR version
+Note there are two protocols for V4: not VBAR (old protocol) and VBAR. It is recommended to use the VBAR protocol. Check your ESC firmware is VBAR version  
+Telemetry port is the program port. It is a servo male plug on the ESC
+
+For old protocol (not VBAR):
 - Values for current when throttle is low (up to 25%, depending on model) may not be reliable. If getting high or noisy current values when throttle is low, adjust _Current_thresold_. Below this throttle percentage (0-100%), current values will be 0A
 - Set _Max Current_ to the peak current of the ESC (eg: 80A: _Max Current_ 100)
 - Adjust _Voltage Divisor__ and _Current Multiplier__, depending on model:

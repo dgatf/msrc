@@ -14,6 +14,7 @@
 #include "uart.h"
 #include "esc_hw3.h"
 #include "esc_hw4.h"
+#include "esc_vbar.h"
 #include "voltage.h"
 #include "current.h"
 #include "ntc.h"

@@ -134,7 +134,8 @@ typedef enum esc_protocol_t
     ESC_CASTLE,
     ESC_KONTRONIK,
     ESC_APD_F,
-    ESC_APD_HV
+    ESC_APD_HV,
+    ESC_VBAR
 } esc_protocol_t;
 
 typedef enum i2c_module_t

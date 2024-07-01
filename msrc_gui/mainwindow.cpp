@@ -6,8 +6,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), serial(new QSerialPort())
 {
     ui->setupUi(this);
-    ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4", "PWM", "Castle Link",
-                         "Kontronic", "APD F", "APD HV"});
+    ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link",
+                         "Kontronic", "APD F", "APD HV", "VBAR compatible"});
     ui->cbGpsBaudrate->addItems(
                 {"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
@@ -104,10 +104,11 @@ void MainWindow::generateCircuit(QLabel *label)
 
     if(ui->gbEsc->isChecked()) {
         if(ui->cbEsc->currentText() == "Hobbywing V3" ||
-                ui->cbEsc->currentText() == "Hobbywing V4" ||
+                ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
                 ui->cbEsc->currentText() == "Kontronic" ||
                 ui->cbEsc->currentText() == "APD F" ||
-                ui->cbEsc->currentText() == "APD HV")
+                ui->cbEsc->currentText() == "APD HV" ||
+                ui->cbEsc->currentText() == "VBAR compatible")
             image.load(":/res/esc_rp2040_zero.png");
         else if(ui->cbEsc->currentText() == "PWM")
             image.load(":/res/pwm_rp2040_zero.png");
@@ -698,7 +699,7 @@ void MainWindow::on_cbEsc_currentIndexChanged(const QString &arg1)
 {
     QGroupBox *gbEscParameters =
             ui->gbEsc->findChild<QGroupBox *>("gbEscParameters");
-    if(arg1 == "Hobbywing V4")
+    if(arg1 == "Hobbywing V4/Flyfun (not VBAR firmware)")
         gbEscParameters->setVisible(true);
     else
         gbEscParameters->setVisible(false);
@@ -713,32 +714,32 @@ void MainWindow::on_cbEscModel_currentIndexChanged(const QString &arg1)
         ui->cbInitDelay->setChecked(false);
     } else if(arg1 == "Platinum PRO v4 80A") {
         ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(8);
+        ui->sbCurrentMultiplier->setValue(4000/8);
         ui->sbCurrentMax->setValue(100);
         ui->cbInitDelay->setChecked(false);
     } else if(arg1 == "Platinum PRO v4 100A") {
         ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(9);
+        ui->sbCurrentMultiplier->setValue(4000/9);
         ui->sbCurrentMax->setValue(120);
         ui->cbInitDelay->setChecked(false);
     } else if(arg1 == "Platinum PRO v4 120A") {
         ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(10);
+        ui->sbCurrentMultiplier->setValue(4000/10);
         ui->sbCurrentMax->setValue(140);
         ui->cbInitDelay->setChecked(false);
     } else if(arg1 == "Platinum PRO v4 150A") {
         ui->sbVoltageDivisor->setValue(15.75);
-        ui->sbCurrentMultiplier->setValue(10);
+        ui->sbCurrentMultiplier->setValue(4000/10);
         ui->sbCurrentMax->setValue(170);
         ui->cbInitDelay->setChecked(false);
     } else if(arg1 == "Platinum PRO v4 130A-HV") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(11.3);
+        ui->sbCurrentMultiplier->setValue(4000/11.3);
         ui->sbCurrentMax->setValue(150);
         ui->cbInitDelay->setChecked(false);
     } else if(arg1 == "Platinum PRO v4 200A-HV") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(16.9);
+        ui->sbCurrentMultiplier->setValue(4000/16.9);
         ui->sbCurrentMax->setValue(220);
         ui->cbInitDelay->setChecked(false);
     } else if(arg1 == "FlyFun 30/40A") {
@@ -748,32 +749,32 @@ void MainWindow::on_cbEscModel_currentIndexChanged(const QString &arg1)
         ui->cbInitDelay->setChecked(true);
     } else if(arg1 == "FlyFun 60A") {
         ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(6);
+        ui->sbCurrentMultiplier->setValue(4000/6);
         ui->sbCurrentMax->setValue(80);
         ui->cbInitDelay->setChecked(true);
     } else if(arg1 == "FlyFun 80A") {
         ui->sbVoltageDivisor->setValue(15.75);
-        ui->sbCurrentMultiplier->setValue(12.4);
+        ui->sbCurrentMultiplier->setValue(4000/12.4);
         ui->sbCurrentMax->setValue(100);
         ui->cbInitDelay->setChecked(true);
     } else if(arg1 == "FlyFun 120A") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(15);
+        ui->sbCurrentMultiplier->setValue(4000/15);
         ui->sbCurrentMax->setValue(140);
         ui->cbInitDelay->setChecked(true);
     } else if(arg1 == "FlyFun 110A-HV") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(15);
+        ui->sbCurrentMultiplier->setValue(4000/15);
         ui->sbCurrentMax->setValue(130);
         ui->cbInitDelay->setChecked(true);
     } else if(arg1 == "FlyFun 130A-HV") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(15);
+        ui->sbCurrentMultiplier->setValue(4000/15);
         ui->sbCurrentMax->setValue(150);
         ui->cbInitDelay->setChecked(true);
     } else if(arg1 == "FlyFun 160A-HV") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(15);
+        ui->sbCurrentMultiplier->setValue(4000/15);
         ui->sbCurrentMax->setValue(180);
         ui->cbInitDelay->setChecked(true);
     }

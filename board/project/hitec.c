@@ -313,6 +313,25 @@ static void set_config()
         sensor->is_enabled_frame[HITEC_FRAME_0X14] = true;
         sensor->is_enabled_frame[HITEC_FRAME_0X13] = true;
     }
+        if (config->esc_protocol == ESC_VBAR)
+    {
+esc_vbar_parameters_t parameter = {config->rpm_multiplier,
+                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature,
+                                          malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        sensor->frame_0x15[HITEC_FRAME_0X15_RPM1] = parameter.rpm;
+        sensor->frame_0x18[HITEC_FRAME_0X18_VOLT] = parameter.voltage;
+        sensor->frame_0x18[HITEC_FRAME_0X18_AMP] = parameter.current;
+        sensor->frame_0x14[HITEC_FRAME_0X14_TEMP1] = parameter.temperature_fet;
+        sensor->frame_0x13[HITEC_FRAME_0X13_TEMP2] = parameter.temperature_bec;
+        sensor->is_enabled_frame[HITEC_FRAME_0X15] = true;
+        sensor->is_enabled_frame[HITEC_FRAME_0X18] = true;
+        sensor->is_enabled_frame[HITEC_FRAME_0X14] = true;
+        sensor->is_enabled_frame[HITEC_FRAME_0X13] = true;
+    }
     if (config->esc_protocol == ESC_CASTLE)
     {
         esc_castle_parameters_t parameter = {config->rpm_multiplier,

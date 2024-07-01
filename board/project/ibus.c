@@ -265,6 +265,38 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask)
         *new_sensor = (sensor_ibus_t){AFHDS2A_ID_FUEL, IBUS_TYPE_U16, parameter.consumption};
         add_sensor(new_sensor, sensor, sensormask);
     }
+    if (config->esc_protocol == ESC_VBAR)
+    {
+        esc_vbar_parameters_t parameter = {config->rpm_multiplier,
+                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature,
+                                          malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){AFHDS2A_ID_MOT, IBUS_TYPE_U16, parameter.rpm};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){AFHDS2A_ID_EXTV, IBUS_TYPE_U16, parameter.voltage};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){AFHDS2A_ID_BAT_CURR, IBUS_TYPE_U16, parameter.current};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temperature_fet};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){AFHDS2A_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temperature_bec};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){AFHDS2A_ID_CELL_VOLTAGE, IBUS_TYPE_U16, parameter.cell_voltage};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){AFHDS2A_ID_FUEL, IBUS_TYPE_U16, parameter.consumption};
+        add_sensor(new_sensor, sensor, sensormask);
+    }
     if (config->esc_protocol == ESC_CASTLE)
     {
         esc_castle_parameters_t parameter = {config->rpm_multiplier,

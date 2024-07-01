@@ -382,6 +382,31 @@ static void set_config()
         //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
         //i2c_multi_enable_address(XBUS_BATTERY_ID);
     }
+    if (config->esc_protocol == ESC_VBAR)
+    {
+        esc_vbar_parameters_t parameter = {config->rpm_multiplier,
+                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature,
+                                          malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        sensor->esc[XBUS_ESC_RPM] = parameter.rpm;
+        sensor->esc[XBUS_ESC_VOLTAGE] = parameter.voltage;
+        sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
+        sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temperature_fet;
+        sensor->esc[XBUS_ESC_TEMPERATURE_BEC] = parameter.temperature_bec;
+        sensor->is_enabled[XBUS_ESC] = true;
+        sensor_formatted->esc = calloc(1,16);
+        *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_ESC_ID);
+        //sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
+        //sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
+        //sensor->is_enabled[XBUS_BATTERY] = true;
+        //sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
+        //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
+        //i2c_multi_enable_address(XBUS_BATTERY_ID);
+    }
     if (config->esc_protocol == ESC_CASTLE)
     {
         esc_castle_parameters_t parameter = {config->rpm_multiplier,

@@ -157,6 +157,46 @@ static void set_config(sensor_multiplex_t **sensors)
         *new_sensor = (sensor_multiplex_t){FHSS_CONSUMPTION, parameter.consumption};
         add_sensor(new_sensor, sensors);
     }
+    if (config->esc_protocol == ESC_VBAR)
+    {
+        esc_vbar_parameters_t parameter = {config->rpm_multiplier,
+                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature,
+                                          malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        new_sensor = malloc(sizeof(sensor_multiplex_t));
+        *new_sensor = (sensor_multiplex_t){FHSS_RPM, parameter.rpm};
+        add_sensor(new_sensor, sensors);
+        new_sensor = malloc(sizeof(sensor_multiplex_t));
+        *new_sensor = (sensor_multiplex_t){FHSS_VOLTAGE, parameter.voltage};
+        add_sensor(new_sensor, sensors);
+        new_sensor = malloc(sizeof(sensor_multiplex_t));
+        *new_sensor = (sensor_multiplex_t){FHSS_CURRENT, parameter.current};
+        add_sensor(new_sensor, sensors);
+        new_sensor = malloc(sizeof(sensor_multiplex_t));
+        *new_sensor = (sensor_multiplex_t){FHSS_TEMP, parameter.temperature_fet};
+        add_sensor(new_sensor, sensors);
+        new_sensor = malloc(sizeof(sensor_multiplex_t));
+        *new_sensor = (sensor_multiplex_t){FHSS_TEMP, parameter.temperature_bec};
+        add_sensor(new_sensor, sensors);
+        new_sensor = malloc(sizeof(sensor_multiplex_t));
+        *new_sensor = (sensor_multiplex_t){FHSS_TEMP, parameter.temperature_motor};
+        add_sensor(new_sensor, sensors);
+        new_sensor = malloc(sizeof(sensor_multiplex_t));
+        *new_sensor = (sensor_multiplex_t){FHSS_VOLTAGE, parameter.voltage_bec};
+        add_sensor(new_sensor, sensors);
+        new_sensor = malloc(sizeof(sensor_multiplex_t));
+        *new_sensor = (sensor_multiplex_t){FHSS_CURRENT, parameter.current_bec};
+        add_sensor(new_sensor, sensors);
+        new_sensor = malloc(sizeof(sensor_multiplex_t));
+        *new_sensor = (sensor_multiplex_t){FHSS_VOLTAGE, parameter.cell_voltage};
+        add_sensor(new_sensor, sensors);
+        new_sensor = malloc(sizeof(sensor_multiplex_t));
+        *new_sensor = (sensor_multiplex_t){FHSS_CONSUMPTION, parameter.consumption};
+        add_sensor(new_sensor, sensors);
+    }
     if (config->esc_protocol == ESC_CASTLE)
     {
         esc_castle_parameters_t parameter = {config->rpm_multiplier,
