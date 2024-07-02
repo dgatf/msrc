@@ -86,23 +86,41 @@ static inline void handler_pio()
         {
             calibration = value[0] / 2 + value[9];
             packet.is_temp_ntc = true;
-            float temp_raw = value[10] * scaler[10] / calibration;
-            packet.temperature = 1 / (log(temp_raw * 10200 / (255 - temp_raw) / 10000) / 3455 + 1 / 298) - 273;
+            float temp_raw = ((float)value[10] - calibration / 2) * scaler[10] / calibration;
+            packet.temperature = 1 / (log(temp_raw * 10200.0 / (255.0 - temp_raw) / 10000.0) / 3455.0 + 1.0 / 298.0) - 273.0;
         }
         else
         {
             calibration = value[0] / 2 + value[10];
             packet.is_temp_ntc = false;
-            packet.temperature = value[9] * scaler[9] / calibration;
+            packet.temperature = ((float)value[9] - calibration / 2) * scaler[9] / calibration;
         }
-        packet.voltage = (value[1] - calibration / 2) * scaler[1] / calibration;
-        packet.ripple_voltage = (value[2] - calibration / 2) * scaler[2] / calibration;
-        packet.current = (value[3] - calibration / 2) * scaler[3] / calibration;
-        packet.thr = (value[4] - calibration / 2) * scaler[4] / calibration;
-        packet.output = (value[5] - calibration / 2) * scaler[5] / calibration;
-        packet.rpm = (value[6] - calibration / 2) * scaler[6] / calibration;
-        packet.voltage_bec = (value[7] - calibration / 2) * scaler[7] / calibration;
-        packet.current_bec = (value[8] - calibration / 2) * scaler[8] / calibration;
+        packet.voltage = ((float)value[1] - calibration / 2) * scaler[1] / calibration;
+        packet.ripple_voltage = ((float)value[2] - calibration / 2) * scaler[2] / calibration;
+        packet.current = ((float)value[3] - calibration / 2) * scaler[3] / calibration;
+        packet.thr = ((float)value[4] - calibration / 2) * scaler[4] / calibration;
+        packet.output = ((float)value[5] - calibration / 2) * scaler[5] / calibration;
+        packet.rpm = ((float)value[6] - calibration / 2) * scaler[6] / calibration;
+        packet.voltage_bec = ((float)value[7] - calibration / 2) * scaler[7] / calibration;
+        packet.current_bec = ((float)value[8] - calibration / 2) * scaler[8] / calibration;
+        if (packet.voltage  < 0)
+            packet.voltage = 0;
+        if (packet.ripple_voltage  < 0)
+            packet.ripple_voltage = 0;
+        if (packet.current  < 0)
+            packet.current = 0;
+        if (packet.thr  < 0)
+            packet.thr = 0;
+        if (packet.output  < 0)
+            packet.output = 0;
+        if (packet.rpm  < 0)
+            packet.rpm = 0;
+        if (packet.voltage_bec  < 0)
+            packet.voltage_bec = 0;
+        if (packet.current_bec  < 0)
+            packet.current_bec = 0;
+        if (packet.temperature  < 0)
+            packet.temperature = 0;
         handler_(packet);
     }
     index++;

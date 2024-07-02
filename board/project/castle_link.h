@@ -38,6 +38,8 @@ typedef struct castle_link_telemetry_t {
     bool is_temp_ntc;
 } castle_link_telemetry_t;
 
+extern uint8_t debug;
+
 typedef void (*castle_link_handler_t)(castle_link_telemetry_t packet);
 
 void castle_link_init(PIO pio, uint pin_base, uint irq);
