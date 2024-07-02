@@ -14,7 +14,7 @@ Compatible RX protocols:
 - Multiplex Sensor Bus (MSB)
 - Jeti Ex Bus
 
-Compatible ESCs: Hobbywing V3/V4/V5, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal.
+Compatible ESCs: Hobbywing V3/V4/V5/Flyfun, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal.
 
 Compatible MCUs: RP2040. Any model is compatible. Recommended [RP2040 Zero](https://www.mischianti.org/wp-content/uploads/2022/09/Waveshare-rp2040-zero-Raspberry-Pi-Pico-alternative-pinout.jpg), for size and GPIO selection.
 
@@ -42,6 +42,8 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 
 | Sensor/Receiver                           | Board GPIO|
 | :---:                                     | :---:            |
+| 3.3-5v                                    | 5v               |
+| GND                                       | GND              |
 | Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex  | 0<sup>(1)</sup> & 1 |
 | Frsky D                                   | 0                |
 | Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |
@@ -66,7 +68,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 (2) with 1k-3.3k pull up resistor  
 (3) Optional  
 
-Status led of the board blinks when sending telemetry. If it doesn't blink check connections and config
+Status led of the board blinks when sending telemetry. If it doesn't blink check connections and config.
 
 
 <p align="center"><img src="./images/rp2040_zero_pinout.jpg" width="500"><br>
@@ -74,7 +76,9 @@ Status led of the board blinks when sending telemetry. If it doesn't blink check
 
 ## 2. Power source
 
-All receivers provide 3.3V at the telemetry port. Connect Vcc at telemetry port to RP2040 V5/VSYS pin. Alternatively you can feed the RP2040 from the BEC or receiver if the voltage is less than 5.5V
+RP2040 Zero has to be powered with 5v or less. For higher voltage, a voltage regulator is needed.
+
+It can be powered from the telemetry port or from BEC. Some receivers deliver 5v or less at the telemetry port, even if BEC voltage is higher than 5v. Check that voltage supplied to RP2040 is not higer than 5v.  
 
 ## 3. Flash firmware to RP2040
 
@@ -287,14 +291,14 @@ For old protocol (not VBAR):
 
 | Amperage | Current multiplier |
 | :---: | :---: |
-| FlyFun 60A | 6
-| FlyFun 80A | 12.4 |
-| 100A | 9<sup>(1)</sup> |
-| Platinum V4 120A | 10 |
-| 130A | 11.3<sup>(1)</sup> |
-| 150A | 12.9<sup>(1)</sup> |
-| 160A | 13.7<sup>(1)</sup> |
-| Platinum V4 200A | 16.9 |
+| FlyFun 60A | 670 |
+| FlyFun 80A | 320 |
+| 100A | 440<sup>(1)</sup> |
+| Platinum V4 120A | 400 |
+| 130A | 350<sup>(1)</sup> |
+| 150A | 310<sup>(1)</sup> |
+| 160A | 290<sup>(1)</sup> |
+| Platinum V4 200A | 240 |
 
 </center>
 
