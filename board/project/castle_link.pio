@@ -26,11 +26,8 @@
 // 1 PWM input
 // in base = 0
 
-.program counter
+.program counter  // counter increment every 5 cycles
 capture:
-    //in pins 1               // read rx
-    //in null 31
-    //push noblock            // send rx state
     mov isr ~y              // copy counter to isr
     push noblock            // send counter to fifo
     irq CASTLE_LINK_IRQ_NUM  // raise irq
