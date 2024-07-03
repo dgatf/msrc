@@ -58,8 +58,8 @@ typedef struct esc_hw4_parameters_t
     bool pwm_out;
     float alpha_rpm, alpha_voltage, alpha_current, alpha_temperature;
     float divisor, current_multiplier, current_thresold, current_max;
-    int *current_offset;
-    uint *current_raw;
+    bool current_is_manual_offset;
+    float current_offset;    
     float *rpm, *voltage, *current, *temperature_fet, *temperature_bec, *cell_voltage, *consumption;
     uint8_t *cell_count;
 } esc_hw4_parameters_t;

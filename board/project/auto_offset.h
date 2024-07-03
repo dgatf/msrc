@@ -7,16 +7,25 @@
 #include "pico/stdlib.h"
 #include "config.h"
 
-typedef struct auto_offset_parameters_t
+typedef struct auto_offset_float_parameters_t
 {
     uint delay;
     float *value;
     float *offset;
     
-} auto_offset_parameters_t;
+} auto_offset_float_parameters_t;
+
+typedef struct auto_offset_int_parameters_t
+{
+    uint delay;
+    int *value;
+    int *offset;
+    
+} auto_offset_int_parameters_t;
 
 extern uint8_t debug;
 
-void auto_offset_task(void *parameters);
+void auto_offset_float_task(void *parameters);
+void auto_offset_int_task(void *parameters);
 
 #endif

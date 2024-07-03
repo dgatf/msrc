@@ -201,9 +201,10 @@ static void set_config()
     }
     if (config->esc_protocol == ESC_HW4)
     {
-        esc_hw4_parameters_t parameter = {config->rpm_multiplier, config->enable_pwm_out,
+                esc_hw4_parameters_t parameter = {config->rpm_multiplier, config->enable_pwm_out,
                                           config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature, config->esc_hw4_divisor, config->esc_hw4_current_multiplier, config->esc_hw4_current_thresold, config->esc_hw4_current_max,
-                                          malloc(sizeof(int)), malloc(sizeof(uint)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+                                          config->esc_hw4_is_manual_offset, config->esc_hw4_offset,
+                                          malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw4_task, "esc_hw4_task", STACK_ESC_HW4, (void *)&parameter, 2, &task_handle);
         uart1_notify_task_handle = task_handle;
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);

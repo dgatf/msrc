@@ -91,6 +91,8 @@
 #define ESC_INIT_DELAY_DURATION 10000
 
 /* HW V4/V5 parameters */
+#define ESC_HW4_MANUAL_OFFSET 1
+#define ESC_HW4_CURRENT_OFFSET 0
 #define ESC_HW4_CURRENT_THRESHOLD 25
 #define ESC_HW4_DIVISOR 11
 #define ESC_HW4_CURRENT_MULTIPLIER 10
@@ -206,8 +208,10 @@ typedef struct config_t
     float esc_hw4_current_multiplier;
     bool ibus_alternative_coordinates;
     uint8_t debug;
-    uint32_t spare1;
-    uint32_t spare2;
+    bool esc_hw4_is_manual_offset;
+    uint8_t spare11;
+    uint16_t spare12;
+    float esc_hw4_offset;
     uint32_t spare3;
     uint32_t spare4;
     uint32_t spare5;

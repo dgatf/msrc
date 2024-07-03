@@ -7,19 +7,20 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link",
-                         "Kontronic", "APD F", "APD HV", "VBAR compatible"});
+                         "Kontronic", "APD F", "APD HV", "VBAR"});
     ui->cbGpsBaudrate->addItems(
-                {"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
+    {"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS",
                               "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2",
                               "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec"});
-    ui->cbEscModel->addItems({
-                                 "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A",
-                                 "Platinum PRO v4 100A", "Platinum PRO v4 120A",
-                                 "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A",
-                                 "Platinum PRO v4 200A-HV", "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A",
-                                 "FlyFun 120A", "FlyFun 110A-HV", "FlyFun 130A-HV", "FlyFun 160A-HV"});
+    ui->cbEscModel->addItems({"",
+        "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A",
+        "Platinum PRO v4 100A", "Platinum PRO v4 120A",
+        "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A",
+        "Platinum PRO v4 200A-HV", "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A",
+        "FlyFun 120A", "FlyFun 110A-HV", "FlyFun 130A-HV", "FlyFun 160A-HV"});
+    ui->sbEscOffset->setVisible(false);
     ui->cbCurrentSensorType->addItems({"Hall effect", "Shunt resistor"});
     ui->cbCurrentAutoOffset->setChecked(true);
     ui->cbBarometerType->addItems({"BMP280", "MS5611", "BMP180"});
@@ -104,11 +105,11 @@ void MainWindow::generateCircuit(QLabel *label)
 
     if(ui->gbEsc->isChecked()) {
         if(ui->cbEsc->currentText() == "Hobbywing V3" ||
-                ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
-                ui->cbEsc->currentText() == "Kontronic" ||
-                ui->cbEsc->currentText() == "APD F" ||
-                ui->cbEsc->currentText() == "APD HV" ||
-                ui->cbEsc->currentText() == "VBAR compatible")
+           ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
+           ui->cbEsc->currentText() == "Kontronic" ||
+           ui->cbEsc->currentText() == "APD F" ||
+           ui->cbEsc->currentText() == "APD HV" ||
+           ui->cbEsc->currentText() == "VBAR")
             image.load(":/res/esc_rp2040_zero.png");
         else if(ui->cbEsc->currentText() == "PWM")
             image.load(":/res/pwm_rp2040_zero.png");
@@ -136,7 +137,7 @@ void MainWindow::generateCircuit(QLabel *label)
 
     paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
 
-    if (ui->cbReceiver->currentText() == "Spektrum XBUS" && ui->cbClockStretch->isChecked() == true) {
+    if(ui->cbReceiver->currentText() == "Spektrum XBUS" && ui->cbClockStretch->isChecked() == true) {
         image.load(":/res/clock_stretch_xbus_rp2040_zero.png");
         paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
     }
@@ -158,7 +159,7 @@ void MainWindow::openConfig()
 
 void MainWindow::saveConfig()
 {
-   QString filename = QFileDialog::getSaveFileName(this, "Save Config", "", "Config Files (*.cfg)");
+    QString filename = QFileDialog::getSaveFileName(this, "Save Config", "", "Config Files (*.cfg)");
 
     /*QJsonObject json_obj;
     json_obj["version"] = config.version;
@@ -183,7 +184,7 @@ void MainWindow::saveConfig()
 
 void MainWindow::buttonSerialPort()
 {
-    if (isConnected)
+    if(isConnected)
         closeSerialPort();
     else
         openSerialPort();
@@ -191,8 +192,7 @@ void MainWindow::buttonSerialPort()
 
 void MainWindow::buttonDebug()
 {
-    if (ui->btDebug->text() == "Enable Debug")
-    {
+    if(ui->btDebug->text() == "Enable Debug") {
         if(!isConnected) return;
         ui->btDebug->setText("Disable Debug");
         serial->readAll();
@@ -201,9 +201,7 @@ void MainWindow::buttonDebug()
         char command = 0x33;
         serial->write(&command, 1);
         isDebug = true;
-    }
-    else if (ui->btDebug->text() == "Disable Debug")
-    {
+    } else if(ui->btDebug->text() == "Disable Debug") {
         if(!isConnected) return;
         ui->btDebug->setText("Enable Debug");
         char header = 0x30;
@@ -271,19 +269,15 @@ void MainWindow::readSerial()
                  0x34 - debug off
     */
 
-    if (isDebug == false)
-    {
-        if (serial->bytesAvailable() == sizeof(config_t) + 2)
-        {
+    if(isDebug == false) {
+        if(serial->bytesAvailable() == sizeof(config_t) + 2) {
             data = serial->readAll();
             if(data.at(0) == 0x30 && data.at(1) == 0x32) {
                 memcpy(&config, data.data() + 2, sizeof(config_t));
                 setUiFromConfig();
             }
         }
-    }
-    else
-    {
+    } else {
         data = serial->readAll();
         ui->ptDebug->insertPlainText(data);
     }
@@ -324,8 +318,7 @@ void MainWindow::setUiFromConfig()
     // GPS
 
     ui->gbGps->setChecked(config.enable_gps);
-    switch (config.gps_baudrate)
-    {
+    switch(config.gps_baudrate) {
     case 115200:
         ui->cbGpsBaudrate->setCurrentIndex(0);
         break;
@@ -449,6 +442,8 @@ void MainWindow::setUiFromConfig()
     // HW V4/V5 parameters
 
     ui->cbInitDelay->setChecked(config.enable_esc_hw4_init_delay);
+    ui->cbEscAutoOffset->setChecked(!config.esc_hw4_is_manual_offset);
+    ui->sbEscOffset->setValue(config.esc_hw4_offset );
     //config.esc_hw4_init_delay_duration = 10000;
     ui->sbCurrentThresold->setValue(config.esc_hw4_current_thresold);
     ui->sbVoltageDivisor->setValue(config.esc_hw4_divisor);
@@ -591,6 +586,8 @@ void MainWindow::getConfigFromUi()
     // HW V4/V5 parameters
 
     config.enable_esc_hw4_init_delay = ui->cbInitDelay->isChecked();
+    config.esc_hw4_is_manual_offset = !ui->cbEscAutoOffset->isChecked();
+    config.esc_hw4_offset = ui->sbEscOffset->value();
     //config.esc_hw4_init_delay_duration = 10000;
     config.esc_hw4_current_thresold = ui->sbCurrentThresold->value();
     config.esc_hw4_divisor = ui->sbVoltageDivisor->value();
@@ -646,13 +643,13 @@ void MainWindow::checkPorts()
     std::sort(portsList.begin(), portsList.end());
     std::sort(list.begin(), list.end());
 
-    if (portsList != list) {
+    if(portsList != list) {
         QString currentPort = ui->cbPortList->currentText();
-        if (isConnected && !list.contains(currentPort))
+        if(isConnected && !list.contains(currentPort))
             closeSerialPort();
         portsList = fillPortsInfo();
         ui->cbPortList->setCurrentIndex(ui->cbPortList->findText(currentPort));
-        if (ui->cbPortList->currentIndex() == -1 && ui->cbPortList->count())
+        if(ui->cbPortList->currentIndex() == -1 && ui->cbPortList->count())
             ui->cbPortList->setCurrentIndex(0);
     }
 }
@@ -698,7 +695,7 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
 void MainWindow::on_cbEsc_currentIndexChanged(const QString &arg1)
 {
     QGroupBox *gbEscParameters =
-            ui->gbEsc->findChild<QGroupBox *>("gbEscParameters");
+        ui->gbEsc->findChild<QGroupBox *>("gbEscParameters");
     if(arg1 == "Hobbywing V4/Flyfun (not VBAR firmware)")
         gbEscParameters->setVisible(true);
     else
@@ -881,7 +878,7 @@ void MainWindow::on_cbCurrentAutoOffset_toggled(bool checked)
 }
 
 void MainWindow::on_cbCurrentSensorType_currentTextChanged(
-        const QString &arg1)
+    const QString &arg1)
 {
     if(arg1 == "Hall effect") {
         ui->cbCurrentAutoOffset->setVisible(true);
@@ -912,5 +909,14 @@ void MainWindow::on_cbClockStretch_toggled(bool checked)
 {
     Q_UNUSED(checked);
     generateCircuit(ui->lbCircuit);
+}
+
+
+void MainWindow::on_cbEscAutoOffset_stateChanged(int arg1)
+{
+    if(arg1)
+        ui->sbEscOffset->setVisible(false);
+    else
+        ui->sbEscOffset->setVisible(true);
 }
 

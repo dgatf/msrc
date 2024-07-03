@@ -15,9 +15,9 @@ void current_task(void *parameters)
     if (parameter.auto_offset)
     {
         parameter.offset = -1;
-        auto_offset_parameters_t parameter_auto_offset = {5000, parameter.voltage, &parameter.offset};
+        auto_offset_float_parameters_t parameter_auto_offset = {5000, parameter.voltage, &parameter.offset};
         TaskHandle_t task_handle;
-        xTaskCreate(auto_offset_task, "analog_current_auto_offset_task", STACK_AUTO_OFFSET, &parameter_auto_offset, 2, &task_handle);
+        xTaskCreate(auto_offset_float_task, "analog_current_auto_offset_task", STACK_AUTO_OFFSET, &parameter_auto_offset, 2, &task_handle);
     }
 
     while (1)

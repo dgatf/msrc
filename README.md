@@ -33,6 +33,14 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 (1) If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the ESC is armed  
 (2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive.
 
+## Binaries
+
+File to flash to RP2040:
+[MSRC-RP2040.uf2](https://drive.google.com/file/d/1pzIt4XdcLxiSUfSTfyoh_w5tLTFd9JN2/view?usp=sharing)
+
+PC application for configuration:
+- Linux: [msrc_gui.AppImage](https://drive.google.com/file/d/1G5A5ucQUb3tXk_KQKVdSJNhs5huyyZiU/view?usp=sharing)
+- Windows: [msrc_gui.exe](https://drive.google.com/file/d/1WogFyMToZI1BenxwAIU2i_oVkPFHTB7D/view?usp=sharing)
 
 ## 1. Connections
 

@@ -74,7 +74,7 @@
              <x>0</x>
              <y>0</y>
              <width>603</width>
-             <height>1807</height>
+             <height>1839</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -328,64 +328,6 @@
                      <string>Parameters</string>
                     </property>
                     <layout class="QGridLayout" name="gridLayout_15">
-                     <item row="3" column="0">
-                      <widget class="QLabel" name="label_10">
-                       <property name="text">
-                        <string>Voltage divisor</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="4" column="1">
-                      <widget class="QDoubleSpinBox" name="sbCurrentMultiplier">
-                       <property name="maximum">
-                        <double>1000.000000000000000</double>
-                       </property>
-                       <property name="value">
-                        <double>1.000000000000000</double>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="2" column="0">
-                      <widget class="QLabel" name="label_9">
-                       <property name="text">
-                        <string>Throttle current thresold</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="1" column="0">
-                      <widget class="QCheckBox" name="cbInitDelay">
-                       <property name="text">
-                        <string>Init delay</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="5" column="1">
-                      <widget class="QSpinBox" name="sbCurrentMax">
-                       <property name="maximum">
-                        <number>1000</number>
-                       </property>
-                       <property name="value">
-                        <number>250</number>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="3" column="1">
-                      <widget class="QDoubleSpinBox" name="sbVoltageDivisor">
-                       <property name="maximum">
-                        <double>1000.000000000000000</double>
-                       </property>
-                       <property name="value">
-                        <double>1.000000000000000</double>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="4" column="0">
-                      <widget class="QLabel" name="label_11">
-                       <property name="text">
-                        <string>Current multiplier</string>
-                       </property>
-                      </widget>
-                     </item>
                      <item row="0" column="0">
                       <widget class="QLabel" name="label_15">
                        <property name="text">
@@ -396,7 +338,31 @@
                      <item row="0" column="1">
                       <widget class="QComboBox" name="cbEscModel"/>
                      </item>
-                     <item row="2" column="1">
+                     <item row="3" column="0">
+                      <widget class="QLabel" name="label_9">
+                       <property name="text">
+                        <string>Throttle current thresold</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="label_10">
+                       <property name="text">
+                        <string>Voltage divisor</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="1">
+                      <widget class="QSpinBox" name="sbCurrentMax">
+                       <property name="maximum">
+                        <number>1000</number>
+                       </property>
+                       <property name="value">
+                        <number>250</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="1">
                       <widget class="QSpinBox" name="sbCurrentThresold">
                        <property name="maximum">
                         <number>100</number>
@@ -407,9 +373,63 @@
                       </widget>
                      </item>
                      <item row="5" column="0">
+                      <widget class="QLabel" name="label_11">
+                       <property name="text">
+                        <string>Current multiplier</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="0">
                       <widget class="QLabel" name="label_14">
                        <property name="text">
                         <string>Max current</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="QDoubleSpinBox" name="sbVoltageDivisor">
+                       <property name="maximum">
+                        <double>1000.000000000000000</double>
+                       </property>
+                       <property name="value">
+                        <double>1.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="5" column="1">
+                      <widget class="QDoubleSpinBox" name="sbCurrentMultiplier">
+                       <property name="maximum">
+                        <double>1000.000000000000000</double>
+                       </property>
+                       <property name="value">
+                        <double>1.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QCheckBox" name="cbInitDelay">
+                       <property name="text">
+                        <string>Init delay</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QCheckBox" name="cbEscAutoOffset">
+                       <property name="text">
+                        <string>Auto offset</string>
+                       </property>
+                       <property name="checked">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="QDoubleSpinBox" name="sbEscOffset">
+                       <property name="suffix">
+                        <string/>
+                       </property>
+                       <property name="maximum">
+                        <double>1000.000000000000000</double>
                        </property>
                       </widget>
                      </item>

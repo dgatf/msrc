@@ -81,8 +81,8 @@ void config_forze_write()
     config.esc_hw4_current_max = ESC_HW4_CURRENT_MAX;
     config.ibus_alternative_coordinates = IBUS_GPS_ALTERNATIVE_COORDINATES;
     config.debug = MSRC_DEBUG;
-    config.spare1 = 0;
-    config.spare2 = 0;
+    config.esc_hw4_is_manual_offset = ESC_HW4_MANUAL_OFFSET;
+    config.esc_hw4_offset = ESC_HW4_CURRENT_OFFSET;
     config.spare3 = 0;
     config.spare4 = 0;
     config.spare5 = 0;

@@ -112,8 +112,10 @@ typedef struct config_t // 122 bytes
     float esc_hw4_current_multiplier;
     bool ibus_alternative_coordinates;
     uint8_t debug;
-    uint32_t spare1;
-    uint32_t spare2;
+    bool esc_hw4_is_manual_offset;
+    uint8_t spare11;
+    uint16_t spare12;
+    float esc_hw4_offset;
     uint32_t spare3;
     uint32_t spare4;
     uint32_t spare5;
@@ -175,5 +177,6 @@ private slots:
     void on_cbCurrentAutoOffset_toggled(bool checked);
     void on_cbCurrentSensorType_currentTextChanged(const QString &arg1);
     void on_cbClockStretch_toggled(bool checked);
+    void on_cbEscAutoOffset_stateChanged(int arg1);
 };
 #endif // MAINWINDOW_H
