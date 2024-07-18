@@ -18,7 +18,7 @@ static void packet_task(void *parameters);
 static void process(smartport_parameters_t *parameter);
 static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, uint16_t data_id, uint32_t value);
 static void add_packet(uint8_t type_id, uint16_t data_id, uint32_t value);
-static uint32_t format(uint16_t data_id, float value);
+static int32_t format(uint16_t data_id, float value);
 static uint32_t format_double(uint16_t data_id, float value_l, float value_h);
 static uint32_t format_coordinate(coordinate_type_t type, float value);
 static uint32_t format_datetime(uint8_t type, uint32_t value);
@@ -294,7 +294,7 @@ static void sensor_task(void *parameters)
     {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
         xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
-        uint32_t data_formatted = format(parameter.data_id, *parameter.value);
+        int32_t data_formatted = format(parameter.data_id, *parameter.value);
         if (debug)
             printf("\nSmartport. Sensor (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, parameter.data_id, data_formatted);
@@ -401,7 +401,7 @@ static void packet_task(void *parameters)
     }
 }
 
-static uint32_t format(uint16_t data_id, float value)
+static int32_t format(uint16_t data_id, float value)
 {
     if ((data_id >= GPS_SPEED_FIRST_ID && data_id <= GPS_SPEED_LAST_ID) ||
         (data_id >= RBOX_BATT1_FIRST_ID && data_id <= RBOX_BATT2_FIRST_ID))
