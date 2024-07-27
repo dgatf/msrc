@@ -58,7 +58,7 @@ typedef enum analog_current_type_t : uint8_t
     CURRENT_TYPE_SHUNT
 } analog_current_type_t;
 
-typedef struct config_t // 122 bytes
+typedef struct config_t
 {
     uint16_t version;
     enum rx_protocol_t rx_protocol;
@@ -113,7 +113,7 @@ typedef struct config_t // 122 bytes
     bool ibus_alternative_coordinates;
     uint8_t debug;
     bool esc_hw4_is_manual_offset;
-    uint8_t spare11;
+    uint8_t analog_rate;
     uint16_t spare12;
     float esc_hw4_offset;
     uint32_t spare3;

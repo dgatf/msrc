@@ -359,7 +359,7 @@ static void set_config()
     }
     if (config->enable_analog_voltage)
     {
-        voltage_parameters_t parameter = {0, config->alpha_voltage, config->analog_voltage_multiplier, malloc(sizeof(float))};
+        voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage, config->analog_voltage_multiplier, malloc(sizeof(float))};
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_VOLT] = parameter.voltage;
@@ -370,7 +370,7 @@ static void set_config()
     }
     if (config->enable_analog_current)
     {
-        current_parameters_t parameter = {1, config->alpha_current, config->analog_current_multiplier, config->analog_current_offset, config->analog_current_autoffset, malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
+        current_parameters_t parameter = {1, config->analog_rate, config->alpha_current, config->analog_current_multiplier, config->analog_current_offset, config->analog_current_autoffset, malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(current_task, "current_task", STACK_CURRENT, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
@@ -381,7 +381,7 @@ static void set_config()
     }
     if (config->enable_analog_ntc)
     {
-        ntc_parameters_t parameter = {2, config->alpha_temperature, malloc(sizeof(float))};
+        ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP] = parameter.ntc;
@@ -392,7 +392,7 @@ static void set_config()
     }
     if (config->enable_analog_airspeed)
     {
-        airspeed_parameters_t parameter = {3, config->alpha_airspeed, malloc(sizeof(float))};
+        airspeed_parameters_t parameter = {3, config->analog_rate, config->alpha_airspeed, malloc(sizeof(float))};
         xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         sensor->airspeed[XBUS_AIRSPEED_AIRSPEED] = parameter.airspeed;

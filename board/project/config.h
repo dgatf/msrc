@@ -51,6 +51,8 @@
 #define AVERAGING_ELEMENTS_VARIO 1
 #define AVERAGING_ELEMENTS_AIRSPEED 1
 
+/* Analog rate*/
+#define ANALOG_RATE 10
 /* Analog voltage sensors */
 #define ANALOG_VOLTAGE_MULTIPLIER 7.8 // 7.8 if using 68k and 10k as proposed in the docs
 /* Analog current sensor */
@@ -209,7 +211,7 @@ typedef struct config_t
     bool ibus_alternative_coordinates;
     uint8_t debug;
     bool esc_hw4_is_manual_offset;
-    uint8_t spare11;
+    uint8_t analog_rate;
     uint16_t spare12;
     float esc_hw4_offset;
     uint32_t spare3;

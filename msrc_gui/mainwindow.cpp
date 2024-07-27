@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), serial(new QSerialPort())
 {
     ui->setupUi(this);
+    ui->saConfig->setEnabled(false);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link",
                          "Kontronic", "APD F", "APD HV", "VBAR"});
     ui->cbGpsBaudrate->addItems(
@@ -342,6 +343,10 @@ void MainWindow::setUiFromConfig()
         break;
     }
 
+    // Analog rate
+
+    ui->sbAnalogRate->setValue(config.analog_rate);
+
     // Voltage 1
 
     ui->gbVoltage1->setChecked(config.enable_analog_voltage);
@@ -422,7 +427,7 @@ void MainWindow::setUiFromConfig()
     // Smartport
 
     //config.smartport_data_id;
-    //config.smartport_sensor_id;
+    ui->sbSensorId->setValue(config.smartport_sensor_id);
 
     // XBUS Clock stretch
 
@@ -529,6 +534,10 @@ void MainWindow::getConfigFromUi()
     config.alpha_vario = 2.0 / (ui->sbVarioAvg->value() + 1);
     config.alpha_airspeed = 2.0 / (ui->sbAirspeedAvg->value() + 1);
 
+    // Analog rate
+
+    config.analog_rate = ui->sbAnalogRate->value();
+
     // Analog voltage multipliers
 
     config.analog_voltage_multiplier = ui->sbVoltage1Mult->value();
@@ -566,7 +575,7 @@ void MainWindow::getConfigFromUi()
     // Smartport
 
     //config.smartport_data_id = 0x5000;
-    //config.smartport_sensor_id = 10;
+    config.smartport_sensor_id = ui->sbSensorId->value();
 
     // XBUS Clock stretch
 
@@ -674,6 +683,12 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
         gbRate->setVisible(true);
     } else {
         gbRate->setVisible(false);
+    }
+
+    if(arg1 == "Frsky Smartport") {
+        ui->sbSensorId->setVisible(true);
+    } else {
+        ui->sbSensorId->setVisible(false);
     }
 
     if(arg1 == "Flysky IBUS") {

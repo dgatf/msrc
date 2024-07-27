@@ -14,6 +14,7 @@
 typedef struct current_parameters_t
 {
     uint8_t adc_num;
+    uint8_t rate;
     float alpha, multiplier, offset;
     bool auto_offset;
     float *current, *consumption, *voltage;

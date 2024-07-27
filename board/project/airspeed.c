@@ -19,6 +19,6 @@ void airspeed_task(void *parameters)
 #endif
         if (debug)
             printf("\nAirspeed (%u): %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.airspeed);
-        vTaskDelay(ANALOG_SENSOR_INTERVAL_MS / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / parameter.rate  / portTICK_PERIOD_MS);
     }
 }

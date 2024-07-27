@@ -20,6 +20,6 @@ void ntc_task(void *parameters)
 #endif
         if (debug)
             printf("\nTemperature (%u): %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.ntc);
-        vTaskDelay(ANALOG_SENSOR_INTERVAL_MS / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / parameter.rate  / portTICK_PERIOD_MS);
     }
 }

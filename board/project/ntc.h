@@ -21,6 +21,7 @@
 typedef struct ntc_parameters_t
 {
     uint8_t adc_num;
+    uint8_t rate;
     float alpha;
     float *ntc;
 

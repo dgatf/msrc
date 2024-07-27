@@ -35,7 +35,7 @@ void current_task(void *parameters)
         }
         if (debug)
             printf("\nCurrent (%u): Curr %.2f Cons %.2f Volt %.2f VoltOffs %.2f Multip %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.current, *parameter.consumption, *parameter.voltage, parameter.offset, parameter.multiplier);
-        vTaskDelay(ANALOG_SENSOR_INTERVAL_MS / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / parameter.rate  / portTICK_PERIOD_MS);
     }
 }
 
