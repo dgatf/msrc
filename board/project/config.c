@@ -83,6 +83,8 @@ void config_forze_write()
     config.debug = MSRC_DEBUG;
     config.esc_hw4_is_manual_offset = ESC_HW4_MANUAL_OFFSET;
     config.esc_hw4_offset = ESC_HW4_CURRENT_OFFSET;
+    config.xbus_use_alternative_volt_temp = XBUS_ALTERNATIVE_VOLT_TEMP;
+    config.spare12 = 0;
     config.spare3 = 0;
     config.spare4 = 0;
     config.spare5 = 0;

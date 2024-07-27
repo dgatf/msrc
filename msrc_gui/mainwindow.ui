@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -72,9 +75,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-1272</y>
              <width>603</width>
-             <height>1907</height>
+             <height>1936</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -92,32 +95,25 @@
               <property name="title">
                <string>Receiver</string>
               </property>
-              <layout class="QGridLayout" name="gridLayout_3">
-               <item row="0" column="0">
-                <widget class="QLabel" name="label">
-                 <property name="text">
-                  <string>Protocol</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QCheckBox" name="cbClockStretch">
-                 <property name="text">
-                  <string>Clock stretch</string>
-                 </property>
-                </widget>
-               </item>
+              <layout class="QGridLayout" name="gridLayout_2">
                <item row="0" column="1">
                 <widget class="QComboBox" name="cbReceiver"/>
                </item>
-               <item row="2" column="0">
-                <widget class="QCheckBox" name="cbAlternativeCoordinates">
+               <item row="4" column="0">
+                <widget class="QLabel" name="lbSensorId">
                  <property name="text">
-                  <string>Alternative coordinates</string>
+                  <string>Senrsor ID</string>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0" colspan="2">
+               <item row="3" column="0">
+                <widget class="QCheckBox" name="cbAlternativePacket">
+                 <property name="text">
+                  <string>Alternative packet</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="2">
                 <widget class="QGroupBox" name="gbRate">
                  <property name="title">
                   <string>Refresh rate (ms)</string>
@@ -286,20 +282,34 @@
                  </layout>
                 </widget>
                </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="lbSensorId">
-                 <property name="text">
-                  <string>Senrsor ID</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
+               <item row="4" column="1">
                 <widget class="QSpinBox" name="sbSensorId">
                  <property name="minimum">
                   <number>1</number>
                  </property>
                  <property name="maximum">
                   <number>30</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="cbAlternativeCoordinates">
+                 <property name="text">
+                  <string>Alternative coordinates</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="text">
+                  <string>Protocol</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QCheckBox" name="cbClockStretch">
+                 <property name="text">
+                  <string>Clock stretch</string>
                  </property>
                 </widget>
                </item>
@@ -748,6 +758,9 @@
                    <layout class="QHBoxLayout" name="horizontalLayout_9">
                     <item>
                      <widget class="QLabel" name="label_3">
+                      <property name="enabled">
+                       <bool>true</bool>
+                      </property>
                       <property name="toolTip">
                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(R1+R2)/R2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                       </property>
@@ -1035,7 +1048,7 @@
         <item>
          <widget class="QTabWidget" name="tbViews">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">

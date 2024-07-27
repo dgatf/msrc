@@ -16,11 +16,12 @@ MainWindow::MainWindow(QWidget *parent)
                               "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2",
                               "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec"});
     ui->cbEscModel->addItems({"",
-        "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A",
-        "Platinum PRO v4 100A", "Platinum PRO v4 120A",
-        "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A",
-        "Platinum PRO v4 200A-HV", "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A",
-        "FlyFun 120A", "FlyFun 110A-HV", "FlyFun 130A-HV", "FlyFun 160A-HV"});
+                              "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A",
+                              "Platinum PRO v4 100A", "Platinum PRO v4 120A",
+                              "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A",
+                              "Platinum PRO v4 200A-HV", "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A",
+                              "FlyFun 120A", "FlyFun 110A-HV", "FlyFun 130A-HV", "FlyFun 160A-HV"});
+
     ui->sbEscOffset->setVisible(false);
     ui->cbCurrentSensorType->addItems({"Hall effect", "Shunt resistor"});
     ui->cbCurrentAutoOffset->setChecked(true);
@@ -347,22 +348,13 @@ void MainWindow::setUiFromConfig()
 
     ui->sbAnalogRate->setValue(config.analog_rate);
 
-    // Voltage 1
+    // Voltage
 
     ui->gbVoltage1->setChecked(config.enable_analog_voltage);
 
-    // Voltage 2
-
-    //ui->gbVoltage2->setChecked(config.enable_analog_voltage2);
-
-    // Temperature 1
+    // Temperature
 
     ui->cbTemperature1->setChecked(config.enable_analog_ntc);
-
-    // Temperature 2
-
-    //ui->cbTemperature2->setChecked(config.enable_analog_ntc2);
-
 
     // Current
 
@@ -432,6 +424,7 @@ void MainWindow::setUiFromConfig()
     // XBUS Clock stretch
 
     ui->cbClockStretch->setChecked(config.xbus_clock_stretch);
+    ui->cbAlternativePacket->setChecked(config.xbus_use_alternative_volt_temp);
 
     // Ibus
 
@@ -448,7 +441,7 @@ void MainWindow::setUiFromConfig()
 
     ui->cbInitDelay->setChecked(config.enable_esc_hw4_init_delay);
     ui->cbEscAutoOffset->setChecked(!config.esc_hw4_is_manual_offset);
-    ui->sbEscOffset->setValue(config.esc_hw4_offset );
+    ui->sbEscOffset->setValue(config.esc_hw4_offset);
     //config.esc_hw4_init_delay_duration = 10000;
     ui->sbCurrentThresold->setValue(config.esc_hw4_current_thresold);
     ui->sbVoltageDivisor->setValue(config.esc_hw4_divisor);
@@ -484,12 +477,10 @@ void MainWindow::getConfigFromUi()
     // Voltage
 
     config.enable_analog_voltage = ui->gbVoltage1->isChecked();
-    //config.enable_analog_voltage2 = ui->gbVoltage2->isChecked();
 
     // Temperature
 
     config.enable_analog_ntc = ui->cbTemperature1->isChecked();
-    //config.enable_analog_ntc2 = ui->cbTemperature2->isChecked();
 
     // Current
 
@@ -580,6 +571,7 @@ void MainWindow::getConfigFromUi()
     // XBUS Clock stretch
 
     config.xbus_clock_stretch = ui->cbClockStretch->isChecked();
+    config.xbus_use_alternative_volt_temp = ui->cbAlternativePacket->isChecked();
 
     // Jeti Ex
 
@@ -670,25 +662,31 @@ void MainWindow::exitApp()
 
 void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
 {
-    QGroupBox *gbRate = ui->gbReceiver->findChild<QGroupBox *>("gbRate");
     if(arg1 == "Spektrum XBUS") {
         ui->cbClockStretch->setVisible(true);
-        gbRate->setVisible(false);
+        ui->cbAlternativePacket->setVisible(true);
+
     } else {
         ui->cbClockStretch->setVisible(false);
-        gbRate->setVisible(true);
+        ui->cbAlternativePacket->setVisible(false);
     }
 
     if(arg1 == "Frsky Smartport" || arg1 == "Frsky D") {
-        gbRate->setVisible(true);
+        ui->gbRate->setVisible(true);
     } else {
-        gbRate->setVisible(false);
+        ui->gbRate->setVisible(false);
     }
 
     if(arg1 == "Frsky Smartport") {
-        ui->sbSensorId->setVisible(true);
+        {
+            ui->lbSensorId->setVisible(true);
+            ui->sbSensorId->setVisible(true);
+        }
     } else {
-        ui->sbSensorId->setVisible(false);
+        {
+            ui->lbSensorId->setVisible(false);
+            ui->sbSensorId->setVisible(false);
+        }
     }
 
     if(arg1 == "Flysky IBUS") {
@@ -697,24 +695,21 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
         ui->cbAlternativeCoordinates->setVisible(false);
     }
 
-    QLabel *lbSpeedUnitsGps = ui->gbGps->findChild<QLabel *>("lbSpeedUnitsGps");
     if(arg1 == "Jeti Ex Bus") {
         ui->cbSpeedUnitsGps->setVisible(true);
-        lbSpeedUnitsGps->setVisible(true);
+        ui->lbSpeedUnitsGps->setVisible(true);
     } else {
         ui->cbSpeedUnitsGps->setVisible(false);
-        lbSpeedUnitsGps->setVisible(false);
+        ui->lbSpeedUnitsGps->setVisible(false);
     }
 }
 
 void MainWindow::on_cbEsc_currentIndexChanged(const QString &arg1)
 {
-    QGroupBox *gbEscParameters =
-        ui->gbEsc->findChild<QGroupBox *>("gbEscParameters");
     if(arg1 == "Hobbywing V4/Flyfun (not VBAR firmware)")
-        gbEscParameters->setVisible(true);
+        ui->gbEscParameters->setVisible(true);
     else
-        gbEscParameters->setVisible(false);
+        ui->gbEscParameters->setVisible(false);
 }
 
 void MainWindow::on_cbEscModel_currentIndexChanged(const QString &arg1)

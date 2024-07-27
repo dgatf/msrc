@@ -407,7 +407,6 @@ static void set_config()
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
-        sensor->vario[XBUS_VARIO_VSPEED] = parameter.vspeed;
         sensor->is_enabled[XBUS_VARIO] = true;
         sensor_formatted->vario = malloc(sizeof(xbus_vario_t));
         *sensor_formatted->vario = (xbus_vario_t){XBUS_VARIO_ID, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -419,7 +418,6 @@ static void set_config()
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
-        sensor->vario[XBUS_VARIO_VSPEED] = parameter.vspeed;
         sensor->is_enabled[XBUS_VARIO] = true;
         sensor_formatted->vario = malloc(sizeof(xbus_vario_t));
         *sensor_formatted->vario = (xbus_vario_t){XBUS_VARIO_ID, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -431,7 +429,6 @@ static void set_config()
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
-        sensor->vario[XBUS_VARIO_VSPEED] = parameter.vspeed;
         sensor->is_enabled[XBUS_VARIO] = true;
         sensor_formatted->vario = malloc(sizeof(xbus_vario_t));
         *sensor_formatted->vario = (xbus_vario_t){XBUS_VARIO_ID, 0, 0, 0, 0, 0, 0, 0, 0};

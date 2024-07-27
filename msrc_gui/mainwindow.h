@@ -114,7 +114,8 @@ typedef struct config_t
     uint8_t debug;
     bool esc_hw4_is_manual_offset;
     uint8_t analog_rate;
-    uint16_t spare12;
+    bool xbus_use_alternative_volt_temp;
+    uint8_t spare12;
     float esc_hw4_offset;
     uint32_t spare3;
     uint32_t spare4;

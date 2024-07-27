@@ -60,7 +60,9 @@ void xbus_format_sensor(uint8_t address)
             lat *= -1;
         else
             gps_flags |= 1 << XBUS_GPS_INFO_FLAGS_IS_NORTH_BIT;
-        sensor_formatted->gps_loc->latitude = bcd32((uint16_t)(lat / 60) * 100 + fmod(lat, 60), 4);
+        uint deg = lat / 60;
+        float min = lat - deg * 60;
+        sensor_formatted->gps_loc->latitude = ((uint32_t)bcd8(deg, 0) << 24) | bcd32(min, 4);
         float lon = *sensor->gps_loc[XBUS_GPS_LOC_LONGITUDE];
         if (lon < 0) // E=1,+, W=0,-
             lon *= -1;
@@ -71,7 +73,9 @@ void xbus_format_sensor(uint8_t address)
             gps_flags |= 1 << XBUS_GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
             lon -= 6000;
         }
-        sensor_formatted->gps_loc->longitude = bcd32((uint16_t)(lon / 60) * 100 + fmod(lon, 60), 4);
+        deg = lon / 60;
+        min = lon - deg * 60;
+        sensor_formatted->gps_loc->longitude = ((uint32_t)bcd8(deg, 0) << 24) | bcd32(min, 4);
         sensor_formatted->gps_loc->course = bcd16(*sensor->gps_loc[XBUS_GPS_LOC_COURSE], 1);
         sensor_formatted->gps_loc->hdop = bcd8(*sensor->gps_loc[XBUS_GPS_LOC_HDOP], 1);
         alt = *sensor->gps_loc[XBUS_GPS_LOC_ALTITUDE];
@@ -87,9 +91,25 @@ void xbus_format_sensor(uint8_t address)
     case XBUS_GPS_STAT_ID:
     {
         sensor_formatted->gps_stat->speed = bcd16(*sensor->gps_stat[XBUS_GPS_STAT_SPEED], 1);
-        sensor_formatted->gps_stat->utc = bcd32(*sensor->gps_stat[XBUS_GPS_STAT_TIME], 2);
+        sensor_formatted->gps_stat->utc = bcd32(*sensor->gps_stat[XBUS_GPS_STAT_TIME], 0) << 4;
         sensor_formatted->gps_stat->num_sats = bcd8(*sensor->gps_stat[XBUS_GPS_STAT_SATS], 0);
         sensor_formatted->gps_stat->altitude_high = bcd8((uint8_t)(alt / 1000), 0);
+        break;
+    }
+    case XBUS_ENERGY_ID:
+    {
+        if (sensor->energy[XBUS_ENERGY_CURRENT1])
+            sensor_formatted->energy->current_a = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_CURRENT1] * 100);
+        if (sensor->energy[XBUS_ENERGY_CONSUMPTION1])
+            sensor_formatted->energy->charge_used_a = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_CONSUMPTION1] * 10);
+        if (sensor->energy[XBUS_ENERGY_VOLTAGE1])
+            sensor_formatted->energy->volts_a = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_VOLTAGE1] * 100);
+        if (sensor->energy[XBUS_ENERGY_CURRENT2])
+            sensor_formatted->energy->current_b = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_CURRENT2] * 10);
+        if (sensor->energy[XBUS_ENERGY_CONSUMPTION2])
+            sensor_formatted->energy->charge_used_b = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_CONSUMPTION2]);
+        if (sensor->energy[XBUS_ENERGY_VOLTAGE2])
+            sensor_formatted->energy->volts_b = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_VOLTAGE2] * 100);
         break;
     }
     case XBUS_ESC_ID:
@@ -104,21 +124,37 @@ void xbus_format_sensor(uint8_t address)
             sensor_formatted->esc->current_motor = __builtin_bswap16(*sensor->esc[XBUS_ESC_CURRENT] * 100);
         if (sensor->esc[XBUS_ESC_TEMPERATURE_BEC])
             sensor_formatted->esc->temp_bec = __builtin_bswap16(*sensor->esc[XBUS_ESC_TEMPERATURE_BEC] * 10);
+        if (sensor->esc[XBUS_ESC_CURRENT_BEC])
+            sensor_formatted->esc->current_bec = *sensor->esc[XBUS_ESC_CURRENT_BEC] * 10;
+        if (sensor->esc[XBUS_ESC_VOLTAGE_BEC])
+            sensor_formatted->esc->voltage_bec = *sensor->esc[XBUS_ESC_VOLTAGE_BEC] * 20;
         break;
     }
     case XBUS_BATTERY_ID:
     {
-        sensor_formatted->battery->current_b = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_CURRENT2] * 10);
-        sensor_formatted->battery->charge_used_b = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_CONSUMPTION2]);
+        if (sensor->battery[XBUS_BATTERY_CURRENT1])
+            sensor_formatted->battery->current_a = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_CURRENT1] * 10);
+        if (sensor->battery[XBUS_BATTERY_CONSUMPTION1])
+            sensor_formatted->battery->charge_used_a = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_CONSUMPTION1]);
+        if (sensor->battery[XBUS_BATTERY_TEMP1])
+            sensor_formatted->battery->temp_a = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_TEMP1] * 10);
+        if (sensor->battery[XBUS_BATTERY_CURRENT2])
+            sensor_formatted->battery->current_b = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_CURRENT2] * 10);
+        if (sensor->battery[XBUS_BATTERY_CONSUMPTION2])
+            sensor_formatted->battery->charge_used_b = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_CONSUMPTION2]);
+        if (sensor->battery[XBUS_BATTERY_TEMP2])
+            sensor_formatted->battery->temp_b = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_TEMP2] * 10);
         break;
     }
     case XBUS_VARIO_ID:
     {
+        static uint ts_250ms;
         static uint ts_500ms;
         static uint ts_1000ms;
         static uint ts_1500ms;
         static uint ts_2000ms;
         static uint ts_3000ms;
+        static float altitude_250ms;
         static float altitude_500ms;
         static float altitude_1000ms;
         static float altitude_1500ms;
@@ -127,9 +163,15 @@ void xbus_format_sensor(uint8_t address)
         uint ts = time_us_32();
         float altitude = *sensor->vario[XBUS_VARIO_ALTITUDE];
         sensor_formatted->vario->altitude = __builtin_bswap16(altitude * 10);
+        if (ts - ts_250ms > 250)
+        {
+            sensor_formatted->vario->delta_0250ms = __builtin_bswap16((altitude - altitude_250ms) * 10);
+            altitude_250ms = altitude;
+            ts_250ms = ts;
+        }
         if (ts - ts_500ms > 500)
         {
-            sensor_formatted->vario->delta_0500ms = __builtin_bswap16(altitude - altitude_500ms);
+            sensor_formatted->vario->delta_0500ms = __builtin_bswap16((altitude - altitude_500ms) * 10);
             altitude_500ms = altitude;
             ts_500ms = ts;
         }
@@ -157,6 +199,14 @@ void xbus_format_sensor(uint8_t address)
             altitude_3000ms = altitude;
             ts_3000ms = ts;
         }
+#ifdef SIM_SENSORS
+            sensor_formatted->vario->delta_0250ms = __builtin_bswap16(25);
+            sensor_formatted->vario->delta_0500ms = __builtin_bswap16(50);
+            sensor_formatted->vario->delta_1000ms = __builtin_bswap16(10);
+            sensor_formatted->vario->delta_1500ms = __builtin_bswap16(15);
+            sensor_formatted->vario->delta_2000ms = __builtin_bswap16(20);
+            sensor_formatted->vario->delta_3000ms = __builtin_bswap16(30);
+#endif
         break;
     }
     case XBUS_RPMVOLTTEMP_ID:
@@ -172,8 +222,10 @@ void xbus_format_sensor(uint8_t address)
 
 static void i2c_request_handler(uint8_t address)
 {
-    // printf("\nAddress: %X, request...", address);
     uint8_t buffer[64];
+    
+    if (debug)
+        printf("\nXBUS (%u) Address: %X Packet: ", uxTaskGetStackHighWaterMark(receiver_task_handle), address);
 
     switch (address)
     {
@@ -186,7 +238,6 @@ static void i2c_request_handler(uint8_t address)
         vTaskResume(led_task_handle);
         if (debug)
         {
-            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
             uint8_t buffer[sizeof(xbus_airspeed_t)];
             memcpy(buffer, sensor_formatted->airspeed, sizeof(xbus_airspeed_t));
             for (int i = 0; i < sizeof(xbus_airspeed_t); i++)
@@ -211,7 +262,6 @@ static void i2c_request_handler(uint8_t address)
         vTaskResume(led_task_handle);
         if (debug)
         {
-            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
             uint8_t buffer[sizeof(xbus_gps_loc_t)];
             memcpy(buffer, sensor_formatted->gps_loc, sizeof(xbus_gps_loc_t));
             for (int i = 0; i < sizeof(xbus_gps_loc_t); i++)
@@ -230,10 +280,27 @@ static void i2c_request_handler(uint8_t address)
         vTaskResume(led_task_handle);
         if (debug)
         {
-            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
             uint8_t buffer[sizeof(xbus_gps_stat_t)];
             memcpy(buffer, sensor_formatted->gps_stat, sizeof(xbus_gps_stat_t));
             for (int i = 0; i < sizeof(xbus_gps_stat_t); i++)
+            {
+                printf("%X ", buffer[i]);
+            }
+        }
+        break;
+    }
+    case XBUS_ENERGY_ID:
+    {
+        if (!sensor->is_enabled[XBUS_ENERGY])
+            break;
+        xbus_format_sensor(address);
+        i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->energy);
+        vTaskResume(led_task_handle);
+        if (debug)
+        {
+            uint8_t buffer[sizeof(xbus_energy_t)];
+            memcpy(buffer, sensor_formatted->battery, sizeof(xbus_energy_t));
+            for (int i = 0; i < sizeof(xbus_energy_t); i++)
             {
                 printf("%X ", buffer[i]);
             }
@@ -249,7 +316,6 @@ static void i2c_request_handler(uint8_t address)
         vTaskResume(led_task_handle);
         if (debug)
         {
-            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
             uint8_t buffer[sizeof(xbus_esc_t)];
             memcpy(buffer, sensor_formatted->esc, sizeof(xbus_esc_t));
             for (int i = 0; i < sizeof(xbus_esc_t); i++)
@@ -268,7 +334,6 @@ static void i2c_request_handler(uint8_t address)
         vTaskResume(led_task_handle);
         if (debug)
         {
-            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
             uint8_t buffer[sizeof(xbus_battery_t)];
             memcpy(buffer, sensor_formatted->battery, sizeof(xbus_battery_t));
             for (int i = 0; i < sizeof(xbus_battery_t); i++)
@@ -287,7 +352,6 @@ static void i2c_request_handler(uint8_t address)
         vTaskResume(led_task_handle);
         if (debug)
         {
-            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
             uint8_t buffer[sizeof(xbus_vario_t)];
             memcpy(buffer, sensor_formatted->vario, sizeof(xbus_vario_t));
             for (int i = 0; i < sizeof(xbus_vario_t); i++)
@@ -306,7 +370,6 @@ static void i2c_request_handler(uint8_t address)
         vTaskResume(led_task_handle);
         if (debug)
         {
-            printf("\nXBUS (%u) > ", uxTaskGetStackHighWaterMark(receiver_task_handle));
             uint8_t buffer[sizeof(xbus_rpm_volt_temp_t)];
             memcpy(buffer, sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
             for (int i = 0; i < sizeof(xbus_rpm_volt_temp_t); i++)
@@ -330,7 +393,7 @@ static void set_config()
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         sensor->esc[XBUS_ESC_RPM] = parameter.rpm;
         sensor->is_enabled[XBUS_ESC] = true;
-        sensor_formatted->esc = calloc(1,16);
+        sensor_formatted->esc = calloc(1, 16);
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_ESC_ID);
 
@@ -344,7 +407,7 @@ static void set_config()
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
         sensor->esc[XBUS_ESC_RPM] = parameter.rpm;
         sensor->is_enabled[XBUS_ESC] = true;
-        sensor_formatted->esc = calloc(1,16);
+        sensor_formatted->esc = calloc(1, 16);
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_ESC_ID);
 
@@ -352,7 +415,7 @@ static void set_config()
     }
     if (config->esc_protocol == ESC_HW4)
     {
-                esc_hw4_parameters_t parameter = {config->rpm_multiplier, config->enable_pwm_out,
+        esc_hw4_parameters_t parameter = {config->rpm_multiplier, config->enable_pwm_out,
                                           config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature, config->esc_hw4_divisor, config->esc_hw4_current_multiplier, config->esc_hw4_current_thresold, config->esc_hw4_current_max,
                                           config->esc_hw4_is_manual_offset, config->esc_hw4_offset,
                                           malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
@@ -373,21 +436,21 @@ static void set_config()
         sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temperature_fet;
         sensor->esc[XBUS_ESC_TEMPERATURE_BEC] = parameter.temperature_bec;
         sensor->is_enabled[XBUS_ESC] = true;
-        sensor_formatted->esc = calloc(1,16);
+        sensor_formatted->esc = calloc(1, 16);
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_ESC_ID);
-        //sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
-        //sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
-        //sensor->is_enabled[XBUS_BATTERY] = true;
-        //sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
+        // sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
+        // sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
+        // sensor->is_enabled[XBUS_BATTERY] = true;
+        // sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
         //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
-        //i2c_multi_enable_address(XBUS_BATTERY_ID);
+        // i2c_multi_enable_address(XBUS_BATTERY_ID);
     }
     if (config->esc_protocol == ESC_VBAR)
     {
         esc_vbar_parameters_t parameter = {config->rpm_multiplier,
-                                          config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature,
-                                          malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+                                           config->alpha_rpm, config->alpha_voltage, config->alpha_current, config->alpha_temperature,
+                                           malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
         uart1_notify_task_handle = task_handle;
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
@@ -398,15 +461,15 @@ static void set_config()
         sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temperature_fet;
         sensor->esc[XBUS_ESC_TEMPERATURE_BEC] = parameter.temperature_bec;
         sensor->is_enabled[XBUS_ESC] = true;
-        sensor_formatted->esc = calloc(1,16);
+        sensor_formatted->esc = calloc(1, 16);
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_ESC_ID);
-        //sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
-        //sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
-        //sensor->is_enabled[XBUS_BATTERY] = true;
-        //sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
+        // sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
+        // sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
+        // sensor->is_enabled[XBUS_BATTERY] = true;
+        // sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
         //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
-        //i2c_multi_enable_address(XBUS_BATTERY_ID);
+        // i2c_multi_enable_address(XBUS_BATTERY_ID);
     }
     if (config->esc_protocol == ESC_CASTLE)
     {
@@ -419,16 +482,18 @@ static void set_config()
         sensor->esc[XBUS_ESC_VOLTAGE] = parameter.voltage;
         sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
         sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temperature;
+        sensor->esc[XBUS_ESC_CURRENT_BEC] = parameter.current_bec;
+        sensor->esc[XBUS_ESC_VOLTAGE_BEC] = parameter.voltage_bec;
         sensor->is_enabled[XBUS_ESC] = true;
-        sensor_formatted->esc = calloc(1,16);
+        sensor_formatted->esc = calloc(1, 16);
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_ESC_ID);
-        //sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
-        //sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
-        //sensor->is_enabled[XBUS_BATTERY] = true;
-        //sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
+        // sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
+        // sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
+        // sensor->is_enabled[XBUS_BATTERY] = true;
+        // sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
         //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
-        //i2c_multi_enable_address(XBUS_BATTERY_ID);
+        // i2c_multi_enable_address(XBUS_BATTERY_ID);
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -446,16 +511,18 @@ static void set_config()
         sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
         sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temperature_fet;
         sensor->esc[XBUS_ESC_TEMPERATURE_BEC] = parameter.temperature_bec;
+        sensor->esc[XBUS_ESC_CURRENT_BEC] = parameter.current_bec;
+        sensor->esc[XBUS_ESC_VOLTAGE_BEC] = parameter.voltage_bec;
         sensor->is_enabled[XBUS_ESC] = true;
-        sensor_formatted->esc = calloc(1,16);
+        sensor_formatted->esc = calloc(1, 16);
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_ESC_ID);
-        //sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
-        //sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
-        //sensor->is_enabled[XBUS_BATTERY] = true;
-        //sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
+        // sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
+        // sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
+        // sensor->is_enabled[XBUS_BATTERY] = true;
+        // sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
         //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
-        //i2c_multi_enable_address(XBUS_BATTERY_ID);
+        // i2c_multi_enable_address(XBUS_BATTERY_ID);
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -473,15 +540,15 @@ static void set_config()
         sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
         sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temperature;
         sensor->is_enabled[XBUS_ESC] = true;
-        sensor_formatted->esc = calloc(1,16);
+        sensor_formatted->esc = calloc(1, 16);
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_ESC_ID);
-        //sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
-        //sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
-        //sensor->is_enabled[XBUS_BATTERY] = true;
-        //sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
+        // sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
+        // sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
+        // sensor->is_enabled[XBUS_BATTERY] = true;
+        // sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
         //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
-        //i2c_multi_enable_address(XBUS_BATTERY_ID);
+        // i2c_multi_enable_address(XBUS_BATTERY_ID);
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -499,15 +566,15 @@ static void set_config()
         sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
         sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temperature;
         sensor->is_enabled[XBUS_ESC] = true;
-        sensor_formatted->esc = calloc(1,16);
+        sensor_formatted->esc = calloc(1, 16);
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_ESC_ID);
-        //sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
-        //sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
-        //sensor->is_enabled[XBUS_BATTERY] = true;
-        //sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
+        // sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
+        // sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
+        // sensor->is_enabled[XBUS_BATTERY] = true;
+        // sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
         //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
-        //i2c_multi_enable_address(XBUS_BATTERY_ID);
+        // i2c_multi_enable_address(XBUS_BATTERY_ID);
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -530,9 +597,9 @@ static void set_config()
         sensor->gps_stat[XBUS_GPS_STAT_ALTITUDE] = parameter.alt;
         sensor->is_enabled[XBUS_GPS_LOC] = true;
         sensor->is_enabled[XBUS_GPS_STAT] = true;
-        sensor_formatted->gps_loc = calloc(1,16);
+        sensor_formatted->gps_loc = calloc(1, 16);
         *sensor_formatted->gps_loc = (xbus_gps_loc_t){XBUS_GPS_LOC_ID, 0, 0, 0, 0, 0, 0, 0};
-        sensor_formatted->gps_stat = calloc(1,16);
+        sensor_formatted->gps_stat = calloc(1, 16);
         *sensor_formatted->gps_stat = (xbus_gps_stat_t){XBUS_GPS_STAT_ID, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_GPS_LOC_ID);
         i2c_multi_enable_address(XBUS_GPS_STAT_ID);
@@ -544,12 +611,22 @@ static void set_config()
         voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage, config->analog_voltage_multiplier, malloc(sizeof(float))};
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
-
-        sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_VOLT] = parameter.voltage;
-        sensor->is_enabled[XBUS_RPMVOLTTEMP] = true;
-        sensor_formatted->rpm_volt_temp = calloc(1,16);
-        *sensor_formatted->rpm_volt_temp = (xbus_rpm_volt_temp_t){XBUS_RPMVOLTTEMP_ID, 0, 0, 0, 0};
-        i2c_multi_enable_address(XBUS_RPMVOLTTEMP_ID);
+        if (!config->xbus_use_alternative_volt_temp)
+        {
+            sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_VOLT] = parameter.voltage;
+            sensor->is_enabled[XBUS_RPMVOLTTEMP] = true;
+            sensor_formatted->rpm_volt_temp = calloc(1, 16);
+            *sensor_formatted->rpm_volt_temp = (xbus_rpm_volt_temp_t){XBUS_RPMVOLTTEMP_ID, 0, 0, 0, 0};
+            i2c_multi_enable_address(XBUS_RPMVOLTTEMP_ID);
+        }
+        else
+        {
+            sensor->energy[XBUS_ENERGY_VOLTAGE1] = parameter.voltage;
+            sensor->is_enabled[XBUS_ENERGY] = true;
+            sensor_formatted->energy = calloc(1, 16);
+            *sensor_formatted->energy = (xbus_energy_t){XBUS_ENERGY_ID, 0, 0, 0, 0, 0, 0};
+            i2c_multi_enable_address(XBUS_ENERGY_ID);
+        }
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -559,12 +636,15 @@ static void set_config()
         xTaskCreate(current_task, "current_task", STACK_CURRENT, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
-        sensor->battery[XBUS_BATTERY_CURRENT2] = parameter.current;
-        sensor->battery[XBUS_BATTERY_CONSUMPTION2] = parameter.consumption;
-        sensor->is_enabled[XBUS_BATTERY] = true;
-        sensor_formatted->battery = calloc(1,16);
-        *sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
-        i2c_multi_enable_address(XBUS_BATTERY_ID);
+        sensor->energy[XBUS_ENERGY_CURRENT1] = parameter.current;
+        sensor->energy[XBUS_ENERGY_CONSUMPTION1] = parameter.consumption;
+        if (!sensor->is_enabled[XBUS_ENERGY])
+        {
+            sensor->is_enabled[XBUS_ENERGY] = true;
+            sensor_formatted->energy = calloc(1, 16);
+            *sensor_formatted->energy = (xbus_energy_t){XBUS_ENERGY_ID, 0, 0, 0, 0, 0, 0};
+        }
+        i2c_multi_enable_address(XBUS_ENERGY_ID);
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -573,12 +653,22 @@ static void set_config()
         ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
-
-        sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP] = parameter.ntc;
-        sensor->is_enabled[XBUS_RPMVOLTTEMP] = true;
-        sensor_formatted->rpm_volt_temp = calloc(1,16);
-        *sensor_formatted->rpm_volt_temp = (xbus_rpm_volt_temp_t){XBUS_RPMVOLTTEMP_ID, 0, 0, 0, 0};
-        i2c_multi_enable_address(XBUS_RPMVOLTTEMP_ID);
+        if (!config->xbus_use_alternative_volt_temp)
+        {
+            sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP] = parameter.ntc;
+            sensor->is_enabled[XBUS_RPMVOLTTEMP] = true;
+            sensor_formatted->rpm_volt_temp = calloc(1, 16);
+            *sensor_formatted->rpm_volt_temp = (xbus_rpm_volt_temp_t){XBUS_RPMVOLTTEMP_ID, 0, 0, 0, 0};
+            i2c_multi_enable_address(XBUS_RPMVOLTTEMP_ID);
+        }
+        else
+        {
+            sensor->battery[XBUS_BATTERY_TEMP1] = parameter.ntc;
+            sensor->is_enabled[XBUS_BATTERY] = true;
+            sensor_formatted->battery = calloc(1, 16);
+            *sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0};
+            i2c_multi_enable_address(XBUS_BATTERY_ID);
+        }
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_airspeed)
@@ -589,7 +679,7 @@ static void set_config()
 
         sensor->airspeed[XBUS_AIRSPEED_AIRSPEED] = parameter.airspeed;
         sensor->is_enabled[XBUS_AIRSPEED] = true;
-        sensor_formatted->airspeed = calloc(1,16);
+        sensor_formatted->airspeed = calloc(1, 16);
         *sensor_formatted->airspeed = (xbus_airspeed_t){XBUS_AIRSPEED_ID, 0, 0, 0};
         i2c_multi_enable_address(XBUS_AIRSPEED_ID);
 
@@ -602,9 +692,8 @@ static void set_config()
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
-        // sensor->vario[XBUS_VARIO_SPEED] = parameter.speed;
         sensor->is_enabled[XBUS_VARIO] = true;
-        sensor_formatted->vario = calloc(1,16);
+        sensor_formatted->vario = calloc(1, 16);
         *sensor_formatted->vario = (xbus_vario_t){XBUS_VARIO_ID, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_VARIO_ID);
 
@@ -617,9 +706,8 @@ static void set_config()
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
-        sensor->vario[XBUS_VARIO_VSPEED] = parameter.vspeed;
         sensor->is_enabled[XBUS_VARIO] = true;
-        sensor_formatted->vario = calloc(1,16);
+        sensor_formatted->vario = calloc(1, 16);
         *sensor_formatted->vario = (xbus_vario_t){XBUS_VARIO_ID, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_VARIO_ID);
 
@@ -632,9 +720,8 @@ static void set_config()
         xQueueSendToBack(tasks_queue_handle, task_handle, 0);
 
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
-        sensor->vario[XBUS_VARIO_VSPEED] = parameter.vspeed;
         sensor->is_enabled[XBUS_VARIO] = true;
-        sensor_formatted->vario = calloc(1,16);
+        sensor_formatted->vario = calloc(1, 16);
         *sensor_formatted->vario = (xbus_vario_t){XBUS_VARIO_ID, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_VARIO_ID);
 

@@ -34,6 +34,7 @@
 #define XBUS_ALTIMETER_ID 0x12
 #define XBUS_GPS_LOC_ID 0x16
 #define XBUS_GPS_STAT_ID 0x17
+#define XBUS_ENERGY_ID 0x18
 #define XBUS_ESC_ID 0x20
 #define XBUS_BATTERY_ID 0x34
 #define XBUS_VARIO_ID 0X40
@@ -53,7 +54,8 @@ typedef enum xbus_sensors_t
     XBUS_ESC,
     XBUS_BATTERY,
     XBUS_VARIO,
-    XBUS_RPMVOLTTEMP
+    XBUS_RPMVOLTTEMP,
+    XBUS_ENERGY
 } xbus_sensors_t;
 
 typedef enum xbus_airspeed_enum_t
@@ -83,27 +85,40 @@ typedef enum xbus_gps_stat_enum_t
     XBUS_GPS_STAT_ALTITUDE
 } xbus_gps_stat_enum_t;
 
+typedef enum xbus_energy_enum_t
+{
+    XBUS_ENERGY_CURRENT1,    
+    XBUS_ENERGY_CONSUMPTION1,
+    XBUS_ENERGY_VOLTAGE1,
+    XBUS_ENERGY_CURRENT2,
+    XBUS_ENERGY_CONSUMPTION2,
+    XBUS_ENERGY_VOLTAGE2
+} xbus_energy_enum_t;
+
 typedef enum xbus_esc_enum_t
 {
     XBUS_ESC_RPM,
     XBUS_ESC_VOLTAGE,
     XBUS_ESC_CURRENT,
     XBUS_ESC_TEMPERATURE_FET,
-    XBUS_ESC_TEMPERATURE_BEC
+    XBUS_ESC_TEMPERATURE_BEC,
+    XBUS_ESC_VOLTAGE_BEC,
+    XBUS_ESC_CURRENT_BEC
 } xbus_esc_enum_t;
 
 typedef enum xbus_battery_enum_t
 {
     XBUS_BATTERY_CURRENT1,    
     XBUS_BATTERY_CONSUMPTION1,
+    XBUS_BATTERY_TEMP1,
     XBUS_BATTERY_CURRENT2,
-    XBUS_BATTERY_CONSUMPTION2
+    XBUS_BATTERY_CONSUMPTION2,
+    XBUS_BATTERY_TEMP2
 } xbus_battery_enum_t;
 
 typedef enum xbus_vario_enum_t
 {
-    XBUS_VARIO_ALTITUDE,
-    XBUS_VARIO_VSPEED,
+    XBUS_VARIO_ALTITUDE
 } xbus_vario_enum_t;
 
 typedef enum xbus_rpm_volt_temp_enum_t
@@ -151,6 +166,18 @@ typedef struct xbus_gps_stat_t
     uint8_t altitude_high; // BCD, meters, format 2.0 (High bits alt)
 } xbus_gps_stat_t;
 
+typedef struct xbus_energy_t
+{
+    uint8_t identifier;    // Source device 0x18
+    uint8_t s_id;          // Secondary ID
+    int16_t current_a;     // Instantaneous current, 0.01A (0-327.7A)
+    int16_t charge_used_a; // Integrated mAh used, 0.1mAh (0-3276.6mAh)
+    uint16_t volts_a;      // Voltage, 0.01VC (0-16.00V)
+    int16_t current_b;     // Instantaneous current, 0.01A (0-327.7A)
+    int16_t charge_used_b; // Integrated mAh used, 0.1mAh (0-3276.6mAh)
+    uint16_t volts_b;      // Voltage, 0.01VC (0-16.00V)
+} xbus_energy_t;
+
 typedef struct xbus_esc_t
 {
     uint8_t identifier;     // Source device 0x20
@@ -161,7 +188,7 @@ typedef struct xbus_esc_t
     uint16_t current_motor; // Current, 10mA (0-655.34A).0xFFFF -->
     uint16_t temp_bec;      // Temperature, 0.1C (0-999.8C)0x7FFF -->
     uint8_t current_bec;    // BEC Current, 100mA (0-25.4A). 0xFF ---->
-    uint8_t volts_bec;      // BEC Volts, 0.05V (0-12.70V). 0xFF ---->
+    uint8_t voltage_bec;      // BEC Volts, 0.05V (0-12.70V). 0xFF ---->
     uint8_t throttle;       // 0.5% (0-127%). 0xFF ---->
     uint8_t power_out;      // Power Output, 0.5% (0-127%). 0xFF ---->
 } xbus_esc_t;
@@ -174,7 +201,7 @@ typedef struct xbus_battery_t
     int16_t charge_used_a; // Integrated mAh used, 1mAh (0-32.766Ah)
     uint16_t temp_a;       // Temperature, 0.1C (0-150.0C, // 0x7FFF indicates not populated)
     int16_t current_b;     // Instantaneous current, 0.1A (0-6553.4A)
-    int16_t charge_used_b;  // Integrated mAh used, 1mAh (0-65.534Ah)
+    int16_t charge_used_b; // Integrated mAh used, 1mAh (0-65.534Ah)
     uint16_t temp_b;       // Temperature, 0.1C (0-150.0C,// 0x7FFF indicates not populated)
 } xbus_battery_t;
 
@@ -210,6 +237,7 @@ typedef struct xbus_sensor_formatted_t
     xbus_battery_t *battery;
     xbus_vario_t *vario;
     xbus_rpm_volt_temp_t *rpm_volt_temp;
+    xbus_energy_t *energy;
 } xbus_sensor_formatted_t;
 
 typedef struct xbus_sensor_t
@@ -220,9 +248,10 @@ typedef struct xbus_sensor_t
     float *gps_loc[5];
     float *gps_stat[4];
     float *esc[7];
-    float *battery[2];
-    float *vario[2];
+    float *battery[6];
+    float *vario[1];
     float *rpm_volt_temp[3];
+    float *energy[6];
 } xbus_sensor_t;
 
 extern QueueHandle_t tasks_queue_handle;

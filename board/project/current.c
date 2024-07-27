@@ -25,14 +25,15 @@ void current_task(void *parameters)
         *parameter.voltage = voltage_read(parameter.adc_num);
         if (parameter.offset != -1)
             *parameter.current = get_average(parameter.alpha, *parameter.current, (*parameter.voltage - parameter.offset) * parameter.multiplier);
-#ifdef SIM_SENSORS
-        *parameter.current = 12.34;
-        //*parameter.consumption = 120.34;
-#endif
+
         if (time_us_32() > 6000000)
         {
             *parameter.consumption += get_consumption(*parameter.current, 0, &timestamp);
         }
+#ifdef SIM_SENSORS
+        *parameter.current = 12.34;
+        *parameter.consumption = 120.34;
+#endif
         if (debug)
             printf("\nCurrent (%u): Curr %.2f Cons %.2f Volt %.2f VoltOffs %.2f Multip %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.current, *parameter.consumption, *parameter.voltage, parameter.offset, parameter.multiplier);
         vTaskDelay(1000 / parameter.rate  / portTICK_PERIOD_MS);
