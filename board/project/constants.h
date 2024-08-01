@@ -35,9 +35,9 @@
 #define UART_ESC_TX UART1_TX_GPIO
 
 // set receiver to uart1 when debugging with probe
-//#define UART_RECEIVER uart1
-//#define UART_RECEIVER_RX UART1_RX_GPIO
-//#define UART_RECEIVER_TX UART1_TX_GPIO
+// #define UART_RECEIVER uart1
+// #define UART_RECEIVER_RX UART1_RX_GPIO
+// #define UART_RECEIVER_TX UART1_TX_GPIO
 
 /* ADC */
 #define ANALOG_SENSOR_INTERVAL_MS 500
@@ -105,6 +105,6 @@
 /* Averaging elements to alpha */
 #define ALPHA(ELEMENTS) (2.0 / ((ELEMENTS) + 1))
 /* Averaging alpha to elements */
-#define ELEMENTS(ALPHA) (uint)round((2.0 / (ALPHA) - 1))
+#define ELEMENTS(ALPHA) (uint) round((2.0 / (ALPHA) - 1))
 
 #endif

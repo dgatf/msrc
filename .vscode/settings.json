@@ -28,7 +28,30 @@
         "string": "c",
         "sim_rx.h": "c",
         "random": "c",
-        "ranges": "c"
+        "ranges": "c",
+        "esc_kontronik.h": "c",
+        "current.h": "c",
+        "airspeed.h": "c",
+        "esc_vbar.h": "c",
+        "queue.h": "c",
+        "common.h": "c",
+        "xbus.h": "c",
+        "uart_rx.pio.h": "c",
+        "stdio.h": "c",
+        "pwm_out.h": "c",
+        "limits": "c",
+        "srxl.h": "c",
+        "led.h": "c",
+        "freertos.h": "c",
+        "portable.h": "c",
+        "portmacro.h": "c",
+        "pico.h": "c",
+        "types.h": "c",
+        "stdlib.h": "c",
+        "math.h": "c",
+        "esc_castle.h": "c",
+        "castle_link.h": "c",
+        "castle_link.pio.h": "c"
     },
     "cmake.statusbar.advanced": {
         "debug": {
@@ -49,5 +72,9 @@
     "cortex-debug.openocdPath": "${env:HOME}/src/pico/openocd/src/openocd",
     "cortex-debug.armToolchainPath": "${env:HOME}/.platformio/packages/toolchain-gccarmnoneeabi/bin",
     "cortex-debug.variableUseNaturalFormat": true,
-    "cmake.sourceDirectory": "${workspaceFolder}/board",
+    "cmake.sourceDirectory": "/home/daniel/src/pico/msrc/board",
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+    "[c]": {
+      "editor.defaultFormatter": "ms-vscode.cpptools"
+    }
 }

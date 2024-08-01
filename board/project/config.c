@@ -1,17 +1,108 @@
 #include "config.h"
 
-config_t *config_read()
-{
+#include <hardware/flash.h>
+#include <hardware/sync.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "pico/stdlib.h"
+
+#define CONFIG_FLASH_TARGET_OFFSET (512 * 1024)
+
+/* Receiver protocol */
+#define RX_PROTOCOL \
+    RX_SMARTPORT  // RX_SMARTPORT, RX_XBUS, RX_SRXL, RX_FRSKY_D, RX_IBUS, RX_SBUS, RX_MULTIPLEX, RX_JETIEX, RX_HITEC
+/* Sensors */
+#define ESC_PROTOCOL ESC_NONE  // ESC_NONE, ESC_HW3, ESC_HW4, ESC_PWM, ESC_CASTLE, ESC_KONTRONIK, ESC_APD_F, ESC_APD_HV
+#define ENABLE_GPS false
+#define GPS_BAUD_RATE 9600
+#define ENABLE_ANALOG_VOLTAGE false
+#define ENABLE_ANALOG_CURRENT false
+#define ENABLE_ANALOG_NTC false
+#define ENABLE_ANALOG_AIRSPEED false
+#define I2C1_TYPE I2C_NONE  // I2C_NONE, I2C_BMP280, I2C_MS5611, I2C_BMP180
+#define I2C1_ADDRESS 0x77   // 0x76 (BMP280), 0x77 (BMP180, MS5611)
+/* Pwm out */
+#define ENABLE_PWM_OUT false
+/* Refresh rate in ms (only Frsky) */
+#define REFRESH_RATE_RPM 1000
+#define REFRESH_RATE_VOLTAGE 1000
+#define REFRESH_RATE_CURRENT 1000
+#define REFRESH_RATE_TEMPERATURE 1000
+#define REFRESH_RATE_GPS 1000
+#define REFRESH_RATE_CONSUMPTION 1000
+#define REFRESH_RATE_VARIO 1000
+#define REFRESH_RATE_AIRSPEED 1000
+#define REFRESH_RATE_DEFAULT 1000
+/* Averaging elements (1 = no averaging) */
+#define AVERAGING_ELEMENTS_RPM 1
+#define AVERAGING_ELEMENTS_VOLTAGE 1
+#define AVERAGING_ELEMENTS_CURRENT 1
+#define AVERAGING_ELEMENTS_TEMPERATURE 1
+#define AVERAGING_ELEMENTS_VARIO 1
+#define AVERAGING_ELEMENTS_AIRSPEED 1
+
+/* Analog rate*/
+#define ANALOG_RATE 10
+/* Analog voltage sensors */
+#define ANALOG_VOLTAGE_MULTIPLIER 7.8  // 7.8 if using 68k and 10k as proposed in the docs
+/* Analog current sensor */
+#define ANALOG_CURRENT_MULTIPLIER 1  // current_multiplier = 1000 / sensitivity(mV/A)
+/* Zero current output voltage offset or quiescent voltage (voltage offset when I = 0, Viout)
+ - All hall effect core sensors (Amploc) are bidirectional. Viout=Vs/2
+ - Hall effect coreless sensors (IC) (ACS758) can be bidirectional or directional. Recommended to use directional for
+ higher sensitivity. Viout defined in datasheet
+ - If CURRENT_AUTO_OFFSET is true, then after 5 seconds, voltage read is set as offset. It is recommended to use auto
+ offset
+*/
+#define ANALOG_CURRENT_OFFSET 0
+#define ANALOG_CURRENT_AUTO_OFFSET true
+#define ANALOG_CURRENT_SENSITIVITY 1000
+
+/* RPM multipliers (optional, this may be done in transmitter*/
+#define RPM_PAIR_OF_POLES 1
+#define RPM_PINION_TEETH 1  // For helis
+#define RPM_MAIN_TEETH 1    // For helis
+
+/* Vario */
+#define VARIO_AUTO_OFFSET false
+#define BMP280_FILTER 3  // BMP Filter. Higher filter = lower noise: 1 - low, 2 - medium, 3 - high
+
+/* Only smartport and opentx */
+#define SMARTPORT_SENSOR_ID 18    // Sensor Id
+#define SMARTPORT_DATA_ID 0x5000  // DataId (sensor type)
+
+/* Ibus */
+#define IBUS_GPS_ALTERNATIVE_COORDINATES false
+
+/* XBus */
+#define XBUS_CLOCK_STRECH_SWITCH false
+#define XBUS_ALTERNATIVE_VOLT_TEMP false
+
+/* Jeti Ex */
+#define JETI_GPS_SPEED_UNITS_KMH true
+
+/* Add init delay for FlyFun ESC. Enable if the ESC doesn't arm */
+#define ENABLE_ESC_INIT_DELAY false
+#define ESC_INIT_DELAY_DURATION 10000
+
+/* HW V4/V5 parameters */
+#define ESC_HW4_MANUAL_OFFSET 1
+#define ESC_HW4_CURRENT_OFFSET 0
+#define ESC_HW4_CURRENT_THRESHOLD 25
+#define ESC_HW4_DIVISOR 11
+#define ESC_HW4_CURRENT_MULTIPLIER 10
+#define ESC_HW4_CURRENT_MAX 250
+
+config_t *config_read() {
     uint16_t *version = (uint16_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET);
-    if (*version != CONFIG_VERSION)
-    {
+    if (*version != CONFIG_VERSION) {
         config_forze_write();
     }
     return (config_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET);
 }
 
-void config_write(config_t *config)
-{
+void config_write(config_t *config) {
     uint8_t flash[FLASH_PAGE_SIZE] = {0};
     memcpy(flash, (uint8_t *)config, sizeof(config_t));
 
@@ -21,14 +112,12 @@ void config_write(config_t *config)
     restore_interrupts(ints);
 }
 
-void config_get(config_t *config)
-{
+void config_get(config_t *config) {
     memcpy(config, (config_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET), sizeof(config_t));
     config->debug = MSRC_DEBUG;
 }
 
-void config_forze_write()
-{
+void config_forze_write() {
     config_t config;
     config.version = CONFIG_VERSION;
     config.rx_protocol = RX_PROTOCOL;

@@ -7,7 +7,8 @@ This is a DIY project to send sensors telemetry for a fraction of the weight and
 Compatible RX protocols:
 
 - Frsky Smartport
-- FrSky D, Spektrum XBUS
+- FrSky D
+- Spektrum XBUS
 - Spektrum SRXL V5
 - Flysky IBUS
 - Futaba SBUS2

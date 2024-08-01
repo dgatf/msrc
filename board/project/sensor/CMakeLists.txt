@@ -1,0 +1,23 @@
+target_sources(${PROJECT_NAME} PRIVATE
+    airspeed.c
+    esc_hw3.c
+    voltage.c
+    esc_hw4.c
+    esc_kontronik.c
+    esc_apd_f.c
+    esc_apd_hv.c
+    nmea.c
+    vspeed.c
+    distance.c
+    esc_pwm.c
+    bmp280.c
+    ms5611.c
+    bmp180.c
+    cell_count.c
+    auto_offset.c
+    esc_vbar.c
+    esc_castle.c
+    pwm_out.c
+    ntc.c
+    current.c
+)

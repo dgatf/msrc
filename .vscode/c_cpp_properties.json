@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Default",
+            "includePath": [
+                "${workspaceFolder}/board/project/**",
+                "${workspaceFolder}/build/**",
+                "${env:PICO_SDK_PATH}/src/**",
+                "${workspaceFolder}/board/freertos/FreeRTOS-Kernel/include/",
+                "${workspaceFolder}/board/freertos/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/include/**",
+                "${workspaceFolder}/board/freertos/"
+            ],
+            "intelliSenseMode": "gcc-arm",
+            "compilerPath": "/usr/bin/arm-none-eabi-gcc",
+            "cStandard": "c17",
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
+}
