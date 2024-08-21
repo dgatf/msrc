@@ -23,7 +23,7 @@ void ntc_task(void *parameters) {
     while (1) {
         float voltage = voltage_read(parameter.adc_num);
         float ntcR_Rref = (voltage * NTC_R1 / (BOARD_VCC - voltage)) / NTC_R_REF;
-        if (ntcR_Rref < 1) ntcR_Rref = 1;
+        if (ntcR_Rref < 0.0001) ntcR_Rref = 0.0001;
         float temperature = 1 / (log(ntcR_Rref) / NTC_BETA + 1 / 298.15) - 273.15;
         *parameter.ntc = get_average(parameter.alpha, *parameter.ntc, temperature);
 #ifdef SIM_SENSORS
