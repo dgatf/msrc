@@ -15,15 +15,16 @@ class CircuitDialog : public QDialog
     Q_OBJECT
 
 public:
+    MainWindow *mainWindow;
+
     explicit CircuitDialog(QWidget *parent = nullptr);
     ~CircuitDialog();
-    QLabel *lbCircuit;
-    MainWindow *mainWindow;
     void resizeEvent(QResizeEvent* event);
-
 
 private slots:
     void on_btClose_clicked();
+    void on_btZoomIn_released();
+    void on_btZoomOut_released();
 
 private:
     Ui::CircuitDialog *ui;

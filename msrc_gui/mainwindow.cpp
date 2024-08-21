@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->saConfig->setEnabled(false);
+    ui->btDebug->setDisabled(true);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link",
                          "Kontronic", "APD F", "APD HV", "VBAR"});
     ui->cbGpsBaudrate->addItems(
@@ -238,6 +239,8 @@ void MainWindow::openSerialPort()
         ui->actionUpdateConfig->setEnabled(true);
         ui->saConfig->setEnabled(true);
         ui->cbPortList->setDisabled(true);
+        ui->btDebug->setEnabled(true);
+        ui->btDebug->setText("Enable Debug");
     } else {
         statusBar()->showMessage("Not connected: " + serial->errorString());
         isConnected = false;
@@ -245,6 +248,8 @@ void MainWindow::openSerialPort()
         ui->btConnect->setText("Connect");
         ui->actionUpdateConfig->setEnabled(false);
         ui->saConfig->setEnabled(false);
+        ui->btDebug->setEnabled(false);
+        ui->btDebug->setText("Enable Debug");
     }
 }
 
@@ -258,6 +263,8 @@ void MainWindow::closeSerialPort()
     ui->actionUpdateConfig->setEnabled(false);
     ui->saConfig->setEnabled(false);
     ui->cbPortList->setDisabled(false);
+    ui->btDebug->setDisabled(true);
+    ui->btDebug->setText("Enable Debug");
 }
 
 void MainWindow::readSerial()
@@ -860,7 +867,6 @@ void MainWindow::on_btCircuit_clicked()
     CircuitDialog circuitDialog;
     circuitDialog.setModal(true);
     circuitDialog.mainWindow = this;
-    generateCircuit(circuitDialog.lbCircuit);
     circuitDialog.exec();
 }
 
@@ -921,7 +927,6 @@ void MainWindow::on_cbClockStretch_toggled(bool checked)
     generateCircuit(ui->lbCircuit);
 }
 
-
 void MainWindow::on_cbEscAutoOffset_stateChanged(int arg1)
 {
     if(arg1)
@@ -929,4 +934,3 @@ void MainWindow::on_cbEscAutoOffset_stateChanged(int arg1)
     else
         ui->sbEscOffset->setVisible(true);
 }
-
