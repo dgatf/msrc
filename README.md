@@ -22,7 +22,7 @@ Compatible MCUs: RP2040. Any model is compatible. Recommended [RP2040 Zero](http
 Implemented sensors:
 
 - ESC
-  - ESCs with serial telemetry: VBAR compatible ESCs (Hobbywing, OMP Hobby...), Hobbywing V3/V4/FlyFun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, APD F/HV/UHV
+  - ESCs with serial telemetry: Hobbywing V3/V4/V5/FlyFun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, APD F/HV/UHV
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
