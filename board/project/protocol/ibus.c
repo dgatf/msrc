@@ -135,6 +135,8 @@ static void process(sensor_ibus_t **sensor) {
                 if (command == IBUS_COMMAND_DISCOVER || command == IBUS_COMMAND_TYPE || IBUS_COMMAND_MEASURE)
                     send_packet(command, address, sensor[address]);
             }
+            else
+                debug(" - Bad CRC");
         }
     }
 }
@@ -210,7 +212,7 @@ static bool check_crc(uint8_t *data) {
     uint16_t crc = 0xFFFF;
     uint8_t lenght = data[0];
     for (uint8_t i = 0; i < lenght - 2; i++) crc -= data[i];
-    if (crc == (uint16_t)data[lenght - 1] << 8 || data[lenght]) return true;
+    if (crc == (uint16_t)data[lenght - 2] << 8 || data[lenght - 1]) return true;
     return false;
 }
 
