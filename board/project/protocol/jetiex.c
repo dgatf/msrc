@@ -54,6 +54,8 @@
 #define JETIEX_TIMEOUT_US 500
 #define JETIEX_BAUDRATE_TIMEOUT_MS 5000
 
+static char msrc_text[] = "MSRC";
+
 static void process(uint *baudrate, sensor_jetiex_t **sensor);
 static void send_packet(uint8_t packet_id, sensor_jetiex_t **sensor);
 static uint8_t create_telemetry_buffer(uint8_t *buffer, bool packet_type, sensor_jetiex_t **sensor);
@@ -154,8 +156,12 @@ static uint8_t create_telemetry_buffer(uint8_t *buffer, bool packet_type, sensor
         if (sensor[sensor_index_value] == NULL) sensor_index_value = 0;
         buffer[1] = 0x40;
     } else {
-        /*while*/ (add_sensor_text(buffer, &buffer_index, sensor_index_text + 1, sensor[sensor_index_text]) &&
-                   sensor[sensor_index_text] != NULL);
+        // while (add_sensor_text(buffer, &buffer_index, sensor_index_text + 1, sensor[sensor_index_text]) &&
+        //           sensor[sensor_index_text] != NULL);
+        if (!sensor_index_text)
+            add_sensor_text(buffer, &buffer_index, 0, NULL);
+        else
+            add_sensor_text(buffer, &buffer_index, sensor_index_text, sensor[sensor_index_text - 1]);
         sensor_index_text++;
         if (sensor[sensor_index_text] == NULL) sensor_index_text = 0;
     }
@@ -288,28 +294,34 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
 }
 
 static bool add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor) {
-    if (sensor) {
-        uint8_t lenText = strlen(sensor->text);
-        uint8_t lenUnit = strlen(sensor->unit);
-
-        if (*buffer_index + lenText + lenUnit + 2 < 28) {
-            *(buffer + *buffer_index) = sensor_index;
-            *(buffer + *buffer_index + 1) = lenText << 3 | lenUnit;
-            *buffer_index += 2;
+    if (!sensor && sensor_index) return false;
+    uint8_t lenText, lenUnit;
+    if (sensor_index) {
+        lenText = strlen(sensor->text);
+        lenUnit = strlen(sensor->unit);
+    } else {
+        lenText = strlen(msrc_text);
+    }
+    if (*buffer_index + lenText + lenUnit + 2 < 28) {
+        *(buffer + *buffer_index) = sensor_index;
+        *(buffer + *buffer_index + 1) = lenText << 3 | lenUnit;
+        *buffer_index += 2;
+        if (sensor_index)
             strcpy((char *)buffer + *buffer_index, sensor->text);
-            *buffer_index += lenText;
-            strcpy((char *)buffer + *buffer_index, sensor->unit);
-            *buffer_index += lenUnit;
-            // printf("[%i %s]", sensor_index, sensor->text);
-            return true;
-        }
+        else
+            strcpy((char *)buffer + *buffer_index, msrc_text);
+        *buffer_index += lenText;
+        if (sensor_index) strcpy((char *)buffer + *buffer_index, sensor->unit);
+        *buffer_index += lenUnit;
+        // printf("[%i %s]", sensor_index, sensor->text);
+        return true;
     }
     return false;
 }
 
 static void add_sensor(sensor_jetiex_t *new_sensor, sensor_jetiex_t **sensors) {
     static uint8_t sensor_count = 0;
-    if (sensor_count < 32) {
+    if (sensor_count < 256) {
         sensors[sensor_count] = new_sensor;
         new_sensor->data_id = sensor_count;
         sensor_count++;
@@ -777,7 +789,7 @@ static void set_config(sensor_jetiex_t **sensor) {
         add_sensor(new_sensor, sensor);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor =
-            (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Vspeed", "m/s", parameter.vspeed};
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_2_DECIMAL, "Vspeed", "m/s", parameter.vspeed};
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -797,7 +809,7 @@ static void set_config(sensor_jetiex_t **sensor) {
         add_sensor(new_sensor, sensor);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor =
-            (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Vspeed", "m/s", parameter.vspeed};
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_2_DECIMAL, "Vspeed", "m/s", parameter.vspeed};
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -817,7 +829,7 @@ static void set_config(sensor_jetiex_t **sensor) {
         add_sensor(new_sensor, sensor);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor =
-            (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Vspeed", "m/s", parameter.vspeed};
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_2_DECIMAL, "Vspeed", "m/s", parameter.vspeed};
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
