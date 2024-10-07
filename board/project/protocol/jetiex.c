@@ -85,7 +85,6 @@ void jetiex_task(void *parameters) {
 
 static void process(uint *baudrate, sensor_jetiex_t **sensor) {
     static alarm_id_t timeout_alarm_id = 0;
-    static bool mute = true;
     uint8_t packetId;
     uint8_t length = uart0_available();
     if (length) {
@@ -109,13 +108,10 @@ static void process(uint *baudrate, sensor_jetiex_t **sensor) {
         }
         if (crc16(packet, JETIEX_PACKET_LENGHT) == 0) {
             if (packet[0] == 0x3D && packet[1] == 0x01 && packet[4] == 0x3A) {
-                if (!mute) {
-                    if (timeout_alarm_id) cancel_alarm(timeout_alarm_id);
-                    uint8_t packet_id = packet[3];
-                    send_packet(packet_id, sensor);
-                    timeout_alarm_id = add_alarm_in_ms(JETIEX_BAUDRATE_TIMEOUT_MS, timeout_callback, &baudrate, false);
-                }
-                mute = !mute;
+                if (timeout_alarm_id) cancel_alarm(timeout_alarm_id);
+                uint8_t packet_id = packet[3];
+                send_packet(packet_id, sensor);
+                timeout_alarm_id = add_alarm_in_ms(JETIEX_BAUDRATE_TIMEOUT_MS, timeout_callback, &baudrate, false);
             }
         }
     }
@@ -321,7 +317,7 @@ static bool add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sens
 
 static void add_sensor(sensor_jetiex_t *new_sensor, sensor_jetiex_t **sensors) {
     static uint8_t sensor_count = 0;
-    if (sensor_count < 256) {
+    if (sensor_count < 16) {
         sensors[sensor_count] = new_sensor;
         new_sensor->data_id = sensor_count;
         sensor_count++;
