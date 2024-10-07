@@ -317,7 +317,7 @@ static bool add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sens
 
 static void add_sensor(sensor_jetiex_t *new_sensor, sensor_jetiex_t **sensors) {
     static uint8_t sensor_count = 0;
-    if (sensor_count < 16) {
+    if (sensor_count < 15) {
         sensors[sensor_count] = new_sensor;
         new_sensor->data_id = sensor_count;
         sensor_count++;
