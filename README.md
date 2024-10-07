@@ -34,7 +34,60 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 (1) If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the ESC is armed  
 (2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive.
 
-## Binaries
+## Summary
+
+[1.Binaries](#binaries)  
+[2.Connections](#1-connections)  
+[3. Power source](#2-power-source)  
+[4. Flash firmware to RP2040](#3-flash-firmware)  
+[5. Configuration](#4-configuration)  
+[5.1 From PC - MSRC gui](#41-from-pc---msrc-gui)  
+[5.2. From transmitter using lua script (only Smartport)](#42-from-transmitter-using-lua-script-only-smartport)  
+[6. Receiver protocol](#5-receiver-protocol)  
+[6.1 SMARTPORT](#61-smartport)  
+[6.2 FRSKY D](#62-frsky-d)  
+[6.3 Spektrum XBUS](#63-spektrum-xbus)  
+[6.4 Spektrum SRXL](#64-spektrum-srxl)  
+[6.5 Flysky IBUS](#65-flysky-ibus)  
+[6.6 Futaba SBUS 2](#66-futaba-sbus-2)  
+[6.7 Multiplex Sensor Bus (MSB)](#67-multiplex-sensor-bus-msb)  
+[6.8 Jeti Ex Bus](#68-jeti-ex-bus)  
+[6.9 Hitec](#69-hitec)  
+[6.10 Serial Monitor](#610-serial-monitor)  
+[7. Sensors](#7-sensors)  
+[7.1. ESC](#71-esc)  
+[7.1.1 Hobbywing Platinum V3](#711-hobbywing-platinum-v3)  
+[7.1.2 Hobbywing Platinum V4 / FlyFun](#712-hobbywing-platinum-v4--flyfun)  
+[7.1.3 Hobbywing Platinum V5](#713-hobbywing-platinum-v5)  
+[7.1.4 Kontronik Kosmic/Kolibri/JivePro](#714-kontronik-kosmickolibrijivepro)  
+[7.1.5 APD F series](#715-apd-f-series)  
+[7.1.6 APD UHV/HV series](#716-apd-uhvhv-series)  
+[7.1.7. PWM signal](#717-pwm-signal)  
+[7.1.8. Castle Link](#718-castle-link)  
+[7.1.9. Available ESC telemetry](#719-available-esc-telemetry)  
+[7.1.10. RPM multipliers](#7110-rpm-multipliers)  
+[7.2. Serial GPS](#72-serial-gps)  
+[7.3. Analog sensors](#73-analog-sensors)  
+[7.3.1. Voltage divider](#731-voltage-divider)  
+[7.3.2. Temperature sensors (NTC thermistors)](#732-temperature-sensors-ntc-thermistors)  
+[7.3.4. Airspeed sensor (MPXV7002)](#734-airspeed-sensor-mpxv7002)  
+[7.4. Vario sensors (I2C sensors)](#74-i2c-sensors)  
+[8. OpenTx sensors (Smartport)](#8-opentx-sensors-smartport)  
+[9. Annex](#9-annex)  
+[9.1. ESC protocol specifications Hobbywing](#91-esc-protocol-specifications-hobbywing)  
+[9.2. ESC protocol specifications Castle Link](#92-esc-protocol-specifications-castle-link)  
+[9.3. ESC protocol specifications Kontronik](#93-esc-protocol-specifications-kontronik)  
+[9.4. Output PWM signal for FBL](#94-output-pwm-signal-for-fbl)  
+[9.5. ADC voltage](#95-adc-voltage)  
+[9.6. Analog voltage sensors. Voltage divider circuit](#96-analog-voltage-sensors-voltage-divider-circuit)  
+[9.7. Temperature sensors. Thermistors](#97-temperature-sensors-thermistors)  
+[9.8. Current](#98-current)  
+[9.9. Air Speed](#99-air-speed)  
+[9.10. Altitude](#910-altitude)  
+[10. Change log](#10-change-log)  
+[11. Support](#11-support)  
+
+## 1. Binaries
 
 File to flash to RP2040:
 [MSRC-RP2040.uf2](https://drive.google.com/file/d/1pzIt4XdcLxiSUfSTfyoh_w5tLTFd9JN2/view?usp=sharing)
@@ -43,7 +96,7 @@ PC application for configuration:
 - Linux: [msrc_gui.AppImage](https://drive.google.com/file/d/1G5A5ucQUb3tXk_KQKVdSJNhs5huyyZiU/view?usp=sharing)
 - Windows: [msrc_gui.exe](https://drive.google.com/file/d/1WogFyMToZI1BenxwAIU2i_oVkPFHTB7D/view?usp=sharing)
 
-## 1. Connections
+## 2. Connections
 
 Connections to RP2040 in the table bellow are GPIO numbers, which are the same for all RP2040 boards. Pin numbers are different depending on the board.
 
@@ -83,13 +136,13 @@ Status led of the board blinks when sending telemetry. If it doesn't blink check
 <p align="center"><img src="./images/rp2040_zero_pinout.jpg" width="500"><br>
   <i>RP2040 Zero pinout</i><br><br></p>
 
-## 2. Power source
+## 3. Power source
 
 RP2040 Zero has to be powered with 5v or less. For higher voltage, a voltage regulator is needed.
 
 It can be powered from the telemetry port or from BEC. Some receivers deliver 5v or less at the telemetry port, even if BEC voltage is higher than 5v. Check that voltage supplied to RP2040 is not higer than 5v.  
 
-## 3. Flash firmware to RP2040
+## 4. Flash firmware
 
 Press BOOT button during startup and paste the binary file [MSRC-RP2040.uf2](https://drive.google.com/file/d/1pzIt4XdcLxiSUfSTfyoh_w5tLTFd9JN2/view?usp=sharing) to RP2040 folder
 
@@ -106,9 +159,9 @@ make</code>
 
 File to flash: _project/MSRC-RP2040.uf2_
 
-## 4. Configuration
+## 5. Configuration
 
-### 4.1. From PC - MSRC gui
+### 5.1. From PC - MSRC gui
 
 Connect RP2040 to USB and update config with msrc_gui. [msrc_gui.AppImage](https://drive.google.com/file/d/1G5A5ucQUb3tXk_KQKVdSJNhs5huyyZiU/view?usp=sharing) for Linux and [msrc_gui.exe](https://drive.google.com/file/d/1WogFyMToZI1BenxwAIU2i_oVkPFHTB7D/view?usp=sharing) for windows. After update reboot RP2040 manually.
 
@@ -128,7 +181,7 @@ If you want to build msrc_gui:
 - _qmake .._
 - _make_
 
-### 4.2. From transmitter using lua script (only Smartport)
+### 5.2. From transmitter using lua script (only Smartport)
 
 It is recommended to update config with *msrc_gui* as not all parameters are implemented in lua script.
 
@@ -151,14 +204,14 @@ Options:
 - Refresh rate (ms): 0 to 1600
 - I2C. Sensor type and address
 
-## 5. Receiver protocol
+## 6. Receiver protocol
 
 The following Rx protocols are supported:
 
 - Frsky Smartport: inverted serial, 57600 bps
 - Frsky D: inverted serial, 9200 bps
-- Spektrum SRXL V5: serial, 115200 bps
 - Spektrum XBUS: I2C
+- Spektrum SRXL V5: serial, 115200 bps
 - Flysky IBUS: serial, 115200 bps
 - Futaba SBUS2: inverted serial, 100000 bps
 - Multiplex Sensor Bus: serial, 38400 bps
@@ -166,7 +219,15 @@ The following Rx protocols are supported:
 - Hitec: I2C
 - Serial Monitor. This is not a Rx protocol, but a serial monitor on GPIO5   
 
-### XBUS
+### 6.1 SMARTPORT
+
+Connect MSRC to Smartport.  
+
+### 6.2 FRSKY D
+
+Connect MSRC the telemtry port.  
+
+### 6.3 Spektrum XBUS
 
 Auto-config may be used to detect the new sensors.
 
@@ -182,7 +243,18 @@ If no telemetry is shown, may be MSRC is booting too slow and the first poll fro
   <i>Clock stretch XBUS with manual switch</i><br><br></p>
 
 
-### SBUS 2
+### 6.4 Spektrum SRXL
+
+Spektrum SRXL is bidirectional with telemetry, other SRXL are unidirectional. See [SRXL](https://wiki.beastx.com/index.php?title=SRXL_-_Serial_Receiver_Link_protocol/en).  
+
+<p align="center"><img src="./images/spektrum_srxl.jpg" width="300"><br>
+  <i>Spektrum SRXL</i><br><br></p>
+
+### 6.5 Flysky IBUS
+
+Connect MSRC to sensor port.  
+
+### 6.6 Futaba SBUS 2
 
 Slots sensor mapping for Futaba transmitters:
 
@@ -212,18 +284,18 @@ Select protocol: FASSTest 18CH or T-FHSS
 
 Connect to SBUS2 port
 
-### Multiplex Sensor Bus (MSB)
+### 6.7 Multiplex Sensor Bus (MSB)
 
 Connect to *Sensor* port
 
 <p align="center"><img src="./images/multiplex_sensorbus.jpg" width="300"><br>
   <i>Sensor bus port</i><br><br></p>
 
-### Jeti Ex Bus
+### 6.8 Jeti Ex Bus
 
 Configure receiver pin (E1 or E2) as Ex Bus. The maximum number of sensors (values) is 15. If more sensors are needed, use an another MSRC board and connect to E2 or to a *Jeti Telemetry Expander*.  
 
-### Hitec
+### 6.9 Hitec
 
 If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected to Vin/RAW instead Vcc. Use pull ups resistors 1k to 2.7k
 
@@ -233,60 +305,42 @@ If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected 
 <p align="center"><img src="./images/hitec_9.jpg" width="300"><br>
   <i>Hitec Optima 9</i><br><br></p>
 
-### Spektrum SRXL
 
-Spektrum SRXL is bidirectional with telemetry, other SRXL are unidirectional. See [SRXL](https://wiki.beastx.com/index.php?title=SRXL_-_Serial_Receiver_Link_protocol/en).  
-
-<p align="center"><img src="./images/spektrum_srxl.jpg" width="300"><br>
-  <i>Spektrum SRXL</i><br><br></p>
-
-### Serial Monitor
+### 6.10 Serial Monitor
 
 This is not a Rx protocol. No sensors are enabled.  
 
 Enable a serial monitor on GPIO5 with the selected parameters.  
 
-## 6. Sensors
+## 7. Sensors
 
 Available sensors:
 
 - ESC
-  - ESCs with serial telemetry: VBAR compatible, Hobbywing V3/V4/V5/Flyfun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, APD F/HV/UHV
+  - ESCs with serial telemetry: Hobbywing V3/V4/V5/Flyfun, Kontronik<sup>(2)</sup>, APD F/HV/UHV
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
-- I2C sensors: BMP180, BMP280, MS5611
+- I2C sensors (vario): BMP180, BMP280, MS5611
 - Analog sensors: voltage, temperature, current, air speed
 
 All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with msrc_gui.
 
-(1) HW V5 = HW FlyFun. If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the ESC is armed  
-(2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive.
+### 7.1. ESC
 
-### 6.1. ESC
+#### 7.1.1 Hobbywing Platinum V3
 
-#### 6.1.1. Serial telemetry
+Serial protocol: 19200 baud.  
 
-Compatible ESC serial protocols:
+Telemetry port is the program port. It is a servo male plug on the ESC
 
- - VBAR compatible ESCs (Hobbywing, OMP Hobby...). Serial 115200
- - Hobbywing V3/V4/Flyfun. Old protocol. Serial 19200
- - Kontronik Kosmic/Kolibri/JivePro. Serial 115200, even parity
- - APD F/HV/UHV. Serial 115200
+#### 7.1.2 Hobbywing Platinum V4 / FlyFun
 
-Optionally, for Hobbywing Flyfun and APD F-series, a PWM signal can be generated from the RPM telemetry value
+Serial protocol: 19200 baud.  
 
-<ins>VBAR compatible ESCs</ins>
+HW FlyFun. If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the ESC is armed.  
 
- - Hobbywing ESCs with VBAR firmware
- - OMP Hobby ESCs compatible with VBAR
- - Others ESC compatible with VBAR
-
-<ins>Hobbywing Platinum V3</ins>
- 
- Telemetry port is the program port. It is a servo male plug on the ESC
-
-<ins>Hobbywing Platinum V4 / V5 / FlyFun</ins>
+Optionally, for Hobbywing Flyfun and APD F-series, a PWM signal can be generated from the RPM telemetry value.  
 
 Note there are two protocols for V4: not VBAR (old protocol) and VBAR. It is recommended to use the VBAR protocol. Check your ESC firmware is VBAR version  
 Telemetry port is the program port. It is a servo male plug on the ESC
@@ -320,7 +374,17 @@ For old protocol (not VBAR):
 
 (1) Extrapolated from confirmed models. If you find discrepancy adjust gain parameter and send gain and ESC model to update the table
 
-<ins>APD F series</ins>
+#### 7.1.3 Hobbywing Platinum V5
+
+Serial protocol: 115200 baud.  
+
+#### 7.1.4 Kontronik Kosmic/Kolibri/JivePro
+
+Serial protocol: 115200 baud, even parity. 
+
+Supported models: Kosmic, Kolibri, JivePro. Not supported: Jive.  
+
+#### 7.1.5 APD F series
 
 Telemetry port: pin T
 
@@ -330,19 +394,19 @@ Types of telemetry:
 
 - *PWM telemetry*. For this type of telemetry you need to flash [beta firmware](https://docs.powerdrives.net/products/firmware-installation/f_series-beta-configurable-firmware). It provides serial telemetry with RPMs, voltage, current and temperature. Select PROTOCOL_APD_F. Connect ESC pin T to pin Rx as defined in [connections table](#1-connections)
 
-<ins>APD UHV/HV series</ins>
+#### 7.1.6 APD UHV/HV series
 
 Serial telemetry with RPMs, voltage, current and temperature.
 
-#### 6.1.2. PWM signal
+#### 7.1.7. PWM signal
 
 If the ESC have a PWM signal or a phase sensor is installed, RPMs can be measured. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
 
-#### 6.1.3. Castle Link
+#### 7.1.8. Castle Link
 
 The telemetry is send over the ESC signal. *Castle Link* has to be enabled in the ESC config
 
-#### 6.1.4. Available ESC telemetry
+#### 7.1.9. Available ESC telemetry
 
 | Model              | RPM         | Throttle    | Motor PWM   | Voltage     | Current   | Voltage BEC | Current BEC | Temperature 1 | Temperature 2 | Ripple Volt |
 | ------------------ | :---------: | :---------: | :---------: | :---------: | :-------: | :---------: | :---------: | :-----------: | :-----------: | :---------: |
@@ -364,7 +428,7 @@ If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7
 
 If current is available, battery consumption is calculated in mAh
 
-#### 6.1.5. RPM multipliers
+#### 7.1.10. RPM multipliers
 
 Adjust RPMs in *msrc_gui*:
 
@@ -373,25 +437,23 @@ Adjust RPMs in *msrc_gui*:
 
 Alternatively this can be done in the transmitter
 
-### 6.2. Serial GPS
+### 7.2. Serial GPS
 
-Serial GPS (NMEA protocol) is supported
+Serial GPS (NMEA protocol) is supported. Select the same baudrate as the GPS module.  
 
-### 6.3. Analog sensors
+### 7.3. Analog sensors
 
-The following analog sensors are supported:
-
-#### 6.3.1. Voltage divider
+#### 7.3.1. Voltage divider
 
 Calibrate voltage analog sensors with _Voltage multiplier_. Or from opentx, but it is recommended in order to increase sensor resolution
 
 Multiplier = (R1+R2)/ R2
 
-#### 6.3.2 Temperature sensors (NTC thermistors)
+#### 7.3.2 Temperature sensors (NTC thermistors)
 
 No need to calibrate. For fine tuning adjust in ntc.h: NTC_R_REF, NTC_R1, NTC_BETA
 
-#### 6.3.3. Current sensor
+#### 7.3.3. Current sensor
 
 Calibrate current analog sensor from msrc_gui. Or from opentx, but it is recommended in order to increase sensor resolution
 
@@ -401,17 +463,17 @@ Set sensor type:
 
 - Shunt resistor sensor. Multiplier = 1000 / (ampgain * resistor(mΩ))
 
-#### 6.3.4. Airspeed sensor (MPXV7002)
+#### 7.3.4. Airspeed sensor (MPXV7002)
 
 No need to calibrate. For fine tuning adjust in airspeed.h: TRANSFER_SLOPE,TRANSFER_VCC
 
-### 6.4. I2C sensors
+### 7.4. I2C sensors
 
 The following I2C sensors are suported:
 
 - Barometer: BMP180, BMP280, MS5611
 
-## 7. OpenTx sensors (Smartport)
+## 8. OpenTx sensors (Smartport)
 
 The default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
 
@@ -458,20 +520,20 @@ Calculated:
 
 Some of the sensors have to be adusted in openTx
 
-### 7.1. Adjust RPM sensor (Erpm)
+### 8.1. Adjust RPM sensor (Erpm)
 
 If not adjusted in MSRC config you can adjust in the sensor parameters in opentx:
 
 - Blades/poles: number of pair of poles * main gear teeth  
 - Multiplier: pinion gear teeth
 
-### 7.2. Adjust voltage sensors (A3, A4)
+### 8.2. Adjust voltage sensors (A3, A4)
 
 Remark: Instead of adjusting the sensor in opentx, it is recommended to use _Voltage multiplier_ to increase the sensor resolution.
 
 Measure the voltage of the battery with a voltmeter and adjust *Ratio* in A3, A4 sensor.
 
-### 7.3. Adjust analog current sensor (Curr)
+### 8.3. Adjust analog current sensor (Curr)
 
 Remark: Instead of adjusting the sensor in opentx, it is recommended to use _Current multiplier_ to increase the sensor resolution
 
@@ -483,7 +545,7 @@ To calculate the battery consumption add a new sensor:
 - Formula: Consumption
 - Sensor: Curr
 
-### 7.4. Calculate current consumption
+### 8.4. Calculate current consumption
 
 Battery consumption is calculatd since MSRC v0.9
 
@@ -492,8 +554,6 @@ Alternatively can be calculated by adding a calculated sensor in openTx:
 - Type: _Calculated_
 - Formula: _Consumption_
 - Sensor: _EscA_ or _Curr_
-
-## 8. Images
 
 
 ## 9. Annex
@@ -507,7 +567,7 @@ Serial parameters:
 - Big endian
 
 
-#### 9.1.1. Hobbywing V3
+#### 10.1.1. Hobbywing V3
 
 | Byte  | 1                   | 2                | 3                | 4                | 5             | 6              | 7            | 8            | 9           | 10          |
 | ----- | :-----------------: | :--------------: | :--------------: | :--------------: | :-----------: | :------------: | :----------: | :----------: | :---------: | :---------: |
@@ -517,7 +577,7 @@ Serial parameters:
 
 thr, pwm: 0-255 (8bits)
 
-#### 9.1.2. Hobbywing V4 V5
+#### 10.1.2. Hobbywing V4 V5
 
 | Byte  | 1     | 2     | 3     | 4     | 5     | 6     | 7     | 8     | 9     | 10    | 11    | 12    | 13    | 14    | 15    | 16    | 17    | 18    | 19    |
 | ---   | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -605,13 +665,13 @@ Or with Steinhart and Hart Equation if data is available:
 
 ### 9.8. Current
 
-#### Hall effect
+#### 10.8.1. Hall effect
 
 Hall effect sensors. Induced magnetic field is transformed into voltage. They are caracterized by their sensitivity
 
 <img src="https://latex.codecogs.com/svg.latex?I=\frac{V_o}{S}" title="I=Vo/S" />
 
-#### Shunt resistor
+#### 10.8.1. Shunt resistor
 
 The voltage drop in the shunt resistor is amplified by a differential amplifier to obtain Vo
 
