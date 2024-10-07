@@ -221,7 +221,7 @@ Connect to *Sensor* port
 
 ### Jeti Ex Bus
 
-Configure receiver pin (E1 or E2) as Ex Bus
+Configure receiver pin (E1 or E2) as Ex Bus. The maximum number of sensors (values) is 15. If more sensors are needed, use an another MSRC board and connect to E2 or to a *Jeti Telemetry Expander*.  
 
 ### Hitec
 
