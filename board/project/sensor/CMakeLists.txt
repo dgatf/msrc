@@ -20,4 +20,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     pwm_out.c
     ntc.c
     current.c
+    serial_monitor.c
 )

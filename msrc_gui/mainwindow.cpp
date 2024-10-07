@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS",
                               "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2",
-                              "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec"});
+                              "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec", "Serial Monitor"});
     ui->cbEscModel->addItems({"",
                               "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A",
                               "Platinum PRO v4 100A", "Platinum PRO v4 120A",
@@ -38,6 +38,10 @@ MainWindow::MainWindow(QWidget *parent)
         ui->cbAddress->addItem("0x" + hex);
     }
     ui->cbAddress->setCurrentIndex(0x77);
+
+    ui->cbBaudrate->addItems({"115200", "57600", "38400", "19200", "9600", "4800"});
+    ui->cbStopbits->addItems({"1", "2"});
+    ui->cbParity->addItems({"None", "Odd", "Even"});
 
     connect(ui->btConnect, SIGNAL(released()),  this, SLOT(buttonSerialPort()));
     connect(ui->btDebug, SIGNAL(released()),  this, SLOT(buttonDebug()));
@@ -78,72 +82,76 @@ void MainWindow::generateCircuit(QLabel *label)
     image.load(":/res/rp2040_zero.png");
     paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
 
-    if(ui->gbCurrent->isChecked()) {
-        image.load(":/res/current_rp2040_zero.png");
+    if(ui->cbReceiver->currentText() == "Serial Monitor") {
+        image.load(":/res/esc_rp2040_zero.png");
         paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
     }
+    else {
+        if(ui->gbCurrent->isChecked()) {
+            image.load(":/res/current_rp2040_zero.png");
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
 
-    if(ui->gbVoltage1->isChecked()) {
-        image.load(":/res/voltage_rp2040_zero.png");
-        paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+        if(ui->gbVoltage1->isChecked()) {
+            image.load(":/res/voltage_rp2040_zero.png");
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
+        if(ui->cbTemperature1->isChecked()) {
+            image.load(":/res/ntc_rp2040_zero.png");
+            paint->drawImage(QPoint(0, 0),
+                             image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
+        if(ui->cbAirspeed->isChecked()) {
+            image.load(":/res/airspeed_rp2040_zero.png");
+            paint->drawImage(QPoint(0, 0),
+                             image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
+        if(ui->gbGps->isChecked()) {
+            image.load(":/res/gps_rp2040_zero.png");
+            paint->drawImage(QPoint(0, 0),
+                             image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
+        if(ui->gbEsc->isChecked()) {
+            if(ui->cbEsc->currentText() == "Hobbywing V3" ||
+               ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
+               ui->cbEsc->currentText() == "Kontronic" ||
+               ui->cbEsc->currentText() == "APD F" ||
+               ui->cbEsc->currentText() == "APD HV" ||
+               ui->cbEsc->currentText() == "VBAR")
+                image.load(":/res/esc_rp2040_zero.png");
+            else if(ui->cbEsc->currentText() == "PWM")
+                image.load(":/res/pwm_rp2040_zero.png");
+            else if(ui->cbEsc->currentText() == "Castle Link")
+                image.load(":/res/castle_rp2040_zero.png");
+            paint->drawImage(QPoint(0, 0),
+                             image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
+        if(ui->gbAltitude->isChecked()) {
+            image.load(":/res/vario_rp2040_zero.png");
+            paint->drawImage(QPoint(0, 0),
+                             image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
+        if(ui->cbReceiver->currentText() == "Frsky D") {
+            image.load(":/res/receiver_frsky_d_rp2040_zero.png");
+        } else if(ui->cbReceiver->currentText() == "Spektrum XBUS") {
+            image.load(":/res/receiver_xbus_rp2040_zero.png");
+        } else if(ui->cbReceiver->currentText() == "Hitec") {
+            image.load(":/res/receiver_hitec_rp2040_zero.png");
+        } else {
+            image.load(":/res/receiver_serial_rp2040_zero.png");
+        }
+        if(ui->cbReceiver->currentText() == "Spektrum XBUS" && ui->cbClockStretch->isChecked() == true) {
+            image.load(":/res/clock_stretch_xbus_rp2040_zero.png");
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
     }
-
-    if(ui->cbTemperature1->isChecked()) {
-        image.load(":/res/ntc_rp2040_zero.png");
-        paint->drawImage(QPoint(0, 0),
-                         image.scaled(*size, Qt::IgnoreAspectRatio));
-    }
-
-    if(ui->cbAirspeed->isChecked()) {
-        image.load(":/res/airspeed_rp2040_zero.png");
-        paint->drawImage(QPoint(0, 0),
-                         image.scaled(*size, Qt::IgnoreAspectRatio));
-    }
-
-    if(ui->gbGps->isChecked()) {
-        image.load(":/res/gps_rp2040_zero.png");
-        paint->drawImage(QPoint(0, 0),
-                         image.scaled(*size, Qt::IgnoreAspectRatio));
-    }
-
-    if(ui->gbEsc->isChecked()) {
-        if(ui->cbEsc->currentText() == "Hobbywing V3" ||
-           ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
-           ui->cbEsc->currentText() == "Kontronic" ||
-           ui->cbEsc->currentText() == "APD F" ||
-           ui->cbEsc->currentText() == "APD HV" ||
-           ui->cbEsc->currentText() == "VBAR")
-            image.load(":/res/esc_rp2040_zero.png");
-        else if(ui->cbEsc->currentText() == "PWM")
-            image.load(":/res/pwm_rp2040_zero.png");
-        else if(ui->cbEsc->currentText() == "Castle Link")
-            image.load(":/res/castle_rp2040_zero.png");
-        paint->drawImage(QPoint(0, 0),
-                         image.scaled(*size, Qt::IgnoreAspectRatio));
-    }
-
-    if(ui->gbAltitude->isChecked()) {
-        image.load(":/res/vario_rp2040_zero.png");
-        paint->drawImage(QPoint(0, 0),
-                         image.scaled(*size, Qt::IgnoreAspectRatio));
-    }
-
-    if(ui->cbReceiver->currentText() == "Frsky D") {
-        image.load(":/res/receiver_frsky_d_rp2040_zero.png");
-    } else if(ui->cbReceiver->currentText() == "Spektrum XBUS") {
-        image.load(":/res/receiver_xbus_rp2040_zero.png");
-    } else if(ui->cbReceiver->currentText() == "Hitec") {
-        image.load(":/res/receiver_hitec_rp2040_zero.png");
-    } else {
-        image.load(":/res/receiver_serial_rp2040_zero.png");
-    }
-
     paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
-
-    if(ui->cbReceiver->currentText() == "Spektrum XBUS" && ui->cbClockStretch->isChecked() == true) {
-        image.load(":/res/clock_stretch_xbus_rp2040_zero.png");
-        paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
-    }
 
     label->setPixmap(*pix);
 }
@@ -313,6 +321,19 @@ void MainWindow::setUiFromConfig()
 
     ui->cbReceiver->setCurrentIndex(config.rx_protocol);
 
+    /* Serial Monitor */
+
+    int item = ui->cbBaudrate->findText(QString::number(config.serial_monitor_baudrate));
+    if (item == -1) ui->cbBaudrate->setCurrentIndex(0);
+    else ui->cbBaudrate->setCurrentIndex(item);
+    if (config.serial_monitor_parity > 2) config.serial_monitor_parity = 0;
+    ui->cbParity->setCurrentIndex(config.serial_monitor_parity);
+    if (config.serial_monitor_stop_bits > 2 || config.serial_monitor_stop_bits < 1) config.serial_monitor_stop_bits = 1;
+    ui->cbStopbits->setCurrentIndex(config.serial_monitor_stop_bits - 1);
+    if (config.serial_monitor_timeout_ms > 100) config.serial_monitor_timeout_ms = 100;
+    ui->sbTimeout->setValue(config.serial_monitor_timeout_ms);
+    ui->cbInverted->setChecked(config.serial_monitor_inverted);
+
     /* Sensors */
 
     // ESC
@@ -466,6 +487,16 @@ void MainWindow::getConfigFromUi()
     /* Receiver protocol */
 
     config.rx_protocol = (rx_protocol_t)ui->cbReceiver->currentIndex();
+
+    /* Serial Monitor */
+
+    config.serial_monitor_baudrate = ui->cbBaudrate->currentText().toInt();
+    config.serial_monitor_stop_bits = ui->cbStopbits->currentText().toInt();
+    if (ui->cbParity->currentText() == "None") config.serial_monitor_parity = 0;
+    else if (ui->cbParity->currentText() == "Odd") config.serial_monitor_parity = 1;
+    else config.serial_monitor_parity = 2;
+    config.serial_monitor_timeout_ms = ui->sbTimeout->value();
+    config.serial_monitor_inverted = ui->cbInverted->isChecked();
 
     /* Sensors */
 
@@ -685,15 +716,11 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
     }
 
     if(arg1 == "Frsky Smartport") {
-        {
-            ui->lbSensorId->setVisible(true);
-            ui->sbSensorId->setVisible(true);
-        }
+        ui->lbSensorId->setVisible(true);
+        ui->sbSensorId->setVisible(true);
     } else {
-        {
-            ui->lbSensorId->setVisible(false);
-            ui->sbSensorId->setVisible(false);
-        }
+        ui->lbSensorId->setVisible(false);
+        ui->sbSensorId->setVisible(false);
     }
 
     if(arg1 == "Flysky IBUS") {
@@ -708,6 +735,27 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
     } else {
         ui->cbSpeedUnitsGps->setVisible(false);
         ui->lbSpeedUnitsGps->setVisible(false);
+    }
+    if(arg1 == "Serial Monitor") {
+        ui->cbBaudrate->setVisible(true);
+        ui->cbStopbits->setVisible(true);
+        ui->cbParity->setVisible(true);
+        ui->sbTimeout->setVisible(true);
+        ui->cbInverted->setVisible(true);
+        ui->lbBaudrate->setVisible(true);
+        ui->lbStopbits->setVisible(true);
+        ui->lbParity->setVisible(true);
+        ui->lbTimeout->setVisible(true);
+    } else {
+        ui->cbBaudrate->setVisible(false);
+        ui->cbStopbits->setVisible(false);
+        ui->cbParity->setVisible(false);
+        ui->sbTimeout->setVisible(false);
+        ui->cbInverted->setVisible(false);
+        ui->lbBaudrate->setVisible(false);
+        ui->lbStopbits->setVisible(false);
+        ui->lbParity->setVisible(false);
+        ui->lbTimeout->setVisible(false);
     }
 }
 

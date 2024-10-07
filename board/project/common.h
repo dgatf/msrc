@@ -45,7 +45,8 @@ typedef enum rx_protocol_t {
     RX_SBUS,
     RX_MULTIPLEX,
     RX_JETIEX,
-    RX_HITEC
+    RX_HITEC,
+    SERIAL_MONITOR
 } rx_protocol_t;
 
 typedef enum esc_protocol_t {
@@ -120,11 +121,15 @@ typedef struct config_t {
     bool esc_hw4_is_manual_offset;
     uint8_t analog_rate;
     bool xbus_use_alternative_volt_temp;
-    uint8_t spare12;
+    uint8_t spare1;
     float esc_hw4_offset;
-    uint32_t spare3;
-    uint32_t spare4;
-    uint32_t spare5;
+    uint32_t serial_monitor_baudrate;
+    uint8_t serial_monitor_stop_bits;
+    uint8_t serial_monitor_parity;
+    uint16_t serial_monitor_timeout_ms;
+    bool serial_monitor_inverted;
+    uint8_t spare2;
+    uint16_t spare3;
 } config_t;
 
 typedef struct context_t {

@@ -57,7 +57,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | Frsky D                                   | 0                |
 | Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |
 | Hitec, XBUS SCL                           | 3<sup>(2)</sup>  |
-| ESC serial                                | 5                |
+| ESC serial, Serial monitor                | 5                |
 | Phase sensor (PWM in)                     | 5                |
 | Castle. Receiver signal                   | 4                |
 | Castle. ESC signal                        | 5<sup>(2)</sup>  |
@@ -164,6 +164,7 @@ The following Rx protocols are supported:
 - Multiplex Sensor Bus: serial, 38400 bps
 - Jeti Ex Bus: serial 125000, 250000 bps
 - Hitec: I2C
+- Serial Monitor. This is not a Rx protocol, but a serial monitor on GPIO5   
 
 ### XBUS
 
@@ -238,6 +239,12 @@ Spektrum SRXL is bidirectional with telemetry, other SRXL are unidirectional. Se
 
 <p align="center"><img src="./images/spektrum_srxl.jpg" width="300"><br>
   <i>Spektrum SRXL</i><br><br></p>
+
+### Serial Monitor
+
+This is not a Rx protocol. No sensors are enabled.  
+
+Enable a serial monitor on GPIO5 with the selected parameters.  
 
 ## 6. Sensors
 

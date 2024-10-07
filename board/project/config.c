@@ -82,6 +82,13 @@
 /* Jeti Ex */
 #define JETI_GPS_SPEED_UNITS_KMH true
 
+/* Serial monitor */
+#define SERIAL_MONITOR_BAUDRATE 19200
+#define SERIAL_MONITOR_STOPBITS 1
+#define SERIAL_MONITOR_PARITY 0
+#define SERIAL_MONITOR_TIMEOUT_MS 1
+#define SERIAL_MONITOR_INVERTED false
+
 /* Add init delay for FlyFun ESC. Enable if the ESC doesn't arm */
 #define ENABLE_ESC_INIT_DELAY false
 #define ESC_INIT_DELAY_DURATION 10000
@@ -173,10 +180,12 @@ void config_forze_write() {
     config.esc_hw4_is_manual_offset = ESC_HW4_MANUAL_OFFSET;
     config.esc_hw4_offset = ESC_HW4_CURRENT_OFFSET;
     config.xbus_use_alternative_volt_temp = XBUS_ALTERNATIVE_VOLT_TEMP;
-    config.spare12 = 0;
-    config.spare3 = 0;
-    config.spare4 = 0;
-    config.spare5 = 0;
-
+    config.serial_monitor_baudrate = SERIAL_MONITOR_BAUDRATE;
+    config.serial_monitor_stop_bits = SERIAL_MONITOR_STOPBITS;
+    config.serial_monitor_parity = SERIAL_MONITOR_PARITY;
+    config.serial_monitor_timeout_ms = SERIAL_MONITOR_TIMEOUT_MS;
+    config.serial_monitor_inverted = SERIAL_MONITOR_INVERTED;
+    config.spare2;
+    config.spare3;
     config_write(&config);
 }

@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+//#define PICO_FLASH_SPI_CLKDIV 4
+
 #include "config.h"
 #include "frsky_d.h"
 #include "hitec.h"
@@ -8,6 +10,7 @@
 #include "led.h"
 #include "multiplex.h"
 #include "sbus.h"
+#include "serial_monitor.h"
 #include "sim_rx.h"
 #include "smartport.h"
 #include "srxl.h"
@@ -18,7 +21,8 @@ context_t context;
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
     debug("stack overflow %x %s\r\n", xTask, (portCHAR *)pcTaskName);
-    while (1);
+    while (1)
+        ;
 }
 
 int main() {
@@ -83,6 +87,12 @@ int main() {
             context.uart0_notify_task_handle = context.receiver_task_handle;
             xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
             break;
+        case SERIAL_MONITOR:
+            xTaskCreate(serial_monitor_task, "serial_monitor", STACK_SERIAL_MONITOR, NULL, 3,
+                        &context.receiver_task_handle);
+            context.uart1_notify_task_handle = context.receiver_task_handle;
+            xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
+            break;
     }
 
 #ifdef SIM_RX
@@ -93,5 +103,6 @@ int main() {
     vTaskStartScheduler();
 
     vTaskResume(context.led_task_handle);
-    while (1);
+    while (1)
+        ;
 }

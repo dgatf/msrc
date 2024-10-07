@@ -58,8 +58,7 @@ typedef enum analog_current_type_t : uint8_t
     CURRENT_TYPE_SHUNT
 } analog_current_type_t;
 
-typedef struct config_t
-{
+typedef struct config_t {
     uint16_t version;
     enum rx_protocol_t rx_protocol;
     enum esc_protocol_t esc_protocol;
@@ -115,11 +114,15 @@ typedef struct config_t
     bool esc_hw4_is_manual_offset;
     uint8_t analog_rate;
     bool xbus_use_alternative_volt_temp;
-    uint8_t spare12;
+    uint8_t spare1;
     float esc_hw4_offset;
-    uint32_t spare3;
-    uint32_t spare4;
-    uint32_t spare5;
+    uint32_t serial_monitor_baudrate;
+    uint8_t serial_monitor_stop_bits;
+    uint8_t serial_monitor_parity;
+    uint16_t serial_monitor_timeout_ms;
+    bool serial_monitor_inverted;
+    uint8_t spare2;
+    uint16_t spare3;
 } config_t;
 
 class MainWindow : public QMainWindow
