@@ -110,7 +110,7 @@ void xbus_format_sensor(uint8_t address) {
         }
         case XBUS_GPS_STAT_ID: {
             sensor_formatted->gps_stat->speed = bcd16(*sensor->gps_stat[XBUS_GPS_STAT_SPEED], 1);
-            sensor_formatted->gps_stat->utc = bcd32(*sensor->gps_stat[XBUS_GPS_STAT_TIME], 0) << 4;
+            sensor_formatted->gps_stat->utc = bcd32(*sensor->gps_stat[XBUS_GPS_STAT_TIME], 0) << 8;
             sensor_formatted->gps_stat->num_sats = bcd8(*sensor->gps_stat[XBUS_GPS_STAT_SATS], 0);
             sensor_formatted->gps_stat->altitude_high = bcd8((uint8_t)(alt / 1000), 0);
             break;
