@@ -54,11 +54,9 @@
 #define JETIEX_TIMEOUT_US 500
 #define JETIEX_BAUDRATE_TIMEOUT_MS 5000
 
-static char msrc_text[] = "MSRC";
-
 static void process(uint *baudrate, sensor_jetiex_t **sensor);
 static void send_packet(uint8_t packet_id, sensor_jetiex_t **sensor);
-static uint8_t create_telemetry_buffer(uint8_t *buffer, bool is_sensor_value, sensor_jetiex_t **sensor);
+static uint8_t create_telemetry_buffer(uint8_t *buffer, bool packet_type, sensor_jetiex_t **sensor);
 static bool add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor);
 static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor);
 static void add_sensor(sensor_jetiex_t *new_sensor, sensor_jetiex_t **sensor);
@@ -139,12 +137,24 @@ static void send_packet(uint8_t packet_id, sensor_jetiex_t **sensor) {
     vTaskResume(context.led_task_handle);
 }
 
-static uint8_t create_telemetry_buffer(uint8_t *buffer, bool is_sensor_value, sensor_jetiex_t **sensor) {
-    // sensor index 0 is reserved to define the string for the main sensor (MSRC)
-    static uint8_t sensor_index_value = 1;
+static uint8_t create_telemetry_buffer(uint8_t *buffer, bool packet_type, sensor_jetiex_t **sensor) {
+    static uint8_t sensor_index_value = 0;
     static uint8_t sensor_index_text = 0;
     uint8_t buffer_index = 7;
     if (sensor[0] == NULL) return 0;
+    if (packet_type) {
+        while (add_sensor_value(buffer, &buffer_index, sensor_index_value + 1, sensor[sensor_index_value]) &&
+               sensor[sensor_index_value] != NULL) {
+            sensor_index_value++;
+        }
+        if (sensor[sensor_index_value] == NULL) sensor_index_value = 0;
+        buffer[1] = 0x40;
+    } else {
+        /*while*/ (add_sensor_text(buffer, &buffer_index, sensor_index_text + 1, sensor[sensor_index_text]) &&
+                   sensor[sensor_index_text] != NULL);
+        sensor_index_text++;
+        if (sensor[sensor_index_text] == NULL) sensor_index_text = 0;
+    }
     buffer[0] = 0x0F;
     buffer[1] |= buffer_index - 1;
     buffer[2] = JETIEX_MFG_ID_LOW;
@@ -152,27 +162,6 @@ static uint8_t create_telemetry_buffer(uint8_t *buffer, bool is_sensor_value, se
     buffer[4] = JETIEX_DEV_ID_LOW;
     buffer[5] = JETIEX_DEV_ID_HIGH;
     buffer[6] = 0x00;
-    if (is_sensor_value) {
-        // while (add_sensor_value(buffer, &buffer_index, sensor_index_value + 1, sensor[sensor_index_value]) &&
-        //        sensor[sensor_index_value] != NULL) {
-        //     sensor_index_value++;
-        // }
-        add_sensor_value(buffer, &buffer_index, sensor_index_value, sensor[sensor_index_value - 1]);
-        buffer[1] = 0x40;
-        sensor_index_value++;
-        if (sensor[sensor_index_value - 1] == NULL) sensor_index_value = 1;
-    } else {
-        // while (add_sensor_text(buffer, &buffer_index, sensor_index_text + 1, sensor[sensor_index_text]) &&
-        //           sensor[sensor_index_text] != NULL) {
-        //    sensor_index_text++;
-        //}
-        if (!sensor_index_text)
-            add_sensor_text(buffer, &buffer_index, 0, NULL);
-        else
-            add_sensor_text(buffer, &buffer_index, sensor_index_text, sensor[sensor_index_text - 1]);
-        sensor_index_text++;
-        if (sensor[sensor_index_text - 1] == NULL) sensor_index_text = 0;
-    }
     buffer[buffer_index] = crc8(buffer + 1, buffer_index - 1);
     return buffer_index + 1;
 }
@@ -294,29 +283,21 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
 }
 
 static bool add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor) {
-    if (!sensor && sensor_index) return false;
-    uint8_t lenText, lenUnit;
-    if (sensor_index) {
-        lenText = strlen(sensor->text);
-        lenUnit = strlen(sensor->unit);
-    } else {
-        lenText = strlen(msrc_text);
-        lenUnit = 0;
-    }
-    if (*buffer_index + lenText + lenUnit + 2 < 28) {
-        *(buffer + *buffer_index) = sensor_index;
-        *(buffer + *buffer_index + 1) = lenText << 3 | lenUnit;
-        *buffer_index += 2;
-        if (sensor)
+    if (sensor) {
+        uint8_t lenText = strlen(sensor->text);
+        uint8_t lenUnit = strlen(sensor->unit);
+
+        if (*buffer_index + lenText + lenUnit + 2 < 28) {
+            *(buffer + *buffer_index) = sensor_index;
+            *(buffer + *buffer_index + 1) = lenText << 3 | lenUnit;
+            *buffer_index += 2;
             strcpy((char *)buffer + *buffer_index, sensor->text);
-        else
-            strcpy((char *)buffer + *buffer_index, msrc_text);
-        *buffer_index += lenText;
-        if (sensor) {
+            *buffer_index += lenText;
             strcpy((char *)buffer + *buffer_index, sensor->unit);
             *buffer_index += lenUnit;
+            // printf("[%i %s]", sensor_index, sensor->text);
+            return true;
         }
-        return true;
     }
     return false;
 }
