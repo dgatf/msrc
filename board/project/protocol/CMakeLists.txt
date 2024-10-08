@@ -8,4 +8,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     smartport.c
     srxl.c
     xbus.c
+    srxl2.c
 )

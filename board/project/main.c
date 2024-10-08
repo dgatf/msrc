@@ -16,6 +16,7 @@
 #include "srxl.h"
 #include "usb.h"
 #include "xbus.h"
+#include "srxl2.h"
 
 context_t context;
 
@@ -84,6 +85,11 @@ int main() {
             break;
         case RX_SRXL:
             xTaskCreate(srxl_task, "srxl_task", STACK_RX_SRXL, NULL, 3, &context.receiver_task_handle);
+            context.uart0_notify_task_handle = context.receiver_task_handle;
+            xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
+            break;
+        case RX_SRXL2:
+            xTaskCreate(srxl2_task, "srxl2_task", STACK_RX_SRXL2, NULL, 3, &context.receiver_task_handle);
             context.uart0_notify_task_handle = context.receiver_task_handle;
             xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
             break;
