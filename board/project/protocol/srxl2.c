@@ -47,7 +47,7 @@ static bool is_bus_active = false;
 static void process(void);
 static void send_packet(void);
 static uint16_t get_crc(uint8_t *buffer, uint8_t lenght);
-static uint16_t byte_crc(uint16_t crc, uint8_t new_byte);
+static uint16_t crc16(uint16_t crc, uint8_t data);
 static void set_config(void);
 static void send_handshake(uint8_t dest_id);
 static int64_t alarm_init(alarm_id_t id, void *user_data);
@@ -59,7 +59,7 @@ void srxl2_task(void *parameters) {
     sensor_formatted = malloc(sizeof(xbus_sensor_formatted_t));
     *sensor_formatted = (xbus_sensor_formatted_t){NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-    //alarm_id_init = add_alarm_in_ms(50, alarm_50ms, NULL, true);
+    // alarm_id_init = add_alarm_in_ms(50, alarm_50ms, NULL, true);
 
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
@@ -82,10 +82,10 @@ static void process(void) {
         debug("\nSRXL2 (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         debug_buffer(data, length, " 0x%X");
         is_bus_active = true;
-        //cancel_alarm(alarm_id_timeout);
-        //alarm_id_timeout = add_alarm_in_ms(50, alarm_timeout, NULL, true);
+        // cancel_alarm(alarm_id_timeout);
+        // alarm_id_timeout = add_alarm_in_ms(50, alarm_timeout, NULL, true);
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE) {
-            //cancel_alarm(alarm_id_init);
+            // cancel_alarm(alarm_id_init);
             dest_id = data[3];
             send_handshake(dest_id);
         } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE) {
@@ -100,7 +100,7 @@ static void send_handshake(uint8_t dest_id) {
     buffer[1] = 0x21;          // packet type
     buffer[2] = 14;            // length
     buffer[3] = SRXL2_DEVICE;  // source Id
-    buffer[4] = 0; //dest_id;       // dest Id
+    buffer[4] = dest_id;       // dest Id
     buffer[5] = 10;            // priority (0-100)
     buffer[6] = 0;             // baudrate: 0 = 115200, 1 = 400000
     buffer[7] = 0;             // info
@@ -159,7 +159,7 @@ static void send_packet(void) {
             break;
     }
     uint16_t crc;
-    crc = (get_crc(buffer, SRXL2_TELEMETRY_LEN - 2));  // all bytes, including header
+    crc = get_crc(buffer, SRXL2_TELEMETRY_LEN - 2);  // all bytes, including header
     buffer[20] = crc >> 8;
     buffer[21] = crc;
     uart0_write_bytes(buffer, SRXL2_TELEMETRY_LEN);
@@ -183,17 +183,21 @@ static int64_t alarm_timeout(alarm_id_t id, void *user_data) {
     return 0;
 }
 
-static uint16_t get_crc(uint8_t *buffer, uint8_t lenght) {
+static uint16_t get_crc(uint8_t *buffer, uint8_t length) {
     uint16_t crc = 0;
-    for (int i = 0; i < lenght; i++) crc += byte_crc(crc, buffer[i]);
+    for (uint8_t i = 0; i < length; ++i) {
+        crc = crc16(crc, buffer[i]);
+    }
     return crc;
 }
 
-static uint16_t byte_crc(uint16_t crc, uint8_t new_byte) {
-    uint8_t loop;
-    crc = crc ^ (uint16_t)new_byte << 8;
-    for (loop = 0; loop < 8; loop++) {
-        crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : (crc << 1);
+static uint16_t crc16(uint16_t crc, uint8_t data) {
+    crc = crc ^ ((uint16_t)data << 8);
+    for (int i = 0; i < 8; ++i) {
+        if (crc & 0x8000)
+            crc = (crc << 1) ^ 0x1021;
+        else
+            crc = crc << 1;
     }
     return crc;
 }
