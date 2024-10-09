@@ -116,6 +116,11 @@ void MainWindow::generateCircuit(QLabel *label)
         }
 
         if(ui->gbEsc->isChecked()) {
+            //ui->lbEsc->setEnabled(true);
+            //ui->cbEsc->setEnabled(true);
+            //ui->lbEscModel->setEnabled(true);
+            //ui->lbEscModel->setEnabled(true);
+            //ui->gbRpmMultipliers->setEnabled(true);
             if(ui->cbEsc->currentText() == "Hobbywing V3" ||
                ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
                ui->cbEsc->currentText() == "Kontronic" ||
@@ -129,6 +134,8 @@ void MainWindow::generateCircuit(QLabel *label)
                 image.load(":/res/castle_rp2040_zero.png");
             paint->drawImage(QPoint(0, 0),
                              image.scaled(*size, Qt::IgnoreAspectRatio));
+        } else {
+
         }
 
         if(ui->gbAltitude->isChecked()) {
