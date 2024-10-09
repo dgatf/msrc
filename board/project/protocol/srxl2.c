@@ -28,6 +28,7 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
+#include "srxl.h"
 
 #define SRXL2_TIMEOUT_US 500
 #define SRXL2_HEADER 0xA6
@@ -40,18 +41,13 @@
 #define SRXL2_DEVICE 0x30
 
 static uint8_t dest_id = 0xFF;
-static alarm_id_t alarm_id_init;
-static alarm_id_t alarm_id_timeout;
-static bool is_bus_active = false;
+static alarm_id_t alarm_id;
 
 static void process(void);
 static void send_packet(void);
-static uint16_t get_crc(uint8_t *buffer, uint8_t lenght);
-static uint16_t crc16(uint16_t crc, uint8_t data);
 static void set_config(void);
 static void send_handshake(uint8_t dest_id);
-static int64_t alarm_init(alarm_id_t id, void *user_data);
-static int64_t alarm_timeout(alarm_id_t id, void *user_data);
+static int64_t alarm_50ms(alarm_id_t id, void *user_data);
 
 void srxl2_task(void *parameters) {
     sensor = malloc(sizeof(xbus_sensor_t));
@@ -59,7 +55,7 @@ void srxl2_task(void *parameters) {
     sensor_formatted = malloc(sizeof(xbus_sensor_formatted_t));
     *sensor_formatted = (xbus_sensor_formatted_t){NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-    // alarm_id_init = add_alarm_in_ms(50, alarm_50ms, NULL, true);
+    //alarm_id = add_alarm_in_ms(50, alarm_50ms, NULL, true);
 
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
@@ -81,12 +77,11 @@ static void process(void) {
         uart0_read_bytes(data, length);
         debug("\nSRXL2 (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         debug_buffer(data, length, " 0x%X");
-        is_bus_active = true;
-        // cancel_alarm(alarm_id_timeout);
-        // alarm_id_timeout = add_alarm_in_ms(50, alarm_timeout, NULL, true);
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE) {
-            // cancel_alarm(alarm_id_init);
+            //cancel_alarm(alarm_id);
             dest_id = data[3];
+            uint16_t crc = get_crc(data, length - 2);
+            debug("\nCRC 0x%X - 0x%X%X", crc, data[12], data[13]);
             send_handshake(dest_id);
         } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE) {
             send_packet();
@@ -109,7 +104,7 @@ static void send_handshake(uint8_t dest_id) {
     buffer[10] = 0;            // uid
     buffer[11] = 1;            // uid
     uint16_t crc;
-    crc = get_crc(buffer, SRXL2_HANDSHAKE_LEN - 2);  // all bytes, including header
+    crc = __builtin_bswap16(get_crc(buffer, SRXL2_HANDSHAKE_LEN - 2));  // all bytes, including header
     buffer[12] = crc >> 8;
     buffer[13] = crc;
     uart0_write_bytes((uint8_t *)&crc, 2);
@@ -159,7 +154,7 @@ static void send_packet(void) {
             break;
     }
     uint16_t crc;
-    crc = get_crc(buffer, SRXL2_TELEMETRY_LEN - 2);  // all bytes, including header
+    crc = (get_crc(buffer, SRXL2_TELEMETRY_LEN - 2));  // all bytes, including header
     buffer[20] = crc >> 8;
     buffer[21] = crc;
     uart0_write_bytes(buffer, SRXL2_TELEMETRY_LEN);
@@ -169,37 +164,12 @@ static void send_packet(void) {
     vTaskResume(context.led_task_handle);
 }
 
-static int64_t alarm_init(alarm_id_t id, void *user_data) {
+static int64_t alarm_50ms(alarm_id_t id, void *user_data) {
     static uint count = 0;
-    if (is_bus_active) return 0;
     send_handshake(0);
-    if (count == 3) return 0;
+    if (count == 5) return 0;
     count++;
-    return 50;
-}
-
-static int64_t alarm_timeout(alarm_id_t id, void *user_data) {
-    is_bus_active = false;
-    return 0;
-}
-
-static uint16_t get_crc(uint8_t *buffer, uint8_t length) {
-    uint16_t crc = 0;
-    for (uint8_t i = 0; i < length; ++i) {
-        crc = crc16(crc, buffer[i]);
-    }
-    return crc;
-}
-
-static uint16_t crc16(uint16_t crc, uint8_t data) {
-    crc = crc ^ ((uint16_t)data << 8);
-    for (int i = 0; i < 8; ++i) {
-        if (crc & 0x8000)
-            crc = (crc << 1) ^ 0x1021;
-        else
-            crc = crc << 1;
-    }
-    return crc;
+    return 30;
 }
 
 static void set_config(void) {

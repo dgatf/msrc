@@ -33,11 +33,9 @@
 #define SRXL_FRAMELEN 18
 #define SRXL_TIMEOUT_US 1000
 
-static void process();
-static void send_packet();
-static uint16_t get_crc(uint8_t *buffer, uint8_t lenght);
-static uint16_t byte_crc(uint16_t crc, uint8_t new_byte);
-static void set_config();
+static void process(void);
+static void send_packet(void);
+static void set_config(void);
 
 void srxl_task(void *parameters) {
     sensor = malloc(sizeof(xbus_sensor_t));
@@ -58,7 +56,26 @@ void srxl_task(void *parameters) {
     }
 }
 
-static void process() {
+uint16_t get_crc(uint8_t *buffer, uint8_t length) {
+    uint16_t crc = 0;
+    for (uint8_t i = 0; i < length; ++i) {
+        crc = crc16(crc, buffer[i]);
+    }
+    return crc;
+}
+
+uint16_t crc16(uint16_t crc, uint8_t data) {
+    crc = crc ^ ((uint16_t)data << 8);
+    for (int i = 0; i < 8; ++i) {
+        if (crc & 0x8000)
+            crc = (crc << 1) ^ 0x1021;
+        else
+            crc = crc << 1;
+    }
+    return crc;
+}
+
+static void process(void) {
     static bool mute = true;
     uint8_t length = uart0_available();
     if (length) {
@@ -78,7 +95,7 @@ static void process() {
     }
 }
 
-static void send_packet() {
+static void send_packet(void) {
     static uint cont = 0;
     uint max_cont = 0;
     while (sensor->is_enabled[cont] == false && max_cont < XBUS_RPMVOLTTEMP) {
@@ -136,22 +153,7 @@ static void send_packet() {
     vTaskResume(context.led_task_handle);
 }
 
-static uint16_t get_crc(uint8_t *buffer, uint8_t lenght) {
-    uint16_t crc = 0;
-    for (int i = 0; i < lenght; i++) crc += byte_crc(crc, buffer[i]);
-    return crc;
-}
-
-static uint16_t byte_crc(uint16_t crc, uint8_t new_byte) {
-    uint8_t loop;
-    crc = crc ^ (uint16_t)new_byte << 8;
-    for (loop = 0; loop < 8; loop++) {
-        crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : (crc << 1);
-    }
-    return crc;
-}
-
-static void set_config() {
+static void set_config(void) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
     if (config->esc_protocol == ESC_PWM) {
