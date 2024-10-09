@@ -36,14 +36,14 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 ## Summary
 
-[1.Binaries](#binaries)  
-[2.Connections](#1-connections)  
-[3. Power source](#2-power-source)  
-[4. Flash firmware to RP2040](#3-flash-firmware)  
-[5. Configuration](#4-configuration)  
-[5.1 From PC - MSRC gui](#41-from-pc---msrc-gui)  
-[5.2. From transmitter using lua script (only Smartport)](#42-from-transmitter-using-lua-script-only-smartport)  
-[6. Receiver protocol](#5-receiver-protocol)  
+[1.Binaries](#1-binaries)  
+[2.Connections](#2-connections)  
+[3. Power source](#3-power-source)  
+[4. Flash firmware to RP2040](#4-flash-firmware)  
+[5. Configuration](#5-configuration)  
+[5.1 From PC - MSRC gui](#51-from-pc---msrc-gui)  
+[5.2. From transmitter using lua script (only Smartport)](#52-from-transmitter-using-lua-script-only-smartport)  
+[6. Receiver protocol](#6-receiver-protocol)  
 [6.1 SMARTPORT](#61-smartport)  
 [6.2 FRSKY D](#62-frsky-d)  
 [6.3 Spektrum XBUS](#63-spektrum-xbus)  
