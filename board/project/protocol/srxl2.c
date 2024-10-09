@@ -37,7 +37,7 @@
 #define SRXL2_PACKET_TYPE_HANDSHAKE 0x21
 #define SRXL2_PACKET_TYPE_CONTROL 0xCD
 #define SRXL2_PACKET_TYPE_TELEMETRY 0x80
-#define SRXL2_DEVICE 0xB0
+#define SRXL2_DEVICE 0x30
 
 static uint8_t dest_id = 0xFF;
 static alarm_id_t alarm_id;
@@ -56,7 +56,7 @@ void srxl2_task(void *parameters) {
     sensor_formatted = malloc(sizeof(xbus_sensor_formatted_t));
     *sensor_formatted = (xbus_sensor_formatted_t){NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-    alarm_id = add_alarm_in_ms(50, alarm_50ms, NULL, true);
+    //alarm_id = add_alarm_in_ms(50, alarm_50ms, NULL, true);
 
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
@@ -79,7 +79,7 @@ static void process(void) {
         debug("\nSRXL2 (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         debug_buffer(data, length, " 0x%X");
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE) {
-            cancel_alarm(alarm_id);
+            //cancel_alarm(alarm_id);
             dest_id = data[3];
             send_handshake(dest_id);
         } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE) {
