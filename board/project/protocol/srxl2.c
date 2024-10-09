@@ -37,22 +37,26 @@
 #define SRXL2_PACKET_TYPE_HANDSHAKE 0x21
 #define SRXL2_PACKET_TYPE_CONTROL 0xCD
 #define SRXL2_PACKET_TYPE_TELEMETRY 0x80
-#define SRXL2_DESTID 0xB0
+#define SRXL2_DEVICE 0xB0
 
-static uint8_t dest_id;
+static uint8_t dest_id = 0xFF;
+static alarm_id_t alarm_id;
 
-static void process();
-static void send_packet();
+static void process(void);
+static void send_packet(void);
 static uint16_t get_crc(uint8_t *buffer, uint8_t lenght);
 static uint16_t byte_crc(uint16_t crc, uint8_t new_byte);
-static void set_config();
-static void send_handshake();
+static void set_config(void);
+static void send_handshake(uint8_t dest_id);
+static int64_t alarm_50ms(alarm_id_t id, void *user_data);
 
 void srxl2_task(void *parameters) {
     sensor = malloc(sizeof(xbus_sensor_t));
     *sensor = (xbus_sensor_t){{0}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}};
     sensor_formatted = malloc(sizeof(xbus_sensor_formatted_t));
     *sensor_formatted = (xbus_sensor_formatted_t){NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+
+    alarm_id = add_alarm_in_ms(50, alarm_50ms, NULL, true);
 
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
@@ -61,13 +65,12 @@ void srxl2_task(void *parameters) {
     set_config();
     debug("\nSRXL2 init");
     while (1) {
-        // ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process();
     }
 }
 
-static void process() {
+static void process(void) {
     static bool mute = true;
     uint8_t length = uart0_available();
     if (length) {
@@ -75,31 +78,30 @@ static void process() {
         uart0_read_bytes(data, length);
         debug("\nSRXL2 (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         debug_buffer(data, length, " 0x%X");
-        if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DESTID) {
-            send_handshake(data);
-        } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DESTID) {
-            if (!mute) send_packet();
-            mute = !mute;
+        if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE) {
+            cancel_alarm(alarm_id);
+            dest_id = data[3];
+            send_handshake(dest_id);
+        } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE) {
+            send_packet();
         }
     }
 }
 
-static void send_handshake(uint8_t *handshake_packet) {
+static void send_handshake(uint8_t dest_id) {
     uint8_t buffer[SRXL2_HANDSHAKE_LEN];
-    buffer[0] = 0xA6;                 // header
-    buffer[1] = 0x21;                 // packet type
-    buffer[2] = 14;                   // length
-    buffer[3] = handshake_packet[3];  // source Id
-    buffer[4] = handshake_packet[4];  // dest Id
-    dest_id = handshake_packet[4];
-    ;
-    buffer[5] = 10;                   // priority (0-100)
-    buffer[6] = 0;                    // baudrate: 0 = 115200, 1 = 400000
-    buffer[7] = handshake_packet[4];  // info
-    buffer[8] = 0;                    // uid
-    buffer[9] = 0;                    // uid
-    buffer[10] = 0;                   // uid
-    buffer[11] = 1;                   // uid
+    buffer[0] = 0xA6;          // header
+    buffer[1] = 0x21;          // packet type
+    buffer[2] = 14;            // length
+    buffer[3] = SRXL2_DEVICE;  // source Id
+    buffer[4] = dest_id;       // dest Id
+    buffer[5] = 10;            // priority (0-100)
+    buffer[6] = 0;             // baudrate: 0 = 115200, 1 = 400000
+    buffer[7] = 0;             // info
+    buffer[8] = 0;             // uid
+    buffer[9] = 0;             // uid
+    buffer[10] = 0;            // uid
+    buffer[11] = 1;            // uid
     uint16_t crc;
     crc = get_crc(buffer, SRXL2_HANDSHAKE_LEN - 2);  // all bytes, including header
     buffer[12] = crc >> 8;
@@ -110,7 +112,7 @@ static void send_handshake(uint8_t *handshake_packet) {
     vTaskResume(context.led_task_handle);
 }
 
-static void send_packet() {
+static void send_packet(void) {
     static uint cont = 0;
     uint max_cont = 0;
     while (sensor->is_enabled[cont] == false && max_cont < XBUS_RPMVOLTTEMP) {
@@ -161,6 +163,14 @@ static void send_packet() {
     vTaskResume(context.led_task_handle);
 }
 
+static int64_t alarm_50ms(alarm_id_t id, void *user_data) {
+    static uint count = 0;
+    send_handshake(0);
+    if (count == 5) return 0;
+    count++;
+    return 30;
+}
+
 static uint16_t get_crc(uint8_t *buffer, uint8_t lenght) {
     uint16_t crc = 0;
     for (int i = 0; i < lenght; i++) crc += byte_crc(crc, buffer[i]);
@@ -176,7 +186,7 @@ static uint16_t byte_crc(uint16_t crc, uint8_t new_byte) {
     return crc;
 }
 
-static void set_config() {
+static void set_config(void) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
     if (config->esc_protocol == ESC_PWM) {
