@@ -281,6 +281,7 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
     if (config->esc_protocol == ESC_HW4) {
         esc_hw4_parameters_t parameter = {config->rpm_multiplier,
                                           config->enable_pwm_out,
+                                          config->enable_esc_hw4_init_delay,
                                           config->alpha_rpm,
                                           config->alpha_voltage,
                                           config->alpha_current,

@@ -47,6 +47,9 @@ void esc_hw4_task(void *parameters) {
     *parameter.temperature_bec = 23.45;
     *parameter.cell_voltage = 3.75;
 #endif
+
+    if (parameter.init_delay) vTaskDelay(15000 / portTICK_PERIOD_MS);
+
     TaskHandle_t task_handle;
     uint cell_count_delay = 15000;
     cell_count_parameters_t cell_count_parameters = {cell_count_delay, parameter.voltage, parameter.cell_count};
