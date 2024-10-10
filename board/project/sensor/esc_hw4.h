@@ -31,6 +31,7 @@ Current multiplier = 1 / (ampgain* 0.25/1000) = 4000 / ampgain
 typedef struct esc_hw4_parameters_t {
     float rpm_multiplier;
     bool pwm_out;
+    bool init_delay;
     float alpha_rpm, alpha_voltage, alpha_current, alpha_temperature;
     float divisor, current_multiplier, current_thresold, current_max;
     bool current_is_manual_offset;
