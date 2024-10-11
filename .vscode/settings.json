@@ -6,7 +6,7 @@
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "cmake.options.statusBarVisibility" : "visible",
     "cmake.buildBeforeRun": true,
-    "cmake.sourceDirectory": "${env:HOME}/src/pico/msrc_srxl2b/board",
+    "cmake.sourceDirectory": "${workspaceFolder}/board",
     "cortex-debug.openocdPath": "${env:HOME}/src/pico/openocd/src/openocd",
     "cortex-debug.armToolchainPath": "${env:HOME}/.platformio/packages/toolchain-gccarmnoneeabi/bin",
     "cortex-debug.variableUseNaturalFormat": true,
