@@ -225,7 +225,7 @@ Connect MSRC to Smartport.
 
 ### 6.2 FRSKY D
 
-Connect MSRC the telemtry port.  
+Connect MSRC the telemetry port.  
 
 ### 6.3 Spektrum XBUS
 
@@ -342,10 +342,8 @@ HW FlyFun. If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the
 
 Optionally, for Hobbywing Flyfun and APD F-series, a PWM signal can be generated from the RPM telemetry value.  
 
-Note there are two protocols for V4: not VBAR (old protocol) and VBAR. It is recommended to use the VBAR protocol. Check your ESC firmware is VBAR version  
-Telemetry port is the program port. It is a servo male plug on the ESC
+Check your ESC firmware is not VBAR version  . Telemetry port is the program port. It is a servo male plug on the ESC
 
-For old protocol (not VBAR):
 - Values for current when throttle is low (up to 25%, depending on model) may not be reliable. If getting high or noisy current values when throttle is low, adjust _Current_thresold_. Below this throttle percentage (0-100%), current values will be 0A
 - Set _Max Current_ to the peak current of the ESC (eg: 80A: _Max Current_ 100)
 - Adjust _Voltage Divisor__ and _Current Multiplier__, depending on model:
@@ -384,7 +382,7 @@ Serial protocol: 115200 baud, even parity.
 
 Supported models: Kosmic, Kolibri, JivePro. Not supported: Jive.  
 
-#### 7.1.5 APD F series
+#### 7.1.5 APD F series (KISS)
 
 Telemetry port: pin T
 
@@ -392,7 +390,7 @@ Types of telemetry:
 
 - *RPM output* it is a PWM signal with the RPMs. Select PROTOCOL_PWM and connect to pin PWM in as noted in [connections table](#1-connections)
 
-- *PWM telemetry*. For this type of telemetry you need to flash [beta firmware](https://docs.powerdrives.net/products/firmware-installation/f_series-beta-configurable-firmware). It provides serial telemetry with RPMs, voltage, current and temperature. Select PROTOCOL_APD_F. Connect ESC pin T to pin Rx as defined in [connections table](#1-connections)
+- *PWM telemetry*. For this type of telemetry you need to flash [beta firmware](https://docs.powerdrives.net/products/firmware-installation/f_series-beta-configurable-firmware). It provides serial telemetry with RPMs, voltage, current and temperature. Select PROTOCOL_APD_F. Connect ESC pin T to pin Rx as defined in [connections table](#1-connections). This is compatible with Kiss protocol.  
 
 #### 7.1.6 APD UHV/HV series
 

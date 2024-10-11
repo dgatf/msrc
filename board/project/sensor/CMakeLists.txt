@@ -15,7 +15,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     bmp180.c
     cell_count.c
     auto_offset.c
-    esc_vbar.c
+    esc_hw5.c
     esc_castle.c
     pwm_out.c
     ntc.c

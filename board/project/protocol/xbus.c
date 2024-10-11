@@ -15,7 +15,7 @@
 #include "esc_hw4.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
-#include "esc_vbar.h"
+#include "esc_hw5.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
@@ -377,13 +377,13 @@ static void set_config() {
         //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
         // i2c_multi_enable_address(XBUS_BATTERY_ID);
     }
-    if (config->esc_protocol == ESC_VBAR) {
-        esc_vbar_parameters_t parameter = {
+    if (config->esc_protocol == ESC_HW5) {
+        esc_hw5_parameters_t parameter = {
             config->rpm_multiplier,    config->alpha_rpm,     config->alpha_voltage, config->alpha_current,
             config->alpha_temperature, malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
-        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        xTaskCreate(esc_hw5_task, "esc_hw5_task", STACK_ESC_HW5, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);

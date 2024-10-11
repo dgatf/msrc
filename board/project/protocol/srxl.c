@@ -15,7 +15,7 @@
 #include "esc_hw4.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
-#include "esc_vbar.h"
+#include "esc_hw5.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
@@ -56,15 +56,15 @@ void srxl_task(void *parameters) {
     }
 }
 
-uint16_t get_crc(uint8_t *buffer, uint8_t length) {
+uint16_t srxl_get_crc(uint8_t *buffer, uint8_t length) {
     uint16_t crc = 0;
     for (uint8_t i = 0; i < length; ++i) {
-        crc = crc16(crc, buffer[i]);
+        crc = srxl_crc16(crc, buffer[i]);
     }
     return crc;
 }
 
-uint16_t crc16(uint16_t crc, uint8_t data) {
+uint16_t srxl_crc16(uint16_t crc, uint8_t data) {
     crc = crc ^ ((uint16_t)data << 8);
     for (int i = 0; i < 8; ++i) {
         if (crc & 0x8000)
@@ -73,6 +73,14 @@ uint16_t crc16(uint16_t crc, uint8_t data) {
             crc = crc << 1;
     }
     return crc;
+}
+
+uint srxl_sensors_count(void) {
+    uint count = 0;
+    for (uint i = 0; i <= XBUS_ENERGY; i++) {
+        if (sensor->is_enabled[i]) count++;
+    }
+    return count;
 }
 
 static void process(void) {
@@ -97,13 +105,11 @@ static void process(void) {
 
 static void send_packet(void) {
     static uint cont = 0;
-    uint max_cont = 0;
-    while (sensor->is_enabled[cont] == false && max_cont < XBUS_RPMVOLTTEMP) {
+    if (!srxl_sensors_count()) return;
+    while (!sensor->is_enabled[cont]) {
         cont++;
-        max_cont++;
-        if (cont > XBUS_RPMVOLTTEMP) cont = 0;
+        if (cont > XBUS_ENERGY) cont = 0;
     }
-    if (max_cont == XBUS_RPMVOLTTEMP) return;
     uint8_t buffer[3] = {SRXL_HEADER, 0x80, 0x15};
     uart0_write_bytes(buffer, 3);
     debug("\nSRXL (%u) > %X %X %X", uxTaskGetStackHighWaterMark(NULL), buffer[0], buffer[1], buffer[2]);
@@ -146,7 +152,7 @@ static void send_packet(void) {
             break;
     }
     uint16_t crc;
-    crc = __builtin_bswap16(get_crc(buffer, 19));  // all bytes, including header
+    crc = __builtin_bswap16(srxl_get_crc(buffer, 19));  // all bytes, including header
     uart0_write_bytes((uint8_t *)&crc, 2);
     debug("%X ", crc);
     cont++;
@@ -220,13 +226,13 @@ static void set_config(void) {
         sensor_formatted->esc = malloc(sizeof(xbus_esc_t));
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     }
-    if (config->esc_protocol == ESC_VBAR) {
-        esc_vbar_parameters_t parameter = {
+    if (config->esc_protocol == ESC_HW5) {
+        esc_hw5_parameters_t parameter = {
             config->rpm_multiplier,    config->alpha_rpm,     config->alpha_voltage, config->alpha_current,
             config->alpha_temperature, malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
-        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        xTaskCreate(esc_hw5_task, "esc_hw5_task", STACK_ESC_HW5, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);

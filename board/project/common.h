@@ -59,7 +59,7 @@ typedef enum esc_protocol_t {
     ESC_KONTRONIK,
     ESC_APD_F,
     ESC_APD_HV,
-    ESC_VBAR
+    ESC_HW5
 } esc_protocol_t;
 
 typedef enum i2c_module_t { I2C_NONE, I2C_BMP280, I2C_MS5611, I2C_BMP180 } i2c_module_t;

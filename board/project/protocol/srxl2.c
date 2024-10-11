@@ -15,7 +15,7 @@
 #include "esc_hw4.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
-#include "esc_vbar.h"
+#include "esc_hw5.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
@@ -80,7 +80,7 @@ static void process(void) {
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE) {
             //cancel_alarm(alarm_id);
             dest_id = data[3];
-            uint16_t crc = get_crc(data, length - 2);
+            uint16_t crc = srxl_get_crc(data, length - 2);
             debug("\nCRC 0x%X - 0x%X%X", crc, data[12], data[13]);
             send_handshake(dest_id);
         } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE) {
@@ -104,7 +104,7 @@ static void send_handshake(uint8_t dest_id) {
     buffer[10] = 0;            // uid
     buffer[11] = 1;            // uid
     uint16_t crc;
-    crc = __builtin_bswap16(get_crc(buffer, SRXL2_HANDSHAKE_LEN - 2));  // all bytes, including header
+    crc = __builtin_bswap16(srxl_get_crc(buffer, SRXL2_HANDSHAKE_LEN - 2));  // all bytes, including header
     buffer[12] = crc >> 8;
     buffer[13] = crc;
     uart0_write_bytes((uint8_t *)&crc, 2);
@@ -115,13 +115,11 @@ static void send_handshake(uint8_t dest_id) {
 
 static void send_packet(void) {
     static uint cont = 0;
-    uint max_cont = 0;
-    while (sensor->is_enabled[cont] == false && max_cont < XBUS_RPMVOLTTEMP) {
+    if (!srxl_sensors_count()) return;
+    while (!sensor->is_enabled[cont]) {
         cont++;
-        max_cont++;
-        if (cont > XBUS_RPMVOLTTEMP) cont = 0;
+        if (cont > XBUS_ENERGY) cont = 0;
     }
-    if (max_cont == XBUS_RPMVOLTTEMP) return;
     uint8_t buffer[SRXL2_TELEMETRY_LEN] = {0};
     buffer[0] = SRXL2_HEADER;
     buffer[1] = SRXL2_PACKET_TYPE_TELEMETRY;
@@ -153,8 +151,7 @@ static void send_packet(void) {
             memcpy((uint8_t *)&buffer[4], (uint8_t *)&sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
             break;
     }
-    uint16_t crc;
-    crc = (get_crc(buffer, SRXL2_TELEMETRY_LEN - 2));  // all bytes, including header
+    uint16_t crc = srxl_get_crc(buffer, SRXL2_TELEMETRY_LEN - 2);  // all bytes, including header
     buffer[20] = crc >> 8;
     buffer[21] = crc;
     uart0_write_bytes(buffer, SRXL2_TELEMETRY_LEN);
@@ -239,13 +236,13 @@ static void set_config(void) {
         sensor_formatted->esc = malloc(sizeof(xbus_esc_t));
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     }
-    if (config->esc_protocol == ESC_VBAR) {
-        esc_vbar_parameters_t parameter = {
+    if (config->esc_protocol == ESC_HW5) {
+        esc_hw5_parameters_t parameter = {
             config->rpm_multiplier,    config->alpha_rpm,     config->alpha_voltage, config->alpha_current,
             config->alpha_temperature, malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
-        xTaskCreate(esc_vbar_task, "esc_vbar_task", STACK_ESC_VBAR, (void *)&parameter, 2, &task_handle);
+        xTaskCreate(esc_hw5_task, "esc_hw5_task", STACK_ESC_HW5, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);

@@ -1,4 +1,4 @@
-#include "esc_vbar.h"
+#include "esc_hw5.h"
 
 #include <stdio.h>
 
@@ -12,11 +12,11 @@
 #define PACKET_LENGHT 32
 
 static uint8_t *CRCH_, *CRCL_;
-static void process(esc_vbar_parameters_t *parameter);
+static void process(esc_hw5_parameters_t *parameter);
 static uint16_t calculate_crc16(uint8_t const *buffer, uint lenght);
 
-void esc_vbar_task(void *parameters) {
-    esc_vbar_parameters_t parameter = *(esc_vbar_parameters_t *)parameters;
+void esc_hw5_task(void *parameters) {
+    esc_hw5_parameters_t parameter = *(esc_hw5_parameters_t *)parameters;
     *parameter.rpm = 0;
     *parameter.voltage = 0;
     *parameter.current = 0;
@@ -87,7 +87,7 @@ void esc_vbar_task(void *parameters) {
     }
 }
 
-static void process(esc_vbar_parameters_t *parameter) {
+static void process(esc_hw5_parameters_t *parameter) {
     static uint32_t timestamp = 0;
     uint8_t lenght = uart1_available();
     if (lenght) {
