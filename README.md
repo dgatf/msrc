@@ -22,7 +22,7 @@ Compatible MCUs: RP2040. Any model is compatible. Recommended [RP2040 Zero](http
 Implemented sensors:
 
 - ESC
-  - ESCs with serial telemetry: Hobbywing V3/V4/V5/FlyFun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, APD F/HV/UHV
+  - ESCs with serial telemetry: Hobbywing V3/V4/V5/FlyFun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, Kiss (APD F, blheli32, Summit X), APD HV/UHV
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
@@ -60,7 +60,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;&emsp;[7.1.2 Hobbywing Platinum V4 / FlyFun](#712-hobbywing-platinum-v4--flyfun)  
 &emsp;&emsp;[7.1.3 Hobbywing Platinum V5](#713-hobbywing-platinum-v5)  
 &emsp;&emsp;[7.1.4 Kontronik Kosmic/Kolibri/JivePro](#714-kontronik-kosmickolibrijivepro)  
-&emsp;&emsp;[7.1.5 APD F series](#715-apd-f-series)  
+&emsp;&emsp;[7.1.5 Kiss (APD F, blheli32, Summit X)](#715-kiss-apd-f-blheli32-summit-x)  
 &emsp;&emsp;[7.1.6 APD UHV/HV series](#716-apd-uhvhv-series)  
 &emsp;&emsp;[7.1.7. PWM signal](#717-pwm-signal)  
 &emsp;&emsp;[7.1.8. Castle Link](#718-castle-link)  
@@ -317,7 +317,7 @@ Enable a serial monitor on GPIO5 with the selected parameters.
 Available sensors:
 
 - ESC
-  - ESCs with serial telemetry: Hobbywing V3/V4/V5/Flyfun, Kontronik<sup>(2)</sup>, APD F/HV/UHV
+  - ESCs with serial telemetry: Hobbywing V3/V4/V5/Flyfun, Kontronik<sup>(2)</sup>, Kiss (APD F, blheli32, Summit X), APD HV/UHV  
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
@@ -342,7 +342,7 @@ HW FlyFun. If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the
 
 Optionally, for Hobbywing Flyfun and APD F-series, a PWM signal can be generated from the RPM telemetry value.  
 
-Check your ESC firmware is not VBAR version  . Telemetry port is the program port. It is a servo male plug on the ESC
+Check your ESC firmware is not VBAR version. Telemetry port is the program port. It is a servo male plug on the ESC
 
 - Values for current when throttle is low (up to 25%, depending on model) may not be reliable. If getting high or noisy current values when throttle is low, adjust _Current_thresold_. Below this throttle percentage (0-100%), current values will be 0A
 - Set _Max Current_ to the peak current of the ESC (eg: 80A: _Max Current_ 100)
@@ -382,15 +382,19 @@ Serial protocol: 115200 baud, even parity.
 
 Supported models: Kosmic, Kolibri, JivePro. Not supported: Jive.  
 
-#### 7.1.5 APD F series (KISS)
+#### 7.1.5 Kiss (APD F, blheli32, Summit X)
 
-Telemetry port: pin T
+Any ESC with Kiss telemetry: APD F, blheli32, Summit X.  
+
+__APD F__
+
+Telemetry port for APD F: pin T
 
 Types of telemetry:
 
 - *RPM output* it is a PWM signal with the RPMs. Select PROTOCOL_PWM and connect to pin PWM in as noted in [connections table](#1-connections)
 
-- *PWM telemetry*. For this type of telemetry you need to flash [beta firmware](https://docs.powerdrives.net/products/firmware-installation/f_series-beta-configurable-firmware). It provides serial telemetry with RPMs, voltage, current and temperature. Select PROTOCOL_APD_F. Connect ESC pin T to pin Rx as defined in [connections table](#1-connections). This is compatible with Kiss protocol.  
+- *PWM telemetry*. For this type of telemetry you need to flash [beta firmware](https://docs.powerdrives.net/products/firmware-installation/f_series-beta-configurable-firmware). It provides serial telemetry with RPMs, voltage, current and temperature. Select PROTOCOL_APD_F. Connect ESC pin T to pin Rx as defined in [connections table](#1-connections).  
 
 #### 7.1.6 APD UHV/HV series
 
@@ -715,7 +719,7 @@ Po = pressure at ground (Pa)*
 
 ## 10. Change log
 
-v0.10
+[v1.0](https://github.com/dgatf/msrc/tree/v1.0)
 
 - Ported to RP2040
 
