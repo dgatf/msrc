@@ -1,7 +1,5 @@
 #include <stdio.h>
 
-//#define PICO_FLASH_SPI_CLKDIV 4
-
 #include "config.h"
 #include "frsky_d.h"
 #include "hitec.h"
@@ -14,9 +12,9 @@
 #include "sim_rx.h"
 #include "smartport.h"
 #include "srxl.h"
+#include "srxl2.h"
 #include "usb.h"
 #include "xbus.h"
-#include "srxl2.h"
 
 context_t context;
 

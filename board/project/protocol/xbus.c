@@ -13,9 +13,9 @@
 #include "esc_castle.h"
 #include "esc_hw3.h"
 #include "esc_hw4.h"
+#include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
-#include "esc_hw5.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
@@ -30,6 +30,8 @@
 #include "uart_pio.h"
 #include "voltage.h"
 
+#define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
+
 xbus_sensor_t *sensor;
 xbus_sensor_formatted_t *sensor_formatted;
 
@@ -38,6 +40,12 @@ static void set_config();
 static uint8_t bcd8(float value, uint8_t precision);
 static uint16_t bcd16(float value, uint8_t precision);
 static uint32_t bcd32(float value, uint8_t precision);
+static int64_t interval_250_callback(alarm_id_t id, void *parameters);
+static int64_t interval_500_callback(alarm_id_t id, void *parameters);
+static int64_t interval_1000_callback(alarm_id_t id, void *parameters);
+static int64_t interval_1500_callback(alarm_id_t id, void *parameters);
+static int64_t interval_2000_callback(alarm_id_t id, void *parameters);
+static int64_t interval_3000_callback(alarm_id_t id, void *parameters);
 
 void xbus_i2c_handler(uint8_t address) { i2c_request_handler(address); }
 
@@ -69,9 +77,9 @@ void xbus_format_sensor(uint8_t address) {
     static float alt = 0;
     switch (address) {
         case XBUS_AIRSPEED_ID: {
-            sensor_formatted->airspeed->airspeed = __builtin_bswap16(*sensor->airspeed[XBUS_AIRSPEED_AIRSPEED]);
-            if (__builtin_bswap16(sensor_formatted->airspeed->airspeed) >
-                __builtin_bswap16(sensor_formatted->airspeed->max_airspeed))
+            sensor_formatted->airspeed->airspeed = swap_16((uint16_t)(*sensor->airspeed[XBUS_AIRSPEED_AIRSPEED]));
+            if (swap_16((uint16_t)(sensor_formatted->airspeed->airspeed)) >
+                swap_16((uint16_t)(sensor_formatted->airspeed->max_airspeed)))
                 sensor_formatted->airspeed->max_airspeed = sensor_formatted->airspeed->airspeed;
             break;
         }
@@ -117,31 +125,31 @@ void xbus_format_sensor(uint8_t address) {
         }
         case XBUS_ENERGY_ID: {
             if (sensor->energy[XBUS_ENERGY_CURRENT1])
-                sensor_formatted->energy->current_a = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_CURRENT1] * 100);
+                sensor_formatted->energy->current_a = swap_16((int16_t)(*sensor->energy[XBUS_ENERGY_CURRENT1] * 100));
             if (sensor->energy[XBUS_ENERGY_CONSUMPTION1])
                 sensor_formatted->energy->charge_used_a =
-                    __builtin_bswap16(*sensor->energy[XBUS_ENERGY_CONSUMPTION1] * 10);
+                    swap_16((int16_t)(*sensor->energy[XBUS_ENERGY_CONSUMPTION1] * 10));
             if (sensor->energy[XBUS_ENERGY_VOLTAGE1])
-                sensor_formatted->energy->volts_a = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_VOLTAGE1] * 100);
+                sensor_formatted->energy->volts_a = swap_16((uint16_t)(*sensor->energy[XBUS_ENERGY_VOLTAGE1] * 100));
             if (sensor->energy[XBUS_ENERGY_CURRENT2])
-                sensor_formatted->energy->current_b = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_CURRENT2] * 10);
+                sensor_formatted->energy->current_b = swap_16((int16_t)(*sensor->energy[XBUS_ENERGY_CURRENT2] * 10));
             if (sensor->energy[XBUS_ENERGY_CONSUMPTION2])
-                sensor_formatted->energy->charge_used_b = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_CONSUMPTION2]);
+                sensor_formatted->energy->charge_used_b = swap_16((int16_t)(*sensor->energy[XBUS_ENERGY_CONSUMPTION2]));
             if (sensor->energy[XBUS_ENERGY_VOLTAGE2])
-                sensor_formatted->energy->volts_b = __builtin_bswap16(*sensor->energy[XBUS_ENERGY_VOLTAGE2] * 100);
+                sensor_formatted->energy->volts_b = swap_16((uint16_t)(*sensor->energy[XBUS_ENERGY_VOLTAGE2] * 100));
             break;
         }
         case XBUS_ESC_ID: {
             if (sensor->esc[XBUS_ESC_RPM])
-                sensor_formatted->esc->rpm = __builtin_bswap16(*sensor->esc[XBUS_ESC_RPM] / 10);
+                sensor_formatted->esc->rpm = swap_16((uint16_t)(*sensor->esc[XBUS_ESC_RPM] / 10));
             if (sensor->esc[XBUS_ESC_VOLTAGE])
-                sensor_formatted->esc->volts_input = __builtin_bswap16(*sensor->esc[XBUS_ESC_VOLTAGE] * 100);
+                sensor_formatted->esc->volts_input = swap_16((uint16_t)(*sensor->esc[XBUS_ESC_VOLTAGE] * 100));
             if (sensor->esc[XBUS_ESC_TEMPERATURE_FET])
-                sensor_formatted->esc->temp_fet = __builtin_bswap16(*sensor->esc[XBUS_ESC_TEMPERATURE_FET] * 10);
+                sensor_formatted->esc->temp_fet = swap_16((uint16_t)(*sensor->esc[XBUS_ESC_TEMPERATURE_FET] * 10));
             if (sensor->esc[XBUS_ESC_CURRENT])
-                sensor_formatted->esc->current_motor = __builtin_bswap16(*sensor->esc[XBUS_ESC_CURRENT] * 100);
+                sensor_formatted->esc->current_motor = swap_16((uint16_t)(*sensor->esc[XBUS_ESC_CURRENT] * 100));
             if (sensor->esc[XBUS_ESC_TEMPERATURE_BEC])
-                sensor_formatted->esc->temp_bec = __builtin_bswap16(*sensor->esc[XBUS_ESC_TEMPERATURE_BEC] * 10);
+                sensor_formatted->esc->temp_bec = swap_16((uint16_t)(*sensor->esc[XBUS_ESC_TEMPERATURE_BEC] * 10));
             if (sensor->esc[XBUS_ESC_CURRENT_BEC])
                 sensor_formatted->esc->current_bec = *sensor->esc[XBUS_ESC_CURRENT_BEC] * 10;
             if (sensor->esc[XBUS_ESC_VOLTAGE_BEC])
@@ -150,84 +158,41 @@ void xbus_format_sensor(uint8_t address) {
         }
         case XBUS_BATTERY_ID: {
             if (sensor->battery[XBUS_BATTERY_CURRENT1])
-                sensor_formatted->battery->current_a = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_CURRENT1] * 10);
+                sensor_formatted->battery->current_a = swap_16((int16_t)(*sensor->battery[XBUS_BATTERY_CURRENT1] * 10));
             if (sensor->battery[XBUS_BATTERY_CONSUMPTION1])
                 sensor_formatted->battery->charge_used_a =
-                    __builtin_bswap16(*sensor->battery[XBUS_BATTERY_CONSUMPTION1]);
+                    swap_16((int16_t)(*sensor->battery[XBUS_BATTERY_CONSUMPTION1]));
             if (sensor->battery[XBUS_BATTERY_TEMP1])
-                sensor_formatted->battery->temp_a = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_TEMP1] * 10);
+                sensor_formatted->battery->temp_a = swap_16((uint16_t)(*sensor->battery[XBUS_BATTERY_TEMP1] * 10));
             if (sensor->battery[XBUS_BATTERY_CURRENT2])
-                sensor_formatted->battery->current_b = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_CURRENT2] * 10);
+                sensor_formatted->battery->current_b = swap_16((int16_t)(*sensor->battery[XBUS_BATTERY_CURRENT2] * 10));
             if (sensor->battery[XBUS_BATTERY_CONSUMPTION2])
                 sensor_formatted->battery->charge_used_b =
-                    __builtin_bswap16(*sensor->battery[XBUS_BATTERY_CONSUMPTION2]);
+                    swap_16((int16_t)(*sensor->battery[XBUS_BATTERY_CONSUMPTION2]));
             if (sensor->battery[XBUS_BATTERY_TEMP2])
-                sensor_formatted->battery->temp_b = __builtin_bswap16(*sensor->battery[XBUS_BATTERY_TEMP2] * 10);
+                sensor_formatted->battery->temp_b = swap_16((uint16_t)(*sensor->battery[XBUS_BATTERY_TEMP2] * 10));
             break;
         }
         case XBUS_VARIO_ID: {
-            static uint ts_250ms;
-            static uint ts_500ms;
-            static uint ts_1000ms;
-            static uint ts_1500ms;
-            static uint ts_2000ms;
-            static uint ts_3000ms;
-            static float altitude_250ms;
-            static float altitude_500ms;
-            static float altitude_1000ms;
-            static float altitude_1500ms;
-            static float altitude_2000ms;
-            static float altitude_3000ms;
-            uint ts = time_us_32();
             float altitude = *sensor->vario[XBUS_VARIO_ALTITUDE];
-            sensor_formatted->vario->altitude = __builtin_bswap16(altitude * 10);
-            if (ts - ts_250ms > 250) {
-                sensor_formatted->vario->delta_0250ms = __builtin_bswap16((altitude - altitude_250ms) * 10);
-                altitude_250ms = altitude;
-                ts_250ms = ts;
-            }
-            if (ts - ts_500ms > 500) {
-                sensor_formatted->vario->delta_0500ms = __builtin_bswap16((altitude - altitude_500ms) * 10);
-                altitude_500ms = altitude;
-                ts_500ms = ts;
-            }
-            if (ts - ts_1000ms > 1000) {
-                sensor_formatted->vario->delta_1000ms = __builtin_bswap16(altitude - altitude_1000ms);
-                altitude_1000ms = altitude;
-                ts_1000ms = ts;
-            }
-            if (ts - ts_1500ms > 1500) {
-                sensor_formatted->vario->delta_1500ms = __builtin_bswap16(altitude - altitude_1500ms);
-                altitude_1000ms = altitude;
-                ts_1000ms = ts;
-            }
-            if (ts - ts_2000ms > 2000) {
-                sensor_formatted->vario->delta_2000ms = __builtin_bswap16(altitude - altitude_2000ms);
-                altitude_2000ms = altitude;
-                ts_2000ms = ts;
-            }
-            if (ts - ts_3000ms > 3000) {
-                sensor_formatted->vario->delta_3000ms = __builtin_bswap16(altitude - altitude_3000ms);
-                altitude_3000ms = altitude;
-                ts_3000ms = ts;
-            }
+            sensor_formatted->vario->altitude = swap_16((int16_t)(altitude * 10));
 #ifdef SIM_SENSORS
-            sensor_formatted->vario->delta_0250ms = __builtin_bswap16(25);
-            sensor_formatted->vario->delta_0500ms = __builtin_bswap16(50);
-            sensor_formatted->vario->delta_1000ms = __builtin_bswap16(10);
-            sensor_formatted->vario->delta_1500ms = __builtin_bswap16(15);
-            sensor_formatted->vario->delta_2000ms = __builtin_bswap16(20);
-            sensor_formatted->vario->delta_3000ms = __builtin_bswap16(30);
+            sensor_formatted->vario->delta_0250ms = swap_16((int16_t)(-10));
+            sensor_formatted->vario->delta_0500ms = swap_16((int16_t)(20));
+            sensor_formatted->vario->delta_1000ms = swap_16((int16_t)(-12.32));
+            sensor_formatted->vario->delta_1500ms = swap_16((int16_t)(15));
+            sensor_formatted->vario->delta_2000ms = swap_16((int16_t)(20));
+            sensor_formatted->vario->delta_3000ms = swap_16((int16_t)(-300));
 #endif
             break;
         }
         case XBUS_RPMVOLTTEMP_ID: {
             if (sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_VOLT])
                 sensor_formatted->rpm_volt_temp->volts =
-                    __builtin_bswap16(*sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_VOLT] * 100);
+                    swap_16((uint16_t)(*sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_VOLT] * 100));
             if (sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP])
                 sensor_formatted->rpm_volt_temp->temperature =
-                    __builtin_bswap16(*sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP]);
+                    swap_16((int16_t)(*sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP]));
             break;
         }
     }
@@ -610,7 +575,7 @@ static void set_config() {
         airspeed_parameters_t parameter = {3, config->analog_rate, config->alpha_airspeed, malloc(sizeof(float))};
         xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-
+        
         sensor->airspeed[XBUS_AIRSPEED_AIRSPEED] = parameter.airspeed;
         sensor->is_enabled[XBUS_AIRSPEED] = true;
         sensor_formatted->airspeed = calloc(1, 16);
@@ -625,7 +590,12 @@ static void set_config() {
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-
+        add_alarm_in_ms(250, interval_250_callback, NULL, false);
+        add_alarm_in_ms(500, interval_500_callback, NULL, false);
+        add_alarm_in_ms(1000, interval_1000_callback, NULL, false);
+        add_alarm_in_ms(1500, interval_1500_callback, NULL, false);
+        add_alarm_in_ms(2000, interval_2000_callback, NULL, false);
+        add_alarm_in_ms(3000, interval_3000_callback, NULL, false);
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
         sensor->is_enabled[XBUS_VARIO] = true;
         sensor_formatted->vario = calloc(1, 16);
@@ -640,7 +610,12 @@ static void set_config() {
                                          malloc(sizeof(float))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-
+        add_alarm_in_ms(250, interval_250_callback, NULL, false);
+        add_alarm_in_ms(500, interval_500_callback, NULL, false);
+        add_alarm_in_ms(1000, interval_1000_callback, NULL, false);
+        add_alarm_in_ms(1500, interval_1500_callback, NULL, false);
+        add_alarm_in_ms(2000, interval_2000_callback, NULL, false);
+        add_alarm_in_ms(3000, interval_3000_callback, NULL, false);
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
         sensor->is_enabled[XBUS_VARIO] = true;
         sensor_formatted->vario = calloc(1, 16);
@@ -655,7 +630,12 @@ static void set_config() {
                                          malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-
+        add_alarm_in_ms(250, interval_250_callback, NULL, false);
+        add_alarm_in_ms(500, interval_500_callback, NULL, false);
+        add_alarm_in_ms(1000, interval_1000_callback, NULL, false);
+        add_alarm_in_ms(1500, interval_1500_callback, NULL, false);
+        add_alarm_in_ms(2000, interval_2000_callback, NULL, false);
+        add_alarm_in_ms(3000, interval_3000_callback, NULL, false);
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
         sensor->is_enabled[XBUS_VARIO] = true;
         sensor_formatted->vario = calloc(1, 16);
@@ -695,4 +675,46 @@ static uint32_t bcd32(float value, uint8_t precision) {
     sprintf(buf, "%08li", (uint32_t)value);
     for (int i = 0; i < 8; i++) output |= (uint32_t)(buf[i] - 48) << ((7 - i) * 4);
     return output;
+}
+
+static int64_t interval_250_callback(alarm_id_t id, void *parameters) {
+    static float prev = 0;
+    sensor_formatted->vario->delta_0250ms = swap_16((int16_t)(round(*sensor->vario[XBUS_VARIO_ALTITUDE] - prev) * 10));
+    prev = *sensor->vario[XBUS_VARIO_ALTITUDE];
+    return 250000L;
+}
+
+static int64_t interval_500_callback(alarm_id_t id, void *parameters) {
+    static float prev = 0;
+    sensor_formatted->vario->delta_0500ms = swap_16((int16_t)(round(*sensor->vario[XBUS_VARIO_ALTITUDE] - prev) * 10));
+    prev = *sensor->vario[XBUS_VARIO_ALTITUDE];
+    return 500000L;
+}
+
+static int64_t interval_1000_callback(alarm_id_t id, void *parameters) {
+    static float prev = 0;
+    sensor_formatted->vario->delta_1000ms = swap_16((int16_t)round(*sensor->vario[XBUS_VARIO_ALTITUDE] - prev));
+    prev = *sensor->vario[XBUS_VARIO_ALTITUDE];
+    return 1000000L;
+}
+
+static int64_t interval_1500_callback(alarm_id_t id, void *parameters) {
+    static float prev = 0;
+    sensor_formatted->vario->delta_1500ms = swap_16((int16_t)round(*sensor->vario[XBUS_VARIO_ALTITUDE] - prev));
+    prev = *sensor->vario[XBUS_VARIO_ALTITUDE];
+    return 1500000L;
+}
+
+static int64_t interval_2000_callback(alarm_id_t id, void *parameters) {
+    static float prev = 0;
+    sensor_formatted->vario->delta_2000ms = swap_16((int16_t)round(*sensor->vario[XBUS_VARIO_ALTITUDE] - prev));
+    prev = *sensor->vario[XBUS_VARIO_ALTITUDE];
+    return 2000000L;
+}
+
+static int64_t interval_3000_callback(alarm_id_t id, void *parameters) {
+    static float prev = 0;
+    sensor_formatted->vario->delta_3000ms = swap_16((int16_t)round(*sensor->vario[XBUS_VARIO_ALTITUDE] - prev));
+    prev = *sensor->vario[XBUS_VARIO_ALTITUDE];
+    return 3000000L;
 }

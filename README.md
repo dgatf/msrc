@@ -719,6 +719,11 @@ Po = pressure at ground (Pa)*
 
 ## 10. Change log
 
+v1.1
+
+- Fixed Xbus negative values and improve vspeed accuracy  
+- Updated sdk and third party libraries to support new hardware  
+
 [v1.0](https://github.com/dgatf/msrc/tree/v1.0)
 
 - Ported to RP2040
