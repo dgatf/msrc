@@ -149,6 +149,7 @@ private:
     void setUiFromConfig();
     void openSerialPort();
     void closeSerialPort();
+    void enableWidgets(QWidget *widget, bool enable);
 
 private slots:
     void buttonSerialPort();

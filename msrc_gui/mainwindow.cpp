@@ -1,6 +1,7 @@
 ﻿#include "mainwindow.h"
 #include "circuitdialog.h"
 #include "ui_mainwindow.h"
+#include "qobject.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), serial(new QSerialPort())
@@ -11,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link",
                          "Kontronic", "APD F", "APD HV", "VBAR"});
     ui->cbGpsBaudrate->addItems(
-    {"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
+                {"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS",
                               "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2",
@@ -122,11 +123,11 @@ void MainWindow::generateCircuit(QLabel *label)
             //ui->lbEscModel->setEnabled(true);
             //ui->gbRpmMultipliers->setEnabled(true);
             if(ui->cbEsc->currentText() == "Hobbywing V3" ||
-               ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
-               ui->cbEsc->currentText() == "Kontronic" ||
-               ui->cbEsc->currentText() == "APD F" ||
-               ui->cbEsc->currentText() == "APD HV" ||
-               ui->cbEsc->currentText() == "VBAR")
+                    ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
+                    ui->cbEsc->currentText() == "Kontronic" ||
+                    ui->cbEsc->currentText() == "APD F" ||
+                    ui->cbEsc->currentText() == "APD HV" ||
+                    ui->cbEsc->currentText() == "VBAR")
                 image.load(":/res/esc_rp2040_zero.png");
             else if(ui->cbEsc->currentText() == "PWM")
                 image.load(":/res/pwm_rp2040_zero.png");
@@ -705,6 +706,13 @@ void MainWindow::exitApp()
     QApplication::quit();
 }
 
+void MainWindow::enableWidgets(QWidget *widget, bool enable) {
+    QList<QWidget *> widgets = widget->findChildren<QWidget *>();
+    QWidget *child;
+    foreach (child, widgets)
+        child->setEnabled(enable);
+}
+
 void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
 {
     if(arg1 == "Spektrum XBUS") {
@@ -860,15 +868,15 @@ void MainWindow::on_cbBarometerType_currentIndexChanged(const QString &arg1)
     }
 }
 
-void MainWindow::on_gbEsc_toggled(bool arg1)
+void MainWindow::on_gbEsc_toggled(bool enabled)
 {
-    Q_UNUSED(arg1);
+    enableWidgets(ui->gbEsc, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_gbVoltage1_toggled(bool arg1)
+void MainWindow::on_gbVoltage1_toggled(bool enabled)
 {
-    Q_UNUSED(arg1);
+    enableWidgets(ui->gbVoltage1, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
@@ -878,9 +886,9 @@ void MainWindow::on_cbTemperature1_toggled(bool checked)
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_gbAltitude_toggled(bool arg1)
+void MainWindow::on_gbAltitude_toggled(bool enabled)
 {
-    Q_UNUSED(arg1);
+    enableWidgets(ui->gbAltitude, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
@@ -890,9 +898,9 @@ void MainWindow::on_cbAirspeed_toggled(bool checked)
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_gbCurrent_toggled(bool arg1)
+void MainWindow::on_gbCurrent_toggled(bool enabled)
 {
-    Q_UNUSED(arg1);
+    enableWidgets(ui->gbCurrent, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
@@ -931,9 +939,9 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_gbGps_toggled(bool arg1)
+void MainWindow::on_gbGps_toggled(bool enabled)
 {
-    Q_UNUSED(arg1);
+    enableWidgets(ui->gbGps, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
@@ -949,7 +957,7 @@ void MainWindow::on_cbCurrentAutoOffset_toggled(bool checked)
 }
 
 void MainWindow::on_cbCurrentSensorType_currentTextChanged(
-    const QString &arg1)
+        const QString &arg1)
 {
     if(arg1 == "Hall effect") {
         ui->cbCurrentAutoOffset->setVisible(true);

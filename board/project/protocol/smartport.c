@@ -990,7 +990,7 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor.data_id = A3_FIRST_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
-        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 3, &task_handle);
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -1012,8 +1012,9 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor.data_id = CURR_FIRST_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
-        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 3, &task_handle);
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         smartport_sensor_double_parameters_t parameter_sensor_double;
         parameter_sensor_double.data_id = ESC_RPM_CONS_FIRST_ID;

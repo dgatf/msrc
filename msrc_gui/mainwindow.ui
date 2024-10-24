@@ -88,7 +88,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-936</y>
+             <y>-1328</y>
              <width>603</width>
              <height>2090</height>
             </rect>
@@ -525,14 +525,14 @@
                   <item row="0" column="1">
                    <widget class="QComboBox" name="cbGpsBaudrate">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>
                   <item row="0" column="0">
                    <widget class="QLabel" name="lbGpsBaudrate">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                     <property name="text">
                      <string>Baud rate</string>
@@ -542,7 +542,7 @@
                   <item row="1" column="0">
                    <widget class="QLabel" name="lbSpeedUnitsGps">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                     <property name="text">
                      <string>Speed units</string>
@@ -552,7 +552,7 @@
                   <item row="1" column="1">
                    <widget class="QComboBox" name="cbSpeedUnitsGps">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>
@@ -589,21 +589,21 @@
                   <item row="1" column="2">
                    <widget class="QComboBox" name="cbBarometerType">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>
                   <item row="3" column="2">
                    <widget class="QComboBox" name="cbAltitudeFilter">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>
                   <item row="1" column="1">
                    <widget class="QLabel" name="label_26">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                     <property name="text">
                      <string>Model</string>
@@ -613,7 +613,7 @@
                   <item row="4" column="1">
                    <widget class="QCheckBox" name="cbVarioAutoOffset">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                     <property name="text">
                      <string>Auto offset</string>
@@ -623,7 +623,7 @@
                   <item row="2" column="1">
                    <widget class="QLabel" name="label_13">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                     <property name="text">
                      <string>Address</string>
@@ -633,7 +633,7 @@
                   <item row="3" column="1">
                    <widget class="QLabel" name="lbAltitudeFilter">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                     <property name="text">
                      <string>Filter</string>
@@ -643,7 +643,7 @@
                   <item row="2" column="2">
                    <widget class="QComboBox" name="cbAddress">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>
@@ -674,14 +674,14 @@
                   <item row="0" column="1">
                    <widget class="QComboBox" name="cbEsc">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                   </item>
                   <item row="1" column="0" colspan="2">
                    <widget class="QGroupBox" name="gbEscParameters">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                     <property name="title">
                      <string>Parameters</string>
@@ -690,7 +690,7 @@
                      <item row="0" column="0">
                       <widget class="QLabel" name="lbEscModel">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="text">
                         <string>Model</string>
@@ -700,14 +700,14 @@
                      <item row="0" column="1">
                       <widget class="QComboBox" name="cbEscModel">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                       </widget>
                      </item>
                      <item row="3" column="0">
                       <widget class="QLabel" name="lbCurrentThresold">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="text">
                         <string>Throttle current thresold</string>
@@ -717,7 +717,7 @@
                      <item row="4" column="0">
                       <widget class="QLabel" name="lbVoltageDivisor">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="text">
                         <string>Voltage divisor</string>
@@ -727,7 +727,7 @@
                      <item row="6" column="1">
                       <widget class="QSpinBox" name="sbCurrentMax">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="maximum">
                         <number>1000</number>
@@ -740,7 +740,7 @@
                      <item row="3" column="1">
                       <widget class="QSpinBox" name="sbCurrentThresold">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="maximum">
                         <number>100</number>
@@ -753,7 +753,7 @@
                      <item row="5" column="0">
                       <widget class="QLabel" name="lbCurrentMultiplier">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="text">
                         <string>Current multiplier</string>
@@ -763,7 +763,7 @@
                      <item row="6" column="0">
                       <widget class="QLabel" name="lbCurrentMax">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="text">
                         <string>Max current</string>
@@ -773,7 +773,7 @@
                      <item row="4" column="1">
                       <widget class="QDoubleSpinBox" name="sbVoltageDivisor">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="maximum">
                         <double>1000.000000000000000</double>
@@ -786,7 +786,7 @@
                      <item row="5" column="1">
                       <widget class="QDoubleSpinBox" name="sbCurrentMultiplier">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="maximum">
                         <double>1000.000000000000000</double>
@@ -799,7 +799,7 @@
                      <item row="1" column="0">
                       <widget class="QCheckBox" name="cbInitDelay">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="text">
                         <string>Init delay</string>
@@ -809,7 +809,7 @@
                      <item row="2" column="0">
                       <widget class="QCheckBox" name="cbEscAutoOffset">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="text">
                         <string>Auto offset</string>
@@ -822,7 +822,7 @@
                      <item row="2" column="1">
                       <widget class="QDoubleSpinBox" name="sbEscOffset">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="suffix">
                         <string/>
@@ -838,7 +838,7 @@
                   <item row="0" column="0">
                    <widget class="QLabel" name="lbEsc">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                     <property name="text">
                      <string>   Protocol</string>
@@ -848,7 +848,7 @@
                   <item row="2" column="0" colspan="2">
                    <widget class="QGroupBox" name="gbRpmMultipliers">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                     <property name="title">
                      <string>RPM multipliers</string>
@@ -857,7 +857,7 @@
                      <item row="2" column="1">
                       <widget class="QSpinBox" name="sbMainTeeth">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="minimum">
                         <number>1</number>
@@ -873,7 +873,7 @@
                      <item row="2" column="0">
                       <widget class="QLabel" name="lbMainTeeth">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="text">
                         <string>Main gear teeth</string>
@@ -883,7 +883,7 @@
                      <item row="1" column="0">
                       <widget class="QLabel" name="lbPoles">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="text">
                         <string>Pair of Poles</string>
@@ -893,7 +893,7 @@
                      <item row="3" column="1">
                       <widget class="QSpinBox" name="sbPinionTeeth">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="minimum">
                         <number>1</number>
@@ -909,7 +909,7 @@
                      <item row="1" column="1">
                       <widget class="QSpinBox" name="sbPairOfPoles">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="minimum">
                         <number>1</number>
@@ -925,7 +925,7 @@
                      <item row="3" column="0">
                       <widget class="QLabel" name="lbPinionTeeth">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="text">
                         <string>Pinion gear teeth</string>
@@ -938,7 +938,7 @@
                   <item row="3" column="0">
                    <widget class="QCheckBox" name="cbPwmOut">
                     <property name="enabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                     <property name="text">
                      <string>PWM out</string>
@@ -1008,7 +1008,7 @@
                     <item>
                      <widget class="QLabel" name="label_3">
                       <property name="enabled">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                       <property name="toolTip">
                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(R1+R2)/R2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1024,7 +1024,7 @@
                     <item>
                      <widget class="QDoubleSpinBox" name="sbVoltage1Mult">
                       <property name="enabled">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                       <property name="maximum">
                        <double>1000.000000000000000</double>
@@ -1055,7 +1055,7 @@
                     <item row="3" column="0">
                      <widget class="QLabel" name="lbQuiescentVoltage">
                       <property name="enabled">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                       <property name="text">
                        <string>Zero current output voltage, Viout (V)</string>
@@ -1065,7 +1065,7 @@
                     <item row="0" column="0">
                      <widget class="QLabel" name="label_29">
                       <property name="enabled">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                       <property name="text">
                        <string>Type</string>
@@ -1075,7 +1075,7 @@
                     <item row="3" column="1">
                      <widget class="QDoubleSpinBox" name="sbQuiescentVoltage">
                       <property name="enabled">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                       <property name="decimals">
                        <number>1</number>
@@ -1085,7 +1085,7 @@
                     <item row="2" column="0">
                      <widget class="QCheckBox" name="cbCurrentAutoOffset">
                       <property name="enabled">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                       <property name="text">
                        <string>Auto offset</string>
@@ -1098,14 +1098,14 @@
                     <item row="0" column="1">
                      <widget class="QComboBox" name="cbCurrentSensorType">
                       <property name="enabled">
-                       <bool>false</bool>
+                       <bool>true</bool>
                       </property>
                      </widget>
                     </item>
                     <item row="4" column="0">
                      <widget class="QLabel" name="lbAnalogCurrentMultiplier">
                       <property name="enabled">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                       <property name="text">
                        <string>Multiplier</string>
@@ -1115,7 +1115,7 @@
                     <item row="1" column="1">
                      <widget class="QSpinBox" name="sbCurrentSens">
                       <property name="enabled">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                       <property name="minimum">
                        <number>1</number>
@@ -1131,7 +1131,7 @@
                     <item row="1" column="0">
                      <widget class="QLabel" name="lbCurrentSens">
                       <property name="enabled">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                       <property name="text">
                        <string>Sensitivity (mV/A)</string>
@@ -1144,7 +1144,7 @@
                     <item row="4" column="1">
                      <widget class="QDoubleSpinBox" name="sbAnalogCurrentMultiplier">
                       <property name="enabled">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                      </widget>
                     </item>
