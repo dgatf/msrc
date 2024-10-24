@@ -332,7 +332,7 @@ void MainWindow::setUiFromConfig()
     /* Serial Monitor */
 
     int item = ui->cbBaudrate->findText(QString::number(config.serial_monitor_baudrate));
-    if (item == -1) ui->cbBaudrate->setCurrentIndex(0);
+    if (item == -1) ui->cbBaudrate->setCurrentText(QString::number(config.serial_monitor_baudrate));
     else ui->cbBaudrate->setCurrentIndex(item);
     if (config.serial_monitor_parity > 2) config.serial_monitor_parity = 0;
     ui->cbParity->setCurrentIndex(config.serial_monitor_parity);

@@ -88,7 +88,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-1328</y>
+             <y>0</y>
              <width>603</width>
              <height>2090</height>
             </rect>
@@ -439,6 +439,9 @@
                <item row="5" column="1">
                 <widget class="QComboBox" name="cbBaudrate">
                  <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="editable">
                   <bool>true</bool>
                  </property>
                 </widget>
