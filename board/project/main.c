@@ -15,6 +15,7 @@
 #include "srxl2.h"
 #include "usb.h"
 #include "xbus.h"
+#include "crsf.h"
 
 context_t context;
 
@@ -95,6 +96,11 @@ int main() {
             xTaskCreate(serial_monitor_task, "serial_monitor", STACK_SERIAL_MONITOR, NULL, 3,
                         &context.receiver_task_handle);
             context.uart1_notify_task_handle = context.receiver_task_handle;
+            xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
+            break;
+        case RX_CRSF:
+            xTaskCreate(crsf_task, "crfs_task", STACK_RX_CRSF, NULL, 3, &context.receiver_task_handle);
+            context.uart0_notify_task_handle = context.receiver_task_handle;
             xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
             break;
     }

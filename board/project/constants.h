@@ -2,8 +2,8 @@
 #define CONSTANTS_H
 
 /* Version */
-#define VERSION_MAJOR 0
-#define VERSION_MINOR 10
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 0
 #define VERSION_PATCH 0
 
 /* Pins */
@@ -58,6 +58,7 @@
 #define STACK_RX_SRXL (200 + STACK_EXTRA)
 #define STACK_RX_SRXL2 (300 + STACK_EXTRA)
 #define STACK_SERIAL_MONITOR (200 + STACK_EXTRA)
+#define STACK_RX_CRSF (300 + STACK_EXTRA)
 
 #define STACK_SIM_RX (160 + STACK_EXTRA)
 

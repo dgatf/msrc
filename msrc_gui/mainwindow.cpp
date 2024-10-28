@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS",
                               "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2",
-                              "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec", "Spektrum SRXL2", "Serial Monitor"});
+                              "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec", "Spektrum SRXL2", "Serial Monitor", "CRSF"});
     ui->cbEscModel->addItems({"",
                               "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A",
                               "Platinum PRO v4 100A", "Platinum PRO v4 120A",

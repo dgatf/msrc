@@ -287,6 +287,13 @@ static void process(rx_protocol_t rx_protocol) {
         hitec_i2c_handler();
     }
 
+    else if (rx_protocol == RX_CRSF) {
+        uint8_t data[] = {0xC8, 0x06, 0x2C, 0xEE, 0xEF, 0x01, 0x00, 0x76};
+        //uint8_t data[] = {0xC8, 0x4, 0x7, 0x0, 0x5, 0x8}; 
+        for (uint8_t i = 0; i < sizeof(data); i++) {
+            xQueueSendToBack(uart_queue_handle, &data[i], 0);
+        }
+    }
     uart0_set_timestamp();
     vTaskDelay(SIM_RX_TIMEOUT_MS / portTICK_PERIOD_MS);
     xTaskNotifyGiveIndexed(context.uart0_notify_task_handle, 1);

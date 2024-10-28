@@ -9,4 +9,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     srxl.c
     xbus.c
     srxl2.c
+    crsf.c
 )
