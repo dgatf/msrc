@@ -16,6 +16,7 @@
 #include "usb.h"
 #include "xbus.h"
 #include "crsf.h"
+#include "hott.h"
 
 context_t context;
 
@@ -100,6 +101,11 @@ int main() {
             break;
         case RX_CRSF:
             xTaskCreate(crsf_task, "crfs_task", STACK_RX_CRSF, NULL, 3, &context.receiver_task_handle);
+            context.uart0_notify_task_handle = context.receiver_task_handle;
+            xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
+            break;
+        case RX_HOTT:
+            xTaskCreate(hott_task, "hott_task", STACK_RX_HOTT, NULL, 3, &context.receiver_task_handle);
             context.uart0_notify_task_handle = context.receiver_task_handle;
             xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
             break;

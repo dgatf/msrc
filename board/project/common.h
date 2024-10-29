@@ -48,7 +48,8 @@ typedef enum rx_protocol_t {
     RX_HITEC,
     RX_SRXL2,
     SERIAL_MONITOR,
-    RX_CRSF
+    RX_CRSF,
+    RX_HOTT
 } rx_protocol_t;
 
 typedef enum esc_protocol_t {

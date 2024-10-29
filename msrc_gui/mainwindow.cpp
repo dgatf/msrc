@@ -10,13 +10,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->saConfig->setEnabled(false);
     ui->btDebug->setDisabled(true);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link",
-                         "Kontronic", "APD F", "APD HV", "VBAR"});
+                         "Kontronic", "KIss", "APD HV", "VBAR"});
     ui->cbGpsBaudrate->addItems(
                 {"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS",
                               "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2",
-                              "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec", "Spektrum SRXL2", "Serial Monitor", "CRSF"});
+                              "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec", "Spektrum SRXL2", "Serial Monitor", "CRSF", "HOTT"});
     ui->cbEscModel->addItems({"",
                               "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A",
                               "Platinum PRO v4 100A", "Platinum PRO v4 120A",
@@ -125,7 +125,7 @@ void MainWindow::generateCircuit(QLabel *label)
             if(ui->cbEsc->currentText() == "Hobbywing V3" ||
                     ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
                     ui->cbEsc->currentText() == "Kontronic" ||
-                    ui->cbEsc->currentText() == "APD F" ||
+                    ui->cbEsc->currentText() == "KIss" ||
                     ui->cbEsc->currentText() == "APD HV" ||
                     ui->cbEsc->currentText() == "VBAR")
                 image.load(":/res/esc_rp2040_zero.png");
