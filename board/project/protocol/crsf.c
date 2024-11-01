@@ -154,7 +154,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
         case TYPE_GPS: {
             buffer[1] = sizeof(crsf_sensor_gps_formatted_t) + 2;
             buffer[2] = CRSF_FRAMETYPE_GPS;
-            crsf_sensor_gps_formatted_t sensor;
+            crsf_sensor_gps_formatted_t sensor = {0};
             if (sensors->gps.latitude) sensor.latitude = swap_32((int32_t)(*sensors->gps.latitude / 60 * 10000000L));
             if (sensors->gps.longitude) sensor.longitude = swap_32((int32_t)(*sensors->gps.longitude / 60 * 10000000L));
             if (sensors->gps.groundspeed) sensor.groundspeed = swap_16((uint16_t)(*sensors->gps.groundspeed * 10));
@@ -175,7 +175,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
         case TYPE_VARIO: {
             buffer[1] = sizeof(crsf_sensor_vario_formatted_t) + 2;
             buffer[2] = CRSF_FRAMETYPE_VARIO;
-            crsf_sensor_vario_formatted_t sensor;
+            crsf_sensor_vario_formatted_t sensor = {0};
             if (sensors->vario.vspeed) sensor.vspeed = swap_16((int16_t)(*sensors->vario.vspeed * 100));
             memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_vario_formatted_t));
             buffer[3 + sizeof(crsf_sensor_vario_formatted_t)] =
@@ -186,7 +186,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
         case TYPE_BATERY: {
             buffer[1] = sizeof(crsf_sensor_battery_formatted_t) + 2;
             buffer[2] = CRSF_FRAMETYPE_BATTERY_SENSOR;
-            crsf_sensor_battery_formatted_t sensor;
+            crsf_sensor_battery_formatted_t sensor = {0};
             if (sensors->battery.voltage) sensor.voltage = swap_16((uint16_t)(*sensors->battery.voltage * 10));
             if (sensors->battery.current) sensor.current = swap_16((uint16_t)(*sensors->battery.current * 10));
             if (sensors->battery.capacity) sensor.capacity = swap_24((uint32_t)*sensors->battery.capacity);
@@ -199,7 +199,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
         case TYPE_BARO: {
             buffer[1] = sizeof(crsf_sensor_baro_formatted_t) + 2;
             buffer[2] = CRSF_FRAMETYPE_BARO_ALTITUDE;
-            crsf_sensor_baro_formatted_t sensor;
+            crsf_sensor_baro_formatted_t sensor = {0};
             if (sensors->baro.vspeed) sensor.vspeed = swap_16((int16_t)(*sensors->baro.vspeed * 100));
             if (sensors->baro.altitude) {
                 float altitude = *sensors->baro.altitude + 1000;
