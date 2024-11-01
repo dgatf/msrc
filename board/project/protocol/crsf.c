@@ -29,7 +29,8 @@
 
 #define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
 #define swap_24(value) (((value & 0xFF) << 16) | (value & 0xFF00) | (value & 0xFF0000) >> 16)
-#define swap_32(value) (((value & 0xFF) << 24)  | ((value & 0xFF00) << 8) | ((value & 0xFF0000) >> 8) | ((value & 0xFF000000) >> 24))
+#define swap_32(value) \
+    (((value & 0xFF) << 24) | ((value & 0xFF00) << 8) | ((value & 0xFF0000) >> 8) | ((value & 0xFF000000) >> 24))
 
 #define CRSF_FRAMETYPE_GPS 0x02
 #define CRSF_FRAMETYPE_VARIO 0x07
@@ -156,9 +157,16 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             crsf_sensor_gps_formatted_t sensor;
             if (sensors->gps.latitude) sensor.latitude = swap_32((int32_t)(*sensors->gps.latitude / 60 * 10000000L));
             if (sensors->gps.longitude) sensor.longitude = swap_32((int32_t)(*sensors->gps.longitude / 60 * 10000000L));
-            if (sensors->gps.groundspeed) sensor.groundspeed = swap_32((uint32_t)(*sensors->gps.groundspeed * 10));
+            if (sensors->gps.groundspeed) sensor.groundspeed = swap_16((uint16_t)(*sensors->gps.groundspeed * 10));
             if (sensors->gps.satellites) sensor.satellites = *sensors->gps.satellites;
-            memcpy(&buffer[3], &sensors->gps, sizeof(crsf_sensor_gps_formatted_t));
+            if (sensors->gps.heading) sensor.heading = swap_16((uint16_t)(*sensors->gps.heading * 100));
+            if (sensors->gps.altitude) {
+                float altitude = *sensors->gps.altitude + 1000;
+                if (altitude < 0) altitude = 0;
+                if (altitude > 2276) altitude = 2276;
+                sensor.altitude = swap_16((uint16_t)altitude);
+            }
+            memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_gps_formatted_t));
             buffer[3 + sizeof(crsf_sensor_gps_formatted_t)] =
                 get_crc(&buffer[2], sizeof(crsf_sensor_gps_formatted_t) + 1);
             len = sizeof(crsf_sensor_gps_formatted_t) + 4;
@@ -169,7 +177,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             buffer[2] = CRSF_FRAMETYPE_VARIO;
             crsf_sensor_vario_formatted_t sensor;
             if (sensors->vario.vspeed) sensor.vspeed = swap_16((int16_t)(*sensors->vario.vspeed * 100));
-            memcpy(&buffer[3], &sensors->vario, sizeof(crsf_sensor_vario_formatted_t));
+            memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_vario_formatted_t));
             buffer[3 + sizeof(crsf_sensor_vario_formatted_t)] =
                 get_crc(&buffer[2], sizeof(crsf_sensor_vario_formatted_t) + 1);
             len = sizeof(crsf_sensor_vario_formatted_t) + 4;
@@ -182,7 +190,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             if (sensors->battery.voltage) sensor.voltage = swap_16((uint16_t)(*sensors->battery.voltage * 10));
             if (sensors->battery.current) sensor.current = swap_16((uint16_t)(*sensors->battery.current * 10));
             if (sensors->battery.capacity) sensor.capacity = swap_24((uint32_t)*sensors->battery.capacity);
-            memcpy(&buffer[3], &sensors->battery, sizeof(crsf_sensor_battery_formatted_t));
+            memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_battery_formatted_t));
             buffer[3 + sizeof(crsf_sensor_battery_formatted_t)] =
                 get_crc(&buffer[2], sizeof(crsf_sensor_battery_formatted_t) + 1);
             len = sizeof(crsf_sensor_battery_formatted_t) + 4;
@@ -215,7 +223,7 @@ static void send_packet(crsf_sensors_t *sensors) {
         return;
     static uint type = 0;
     uint8_t buffer[64] = {0};
-    while (!sensors->enabled_sensors[type % MAX_SENSORS]) type++; 
+    while (!sensors->enabled_sensors[type % MAX_SENSORS]) type++;
     uint len = format_sensor(sensors, type % MAX_SENSORS, buffer);
     uart0_write_bytes(buffer, len);
     type++;
@@ -385,6 +393,7 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->gps.groundspeed = parameter.spd_kmh;
         sensors->gps.heading = parameter.cog;
         sensors->gps.satellites = parameter.sat;
+        sensors->gps.altitude = parameter.alt;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

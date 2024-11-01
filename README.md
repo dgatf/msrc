@@ -1,4 +1,4 @@
-# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec
+# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=9GKNBVGHKXFGW&no_recurring=0&currency_code=USD)
 
@@ -14,6 +14,7 @@ Compatible RX protocols:
 - Futaba SBUS2
 - Multiplex Sensor Bus (MSB)
 - Jeti Ex Bus
+- CRSF
 
 Compatible ESCs: Hobbywing V3/V4/V5/Flyfun, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal.
 
@@ -54,6 +55,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;[6.8 Jeti Ex Bus](#68-jeti-ex-bus)  
 &emsp;[6.9 Hitec](#69-hitec)  
 &emsp;[6.10 Serial Monitor](#610-serial-monitor)  
+&emsp;[6.11 CRSF](#611-crsf)  
 [7. Sensors](#7-sensors)  
 &emsp; [7.1. ESC](#71-esc)  
 &emsp;&emsp;[7.1.1 Hobbywing Platinum V3](#711-hobbywing-platinum-v3)  
@@ -106,7 +108,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | :---:                                     | :---:            |
 | 3.3-5v                                    | 5v               |
 | GND                                       | GND              |
-| Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex  | 0<sup>(1)</sup> & 1 |
+| Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex, CRSF  | 0<sup>(1)</sup> & 1 |
 | Frsky D                                   | 0                |
 | Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |
 | Hitec, XBUS SCL                           | 3<sup>(2)</sup>  |
@@ -217,7 +219,8 @@ The following Rx protocols are supported:
 - Multiplex Sensor Bus: serial, 38400 bps
 - Jeti Ex Bus: serial 125000, 250000 bps
 - Hitec: I2C
-- Serial Monitor. This is not a Rx protocol, but a serial monitor on GPIO5   
+- Serial Monitor. This is not a Rx protocol, but a serial monitor on GPIO5 
+- CRSF: serial, 416666 bps  
 
 ### 6.1 SMARTPORT
 
@@ -305,12 +308,15 @@ If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected 
 <p align="center"><img src="./images/hitec_9.jpg" width="300"><br>
   <i>Hitec Optima 9</i><br><br></p>
 
-
 ### 6.10 Serial Monitor
 
 This is not a Rx protocol. No sensors are enabled.  
 
 Enable a serial monitor on GPIO5 with the selected parameters.  
+
+### 6.11 CRSF
+
+Telemetry for CRSF does not cover all sensors in MSRC. Available sensors with CRSF are: GPS, vario and battery (voltage, current and consumption).  
 
 ## 7. Sensors
 
@@ -723,6 +729,8 @@ v1.1
 
 - Fixed Xbus negative values and improve vspeed accuracy  
 - Updated sdk and third party libraries to support new hardware  
+- Fixed analog current  
+- Added support for CRSF protocol  
 
 [v1.0](https://github.com/dgatf/msrc/tree/v1.0)
 
