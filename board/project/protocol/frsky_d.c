@@ -78,7 +78,6 @@ void frsky_d_task(void *parameters) {
     context.led_cycles = 1;
     uart0_begin(9600, UART_RECEIVER_TX, UART_RECEIVER_RX, 0, 8, 1, UART_PARITY_NONE, true);
     semaphore = xSemaphoreCreateMutex();
-    xSemaphoreTake(semaphore, 0);
     set_config();
     debug("\nFrsky D init");
     vTaskSuspend(NULL);
