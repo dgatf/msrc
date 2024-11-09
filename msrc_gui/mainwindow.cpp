@@ -11,12 +11,23 @@ MainWindow::MainWindow(QWidget *parent)
     ui->btDebug->setDisabled(true);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link",
                          "Kontronic", "KIss", "APD HV", "VBAR"});
+
     ui->cbGpsBaudrate->addItems(
                 {"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
-    ui->cbReceiver->addItems({"Frsky Smartport", "Frsky D", "Spektrum XBUS",
-                              "Spektrum SRXL", "Flysky IBUS", "Futaba SBUS2",
-                              "Multiplex Sensor Bus", "Jeti Ex Bus", "Hitec", "Spektrum SRXL2", "Serial Monitor", "CRSF", "HOTT"});
+    ui->cbReceiver->addItem("Frsky Smartport", RX_SMARTPORT);
+    ui->cbReceiver->addItem("Frsky D", RX_FRSKY_D);
+    ui->cbReceiver->addItem("Spektrum XBUS", RX_XBUS);
+    ui->cbReceiver->addItem("Flysky IBUS", RX_IBUS);
+    ui->cbReceiver->addItem("Futaba SBUS2", RX_SBUS);
+    ui->cbReceiver->addItem("Jeti Ex Bus", RX_JETIEX);
+    ui->cbReceiver->addItem("Multiplex Sensor Bus", RX_MULTIPLEX);
+    ui->cbReceiver->addItem("Sanwa", RX_SANWA);
+    ui->cbReceiver->addItem("Serial Monitor", SERIAL_MONITOR);
+    ui->cbReceiver->addItem("Spektrum SRXL", RX_SRXL);
+    ui->cbReceiver->addItem("Spektrum SRXL2", RX_SRXL2);
+    ui->cbReceiver->addItem("CRSF", RX_CRSF);
+    ui->cbReceiver->addItem("HOTT", RX_HOTT);
     ui->cbEscModel->addItems({"",
                               "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A",
                               "Platinum PRO v4 100A", "Platinum PRO v4 120A",
@@ -327,7 +338,8 @@ void MainWindow::setUiFromConfig()
 {
     /* Receiver protocol */
 
-    ui->cbReceiver->setCurrentIndex(config.rx_protocol);
+    int index = ui->cbReceiver->findData(config.rx_protocol);
+    ui->cbReceiver->setCurrentIndex(index);
 
     /* Serial Monitor */
 
@@ -494,7 +506,7 @@ void MainWindow::getConfigFromUi()
 
     /* Receiver protocol */
 
-    config.rx_protocol = (rx_protocol_t)ui->cbReceiver->currentIndex();
+    config.rx_protocol = (rx_protocol_t)ui->cbReceiver->currentData().toInt();
 
     /* Serial Monitor */
 

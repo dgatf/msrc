@@ -13,9 +13,9 @@
 #include "esc_castle.h"
 #include "esc_hw3.h"
 #include "esc_hw4.h"
+#include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
-#include "esc_hw5.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
@@ -24,11 +24,11 @@
 #include "ntc.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"
+#include "srxl.h"
 #include "string.h"
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
-#include "srxl.h"
 
 #define SRXL2_TIMEOUT_US 500
 #define SRXL2_HEADER 0xA6
@@ -41,12 +41,13 @@
 #define SRXL2_DEVICE 0x30
 
 static uint8_t dest_id = 0xFF;
+static uint32_t uid;
 static alarm_id_t alarm_id;
 
 static void process(void);
 static void send_packet(void);
 static void set_config(void);
-static void send_handshake(uint8_t dest_id);
+static void send_handshake(uint8_t *data);
 static int64_t alarm_50ms(alarm_id_t id, void *user_data);
 
 void srxl2_task(void *parameters) {
@@ -55,7 +56,7 @@ void srxl2_task(void *parameters) {
     sensor_formatted = malloc(sizeof(xbus_sensor_formatted_t));
     *sensor_formatted = (xbus_sensor_formatted_t){NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-    //alarm_id = add_alarm_in_ms(50, alarm_50ms, NULL, true);
+    // alarm_id = add_alarm_in_ms(50, alarm_50ms, NULL, true);
 
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
@@ -78,31 +79,30 @@ static void process(void) {
         debug("\nSRXL2 (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         debug_buffer(data, length, " 0x%X");
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE) {
-            //cancel_alarm(alarm_id);
-            dest_id = data[3];
+            // cancel_alarm(alarm_id);
             uint16_t crc = srxl_get_crc(data, length - 2);
             debug("\nCRC 0x%X - 0x%X%X", crc, data[12], data[13]);
-            send_handshake(dest_id);
+            send_handshake(data);
         } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE) {
             send_packet();
         }
     }
 }
 
-static void send_handshake(uint8_t dest_id) {
+static void send_handshake(uint8_t *data) {
     uint8_t buffer[SRXL2_HANDSHAKE_LEN];
     buffer[0] = 0xA6;          // header
     buffer[1] = 0x21;          // packet type
     buffer[2] = 14;            // length
     buffer[3] = SRXL2_DEVICE;  // source Id
-    buffer[4] = dest_id;       // dest Id
-    buffer[5] = 10;            // priority (0-100)
+    buffer[4] = data[3];       // dest Id
+    buffer[5] = data[5];       // priority (0-100)
     buffer[6] = 0;             // baudrate: 0 = 115200, 1 = 400000
     buffer[7] = 0;             // info
-    buffer[8] = 0;             // uid
-    buffer[9] = 0;             // uid
-    buffer[10] = 0;            // uid
-    buffer[11] = 1;            // uid
+    buffer[8] = data[8];     // uid
+    buffer[9] = data[9];     // uid
+    buffer[10] = data[10];   // uid
+    buffer[11] = data[11];   // uid
     uint16_t crc;
     crc = __builtin_bswap16(srxl_get_crc(buffer, SRXL2_HANDSHAKE_LEN - 2));  // all bytes, including header
     buffer[12] = crc >> 8;

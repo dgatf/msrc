@@ -22,14 +22,19 @@ QT_END_NAMESPACE
 typedef enum rx_protocol_t : uint8_t
 {
     RX_SMARTPORT,
+    RX_FRSKY_D,
     RX_XBUS,
     RX_SRXL,
-    RX_FRSKY_D,
     RX_IBUS,
     RX_SBUS,
     RX_MULTIPLEX,
     RX_JETIEX,
-    RX_HITEC
+    RX_HITEC,
+    RX_SRXL2,
+    SERIAL_MONITOR,
+    RX_CRSF,
+    RX_HOTT,
+    RX_SANWA
 } rx_protocol_t;
 
 typedef enum esc_protocol_t : uint8_t
@@ -41,7 +46,8 @@ typedef enum esc_protocol_t : uint8_t
     ESC_CASTLE,
     ESC_KONTRONIK,
     ESC_APD_F,
-    ESC_APD_HV
+    ESC_APD_HV,
+    ESC_HW5
 } esc_protocol_t;
 
 typedef enum i2c_module_t : uint8_t

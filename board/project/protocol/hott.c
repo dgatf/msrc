@@ -8,6 +8,7 @@
 #include "airspeed.h"
 #include "bmp180.h"
 #include "bmp280.h"
+#include "common.h"
 #include "config.h"
 #include "current.h"
 #include "esc_apd_f.h"
@@ -349,42 +350,22 @@ static void process(void) {
     }
 }
 
-/*
-0x7C 0x8E 0x0 0xE0 0x0 0x0 0x0 0x0 0x0 0x0
-0x0  0x0  0x0 0x0  0x0 0x0 0x0 0x0 0x0 0x0
-0x0  0x0  0x0 0x0  0x0 0x0 0x0 0x0 0x0 0x0
-0x0  0x0  0x0 0x0  0x0 0x0 0x0 0x0 0x0 0x0
-0x0 0x0 0x0 0x0 0x7D 0x67
-*/
-
 static void send_packet(uint8_t address) {
     switch (address) {
-        case HOTT_ELECTRIC_AIR_MODULE_ID: {  // sensors.electric_air.startByte = 0x7C;
-            // sensors.electric_air.endByte = 0x7D;
-            // sensors.electric_air.sensorID = HOTT_ELECTRIC_AIR_MODULE_ID;
-            // sensors.electric_air.sensorTextID = HOTT_ELECTRIC_AIR_SENSOR_ID;
-            // sensors.electric_air.checksum =
-            //     get_crc((uint8_t *)&sensors.electric_air, sizeof(hott_sensor_electric_air_t) - 1);
-            // uart0_write_bytes((uint8_t *)&sensors.electric_air, sizeof(hott_sensor_electric_air_t));
-            uint8_t buffer[] = {0x7C, 0x8E, 0x10, 0xE0, 0x80, 0x0,  0x41, 0x24, 0x0, 0x0,  0x0,  0x0,  0x0, 0x41, 0x24,
-                                0x0,  0x0,  0x0,  0x0,  0x0,  0x14, 0x0,  0x0,  0x0, 0x14, 0x14, 0xF4, 0x1, 0x0,  0x0,
-                                0x14, 0x0,  0x0,  0x0,  0x78, 0x0,  0x78, 0x0,  0x0, 0x0,  0x0,  0x0,  0x0, 0x7D, 0xF6};
-            debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(hott_sensor_electric_air_t));
-            // debug_buffer((uint8_t *)&sensors.electric_air, sizeof(sensors.electric_air), "0x%X ");
+        case HOTT_ELECTRIC_AIR_MODULE_ID: {
+            uint8_t buffer[] = {0x7C, 0x8E, 0x0, 0xE0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  0x0,
+                                0x0,  0x0,  0x0, 0x0,  0x0, 0x5, 0x0, 0x6, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  0x0,
+                                0x0,  0x0,  0x0, 0x0,  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7D, 0x72};
+            for (uint i = 0; i < sizeof(buffer); i++) {
+                uart0_write(buffer[i]);
+                sleep_us(1000);
+            }
+            debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(buffer));
             debug_buffer(buffer, sizeof(buffer), "0x%X ");
+
+            // blink led
+            vTaskResume(context.led_task_handle);
             break;
         }
-            /*case HOTT_VARIO_MODULE_ID:
-                sensors.airesc.startByte = 0x7C;
-                sensors.airesc.sensorID = HOTT_VARIO_MODULE_ID;
-                sensors.airesc.sensorTextID = HOTT_VARIO_SENSOR_ID;
-                sensors.airesc.checksum = get_crc((uint8_t *)&sensors.airesc, sizeof(sensors.vario) - 1);
-                uart0_write_bytes((uint8_t *)&sensors.airesc, sizeof(sensors.airesc));
-                debug("\nCRSF (%u) > ", uxTaskGetStackHighWaterMark(NULL));
-                debug_buffer((uint8_t *)&sensors.airesc, sizeof(sensors.airesc), "0x%X ");
-                break;*/
     }
-
-    // blink led
-    vTaskResume(context.led_task_handle);
 }
