@@ -1,4 +1,4 @@
-# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF
+# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF, Sanwa
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=9GKNBVGHKXFGW&no_recurring=0&currency_code=USD)
 
@@ -15,6 +15,7 @@ Compatible RX protocols:
 - Multiplex Sensor Bus (MSB)
 - Jeti Ex Bus
 - CRSF
+- Sanwa
 
 Compatible ESCs: Hobbywing V3/V4/V5/Flyfun, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal.
 
@@ -56,6 +57,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;[6.9 Hitec](#69-hitec)  
 &emsp;[6.10 Serial Monitor](#610-serial-monitor)  
 &emsp;[6.11 CRSF](#611-crsf)  
+&emsp;[6.12 Sanwa](#612-sanwa)  
 [7. Sensors](#7-sensors)  
 &emsp; [7.1. ESC](#71-esc)  
 &emsp;&emsp;[7.1.1 Hobbywing Platinum V3](#711-hobbywing-platinum-v3)  
@@ -108,7 +110,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | :---:                                     | :---:            |
 | 3.3-5v                                    | 5v               |
 | GND                                       | GND              |
-| Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex, CRSF  | 0<sup>(1)</sup> & 1 |
+| Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex, CRSF, Sanwa  | 0<sup>(1)</sup> & 1 |
 | Frsky D                                   | 0                |
 | Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |
 | Hitec, XBUS SCL                           | 3<sup>(2)</sup>  |
@@ -221,6 +223,7 @@ The following Rx protocols are supported:
 - Hitec: I2C
 - Serial Monitor. This is not a Rx protocol, but a serial monitor on GPIO5 
 - CRSF: serial, 416666 bps  
+- Sanwa: serial, 115200 bps
 
 ### 6.1 SMARTPORT
 
@@ -317,6 +320,15 @@ Enable a serial monitor on GPIO5 with the selected parameters.
 ### 6.11 CRSF
 
 Telemetry for CRSF does not cover all sensors in MSRC. Available sensors with CRSF are: GPS, vario and battery (voltage, current and consumption).  
+
+### 6.12 Sanwa
+
+Available sensors:
+
+- ESC temperature.
+- Motor temperature. In case the ESC provides BEC temperature, it is linked to this telemetry value. To measure motor temperature, enable analog temperature and use a ntc termistor attached to the motor. It overrides BEC temperature if available from the ESC.   
+- Rpms.
+- Voltage.
 
 ## 7. Sensors
 
@@ -731,6 +743,7 @@ v1.1
 - Updated sdk and third party libraries to support new hardware  
 - Fixed analog current  
 - Added support for CRSF protocol  
+- Added support for Sanwa protocol   
 
 [v1.0](https://github.com/dgatf/msrc/tree/v1.0)
 
