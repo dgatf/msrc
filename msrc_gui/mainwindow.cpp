@@ -65,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openConfig()));
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(saveConfig()));
+    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
 
     ui->lbCircuit->resize(621, 400); //(ui->lbCircuit->parentWidget()->width(),
     // ui->lbCircuit->parentWidget()->height());
@@ -210,6 +211,11 @@ void MainWindow::saveConfig()
         //out << pin;
 
     }
+}
+
+void MainWindow::showAbout()
+{
+    QMessageBox::information(this, tr("About"), QString::asprintf("MSRC V%u.%u.%u\n\rDaniel Gorbea © 2020/2024", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH), QMessageBox::Close);
 }
 
 void MainWindow::buttonSerialPort()

@@ -15,6 +15,10 @@
 #include <QTimer>
 #include <QMessageBox>
 
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 1
+#define VERSION_PATCH 0
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -168,6 +172,7 @@ private slots:
     void writeSerialConfig();
     void openConfig();
     void saveConfig();
+    void showAbout();
     void exitApp();
     void on_cbReceiver_currentIndexChanged(const QString &arg1);
     void on_cbEsc_currentIndexChanged(const QString &arg1);
