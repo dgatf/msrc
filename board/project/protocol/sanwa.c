@@ -67,7 +67,6 @@ static uint8_t get_crc(const uint8_t *buffer, uint len);
 static void set_config(float **sensors);
 
 void sanwa_task(void *parameters) {
-    
     /*gpio_set_function(GPIO_PWM_CH1, GPIO_FUNC_PWM);
     gpio_set_function(GPIO_PWM_CH2, GPIO_FUNC_PWM);
     uint slice_num_ch1 = pwm_gpio_to_slice_num(GPIO_PWM_CH1);
@@ -171,10 +170,8 @@ static void format_sensor(float *sensor, uint8_t type, sanwa_sensor_formatted_t 
 }
 
 static uint8_t get_crc(const uint8_t *buffer, uint len) {
-    uint16_t crc = 0;
-    for (uint i = 0; i < len; i++) {
-        crc = (uint8_t)crc + (uint8_t)buffer[i];
-    }
+    uint8_t crc = 0;
+    for (uint i = 0; i < len; i++) crc += buffer[i];
     return crc;
 }
 

@@ -30,17 +30,20 @@
 
 #define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
 
-#define HOTT_ELECTRIC_AIR_MODULE_ID 0x8E
-#define HOTT_ELECTRIC_AIR_SENSOR_ID 0xE0
-#define HOTT_TEXT_MODE_REQUEST_ELECTRIC_AIR 0xEF
-#define HOTT_GENERAL_AIR_MODULE_ID 0x8D
-#define HOTT_GENERAL_AIR_SENSOR_ID 0xD0
-#define HOTT_TEXT_MODE_REQUEST_GENERAL_AIR 0xDF
-#define HOTT_GPS_MODULE_ID 0x8A
-#define HOTT_GPS_SENSOR_ID 0xA0
-#define HOTT_TEXT_MODE_REQUEST_GPS 0xAF
 #define HOTT_VARIO_MODULE_ID 0x89
+#define HOTT_GPS_MODULE_ID 0x8A
+#define HOTT_ESC_MODULE_ID 0x8C
+#define HOTT_GENERAL_AIR_MODULE_ID 0x8D
+#define HOTT_ELECTRIC_AIR_MODULE_ID 0x8E
+
 #define HOTT_VARIO_SENSOR_ID 0x90
+#define HOTT_GPS_SENSOR_ID 0xA0
+#define HOTT_GENERAL_AIR_SENSOR_ID 0xD0
+#define HOTT_ELECTRIC_AIR_SENSOR_ID 0xE0
+
+#define HOTT_TEXT_MODE_REQUEST_GPS 0xAF
+#define HOTT_TEXT_MODE_REQUEST_GENERAL_AIR 0xDF
+#define HOTT_TEXT_MODE_REQUEST_ELECTRIC_AIR 0xEF
 
 #define HOTT_BINARY_MODE_REQUEST_ID 0x80
 #define HOTT_TEXT_MODE_REQUEST_ID 0x7F
@@ -48,18 +51,92 @@
 #define HOTT_TIMEOUT_US 1000
 #define HOTT_PACKET_LENGHT 2
 
-typedef struct hott_sensor_vario_t {  // ko
-    uint8_t startByte;                //  0 1
-    uint8_t sensorID;                 //  1 2
-    uint8_t warningId;                //  2 3
-    uint8_t sensorTextID;             //  3 4
-    uint8_t alarmInverse;             //  4 5
-    int16_t altitude;                 //  6 7 5??
+#define HOTT_START_BYTE 0x7C
+#define HOTT_END_BYTE 0x7D
+
+// TYPE
+#define HOTT_TYPE_VARIO 0
+#define HOTT_TYPE_ESC 1
+#define HOTT_TYPE_ELECTRIC 2
+#define HOTT_TYPE_GPS 3
+
+// VARIO
+#define HOTT_VARIO_ALTITUDE 0
+#define HOTT_VARIO_M1S 1
+#define HOTT_VARIO_M3S 2
+#define HOTT_VARIO_M10S 3
+
+//  ESC
+#define HOTT_ESC_VOLTAGE 4
+#define HOTT_ESC_CAPACITY 5
+#define HOTT_ESC_TEMPERATURE 6
+#define HOTT_ESC_CURRENT 7
+#define HOTT_ESC_RPM 8
+#define HOTT_ESC_THROTTLE 9  // 0-100%
+#define HOTT_ESC_SPEED 10
+#define HOTT_ESC_BEC_VOLTAGE 11
+#define HOTT_ESC_BEC_CURRENT 12
+#define HOTT_ESC_BEC_TEMPERATURE 13
+#define HOTT_ESC_EXT_TEMPERATURE 14
+
+// ELECTRIC (BATTERY)
+#define HOTT_ELECTRIC_EXT_TEMPERATURE 15
+#define HOTT_ELECTRIC_CELL_BAT_1_VOLTAGE 16
+#define HOTT_ELECTRIC_CELL_BAT_2_VOLTAGE 17
+#define HOTT_ELECTRIC_BAT_1_VOLTAGE 18
+#define HOTT_ELECTRIC_BAT_2_VOLTAGE 19
+#define HOTT_ELECTRIC_TEMPERATURE_1 20
+#define HOTT_ELECTRIC_TEMPERATURE_2 21
+#define HOTT_ELECTRIC_HEIGHT 22
+#define HOTT_ELECTRIC_CURRENT 23
+#define HOTT_ELECTRIC_CAPACITY 24
+#define HOTT_ELECTRIC_M2S 25
+#define HOTT_ELECTRIC_M3S 26
+#define HOTT_ELECTRIC_RPM 27
+#define HOTT_ELECTRIC_MINUTES 28
+#define HOTT_ELECTRIC_SECONDS 29
+#define HOTT_ELECTRIC_SPEED 30
+
+// GPS
+#define HOTT_GPS_DIRECTION 31
+#define HOTT_GPS_SPEED 32
+#define HOTT_GPS_LATITUDE 33
+#define HOTT_GPS_LONGITUDE 34
+#define HOTT_GPS_DISTANCE 35
+#define HOTT_GPS_ALTITUDE 36
+#define HOTT_GPS_CLIMBRATE 37
+#define HOTT_GPS_CLIMBRATE3S 38
+#define HOTT_GPS_SATS 39
+
+// GENERAL (FUEL) - not used by msrc
+#define HOTT_GENERAL_CELL 40
+#define HOTT_GENERAL_BATTERY_1 41
+#define HOTT_GENERAL_BATTERY_2 42
+#define HOTT_GENERAL_TEMP_1 43
+#define HOTT_GENERAL_TEMP_2 44
+#define HOTT_GENERAL_RPM_1 45
+#define HOTT_GENERAL_ALTITUDE 46
+#define HOTT_GENERAL_CLIMBRATE 47
+#define HOTT_GENERAL_CLIMBRATE3S 48
+#define HOTT_GENERAL_CURRENT 49
+#define HOTT_GENERAL_VOLTAGE 50
+#define HOTT_GENERAL_CAPACITY 51
+#define HOTT_GENERAL_SPEED 52
+#define HOTT_GENERAL_RPM_2 53
+#define HOTT_GENERAL_PRESSURE 54
+
+typedef struct hott_sensor_vario_t {
+    uint8_t startByte;     //  0
+    uint8_t sensorID;      //  1
+    uint8_t warningId;     //  2
+    uint8_t sensorTextID;  //  3
+    uint8_t alarmInverse;  //  4
+    int16_t altitude;      //  6
     int16_t maxAltitude;
     int16_t minAltitude;
-    uint16_t m1s;
-    uint16_t m3s;
-    uint16_t m10s;
+    int16_t m1s;
+    int16_t m3s;
+    int16_t m10s;
     uint8_t text[24];
     uint8_t empty;
     uint8_t version;
@@ -67,39 +144,39 @@ typedef struct hott_sensor_vario_t {  // ko
     uint8_t checksum;
 } __attribute__((packed)) hott_sensor_vario_t;
 
-typedef struct hott_sensor_airesc_t {   // ko
+typedef struct hott_sensor_airesc_t {
     uint8_t startByte;                  // 1
     uint8_t sensorID;                   // 2
     uint8_t sensorTextID;               // Byte 3
-    uint8_t Inverse;                    // Byte 4
-    uint8_t InverseStatusI;             // Byte 5
-    uint16_t InputVolt;                 // Byte 6
-    uint16_t MinInputVolt;              // Byte 8
-    uint16_t Capacity;                  // Byte 10 10
-    uint8_t EscTemperature;             // Byte 12
-    uint8_t MaxEscTemperature;          // Byte 13
-    uint16_t Current;                   // Byte 14
-    uint16_t MaxCurrent;                // Byte 16
+    uint8_t inverse;                    // Byte 4
+    uint8_t inverseStatusI;             // Byte 5
+    uint16_t inputVolt;                 // Byte 6
+    uint16_t minInputVolt;              // Byte 8
+    uint16_t capacity;                  // Byte 10
+    uint8_t escTemperature;             // Byte 12
+    uint8_t maxEscTemperature;          // Byte 13
+    uint16_t current;                   // Byte 14
+    uint16_t maxCurrent;                // Byte 16
     uint16_t RPM;                       // Byte 18
-    uint16_t MaxRPM;                    // Byte 20
-    uint8_t ThrottlePercent;            // Byte 22
-    uint16_t Speed;                     // Byte 23
-    uint16_t MaxSpeed;                  // Byte 25
+    uint16_t maxRPM;                    // Byte 20
+    uint8_t throttlePercent;            // Byte 22
+    uint16_t speed;                     // Byte 23
+    uint16_t maxSpeed;                  // Byte 25
     uint8_t BECVoltage;                 // Byte 27
-    uint8_t MinBECVoltage;              // Byte 28
+    uint8_t minBECVoltage;              // Byte 28
     uint8_t BECCurrent;                 // Byte 29
-    uint8_t MinBECCurrent;              // Byte 30
-    uint8_t MaxBECCurrent;              // Byte 31
+    uint8_t minBECCurrent;              // Byte 30
+    uint8_t maxBECCurrent;              // Byte 31
     uint8_t PWM;                        // Byte 32
     uint8_t BECTemperature;             // Byte 33
-    uint8_t MaxBECTemperature;          // Byte 34
-    uint8_t MotorOrExtTemperature;      // Byte 35
-    uint8_t MaxMotorOrExtTemperature;   // Byte 36
+    uint8_t maxBECTemperature;          // Byte 34
+    uint8_t motorOrExtTemperature;      // Byte 35
+    uint8_t maxMotorOrExtTemperature;   // Byte 36
     uint16_t RPMWithoutGearOrExt;       // Byte 37
-    uint8_t Timing;                     // Byte 39
-    uint8_t AdvancedTiming;             // Byte 40
-    uint8_t HighestCurrentMotorNumber;  // Byte 41
-    uint8_t VersionNumber;              // Byte 42
+    uint8_t timing;                     // Byte 39
+    uint8_t advancedTiming;             // Byte 40
+    uint8_t highestCurrentMotorNumber;  // Byte 41
+    uint8_t versionNumber;              // Byte 42
     uint8_t version;                    /* Byte 43: 00 version number */
     uint8_t endByte;                    /* Byte 44: 0x7D Ende byte */
     uint8_t checksum;                   /* Byte 45: Parity Byte */
@@ -126,16 +203,13 @@ typedef struct hott_sensor_electric_air_t {  // ok
     uint8_t cell5H;                          // 18
     uint8_t cell6H;                          // 19
     uint8_t cell7H;                          // 20
-    uint8_t battery1Low;                     // 21 Battery 1 LSB/MSB in 100mv steps; 50 == 5V
-    uint8_t battery1High;                    // 22Battery 1 LSB/MSB in 100mv steps; 50 == 5V
-    uint8_t battery2Low;                     // 23 Battery 2 LSB/MSB in 100mv steps; 50 == 5V
-    uint8_t battery2High;                    // 24 Battery 2 LSB/MSB in 100mv steps; 50 == 5V
+    uint16_t battery1;                       // 21 Battery 1 in 100mv steps; 50 == 5V
+    uint16_t battery2;                       // 23 Battery 2 in 100mv steps; 50 == 5V
     uint8_t temp1;                           // 25 Temp 1; Offset of 20. 20 == 0C
     uint8_t temp2;                           // 26 Temp 2; Offset of 20. 20 == 0C
     uint16_t height;                         // 27 28 Height. Offset -500. 500 == 0
     uint16_t current;                        // 29 30 1 = 0.1A
-    uint8_t driveVoltageLow;                 // 31
-    uint8_t driveVoltageHigh;                // 32
+    uint16_t driveVoltage;                   // 31
     uint16_t capacity;                       // 33 34 mAh
     uint16_t m2s;                            // 35 36  /* Steigrate m2s; 0x48 == 0
     uint8_t m3s;                             // 37  /* Steigrate m3s; 0x78 == 0
@@ -257,31 +331,23 @@ typedef struct hott_sensor_gps_t {  // ok
 
     uint8_t
         flightDirection; /* Byte 7: 119 = Flugricht./dir. 1 = 2°; 0° (North), 9 0° (East), 180° (South), 270° (West) */
-    uint8_t GPSSpeedLow;  /* Byte 8: 8 = Geschwindigkeit/GPS speed low byte 8km/h */
-    uint8_t GPSSpeedHigh; /* Byte 9: 0 = Geschwindigkeit/GPS speed high byte */
+    uint16_t GPSSpeed; /* Byte 8: 8 = Geschwindigkeit/GPS speed low byte 8km/h */
 
-    uint8_t LatitudeNS;      /* Byte 10: 000 = N = 48°39’988 */
-    uint8_t LatitudeMinLow;  /* Byte 11: 231 0xE7 = 0x12E7 = 4839 */
-    uint8_t LatitudeMinHigh; /* Byte 12: 018 18 = 0x12 */
-    uint8_t LatitudeSecLow;  /* Byte 13: 171 220 = 0xDC = 0x03DC =0988 */
-    uint8_t LatitudeSecHigh; /* Byte 14: 016 3 = 0x03 */
+    uint8_t LatitudeNS;   /* Byte 10: 000 = N = 48°39’988 */
+    uint16_t LatitudeMin; /* Byte 11: 231 0xE7 = 0x12E7 = 4839 */
+    uint16_t LatitudeSec; /* Byte 13: 171 220 = 0xDC = 0x03DC =0988 */
 
-    uint8_t longitudeEW;      /* Byte 15: 000  = E= 9° 25’9360 */
-    uint8_t longitudeMinLow;  /* Byte 16: 150 157 = 0x9D = 0x039D = 0925 */
-    uint8_t longitudeMinHigh; /* Byte 17: 003 3 = 0x03 */
-    uint8_t longitudeSecLow;  /* Byte 18: 056 144 = 0x90 0x2490 = 9360*/
-    uint8_t longitudeSecHigh; /* Byte 19: 004 36 = 0x24 */
+    uint8_t longitudeEW;   /* Byte 15: 000  = E= 9° 25’9360 */
+    uint16_t longitudeMin; /* Byte 16: 150 157 = 0x9D = 0x039D = 0925 */
+    uint16_t longitudeSec; /* Byte 18: 056 144 = 0x90 0x2490 = 9360*/
 
-    uint8_t distanceLow;     /* Byte 20: 027 123 = Entfernung/distance low byte 6 = 6 m */
-    uint8_t distanceHigh;    /* Byte 21: 036 35 = Entfernung/distance high byte */
-    uint8_t altitudeLow;     /* Byte 22: 243 244 = Höhe/Altitude low byte 500 = 0m */
-    uint8_t altitudeHigh;    /* Byte 23: 001 1 = Höhe/Altitude high byte */
-    uint8_t climbrateLow;    /* Byte 24: 48 = Low Byte m/s resolution 0.01m 48 = 30000 = 0.00m/s (1=0.01m/s) */
-    uint8_t climbrateHigh;   /* Byte 25: 117 = High Byte m/s resolution 0.01m */
+    uint16_t distance;       /* Byte 20: 027 123 = Entfernung/distance low byte 6 = 6 m */
+    uint16_t altitude;       /* Byte 22: 243 244 = Höhe/Altitude low byte 500 = 0m */
+    uint16_t climbrate;      /* Byte 24: 48 = Low Byte m/s resolution 0.01m 48 = 30000 = 0.00m/s (1=0.01m/s) */
     uint8_t climbrate3s;     /* Byte 26: climbrate in m/3s resolution, value of 120 = 0 m/3s*/
     uint8_t GPSNumSat;       /* Byte 27: GPS.Satelites (number of satelites) (1 byte) */
     uint8_t GPSFixChar;      /* Byte 28: GPS.FixChar. (GPS fix character. display, if DGPS, 2D oder 3D) (1 byte) */
-    uint8_t HomeDirection;   /* Byte 29: HomeDirection (direction from starting point to Model position) (1 byte) */
+    uint8_t homeDirection;   /* Byte 29: HomeDirection (direction from starting point to Model position) (1 byte) */
     uint8_t angleXdirection; /* Byte 30: angle x-direction (1 byte) */
     uint8_t angleYdirection; /* Byte 31: angle y-direction (1 byte) */
     uint8_t angleZdirection; /* Byte 32: angle z-direction (1 byte) */
@@ -310,62 +376,357 @@ typedef struct hott_sensor_gps_t {  // ok
 } __attribute__((packed)) hott_sensor_gps_t;
 
 typedef struct hott_sensors_t {
-    hott_sensor_gps_t gps;
-    hott_sensor_vario_t vario;
-    hott_sensor_airesc_t airesc;
-    hott_sensor_electric_air_t electric_air;
+    bool is_enabled[4];
+    float **gps;
+    float **vario;
+    float **esc;
+    float **electric_air;
 } hott_sensors_t;
 
-static hott_sensors_t sensors;
-
-static void process(void);
-static void send_packet(uint8_t address);
-static uint8_t crc8(uint8_t crc, unsigned char a);
-static uint8_t get_crc(uint8_t *buffer, uint8_t len);
+static void process(hott_sensors_t *sensors);
+static void send_packet(hott_sensors_t *sensors, uint8_t address);
+static uint8_t get_crc(const uint8_t *buffer, uint len);
+static void set_config(hott_sensors_t *sensors);
 
 void hott_task(void *parameters) {
+    hott_sensors_t sensors = {0};
+    set_config(&sensors);
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
     uart0_begin(19200, UART_RECEIVER_TX, UART_RECEIVER_RX, HOTT_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
     debug("\nHOTT init");
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
-        process();
+        process(&sensors);
     }
 }
 
-static uint8_t get_crc(uint8_t *buffer, uint8_t len) {
-    uint16_t crc = 0;
-    for (uint8_t i = 0; i < len; i++) crc += buffer[i];
-    return crc;
-}
-
-static void process(void) {
+static void process(hott_sensors_t *sensors) {
     if (uart0_available() == HOTT_PACKET_LENGHT) {
         uint8_t buffer[HOTT_PACKET_LENGHT];
         uart0_read_bytes(buffer, HOTT_PACKET_LENGHT);
         debug("\nHOTT (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         debug_buffer(buffer, HOTT_PACKET_LENGHT, "0x%X ");
-        if (buffer[0] == HOTT_BINARY_MODE_REQUEST_ID) send_packet(buffer[1]);
+        if (buffer[0] == HOTT_BINARY_MODE_REQUEST_ID) send_packet(sensors, buffer[1]);
     }
 }
 
-static void send_packet(uint8_t address) {
+static void send_packet(hott_sensors_t *sensors, uint8_t address) {
+    // packet in little endian
     switch (address) {
-        case HOTT_ELECTRIC_AIR_MODULE_ID: {
-            uint8_t buffer[] = {0x7C, 0x8E, 0x0, 0xE0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  0x0,
-                                0x0,  0x0,  0x0, 0x0,  0x0, 0x5, 0x0, 0x6, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  0x0,
-                                0x0,  0x0,  0x0, 0x0,  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7D, 0x72};
-            for (uint i = 0; i < sizeof(buffer); i++) {
-                uart0_write(buffer[i]);
-                sleep_us(1000);
-            }
-            debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(buffer));
-            debug_buffer(buffer, sizeof(buffer), "0x%X ");
+        case HOTT_VARIO_MODULE_ID: {
+            if (!sensors->is_enabled[HOTT_TYPE_VARIO]) return;
+            hott_sensor_vario_t packet = {0};
+            packet.startByte = 0x7C;
+            packet.sensorID = HOTT_VARIO_MODULE_ID;
+            packet.sensorTextID = HOTT_VARIO_SENSOR_ID;
+            packet.endByte = 0x7D;
+            packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
+            uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
+            debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
+            debug_buffer(&packet, sizeof(packet), "0x%X ");
 
             // blink led
             vTaskResume(context.led_task_handle);
             break;
         }
+        case HOTT_ESC_MODULE_ID: {
+            if (!sensors->is_enabled[HOTT_TYPE_ESC]) return;
+            hott_sensor_electric_air_t packet = {0};
+            packet.startByte = 0x7C;
+            packet.sensorID = HOTT_ESC_MODULE_ID;
+            // packet.sensorTextID = HOTT_ELECTRIC_AIR_SENSOR_ID;
+            packet.endByte = 0x7D;
+            packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
+            uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
+            debug("\nHOTT (%u) Len: %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
+            debug_buffer((uint8_t *)&packet, sizeof(packet), "0x%X ");
+
+            // blink led
+            vTaskResume(context.led_task_handle);
+            break;
+        }
+        case HOTT_ELECTRIC_AIR_MODULE_ID: {
+            if (!sensors->is_enabled[HOTT_TYPE_ELECTRIC]) return;
+            hott_sensor_electric_air_t packet = {0};
+            packet.startByte = 0x7C;
+            packet.sensorID = HOTT_ELECTRIC_AIR_MODULE_ID;
+            packet.sensorTextID = HOTT_ELECTRIC_AIR_SENSOR_ID;
+            packet.endByte = 0x7D;
+            packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
+            uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
+            debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
+            debug_buffer(&packet, sizeof(packet), "0x%X ");
+
+            // blink led
+            vTaskResume(context.led_task_handle);
+            break;
+        }
+    }
+}
+
+static uint8_t get_crc(const uint8_t *buffer, uint len) {
+    uint8_t crc = 0;
+    for (uint i = 0; i < len; i++) crc += buffer[i];
+    return crc;
+}
+
+static void set_config(hott_sensors_t *sensors) {
+    config_t *config = config_read();
+    TaskHandle_t task_handle;
+    if (config->esc_protocol == ESC_PWM) {
+        esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
+        xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+    }
+    if (config->esc_protocol == ESC_HW3) {
+        esc_hw3_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
+        xTaskCreate(esc_hw3_task, "esc_hw3_task", STACK_ESC_HW3, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+    }
+    if (config->esc_protocol == ESC_HW4) {
+        esc_hw4_parameters_t parameter = {config->rpm_multiplier,
+                                          config->enable_pwm_out,
+                                          config->enable_esc_hw4_init_delay,
+                                          config->alpha_rpm,
+                                          config->alpha_voltage,
+                                          config->alpha_current,
+                                          config->alpha_temperature,
+                                          config->esc_hw4_divisor,
+                                          config->esc_hw4_current_multiplier,
+                                          config->esc_hw4_current_thresold,
+                                          config->esc_hw4_current_max,
+                                          config->esc_hw4_is_manual_offset,
+                                          config->esc_hw4_offset,
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_hw4_task, "esc_hw4_task", STACK_ESC_HW4, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        if (config->enable_pwm_out) {
+            xTaskCreate(pwm_out_task, "pwm_out", STACK_PWM_OUT, (void *)parameter.rpm, 2, &task_handle);
+            context.pwm_out_task_handle = task_handle;
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        }
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature_fet;
+        sensors->esc[HOTT_ESC_BEC_TEMPERATURE] = parameter.temperature_bec;
+        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
+        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
+        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+    }
+    if (config->esc_protocol == ESC_HW5) {
+        esc_hw5_parameters_t parameter = {
+            config->rpm_multiplier,    config->alpha_rpm,     config->alpha_voltage, config->alpha_current,
+            config->alpha_temperature, malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
+            malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
+            malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_hw5_task, "esc_hw5_task", STACK_ESC_HW5, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature_fet;
+        sensors->esc[HOTT_ESC_BEC_TEMPERATURE] = parameter.temperature_bec;
+        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
+        sensors->esc[HOTT_ESC_BEC_VOLTAGE] = parameter.voltage_bec;
+        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
+        sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
+        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+        sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.temperature_motor;
+    }
+    if (config->esc_protocol == ESC_CASTLE) {
+        esc_castle_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm,         config->alpha_voltage,
+                                             config->alpha_current,  config->alpha_temperature, malloc(sizeof(float)),
+                                             malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(float)),
+                                             malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(float)),
+                                             malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(float)),
+                                             malloc(sizeof(float)),  malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_castle_task, "esc_castle_task", STACK_ESC_CASTLE, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature;
+        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
+        sensors->esc[HOTT_ESC_BEC_VOLTAGE] = parameter.voltage_bec;
+        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
+        sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
+        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+        sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.consumption;
+    }
+    if (config->esc_protocol == ESC_KONTRONIK) {
+        esc_kontronik_parameters_t parameter = {
+            config->rpm_multiplier,    config->alpha_rpm,     config->alpha_voltage,  config->alpha_current,
+            config->alpha_temperature, malloc(sizeof(float)), malloc(sizeof(float)),  malloc(sizeof(float)),
+            malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)),  malloc(sizeof(float)),
+            malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_kontronik_task, "esc_kontronik_task", STACK_ESC_KONTRONIK, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature_fet;
+        sensors->esc[HOTT_ESC_BEC_TEMPERATURE] = parameter.temperature_bec;
+        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
+        sensors->esc[HOTT_ESC_BEC_VOLTAGE] = parameter.voltage_bec;
+        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
+        sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
+        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+    }
+    if (config->esc_protocol == ESC_APD_F) {
+        esc_apd_f_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm,         config->alpha_voltage,
+                                            config->alpha_current,  config->alpha_temperature, malloc(sizeof(float)),
+                                            malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(float)),
+                                            malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_apd_f_task, "esc_apd_f_task", STACK_ESC_APD_F, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature;
+        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
+        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
+        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+    }
+    if (config->esc_protocol == ESC_APD_HV) {
+        esc_apd_hv_parameters_t parameter = {
+            config->rpm_multiplier,    config->alpha_rpm,     config->alpha_voltage, config->alpha_current,
+            config->alpha_temperature, malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
+            malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
+        xTaskCreate(esc_apd_hv_task, "esc_apd_hv_task", STACK_ESC_APD_HV, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature;
+        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
+        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
+        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+    }
+    if (config->enable_gps) {
+        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
+                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
+                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
+                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
+                                       malloc(sizeof(float))};
+        xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
+        context.uart_pio_notify_task_handle = task_handle;
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_GPS] = true;
+        sensors->gps[HOTT_GPS_LATITUDE] = parameter.lat;
+        sensors->gps[HOTT_GPS_LONGITUDE] = parameter.lon;
+        sensors->gps[HOTT_GPS_SATS] = parameter.sat;
+        sensors->gps[HOTT_GPS_ALTITUDE] = parameter.alt;
+        sensors->gps[HOTT_GPS_SPEED] = parameter.spd_kmh;
+        sensors->gps[HOTT_GPS_DIRECTION] = parameter.cog;
+        sensors->gps[HOTT_GPS_DIRECTION] = parameter.cog;
+    }
+    if (config->enable_analog_voltage) {
+        voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage,
+                                          config->analog_voltage_multiplier, malloc(sizeof(float))};
+        xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
+        sensors->electric_air[HOTT_ELECTRIC_BAT_1_VOLTAGE] = parameter.voltage;
+    }
+    if (config->enable_analog_current) {
+        current_parameters_t parameter = {1,
+                                          config->analog_rate,
+                                          config->alpha_current,
+                                          config->analog_current_multiplier,
+                                          config->analog_current_offset,
+                                          config->analog_current_autoffset,
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float))};
+        xTaskCreate(current_task, "current_task", STACK_CURRENT, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
+        sensors->electric_air[HOTT_ELECTRIC_CURRENT] = parameter.current;
+    }
+    if (config->enable_analog_ntc) {
+        ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
+        xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
+        sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] = parameter.ntc;
+    }
+    if (config->enable_analog_airspeed) {
+        airspeed_parameters_t parameter = {3, config->analog_rate, config->alpha_airspeed, malloc(sizeof(float))};
+        xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_SPEED] = parameter.airspeed;
+    }
+    if (config->i2c_module == I2C_BMP280) {
+        bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
+                                         config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float))};
+        xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_VARIO] = true;
+        sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
+    }
+    if (config->i2c_module == I2C_MS5611) {
+        ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float))};
+        xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_VARIO] = true;
+        sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
+    }
+    if (config->i2c_module == I2C_BMP180) {
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float))};
+        xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_VARIO] = true;
+        sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
     }
 }

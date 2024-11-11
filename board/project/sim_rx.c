@@ -307,6 +307,15 @@ static void process(rx_protocol_t rx_protocol) {
         type++;
     }
 
+    else if (rx_protocol == RX_HOTT) {
+        uint8_t address[5] = {0x89, 0x8A, 0x8C, 0x8D, 0x8E};
+        static uint index = 0;
+        uint8_t type = 0x80;
+        xQueueSendToBack(uart_queue_handle, &type, 0);
+        xQueueSendToBack(uart_queue_handle, &address[index % 5], 0);
+        index++;
+    }
+
     uart0_set_timestamp();
     vTaskDelay(SIM_RX_TIMEOUT_MS / portTICK_PERIOD_MS);
     xTaskNotifyGiveIndexed(context.uart0_notify_task_handle, 1);
