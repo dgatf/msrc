@@ -74,7 +74,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;[7.3. Analog sensors](#73-analog-sensors)  
 &emsp;&emsp;[7.3.1. Voltage divider](#731-voltage-divider)  
 &emsp;&emsp;[7.3.2. Temperature sensors (NTC thermistors)](#732-temperature-sensors-ntc-thermistors)  
-&emsp;&emsp;[7.3.4. Airspeed sensor (MPXV7002)](#734-airspeed-sensor-mpxv7002)  
+&emsp;&emsp;[7.3.4. Airspeed sensor (MPXV7002)](#734-airspeed-sensor)  
 &emsp;[7.4. Vario sensors (I2C sensors)](#74-i2c-sensors)  
 [8. OpenTx sensors (Smartport)](#8-opentx-sensors-smartport)  
 [9. Annex](#9-annex)  
@@ -476,9 +476,43 @@ Set sensor type:
 
 - Shunt resistor sensor. Multiplier = 1000 / (ampgain * resistor(mΩ))
 
-#### 7.3.4. Airspeed sensor (MPXV7002)
+#### 7.3.4. Airspeed sensor
 
-No need to calibrate. For fine tuning adjust in airspeed.h: TRANSFER_SLOPE,TRANSFER_VCC
+Vcc for the airspeed sensor must be 5V. The maximum readable output the sensor is 3.3V due to the rp2040 ADC range : 0-3-3V
+The limits the maximum speed to about 120km/h. Over 3.3V output the reading is the same as for 3.3V. It won't damage the rp2040 as Vout current is 0.1mA.  
+If higher speed measurement (up to 170km/h) is needed, an stepdown has to be added. But this is still not added to the code.  
+
+Relation between Vout and delta pressure.
+
+<p align="center"><img src="./images/MPXV7002.png" width="500"><br>
+  <i>MPXV7002</i><br><br></p>
+
+If a barometer sensor is installed, you'll get more accurate airspeed values as air density is calculated with actual temperature and pressure. Otherwise following default values are used: 20ºC and 101325Pa.  
+
+Parameters:
+
+slope = Vcc/5. Nominal value is 1  
+offset = ±6.25% VFSS = ±0.25. Nominal value is 0  
+
+Transformation formula:
+
+<img src="https://latex.codecogs.com/svg.latex?V_{out} = V_{cc} x (2 \Delta P +0.5)\pm6.25\%VFSS" title="Vout = Vcc x (0.2 x ΔP + 0.5) ±6.25% VFSS" />
+
+Transformation formula with MSRC parameters:
+
+<img src="https://latex.codecogs.com/svg.latex?\Delta P = \frac{V_{out}-offset}{slope}-2.5" title="ΔP = (Vout - offset) / slope - 2.5" />
+
+Air density calculation:
+
+<img src="https://latex.codecogs.com/svg.latex?ρ = \frac{P}{R \cdot T}" title="ρ = P / (R * T(Kelvin))" />
+
+R -> dry air constant  
+
+Airspeed calculation:
+
+<img src="https://latex.codecogs.com/svg.latex?TAS = \sqrt{\frac{2 \Delta P}{\ρ}}" title="TAS(m/s) = sqrt(2 * ΔP / air_density)" />
+
+TAS -> airspeed (m/s)  
 
 ### 7.4. I2C sensors
 
@@ -694,24 +728,6 @@ The voltage drop in the shunt resistor is amplified by a differential amplifier 
 
 ### 9.9. Air Speed
 
-Air speed is measured with a differential pressure sensor 
-
-Presssure is calculated with the sensor's transfer formula:
-
-<img src="https://latex.codecogs.com/svg.latex?V_o=V_{cc}*(B*P+A)" title="Vo=Vcc(MP+A)" />
-
-
-And the air speed using the Bernouilli formula:
-
-<img src="https://latex.codecogs.com/svg.latex?V=\sqrt{2*P/\rho}" title="V=(2P/d)^1/2" />
-
-After 2 seconds the sensor is calibrated to zero
-
-Adjust constants in *pressure.h*:
-
-- TRANSFER_SLOPE (B) as per sensor datasheet
-- For fine tuning measure the Vcc on the sensor and adjust TRANSFER_VCC
-
 ### 9.10. Altitude
 
 Altitude is calculated using the barometric formula:
@@ -737,6 +753,7 @@ v1.1
 - Fixed analog current  
 - Added support for CRSF protocol  
 - Added support for Sanwa protocol   
+- Improved airspeed calculation and linked to barometer if installed to get more accurate aurspeed value   
 
 [v1.0](https://github.com/dgatf/msrc/tree/v1.0)
 

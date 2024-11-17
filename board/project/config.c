@@ -58,6 +58,9 @@
 #define ANALOG_CURRENT_OFFSET 0
 #define ANALOG_CURRENT_AUTO_OFFSET true
 #define ANALOG_CURRENT_SENSITIVITY 1000
+/* Analog airspeed */
+#define AIRSPEED_OFFSET 0
+#define AIRSPEED_SLOPE 1
 
 /* RPM multipliers (optional, this may be done in transmitter*/
 #define RPM_PAIR_OF_POLES 1
@@ -185,7 +188,7 @@ void config_forze_write() {
     config.serial_monitor_parity = SERIAL_MONITOR_PARITY;
     config.serial_monitor_timeout_ms = SERIAL_MONITOR_TIMEOUT_MS;
     config.serial_monitor_inverted = SERIAL_MONITOR_INVERTED;
-    config.spare2;
-    config.spare3;
+    config.airspeed_offset = AIRSPEED_OFFSET * 100;
+    config.airspeed_slope = AIRSPEED_SLOPE * 100;
     config_write(&config);
 }

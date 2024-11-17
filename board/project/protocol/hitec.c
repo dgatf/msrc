@@ -13,9 +13,9 @@
 #include "esc_castle.h"
 #include "esc_hw3.h"
 #include "esc_hw4.h"
+#include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
-#include "esc_hw5.h"
 #include "hardware/i2c.h"
 #include "ms5611.h"
 #include "nmea.h"
@@ -292,6 +292,7 @@ static void set_config() {
     config_t *config = config_read();
     TaskHandle_t task_handle;
     sensor_hitec_t *new_sensor;
+    float *baro_temp = NULL, *baro_pressure = NULL;
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
@@ -518,22 +519,17 @@ static void set_config() {
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-    if (config->enable_analog_airspeed) {
-        airspeed_parameters_t parameter = {3, config->analog_rate, config->alpha_airspeed, malloc(sizeof(float))};
-        xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-
-        sensor->frame_0x1A[FRAME_0X1A_ASPD] = parameter.airspeed;
-        sensor->is_enabled_frame[FRAME_0X1A] = true;
-
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    }
     if (config->i2c_module == I2C_BMP280) {
         bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
 
         sensor->frame_0x1B[FRAME_0X1B_ALTU] = parameter.altitude;
         sensor->is_enabled_frame[FRAME_0X1B] = true;
@@ -547,6 +543,11 @@ static void set_config() {
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
+
         sensor->frame_0x1B[FRAME_0X1B_ALTU] = parameter.altitude;
         sensor->is_enabled_frame[FRAME_0X1B] = true;
 
@@ -559,8 +560,30 @@ static void set_config() {
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
+        
         sensor->frame_0x1B[FRAME_0X1B_ALTU] = parameter.altitude;
         sensor->is_enabled_frame[FRAME_0X1B] = true;
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_analog_airspeed) {
+        airspeed_parameters_t parameter = {3,
+                                           config->analog_rate,
+                                           config->alpha_airspeed,
+                                           (float)config->airspeed_offset / 100,
+                                           (float)config->airspeed_slope / 100,
+                                           baro_temp,
+                                           baro_pressure,
+                                           malloc(sizeof(float))};
+        xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->frame_0x1A[FRAME_0X1A_ASPD] = parameter.airspeed;
+        sensor->is_enabled_frame[FRAME_0X1A] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

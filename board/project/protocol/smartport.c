@@ -14,9 +14,9 @@
 #include "esc_castle.h"
 #include "esc_hw3.h"
 #include "esc_hw4.h"
+#include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
-#include "esc_hw5.h"
 #include "ms5611.h"
 #include "nmea.h"
 #include "ntc.h"
@@ -144,7 +144,6 @@ static void sensor_cell_task(void *parameters);
 static void packet_task(void *parameters);
 static void process(smartport_parameters_t *parameter);
 static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, uint16_t data_id, uint32_t value);
-static void add_packet(uint8_t type_id, uint16_t data_id, uint32_t value);
 static int32_t format(uint16_t data_id, float value);
 static uint32_t format_double(uint16_t data_id, float value_l, float value_h);
 static uint32_t format_coordinate(coordinate_type_t type, float value);
@@ -549,6 +548,7 @@ static void send_packet(uint8_t type_id, uint16_t data_id, uint32_t value) {
 static void set_config(smartport_parameters_t *parameter) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
+    float *baro_temp = NULL, *baro_pressure = NULL;
     parameter->sensor_id = config->smartport_sensor_id;
     parameter->data_id = config->smartport_data_id;
     if (config->esc_protocol == ESC_PWM) {
@@ -1026,34 +1026,6 @@ static void set_config(smartport_parameters_t *parameter) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-    if (config->enable_analog_ntc) {
-        ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
-        xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-        smartport_sensor_parameters_t parameter_sensor;
-        parameter_sensor.data_id = ESC_TEMPERATURE_FIRST_ID;
-        parameter_sensor.value = parameter.ntc;
-        parameter_sensor.rate = config->refresh_rate_temperature;
-        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    }
-    if (config->enable_analog_airspeed) {
-        airspeed_parameters_t parameter = {3, config->analog_rate, config->alpha_airspeed, malloc(sizeof(float))};
-        xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-        smartport_sensor_parameters_t parameter_sensor;
-        parameter_sensor.data_id = AIR_SPEED_FIRST_ID;
-        parameter_sensor.value = parameter.airspeed;
-        parameter_sensor.rate = config->refresh_rate_airspeed;
-        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    }
     if (config->i2c_module == I2C_BMP280) {
         bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
@@ -1061,6 +1033,11 @@ static void set_config(smartport_parameters_t *parameter) {
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
 
         smartport_sensor_parameters_t parameter_sensor;
         parameter_sensor.data_id = ALT_FIRST_ID;
@@ -1084,6 +1061,11 @@ static void set_config(smartport_parameters_t *parameter) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
+
         smartport_sensor_parameters_t parameter_sensor;
         parameter_sensor.data_id = ALT_FIRST_ID;
         parameter_sensor.value = parameter.altitude;
@@ -1106,6 +1088,11 @@ static void set_config(smartport_parameters_t *parameter) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
+
         smartport_sensor_parameters_t parameter_sensor;
         parameter_sensor.data_id = ALT_FIRST_ID;
         parameter_sensor.value = parameter.altitude;
@@ -1116,6 +1103,41 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor.data_id = VARIO_FIRST_ID;
         parameter_sensor.value = parameter.vspeed;
         parameter_sensor.rate = config->refresh_rate_vario;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_analog_ntc) {
+        ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
+        xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        smartport_sensor_parameters_t parameter_sensor;
+        parameter_sensor.data_id = ESC_TEMPERATURE_FIRST_ID;
+        parameter_sensor.value = parameter.ntc;
+        parameter_sensor.rate = config->refresh_rate_temperature;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_analog_airspeed) {
+        airspeed_parameters_t parameter = {3,
+                                           config->analog_rate,
+                                           config->alpha_airspeed,
+                                           (float)config->airspeed_offset / 100,
+                                           (float)config->airspeed_slope / 100,
+                                           baro_temp,
+                                           baro_pressure,
+                                           malloc(sizeof(float))};
+        xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        smartport_sensor_parameters_t parameter_sensor;
+        parameter_sensor.data_id = AIR_SPEED_FIRST_ID;
+        parameter_sensor.value = parameter.airspeed;
+        parameter_sensor.rate = config->refresh_rate_airspeed;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);

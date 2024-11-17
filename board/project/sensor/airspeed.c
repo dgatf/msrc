@@ -6,12 +6,13 @@
 #include "hardware/adc.h"
 #include "pico/stdlib.h"
 
-#define AIR_DENS 1.204  // 20ºC, 1atm
+/* If there is not barometer sensor installed, values used to calculate air density are:
+   Nominal pressure at sea level 101325 hPa.
+   Defalut temperature value 20ºC
+*/
+
 #define KNOT_TO_KMH 1.94384
-// Transfer function: P(Pa) = 1000 * (Vo/(SLOPE*VCC) - voltageOffset)
-// MPXV7002
-#define TRANSFER_SLOPE 0.2
-#define TRANSFER_VCC 5
+#define AIR_CONSTANT_R 287.05  // J/(kg.K)
 
 void airspeed_task(void *parameters) {
     airspeed_parameters_t parameter = *(airspeed_parameters_t *)parameters;
@@ -19,15 +20,33 @@ void airspeed_task(void *parameters) {
     adc_gpio_init(parameter.adc_num + 26);
     *parameter.airspeed = 0;
     xTaskNotifyGive(context.receiver_task_handle);
+    float temperature, pressure, delta_pressure, air_density, airspeed;
+    static float voltage;
+
     while (1) {
-        float pressure = 1000 * (voltage_read(parameter.adc_num) / (TRANSFER_SLOPE * TRANSFER_VCC));
-        if (pressure < 0) pressure = 0;
-        float airspeed = sqrt(2 * pressure / AIR_DENS) / KNOT_TO_KMH;
+        if (!parameter.temperature)
+            temperature = 20;
+        else
+            temperature = *parameter.temperature;  // ºC
+        if (!parameter.pressure)
+            pressure = 101325;
+        else
+            pressure = *parameter.pressure;  // Pa
+        voltage = voltage_read(parameter.adc_num);
+        air_density = pressure / (AIR_CONSTANT_R * (temperature + 273.15));
+        delta_pressure = ((voltage - parameter.offset) / parameter.slope - 2.5) * 1000;  // Pa
+        // Formula: speed = sqrt(2*P/air_dens) -> Units: P (Pa=N/m2), air_dens (kg/m3), N (kg*m/s2) -> speed =
+        // sqrt(kg*m/s2/m2*m3/kg) = sqrt(m2/s2) = m/s
+        if (delta_pressure < 0)
+            airspeed = /*-1 **/ sqrt(-2 * delta_pressure / air_density);
+        else
+            airspeed = sqrt(2 * delta_pressure / air_density);
         *parameter.airspeed = get_average(parameter.alpha, *parameter.airspeed, airspeed);
-#ifdef SIM_SENSORS
-        *parameter.airspeed = 12.34;
-#endif
-        debug("\nAirspeed (%u): %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.airspeed);
+
+        debug("\nAirspeed (%u): %.2f (P(%u)%.2f T(%u)%.2f V %.2f AD %.2f dP %.2f)", uxTaskGetStackHighWaterMark(NULL),
+              *parameter.airspeed, parameter.pressure, pressure, parameter.temperature, temperature, voltage,
+              air_density, delta_pressure);
+
         vTaskDelay(1000 / parameter.rate / portTICK_PERIOD_MS);
     }
 }

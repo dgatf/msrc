@@ -117,7 +117,7 @@ void MainWindow::generateCircuit(QLabel *label)
                              image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if(ui->cbAirspeed->isChecked()) {
+        if(ui->gbAirspeed->isChecked()) {
             image.load(":/res/airspeed_rp2040_zero.png");
             paint->drawImage(QPoint(0, 0),
                              image.scaled(*size, Qt::IgnoreAspectRatio));
@@ -422,7 +422,9 @@ void MainWindow::setUiFromConfig()
 
     // Airspeed
 
-    ui->cbAirspeed->setChecked(config.enable_analog_airspeed);
+    ui->gbAirspeed->setChecked(config.enable_analog_airspeed);
+    ui->sbAirspeedSlope->setValue(config.airspeed_slope / 100);
+    ui->sbAirspeedOffset->setValue(config.airspeed_offset / 100);
 
     // Altitude
 
@@ -558,8 +560,10 @@ void MainWindow::getConfigFromUi()
 
     // Airspeed
 
-    config.enable_analog_airspeed = ui->cbAirspeed->isChecked();
-
+    config.enable_analog_airspeed = ui->gbAirspeed->isChecked();
+    config.airspeed_slope = ui->sbAirspeedSlope->value() * 100;
+    config.airspeed_offset = ui->sbAirspeedOffset->value() * 100;
+    
     // Altitude
 
     if(ui->gbAltitude->isChecked())
@@ -911,12 +915,6 @@ void MainWindow::on_gbAltitude_toggled(bool enabled)
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbAirspeed_toggled(bool checked)
-{
-    Q_UNUSED(checked);
-    generateCircuit(ui->lbCircuit);
-}
-
 void MainWindow::on_gbCurrent_toggled(bool enabled)
 {
     enableWidgets(ui->gbCurrent, enabled);
@@ -961,6 +959,12 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 void MainWindow::on_gbGps_toggled(bool enabled)
 {
     enableWidgets(ui->gbGps, enabled);
+    generateCircuit(ui->lbCircuit);
+}
+
+void MainWindow::on_gbAirspeed_toggled(bool enabled)
+{
+    enableWidgets(ui->gbAirspeed, enabled);
     generateCircuit(ui->lbCircuit);
 }
 

@@ -269,6 +269,7 @@ static void i2c_request_handler(uint8_t address) {
 static void set_config() {
     config_t *config = config_read();
     TaskHandle_t task_handle;
+    float *baro_temp = NULL, *baro_pressure = NULL;
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
@@ -571,25 +572,18 @@ static void set_config() {
         }
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-    if (config->enable_analog_airspeed) {
-        airspeed_parameters_t parameter = {3, config->analog_rate, config->alpha_airspeed, malloc(sizeof(float))};
-        xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        
-        sensor->airspeed[XBUS_AIRSPEED_AIRSPEED] = parameter.airspeed;
-        sensor->is_enabled[XBUS_AIRSPEED] = true;
-        sensor_formatted->airspeed = calloc(1, 16);
-        *sensor_formatted->airspeed = (xbus_airspeed_t){XBUS_AIRSPEED_ID, 0, 0, 0};
-        i2c_multi_enable_address(XBUS_AIRSPEED_ID);
-
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    }
     if (config->i2c_module == I2C_BMP280) {
         bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
+        
         add_alarm_in_ms(250, interval_250_callback, NULL, false);
         add_alarm_in_ms(500, interval_500_callback, NULL, false);
         add_alarm_in_ms(1000, interval_1000_callback, NULL, false);
@@ -610,6 +604,12 @@ static void set_config() {
                                          malloc(sizeof(float))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
+        
         add_alarm_in_ms(250, interval_250_callback, NULL, false);
         add_alarm_in_ms(500, interval_500_callback, NULL, false);
         add_alarm_in_ms(1000, interval_1000_callback, NULL, false);
@@ -636,11 +636,37 @@ static void set_config() {
         add_alarm_in_ms(1500, interval_1500_callback, NULL, false);
         add_alarm_in_ms(2000, interval_2000_callback, NULL, false);
         add_alarm_in_ms(3000, interval_3000_callback, NULL, false);
+        
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
+        
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
         sensor->is_enabled[XBUS_VARIO] = true;
         sensor_formatted->vario = calloc(1, 16);
         *sensor_formatted->vario = (xbus_vario_t){XBUS_VARIO_ID, 0, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_VARIO_ID);
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_analog_airspeed) {
+        airspeed_parameters_t parameter = {3,
+                                           config->analog_rate,
+                                           config->alpha_airspeed,
+                                           (float)config->airspeed_offset / 100,
+                                           (float)config->airspeed_slope / 100,
+                                           baro_temp,
+                                           baro_pressure,
+                                           malloc(sizeof(float))};
+        xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->airspeed[XBUS_AIRSPEED_AIRSPEED] = parameter.airspeed;
+        sensor->is_enabled[XBUS_AIRSPEED] = true;
+        sensor_formatted->airspeed = calloc(1, 16);
+        *sensor_formatted->airspeed = (xbus_airspeed_t){XBUS_AIRSPEED_ID, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_AIRSPEED_ID);
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

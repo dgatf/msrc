@@ -14,9 +14,9 @@
 #include "esc_castle.h"
 #include "esc_hw3.h"
 #include "esc_hw4.h"
+#include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
-#include "esc_hw5.h"
 #include "ms5611.h"
 #include "nmea.h"
 #include "ntc.h"
@@ -134,8 +134,7 @@ static void process(sensor_ibus_t **sensor) {
                 if (!sensor[address]) return;
                 if (command == IBUS_COMMAND_DISCOVER || command == IBUS_COMMAND_TYPE || IBUS_COMMAND_MEASURE)
                     send_packet(command, address, sensor[address]);
-            }
-            else
+            } else
                 debug(" - Bad CRC");
         }
     }
@@ -255,6 +254,7 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
     sensor_ibus_t *new_sensor;
+    float *baro_temp = NULL, *baro_pressure = NULL;
     new_sensor = malloc(sizeof(sensor_ibus_t));
     *new_sensor = (sensor_ibus_t){IBUS_ID_END, 0, NULL};
     add_sensor(new_sensor, sensor, sensormask);
@@ -582,21 +582,18 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
         add_sensor(new_sensor, sensor, sensormask);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-    if (config->enable_analog_airspeed) {
-        airspeed_parameters_t parameter = {3, config->analog_rate, config->alpha_airspeed, malloc(sizeof(float))};
-        xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        new_sensor = malloc(sizeof(sensor_ibus_t));
-        *new_sensor = (sensor_ibus_t){IBUS_ID_SPE, IBUS_TYPE_U16, parameter.airspeed};
-        add_sensor(new_sensor, sensor, sensormask);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    }
     if (config->i2c_module == I2C_BMP280) {
         bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
+
         new_sensor = malloc(sizeof(sensor_ibus_t));
         *new_sensor = (sensor_ibus_t){IBUS_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temperature};
         add_sensor(new_sensor, sensor, sensormask);
@@ -614,6 +611,12 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
                                          malloc(sizeof(float))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
+
         new_sensor = malloc(sizeof(sensor_ibus_t));
         *new_sensor = (sensor_ibus_t){IBUS_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temperature};
         add_sensor(new_sensor, sensor, sensormask);
@@ -631,6 +634,12 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
                                          malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        if (config->enable_analog_airspeed) {
+            baro_temp = parameter.temperature;
+            baro_pressure = parameter.pressure;
+        }
+
         new_sensor = malloc(sizeof(sensor_ibus_t));
         *new_sensor = (sensor_ibus_t){IBUS_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temperature};
         add_sensor(new_sensor, sensor, sensormask);
@@ -639,6 +648,22 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
         add_sensor(new_sensor, sensor, sensormask);
         new_sensor = malloc(sizeof(sensor_ibus_t));
         *new_sensor = (sensor_ibus_t){IBUS_ID_CLIMB_RATE, IBUS_TYPE_S16, parameter.vspeed};
+        add_sensor(new_sensor, sensor, sensormask);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_analog_airspeed) {
+        airspeed_parameters_t parameter = {3,
+                                           config->analog_rate,
+                                           config->alpha_airspeed,
+                                           (float)config->airspeed_offset / 100,
+                                           (float)config->airspeed_slope / 100,
+                                           baro_temp,
+                                           baro_pressure,
+                                           malloc(sizeof(float))};
+        xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_SPE, IBUS_TYPE_U16, parameter.airspeed};
         add_sensor(new_sensor, sensor, sensormask);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

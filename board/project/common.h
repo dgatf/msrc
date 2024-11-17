@@ -132,8 +132,8 @@ typedef struct config_t {
     uint8_t serial_monitor_parity;
     uint16_t serial_monitor_timeout_ms;
     bool serial_monitor_inverted;
-    uint8_t spare2;
-    uint16_t spare3;
+    int8_t airspeed_offset;
+    int16_t airspeed_slope;
 } config_t;
 
 typedef struct context_t {

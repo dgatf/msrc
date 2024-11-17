@@ -131,8 +131,8 @@ typedef struct config_t {
     uint8_t serial_monitor_parity;
     uint16_t serial_monitor_timeout_ms;
     bool serial_monitor_inverted;
-    uint8_t spare2;
-    uint16_t spare3;
+    int8_t airspeed_offset;
+    int16_t airspeed_slope;
 } config_t;
 
 class MainWindow : public QMainWindow
@@ -182,7 +182,6 @@ private slots:
     void on_gbVoltage1_toggled(bool arg1);
     void on_cbTemperature1_toggled(bool checked);
     void on_gbAltitude_toggled(bool arg1);
-    void on_cbAirspeed_toggled(bool checked);
     void on_gbCurrent_toggled(bool arg1);
     void on_cbBarometerType_currentTextChanged(const QString &arg1);
     void on_cbEsc_currentTextChanged(const QString &arg1);
@@ -194,5 +193,7 @@ private slots:
     void on_cbCurrentSensorType_currentTextChanged(const QString &arg1);
     void on_cbClockStretch_toggled(bool checked);
     void on_cbEscAutoOffset_stateChanged(int arg1);
+    void on_gbAirspeed_toggled(bool arg1);
+
 };
 #endif // MAINWINDOW_H
