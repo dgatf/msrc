@@ -82,6 +82,9 @@ static void process_usb(int lenght) {
         } else if (buffer_rx[1] == 0x34 && lenght == 2) {  // debug disable
             context.debug = 0;
             debug("\nUSB. Debug disabled");
+        } else if (buffer_rx[1] == 0x35 && lenght == 2) {  // force save default config to flash
+            config_forze_write();
+            debug("\nUSB. Default config saved to flash");
         }
     }
 }

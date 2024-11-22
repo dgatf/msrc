@@ -21,7 +21,7 @@ void airspeed_task(void *parameters) {
     *parameter.airspeed = 0;
     xTaskNotifyGive(context.receiver_task_handle);
     float temperature, pressure, delta_pressure, air_density, airspeed;
-    static float voltage;
+    static float voltage = 0;
 
     while (1) {
         if (!parameter.temperature)
@@ -33,6 +33,8 @@ void airspeed_task(void *parameters) {
         else
             pressure = *parameter.pressure;  // Pa
         voltage = voltage_read(parameter.adc_num);
+        //voltage += 0.1;
+        //if (voltage > 3.3) voltage = 0;
         air_density = pressure / (AIR_CONSTANT_R * (temperature + 273.15));
         delta_pressure = ((voltage - parameter.offset) / parameter.slope - 2.5) * 1000;  // Pa
         // Formula: speed = sqrt(2*P/air_dens) -> Units: P (Pa=N/m2), air_dens (kg/m3), N (kg*m/s2) -> speed =

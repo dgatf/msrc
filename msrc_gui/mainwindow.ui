@@ -88,7 +88,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-1427</y>
+             <y>0</y>
              <width>603</width>
              <height>2169</height>
             </rect>
@@ -1535,6 +1535,7 @@
     <addaction name="actionSave"/>
     <addaction name="separator"/>
     <addaction name="actionUpdateConfig"/>
+    <addaction name="actionDefaultConfig"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -1575,6 +1576,14 @@
   <action name="actionAbout">
    <property name="text">
     <string>About...</string>
+   </property>
+  </action>
+  <action name="actionDefaultConfig">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Restore default config</string>
    </property>
   </action>
  </widget>

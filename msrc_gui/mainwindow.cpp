@@ -67,6 +67,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openConfig()));
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(saveConfig()));
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
+    connect(ui->actionDefaultConfig, SIGNAL(triggered()), this, SLOT(defaultConfig()));
 
     ui->lbCircuit->resize(621, 400); //(ui->lbCircuit->parentWidget()->width(),
     // ui->lbCircuit->parentWidget()->height());
@@ -271,6 +272,7 @@ void MainWindow::openSerialPort()
         ui->btUpdate->setEnabled(true);
         ui->btConnect->setText("Disconnect");
         ui->actionUpdateConfig->setEnabled(true);
+        ui->actionDefaultConfig->setEnabled(true);
         ui->saConfig->setEnabled(true);
         ui->cbPortList->setDisabled(true);
         ui->btDebug->setEnabled(true);
@@ -281,6 +283,7 @@ void MainWindow::openSerialPort()
         ui->btUpdate->setEnabled(false);
         ui->btConnect->setText("Connect");
         ui->actionUpdateConfig->setEnabled(false);
+        ui->actionDefaultConfig->setEnabled(false);
         ui->saConfig->setEnabled(false);
         ui->btDebug->setEnabled(false);
         ui->btDebug->setText("Enable Debug");
@@ -295,6 +298,7 @@ void MainWindow::closeSerialPort()
     ui->btUpdate->setEnabled(false);
     ui->btConnect->setText("Connect");
     ui->actionUpdateConfig->setEnabled(false);
+    ui->actionDefaultConfig->setEnabled(false);
     ui->saConfig->setEnabled(false);
     ui->cbPortList->setDisabled(false);
     ui->btDebug->setDisabled(true);
@@ -310,6 +314,7 @@ void MainWindow::readSerial()
                  0x32 - msrc answer to send config
                  0x33 - debug on
                  0x34 - debug off
+                 0x35 - save default config to rp2040 flash
     */
 
     if(isDebug == false) {
@@ -338,6 +343,16 @@ void MainWindow::writeSerialConfig()
     /*QMessageBox msgBox;
     msgBox.setText("Reset RP2040 to apply settings.");
     msgBox.exec();*/
+    QMessageBox::warning(this, tr("Information"), tr("Reset RP2040 to apply settings."), QMessageBox::Close);
+}
+
+void MainWindow::defaultConfig()
+{
+    if(!isConnected) return;
+    char header = 0x30;
+    serial->write(&header, 1);
+    char command = 0x35;
+    serial->write(&command, 1);
     QMessageBox::warning(this, tr("Information"), tr("Reset RP2040 to apply settings."), QMessageBox::Close);
 }
 
@@ -423,8 +438,8 @@ void MainWindow::setUiFromConfig()
     // Airspeed
 
     ui->gbAirspeed->setChecked(config.enable_analog_airspeed);
-    ui->sbAirspeedSlope->setValue(config.airspeed_slope / 100);
-    ui->sbAirspeedOffset->setValue(config.airspeed_offset / 100);
+    ui->sbAirspeedSlope->setValue(config.airspeed_slope / 100.0);
+    ui->sbAirspeedOffset->setValue(config.airspeed_offset / 100.0);
 
     // Altitude
 

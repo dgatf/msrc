@@ -170,6 +170,7 @@ private slots:
     QStringList fillPortsInfo();
     void checkPorts();
     void writeSerialConfig();
+    void defaultConfig();
     void openConfig();
     void saveConfig();
     void showAbout();
