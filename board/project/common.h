@@ -135,7 +135,7 @@ typedef struct config_t {
     int8_t airspeed_offset;
     int16_t airspeed_slope;
     float fuel_flow_ml_per_pulse;
-    bool fuel_flow_sensor;
+    bool enable_fuel_flow;
     uint16_t spare2_1;
     uint8_t spare2_2;
     uint32_t spare3;
