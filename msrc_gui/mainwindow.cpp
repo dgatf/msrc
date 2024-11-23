@@ -1,19 +1,17 @@
 ﻿#include "mainwindow.h"
-#include "circuitdialog.h"
-#include "ui_mainwindow.h"
-#include "qobject.h"
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), serial(new QSerialPort())
-{
+#include "circuitdialog.h"
+#include "qobject.h"
+#include "ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), serial(new QSerialPort()) {
     ui->setupUi(this);
     ui->saConfig->setEnabled(false);
     ui->btDebug->setDisabled(true);
-    ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link",
-                         "Kontronic", "Kiss", "APD HV", "HobbyWing V5"});
+    ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
+                         "Kiss", "APD HV", "HobbyWing V5"});
 
-    ui->cbGpsBaudrate->addItems(
-                {"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
+    ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItem("Frsky Smartport", RX_SMARTPORT);
     ui->cbReceiver->addItem("Frsky D", RX_FRSKY_D);
@@ -29,12 +27,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbReceiver->addItem("Serial Monitor", SERIAL_MONITOR);
     ui->cbReceiver->addItem("Spektrum SRXL", RX_SRXL);
     ui->cbReceiver->addItem("Spektrum SRXL2", RX_SRXL2);
-    ui->cbEscModel->addItems({"",
-                              "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A",
-                              "Platinum PRO v4 100A", "Platinum PRO v4 120A",
-                              "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A",
-                              "Platinum PRO v4 200A-HV", "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A",
-                              "FlyFun 120A", "FlyFun 110A-HV", "FlyFun 130A-HV", "FlyFun 160A-HV"});
+    ui->cbEscModel->addItems({"", "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A", "Platinum PRO v4 100A",
+                              "Platinum PRO v4 120A", "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A",
+                              "Platinum PRO v4 200A-HV", "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A", "FlyFun 120A",
+                              "FlyFun 110A-HV", "FlyFun 130A-HV", "FlyFun 160A-HV"});
 
     ui->sbEscOffset->setVisible(false);
     ui->cbCurrentSensorType->addItems({"Hall effect", "Shunt resistor"});
@@ -45,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbSpeedUnitsGps->addItems({"km/h", "kts"});
     ui->lbQuiescentVoltage->setText("Zero current output voltage, V<sub>IOUT</sub> (V)");
     ui->cbVarioAutoOffset->setVisible(false);
-    for(uint8_t i = 0; i < 127; i++) {
+    for (uint8_t i = 0; i < 127; i++) {
         QString hex;
         hex.setNum(i, 16);
         ui->cbAddress->addItem("0x" + hex);
@@ -56,9 +52,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cbStopbits->addItems({"1", "2"});
     ui->cbParity->addItems({"None", "Odd", "Even"});
 
-    connect(ui->btConnect, SIGNAL(released()),  this, SLOT(buttonSerialPort()));
-    connect(ui->btDebug, SIGNAL(released()),  this, SLOT(buttonDebug()));
-    connect(ui->btClearDebug, SIGNAL(released()),  this, SLOT(buttonClearDebug()));
+    connect(ui->btConnect, SIGNAL(released()), this, SLOT(buttonSerialPort()));
+    connect(ui->btDebug, SIGNAL(released()), this, SLOT(buttonDebug()));
+    connect(ui->btClearDebug, SIGNAL(released()), this, SLOT(buttonClearDebug()));
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(exitApp()));
     connect(serial, &QSerialPort::readyRead, this, &MainWindow::readSerial);
     connect(ui->btUpdate, SIGNAL(released()), this, SLOT(writeSerialConfig()));
@@ -69,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
     connect(ui->actionDefaultConfig, SIGNAL(triggered()), this, SLOT(defaultConfig()));
 
-    ui->lbCircuit->resize(621, 400); //(ui->lbCircuit->parentWidget()->width(),
+    ui->lbCircuit->resize(621, 400);  //(ui->lbCircuit->parentWidget()->width(),
     // ui->lbCircuit->parentWidget()->height());
     generateCircuit(ui->lbCircuit);
 
@@ -82,13 +78,9 @@ MainWindow::MainWindow(QWidget *parent)
     timer->start(1000);
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
+MainWindow::~MainWindow() { delete ui; }
 
-void MainWindow::generateCircuit(QLabel *label)
-{
+void MainWindow::generateCircuit(QLabel *label) {
     QSize *size = new QSize(label->width(), label->height());
     QPixmap *pix = new QPixmap(*size);
     QPainter *paint = new QPainter(pix);
@@ -97,78 +89,69 @@ void MainWindow::generateCircuit(QLabel *label)
     image.load(":/res/rp2040_zero.png");
     paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
 
-    if(ui->cbReceiver->currentText() == "Serial Monitor") {
+    if (ui->cbReceiver->currentText() == "Serial Monitor") {
         image.load(":/res/esc_rp2040_zero.png");
         paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
-    }
-    else {
-        if(ui->gbCurrent->isChecked()) {
+    } else {
+        if (ui->gbCurrent->isChecked()) {
             image.load(":/res/current_rp2040_zero.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if(ui->gbVoltage1->isChecked()) {
+        if (ui->gbVoltage1->isChecked()) {
             image.load(":/res/voltage_rp2040_zero.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if(ui->cbTemperature1->isChecked()) {
+        if (ui->cbTemperature1->isChecked()) {
             image.load(":/res/ntc_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0),
-                             image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if(ui->gbAirspeed->isChecked()) {
+        if (ui->gbAirspeed->isChecked()) {
             image.load(":/res/airspeed_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0),
-                             image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if(ui->gbGps->isChecked()) {
+        if (ui->gbGps->isChecked()) {
             image.load(":/res/gps_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0),
-                             image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if(ui->gbEsc->isChecked()) {
-            //ui->lbEsc->setEnabled(true);
-            //ui->cbEsc->setEnabled(true);
-            //ui->lbEscModel->setEnabled(true);
-            //ui->lbEscModel->setEnabled(true);
-            //ui->gbRpmMultipliers->setEnabled(true);
-            if(ui->cbEsc->currentText() == "Hobbywing V3" ||
-                    ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
-                    ui->cbEsc->currentText() == "Kontronic" ||
-                    ui->cbEsc->currentText() == "KIss" ||
-                    ui->cbEsc->currentText() == "APD HV" ||
-                    ui->cbEsc->currentText() == "HobbyWing V5")
+        if (ui->gbEsc->isChecked()) {
+            // ui->lbEsc->setEnabled(true);
+            // ui->cbEsc->setEnabled(true);
+            // ui->lbEscModel->setEnabled(true);
+            // ui->lbEscModel->setEnabled(true);
+            // ui->gbRpmMultipliers->setEnabled(true);
+            if (ui->cbEsc->currentText() == "Hobbywing V3" ||
+                ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
+                ui->cbEsc->currentText() == "Kontronic" || ui->cbEsc->currentText() == "KIss" ||
+                ui->cbEsc->currentText() == "APD HV" || ui->cbEsc->currentText() == "HobbyWing V5")
                 image.load(":/res/esc_rp2040_zero.png");
-            else if(ui->cbEsc->currentText() == "PWM")
+            else if (ui->cbEsc->currentText() == "PWM")
                 image.load(":/res/pwm_rp2040_zero.png");
-            else if(ui->cbEsc->currentText() == "Castle Link")
+            else if (ui->cbEsc->currentText() == "Castle Link")
                 image.load(":/res/castle_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0),
-                             image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         } else {
-
         }
 
-        if(ui->gbAltitude->isChecked()) {
+        if (ui->gbAltitude->isChecked()) {
             image.load(":/res/vario_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0),
-                             image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if(ui->cbReceiver->currentText() == "Frsky D") {
+        if (ui->cbReceiver->currentText() == "Frsky D") {
             image.load(":/res/receiver_frsky_d_rp2040_zero.png");
-        } else if(ui->cbReceiver->currentText() == "Spektrum XBUS") {
+        } else if (ui->cbReceiver->currentText() == "Spektrum XBUS") {
             image.load(":/res/receiver_xbus_rp2040_zero.png");
-        } else if(ui->cbReceiver->currentText() == "Hitec") {
+        } else if (ui->cbReceiver->currentText() == "Hitec") {
             image.load(":/res/receiver_hitec_rp2040_zero.png");
         } else {
             image.load(":/res/receiver_serial_rp2040_zero.png");
         }
-        if(ui->cbReceiver->currentText() == "Spektrum XBUS" && ui->cbClockStretch->isChecked() == true) {
+        if (ui->cbReceiver->currentText() == "Spektrum XBUS" && ui->cbClockStretch->isChecked() == true) {
             image.load(":/res/clock_stretch_xbus_rp2040_zero.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
@@ -178,60 +161,58 @@ void MainWindow::generateCircuit(QLabel *label)
     label->setPixmap(*pix);
 }
 
-void MainWindow::openConfig()
-{
+void MainWindow::openConfig() {
     QString filename = QFileDialog::getOpenFileName(this, "Open Config", "", "Config Files (*.cfg)");
     QFile file(filename);
 
-    if(file.open(QIODevice::ReadOnly)) {
-        file.read((char*)&config, sizeof(config_t));
+    if (file.open(QIODevice::ReadOnly)) {
+        file.read((char *)&config, sizeof(config_t));
         file.close();
+        if (config.version > CONFIG_VERSION) {
+            QMessageBox::warning(this, tr("Information"), tr("Firmware config version is ") + QString::number(config.version) + ". mscr_gui config version is " + QString::number(CONFIG_VERSION) + ". Download latest msrc_gui. Please save the config in case the conversion fails.", QMessageBox::Close);
+            saveConfig();
+            closeSerialPort();
+            return;
+        }
+        if (config.version < CONFIG_VERSION) {
+            QMessageBox::warning(this, tr("Information"), tr("Firmware config version is ") + QString::number(config.version) + ". mscr_gui config version is " + QString::number(CONFIG_VERSION) + ". Converting config version to " + QString::number(CONFIG_VERSION) + "\nPlease press Update button to update MSRC config with new config version.\nAlso is needed to update MSRC firmware, if not already done.", QMessageBox::Close);
+            config.version = CONFIG_VERSION;
+        }
         setUiFromConfig();
     }
 }
 
-void MainWindow::saveConfig()
-{
-    QString filename = QFileDialog::getSaveFileName(this, "Save Config", "", "Config Files (*.cfg)");
-
-    /*QJsonObject json_obj;
-    json_obj["version"] = config.version;
-    json_obj["rx_protocol"] = config.rx_protocol;
-    QJsonDocument json_doc(json_obj);
-    QString json_string = json_doc.toJson();*/
-
-    QFile file(filename);
-    if(file.open(QIODevice::WriteOnly)) {
-        //file.write(json_string.toLocal8Bit());
-        //file.close();
-
-        getConfigFromUi();
-        file.write((char*)&config, sizeof(config_t));
-
-        //DataPacket pin{1000, 123, "dataString"};
-        //QDataStream out(&file);
-        //out << pin;
-
+void MainWindow::saveConfig() {
+    QFileDialog dialog(this, "Save Config", QString(), "Config Files (*.cfg)");
+    dialog.setDefaultSuffix(".cfg");
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    if (dialog.exec()) {
+        QString filename = dialog.selectedFiles().front();
+        QFile file(filename);
+        if (file.open(QIODevice::WriteOnly)) {
+            getConfigFromUi();
+            file.write((char *)&config, sizeof(config_t));
+        }
     }
 }
 
-void MainWindow::showAbout()
-{
-    QMessageBox::information(this, tr("About"), QString::asprintf("MSRC V%u.%u.%u\n\rDaniel Gorbea © 2020/2024", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH), QMessageBox::Close);
+void MainWindow::showAbout() {
+    QMessageBox::information(
+        this, tr("About"),
+        QString::asprintf("MSRC V%u.%u.%u\n\rDaniel Gorbea © 2020/2024", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH),
+        QMessageBox::Close);
 }
 
-void MainWindow::buttonSerialPort()
-{
-    if(isConnected)
+void MainWindow::buttonSerialPort() {
+    if (isConnected)
         closeSerialPort();
     else
         openSerialPort();
 }
 
-void MainWindow::buttonDebug()
-{
-    if(ui->btDebug->text() == "Enable Debug") {
-        if(!isConnected) return;
+void MainWindow::buttonDebug() {
+    if (ui->btDebug->text() == "Enable Debug") {
+        if (!isConnected) return;
         ui->btDebug->setText("Disable Debug");
         serial->readAll();
         char header = 0x30;
@@ -239,8 +220,8 @@ void MainWindow::buttonDebug()
         char command = 0x33;
         serial->write(&command, 1);
         isDebug = true;
-    } else if(ui->btDebug->text() == "Disable Debug") {
-        if(!isConnected) return;
+    } else if (ui->btDebug->text() == "Disable Debug") {
+        if (!isConnected) return;
         ui->btDebug->setText("Enable Debug");
         char header = 0x30;
         serial->write(&header, 1);
@@ -250,13 +231,9 @@ void MainWindow::buttonDebug()
     }
 }
 
-void MainWindow::buttonClearDebug()
-{
-    ui->ptDebug->clear();
-}
+void MainWindow::buttonClearDebug() { ui->ptDebug->clear(); }
 
-void MainWindow::openSerialPort()
-{
+void MainWindow::openSerialPort() {
     QString portName = ui->cbPortList->currentData().toString();
     serial->setPortName(portName);
     serial->setBaudRate(QSerialPort::BaudRate::Baud115200);
@@ -264,7 +241,7 @@ void MainWindow::openSerialPort()
     serial->setParity(QSerialPort::Parity::NoParity);
     serial->setStopBits(QSerialPort::StopBits::OneStop);
     serial->setFlowControl(QSerialPort::FlowControl::NoFlowControl);
-    if(serial->open(QIODevice::ReadWrite)) {
+    if (serial->open(QIODevice::ReadWrite)) {
         statusBar()->showMessage("Connected " + ui->cbPortList->currentText());
         isConnected = true;
         requestSerialConfig();
@@ -290,8 +267,7 @@ void MainWindow::openSerialPort()
     }
 }
 
-void MainWindow::closeSerialPort()
-{
+void MainWindow::closeSerialPort() {
     serial->close();
     statusBar()->showMessage("Not connected");
     isConnected = false;
@@ -305,8 +281,7 @@ void MainWindow::closeSerialPort()
     ui->btDebug->setText("Enable Debug");
 }
 
-void MainWindow::readSerial()
-{
+void MainWindow::readSerial() {
     /*
        header - 0x30
        command - 0x30 - msrc to read config from usb
@@ -317,11 +292,23 @@ void MainWindow::readSerial()
                  0x35 - save default config to rp2040 flash
     */
 
-    if(isDebug == false) {
-        if(serial->bytesAvailable() == sizeof(config_t) + 2) {
+    if (isDebug == false) {
+        if (serial->bytesAvailable() == sizeof(config_t) + 2) {
             data = serial->readAll();
-            if(data.at(0) == 0x30 && data.at(1) == 0x32) {
+            if (data.at(0) == 0x30 && data.at(1) == 0x32) {
                 memcpy(&config, data.data() + 2, sizeof(config_t));
+
+                if (config.version > CONFIG_VERSION) {
+                    QMessageBox::warning(this, tr("Information"), tr("Firmware config version is ") + QString::number(config.version) + ". mscr_gui config version is " + QString::number(CONFIG_VERSION) + ". Download latest msrc_gui. Please save the config in case the conversion fails.", QMessageBox::Close);
+                    saveConfig();
+                    closeSerialPort();
+                    return;
+                }
+                if (config.version < CONFIG_VERSION) {
+                    QMessageBox::warning(this, tr("Information"), tr("Firmware config version is ") + QString::number(config.version) + ". mscr_gui config version is " + QString::number(CONFIG_VERSION) + ". Converting config version to " + QString::number(CONFIG_VERSION) + "\nPlease press Update button to update MSRC config with new config version.\nAlso is needed to update MSRC firmware, if not already done.", QMessageBox::Close);
+                    config.version = CONFIG_VERSION;
+                }
+
                 setUiFromConfig();
             }
         }
@@ -331,9 +318,8 @@ void MainWindow::readSerial()
     }
 }
 
-void MainWindow::writeSerialConfig()
-{
-    if(!isConnected) return;
+void MainWindow::writeSerialConfig() {
+    if (!isConnected) return;
     getConfigFromUi();
     char header = 0x30;
     serial->write(&header, 1);
@@ -346,9 +332,8 @@ void MainWindow::writeSerialConfig()
     QMessageBox::warning(this, tr("Information"), tr("Reset RP2040 to apply settings."), QMessageBox::Close);
 }
 
-void MainWindow::defaultConfig()
-{
-    if(!isConnected) return;
+void MainWindow::defaultConfig() {
+    if (!isConnected) return;
     char header = 0x30;
     serial->write(&header, 1);
     char command = 0x35;
@@ -356,8 +341,7 @@ void MainWindow::defaultConfig()
     QMessageBox::warning(this, tr("Information"), tr("Reset RP2040 to apply settings."), QMessageBox::Close);
 }
 
-void MainWindow::setUiFromConfig()
-{
+void MainWindow::setUiFromConfig() {
     /* Receiver protocol */
 
     int index = ui->cbReceiver->findData(config.rx_protocol);
@@ -366,8 +350,10 @@ void MainWindow::setUiFromConfig()
     /* Serial Monitor */
 
     int item = ui->cbBaudrate->findText(QString::number(config.serial_monitor_baudrate));
-    if (item == -1) ui->cbBaudrate->setCurrentText(QString::number(config.serial_monitor_baudrate));
-    else ui->cbBaudrate->setCurrentIndex(item);
+    if (item == -1)
+        ui->cbBaudrate->setCurrentText(QString::number(config.serial_monitor_baudrate));
+    else
+        ui->cbBaudrate->setCurrentIndex(item);
     if (config.serial_monitor_parity > 2) config.serial_monitor_parity = 0;
     ui->cbParity->setCurrentIndex(config.serial_monitor_parity);
     if (config.serial_monitor_stop_bits > 2 || config.serial_monitor_stop_bits < 1) config.serial_monitor_stop_bits = 1;
@@ -380,7 +366,7 @@ void MainWindow::setUiFromConfig()
 
     // ESC
 
-    if(config.esc_protocol == esc_protocol_t::ESC_NONE)
+    if (config.esc_protocol == esc_protocol_t::ESC_NONE)
         ui->gbEsc->setChecked(false);
     else {
         ui->gbEsc->setChecked(true);
@@ -390,28 +376,28 @@ void MainWindow::setUiFromConfig()
     // GPS
 
     ui->gbGps->setChecked(config.enable_gps);
-    switch(config.gps_baudrate) {
-    case 115200:
-        ui->cbGpsBaudrate->setCurrentIndex(0);
-        break;
-    case 57600:
-        ui->cbGpsBaudrate->setCurrentIndex(1);
-        break;
-    case 38400:
-        ui->cbGpsBaudrate->setCurrentIndex(2);
-        break;
-    case 19200:
-        ui->cbGpsBaudrate->setCurrentIndex(3);
-        break;
-    case 14400:
-        ui->cbGpsBaudrate->setCurrentIndex(4);
-        break;
-    case 9600:
-        ui->cbGpsBaudrate->setCurrentIndex(5);
-        break;
-    case 4800:
-        ui->cbGpsBaudrate->setCurrentIndex(6);
-        break;
+    switch (config.gps_baudrate) {
+        case 115200:
+            ui->cbGpsBaudrate->setCurrentIndex(0);
+            break;
+        case 57600:
+            ui->cbGpsBaudrate->setCurrentIndex(1);
+            break;
+        case 38400:
+            ui->cbGpsBaudrate->setCurrentIndex(2);
+            break;
+        case 19200:
+            ui->cbGpsBaudrate->setCurrentIndex(3);
+            break;
+        case 14400:
+            ui->cbGpsBaudrate->setCurrentIndex(4);
+            break;
+        case 9600:
+            ui->cbGpsBaudrate->setCurrentIndex(5);
+            break;
+        case 4800:
+            ui->cbGpsBaudrate->setCurrentIndex(6);
+            break;
     }
 
     // Analog rate
@@ -443,7 +429,7 @@ void MainWindow::setUiFromConfig()
 
     // Altitude
 
-    if(config.i2c_module == i2c_module_t::I2C_NONE)
+    if (config.i2c_module == i2c_module_t::I2C_NONE)
         ui->gbAltitude->setChecked(false);
     else
         ui->gbAltitude->setChecked(true);
@@ -462,7 +448,7 @@ void MainWindow::setUiFromConfig()
     ui->sbConsumptionRate->setValue(config.refresh_rate_consumption);
     ui->sbVarioRate->setValue(config.refresh_rate_vario);
     ui->sbAirspeedRate->setValue(config.refresh_rate_airspeed);
-    //ui->sbDefRate->setValue(config.refresh_rate_def);
+    // ui->sbDefRate->setValue(config.refresh_rate_def);
 
     // Averaging
 
@@ -476,7 +462,7 @@ void MainWindow::setUiFromConfig()
     // Analog voltage multipliers
 
     ui->sbVoltage1Mult->setValue(config.analog_voltage_multiplier);
-    //config.analog_voltage2_multiplier = ui->sbVoltage2Mult->value();
+    // config.analog_voltage2_multiplier = ui->sbVoltage2Mult->value();
 
     // RPM Multipliers
 
@@ -490,7 +476,7 @@ void MainWindow::setUiFromConfig()
 
     // Smartport
 
-    //config.smartport_data_id;
+    // config.smartport_data_id;
     ui->sbSensorId->setValue(config.smartport_sensor_id);
 
     // XBUS Clock stretch
@@ -504,7 +490,7 @@ void MainWindow::setUiFromConfig()
 
     // Jeti Ex
 
-    if(config.jeti_gps_speed_units_kmh == true)
+    if (config.jeti_gps_speed_units_kmh == true)
         ui->cbSpeedUnitsGps->setCurrentIndex(0);
     else
         ui->cbSpeedUnitsGps->setCurrentIndex(1);
@@ -514,16 +500,14 @@ void MainWindow::setUiFromConfig()
     ui->cbInitDelay->setChecked(config.enable_esc_hw4_init_delay);
     ui->cbEscAutoOffset->setChecked(!config.esc_hw4_is_manual_offset);
     ui->sbEscOffset->setValue(config.esc_hw4_offset);
-    //config.esc_hw4_init_delay_duration = 10000;
+    // config.esc_hw4_init_delay_duration = 10000;
     ui->sbCurrentThresold->setValue(config.esc_hw4_current_thresold);
     ui->sbVoltageDivisor->setValue(config.esc_hw4_divisor);
     ui->sbCurrentMultiplier->setValue(config.esc_hw4_current_multiplier);
     ui->sbCurrentMax->setValue(config.esc_hw4_current_max);
 }
 
-void MainWindow::getConfigFromUi()
-{
-
+void MainWindow::getConfigFromUi() {
     /* Config version  */
 
     config.version = CONFIG_VERSION;
@@ -536,9 +520,12 @@ void MainWindow::getConfigFromUi()
 
     config.serial_monitor_baudrate = ui->cbBaudrate->currentText().toInt();
     config.serial_monitor_stop_bits = ui->cbStopbits->currentText().toInt();
-    if (ui->cbParity->currentText() == "None") config.serial_monitor_parity = 0;
-    else if (ui->cbParity->currentText() == "Odd") config.serial_monitor_parity = 1;
-    else config.serial_monitor_parity = 2;
+    if (ui->cbParity->currentText() == "None")
+        config.serial_monitor_parity = 0;
+    else if (ui->cbParity->currentText() == "Odd")
+        config.serial_monitor_parity = 1;
+    else
+        config.serial_monitor_parity = 2;
     config.serial_monitor_timeout_ms = ui->sbTimeout->value();
     config.serial_monitor_inverted = ui->cbInverted->isChecked();
 
@@ -546,7 +533,7 @@ void MainWindow::getConfigFromUi()
 
     // ESC
 
-    if(ui->gbEsc->isChecked())
+    if (ui->gbEsc->isChecked())
         config.esc_protocol = (esc_protocol_t)(ui->cbEsc->currentIndex() + 1);
     else
         config.esc_protocol = esc_protocol_t::ESC_NONE;
@@ -578,10 +565,10 @@ void MainWindow::getConfigFromUi()
     config.enable_analog_airspeed = ui->gbAirspeed->isChecked();
     config.airspeed_slope = ui->sbAirspeedSlope->value() * 100;
     config.airspeed_offset = ui->sbAirspeedOffset->value() * 100;
-    
+
     // Altitude
 
-    if(ui->gbAltitude->isChecked())
+    if (ui->gbAltitude->isChecked())
         config.i2c_module = (i2c_module_t)(ui->cbBarometerType->currentIndex() + 1);
     else
         config.i2c_module = i2c_module_t::I2C_NONE;
@@ -616,12 +603,12 @@ void MainWindow::getConfigFromUi()
     // Analog voltage multipliers
 
     config.analog_voltage_multiplier = ui->sbVoltage1Mult->value();
-    //config.analog_voltage2_multiplier = ui->sbVoltage2Mult->value()
+    // config.analog_voltage2_multiplier = ui->sbVoltage2Mult->value()
 
     // Analog current sensor
 
-    if(ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_HALL) {
-        if(ui->cbCurrentAutoOffset->isChecked()) {
+    if (ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_HALL) {
+        if (ui->cbCurrentAutoOffset->isChecked()) {
             config.analog_current_autoffset = true;
             config.analog_current_offset = 0;
         } else {
@@ -629,7 +616,7 @@ void MainWindow::getConfigFromUi()
             config.analog_current_offset = ui->sbQuiescentVoltage->value();
         }
         config.analog_current_multiplier = 1000 / ui->sbCurrentSens->value();
-    } else if(ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_SHUNT) {
+    } else if (ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_SHUNT) {
         config.analog_current_autoffset = false;
         config.analog_current_offset = 0;
         config.analog_current_multiplier = ui->sbAnalogCurrentMultiplier->value();
@@ -649,7 +636,7 @@ void MainWindow::getConfigFromUi()
 
     // Smartport
 
-    //config.smartport_data_id = 0x5000;
+    // config.smartport_data_id = 0x5000;
     config.smartport_sensor_id = ui->sbSensorId->value();
 
     // XBUS Clock stretch
@@ -659,7 +646,7 @@ void MainWindow::getConfigFromUi()
 
     // Jeti Ex
 
-    if(ui->cbSpeedUnitsGps->currentText() == "km/h")
+    if (ui->cbSpeedUnitsGps->currentText() == "km/h")
         config.jeti_gps_speed_units_kmh = true;
     else
         config.jeti_gps_speed_units_kmh = false;
@@ -673,7 +660,7 @@ void MainWindow::getConfigFromUi()
     config.enable_esc_hw4_init_delay = ui->cbInitDelay->isChecked();
     config.esc_hw4_is_manual_offset = !ui->cbEscAutoOffset->isChecked();
     config.esc_hw4_offset = ui->sbEscOffset->value();
-    //config.esc_hw4_init_delay_duration = 10000;
+    // config.esc_hw4_init_delay_duration = 10000;
     config.esc_hw4_current_thresold = ui->sbCurrentThresold->value();
     config.esc_hw4_divisor = ui->sbVoltageDivisor->value();
     config.esc_hw4_current_multiplier = ui->sbCurrentMultiplier->value();
@@ -681,11 +668,10 @@ void MainWindow::getConfigFromUi()
 
     // Debug
 
-    config.debug = 0; // disabled from msrc_gui
+    config.debug = 0;  // disabled from msrc_gui
 }
 
-void MainWindow::requestSerialConfig()
-{
+void MainWindow::requestSerialConfig() {
     // disable debug
     char header = 0x30;
     serial->write(&header, 1);
@@ -695,8 +681,7 @@ void MainWindow::requestSerialConfig()
     QTimer::singleShot(2000, this, SLOT(readSerialConfig()));
 }
 
-void MainWindow::readSerialConfig()
-{
+void MainWindow::readSerialConfig() {
     serial->readAll();
     // request config
     char header = 0x30;
@@ -705,55 +690,47 @@ void MainWindow::readSerialConfig()
     serial->write(&command, 1);
 }
 
-QStringList MainWindow::fillPortsInfo()
-{
+QStringList MainWindow::fillPortsInfo() {
     const QList<QSerialPortInfo> infos = QSerialPortInfo::availablePorts();
     QStringList list;
     ui->cbPortList->clear();
-    for(const QSerialPortInfo& info : infos) {
+    for (const QSerialPortInfo &info : infos) {
         list.append(info.portName() + " (" + info.manufacturer() + " " + info.description() + ")");
-        ui->cbPortList->addItem(info.portName() + " (" + info.manufacturer() + " " + info.description() + ")", info.portName());
+        ui->cbPortList->addItem(info.portName() + " (" + info.manufacturer() + " " + info.description() + ")",
+                                info.portName());
     }
     return list;
 }
 
-void MainWindow::checkPorts()
-{
+void MainWindow::checkPorts() {
     const QList<QSerialPortInfo> infos = QSerialPortInfo::availablePorts();
     QStringList list;
-    for(const QSerialPortInfo& info : infos) {
+    for (const QSerialPortInfo &info : infos) {
         list.append(info.portName() + " (" + info.manufacturer() + " " + info.description() + ")");
     }
 
     std::sort(portsList.begin(), portsList.end());
     std::sort(list.begin(), list.end());
 
-    if(portsList != list) {
+    if (portsList != list) {
         QString currentPort = ui->cbPortList->currentText();
-        if(isConnected && !list.contains(currentPort))
-            closeSerialPort();
+        if (isConnected && !list.contains(currentPort)) closeSerialPort();
         portsList = fillPortsInfo();
         ui->cbPortList->setCurrentIndex(ui->cbPortList->findText(currentPort));
-        if(ui->cbPortList->currentIndex() == -1 && ui->cbPortList->count())
-            ui->cbPortList->setCurrentIndex(0);
+        if (ui->cbPortList->currentIndex() == -1 && ui->cbPortList->count()) ui->cbPortList->setCurrentIndex(0);
     }
 }
 
-void MainWindow::exitApp()
-{
-    QApplication::quit();
-}
+void MainWindow::exitApp() { QApplication::quit(); }
 
 void MainWindow::enableWidgets(QWidget *widget, bool enable) {
     QList<QWidget *> widgets = widget->findChildren<QWidget *>();
     QWidget *child;
-    foreach (child, widgets)
-        child->setEnabled(enable);
+    foreach (child, widgets) child->setEnabled(enable);
 }
 
-void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
-{
-    if(arg1 == "Spektrum XBUS") {
+void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
+    if (arg1 == "Spektrum XBUS") {
         ui->cbClockStretch->setVisible(true);
         ui->cbAlternativePacket->setVisible(true);
 
@@ -762,13 +739,13 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
         ui->cbAlternativePacket->setVisible(false);
     }
 
-    if(arg1 == "Frsky Smartport" || arg1 == "Frsky D") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Frsky D") {
         ui->gbRate->setVisible(true);
     } else {
         ui->gbRate->setVisible(false);
     }
 
-    if(arg1 == "Frsky Smartport") {
+    if (arg1 == "Frsky Smartport") {
         ui->lbSensorId->setVisible(true);
         ui->sbSensorId->setVisible(true);
     } else {
@@ -776,20 +753,20 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
         ui->sbSensorId->setVisible(false);
     }
 
-    if(arg1 == "Flysky IBUS") {
+    if (arg1 == "Flysky IBUS") {
         ui->cbAlternativeCoordinates->setVisible(true);
     } else {
         ui->cbAlternativeCoordinates->setVisible(false);
     }
 
-    if(arg1 == "Jeti Ex Bus") {
+    if (arg1 == "Jeti Ex Bus") {
         ui->cbSpeedUnitsGps->setVisible(true);
         ui->lbSpeedUnitsGps->setVisible(true);
     } else {
         ui->cbSpeedUnitsGps->setVisible(false);
         ui->lbSpeedUnitsGps->setVisible(false);
     }
-    if(arg1 == "Serial Monitor") {
+    if (arg1 == "Serial Monitor") {
         ui->cbBaudrate->setVisible(true);
         ui->cbStopbits->setVisible(true);
         ui->cbParity->setVisible(true);
@@ -812,92 +789,89 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1)
     }
 }
 
-void MainWindow::on_cbEsc_currentIndexChanged(const QString &arg1)
-{
-    if(arg1 == "Hobbywing V4/Flyfun (not VBAR firmware)")
+void MainWindow::on_cbEsc_currentIndexChanged(const QString &arg1) {
+    if (arg1 == "Hobbywing V4/Flyfun (not VBAR firmware)")
         ui->gbEscParameters->setVisible(true);
     else
         ui->gbEscParameters->setVisible(false);
 }
 
-void MainWindow::on_cbEscModel_currentIndexChanged(const QString &arg1)
-{
-    if(arg1 == "Platinum PRO v4 25/40/60") {
+void MainWindow::on_cbEscModel_currentIndexChanged(const QString &arg1) {
+    if (arg1 == "Platinum PRO v4 25/40/60") {
         ui->sbVoltageDivisor->setValue(11);
         ui->sbCurrentMultiplier->setValue(0);
         ui->sbCurrentMax->setValue(0);
         ui->cbInitDelay->setChecked(false);
-    } else if(arg1 == "Platinum PRO v4 80A") {
+    } else if (arg1 == "Platinum PRO v4 80A") {
         ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(4000/8);
+        ui->sbCurrentMultiplier->setValue(4000 / 8);
         ui->sbCurrentMax->setValue(100);
         ui->cbInitDelay->setChecked(false);
-    } else if(arg1 == "Platinum PRO v4 100A") {
+    } else if (arg1 == "Platinum PRO v4 100A") {
         ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(4000/9);
+        ui->sbCurrentMultiplier->setValue(4000 / 9);
         ui->sbCurrentMax->setValue(120);
         ui->cbInitDelay->setChecked(false);
-    } else if(arg1 == "Platinum PRO v4 120A") {
+    } else if (arg1 == "Platinum PRO v4 120A") {
         ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(4000/10);
+        ui->sbCurrentMultiplier->setValue(4000 / 10);
         ui->sbCurrentMax->setValue(140);
         ui->cbInitDelay->setChecked(false);
-    } else if(arg1 == "Platinum PRO v4 150A") {
+    } else if (arg1 == "Platinum PRO v4 150A") {
         ui->sbVoltageDivisor->setValue(15.75);
-        ui->sbCurrentMultiplier->setValue(4000/10);
+        ui->sbCurrentMultiplier->setValue(4000 / 10);
         ui->sbCurrentMax->setValue(170);
         ui->cbInitDelay->setChecked(false);
-    } else if(arg1 == "Platinum PRO v4 130A-HV") {
+    } else if (arg1 == "Platinum PRO v4 130A-HV") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000/11.3);
+        ui->sbCurrentMultiplier->setValue(4000 / 11.3);
         ui->sbCurrentMax->setValue(150);
         ui->cbInitDelay->setChecked(false);
-    } else if(arg1 == "Platinum PRO v4 200A-HV") {
+    } else if (arg1 == "Platinum PRO v4 200A-HV") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000/16.9);
+        ui->sbCurrentMultiplier->setValue(4000 / 16.9);
         ui->sbCurrentMax->setValue(220);
         ui->cbInitDelay->setChecked(false);
-    } else if(arg1 == "FlyFun 30/40A") {
+    } else if (arg1 == "FlyFun 30/40A") {
         ui->sbVoltageDivisor->setValue(11);
         ui->sbCurrentMultiplier->setValue(0);
         ui->sbCurrentMax->setValue(0);
         ui->cbInitDelay->setChecked(true);
-    } else if(arg1 == "FlyFun 60A") {
+    } else if (arg1 == "FlyFun 60A") {
         ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(4000/6);
+        ui->sbCurrentMultiplier->setValue(4000 / 6);
         ui->sbCurrentMax->setValue(80);
         ui->cbInitDelay->setChecked(true);
-    } else if(arg1 == "FlyFun 80A") {
+    } else if (arg1 == "FlyFun 80A") {
         ui->sbVoltageDivisor->setValue(15.75);
-        ui->sbCurrentMultiplier->setValue(4000/12.4);
+        ui->sbCurrentMultiplier->setValue(4000 / 12.4);
         ui->sbCurrentMax->setValue(100);
         ui->cbInitDelay->setChecked(true);
-    } else if(arg1 == "FlyFun 120A") {
+    } else if (arg1 == "FlyFun 120A") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000/15);
+        ui->sbCurrentMultiplier->setValue(4000 / 15);
         ui->sbCurrentMax->setValue(140);
         ui->cbInitDelay->setChecked(true);
-    } else if(arg1 == "FlyFun 110A-HV") {
+    } else if (arg1 == "FlyFun 110A-HV") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000/15);
+        ui->sbCurrentMultiplier->setValue(4000 / 15);
         ui->sbCurrentMax->setValue(130);
         ui->cbInitDelay->setChecked(true);
-    } else if(arg1 == "FlyFun 130A-HV") {
+    } else if (arg1 == "FlyFun 130A-HV") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000/15);
+        ui->sbCurrentMultiplier->setValue(4000 / 15);
         ui->sbCurrentMax->setValue(150);
         ui->cbInitDelay->setChecked(true);
-    } else if(arg1 == "FlyFun 160A-HV") {
+    } else if (arg1 == "FlyFun 160A-HV") {
         ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000/15);
+        ui->sbCurrentMultiplier->setValue(4000 / 15);
         ui->sbCurrentMax->setValue(180);
         ui->cbInitDelay->setChecked(true);
     }
 }
 
-void MainWindow::on_cbBarometerType_currentIndexChanged(const QString &arg1)
-{
-    if(arg1 == "BMP280") {
+void MainWindow::on_cbBarometerType_currentIndexChanged(const QString &arg1) {
+    if (arg1 == "BMP280") {
         ui->cbAltitudeFilter->setVisible(true);
         ui->lbAltitudeFilter->setVisible(true);
     } else {
@@ -906,86 +880,73 @@ void MainWindow::on_cbBarometerType_currentIndexChanged(const QString &arg1)
     }
 }
 
-void MainWindow::on_gbEsc_toggled(bool enabled)
-{
+void MainWindow::on_gbEsc_toggled(bool enabled) {
     enableWidgets(ui->gbEsc, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_gbVoltage1_toggled(bool enabled)
-{
+void MainWindow::on_gbVoltage1_toggled(bool enabled) {
     enableWidgets(ui->gbVoltage1, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbTemperature1_toggled(bool checked)
-{
+void MainWindow::on_cbTemperature1_toggled(bool checked) {
     Q_UNUSED(checked);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_gbAltitude_toggled(bool enabled)
-{
+void MainWindow::on_gbAltitude_toggled(bool enabled) {
     enableWidgets(ui->gbAltitude, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_gbCurrent_toggled(bool enabled)
-{
+void MainWindow::on_gbCurrent_toggled(bool enabled) {
     enableWidgets(ui->gbCurrent, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbBarometerType_currentTextChanged(const QString &arg1)
-{
+void MainWindow::on_cbBarometerType_currentTextChanged(const QString &arg1) {
     Q_UNUSED(arg1);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbEsc_currentTextChanged(const QString &arg1)
-{
+void MainWindow::on_cbEsc_currentTextChanged(const QString &arg1) {
     generateCircuit(ui->lbCircuit);
-    if(arg1 == "Hobbywing V4")
+    if (arg1 == "Hobbywing V4")
         ui->cbPwmOut->setVisible(true);
     else
         ui->cbPwmOut->setVisible(false);
 }
 
-void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1)
-{
+void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     Q_UNUSED(arg1);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_btCircuit_clicked()
-{
+void MainWindow::on_btCircuit_clicked() {
     CircuitDialog circuitDialog;
     circuitDialog.setModal(true);
     circuitDialog.mainWindow = this;
     circuitDialog.exec();
 }
 
-void MainWindow::resizeEvent(QResizeEvent *event)
-{
+void MainWindow::resizeEvent(QResizeEvent *event) {
     Q_UNUSED(event);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_gbGps_toggled(bool enabled)
-{
+void MainWindow::on_gbGps_toggled(bool enabled) {
     enableWidgets(ui->gbGps, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_gbAirspeed_toggled(bool enabled)
-{
+void MainWindow::on_gbAirspeed_toggled(bool enabled) {
     enableWidgets(ui->gbAirspeed, enabled);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbCurrentAutoOffset_toggled(bool checked)
-{
-    if(checked) {
+void MainWindow::on_cbCurrentAutoOffset_toggled(bool checked) {
+    if (checked) {
         ui->lbQuiescentVoltage->setVisible(false);
         ui->sbQuiescentVoltage->setVisible(false);
     } else {
@@ -994,16 +955,14 @@ void MainWindow::on_cbCurrentAutoOffset_toggled(bool checked)
     }
 }
 
-void MainWindow::on_cbCurrentSensorType_currentTextChanged(
-        const QString &arg1)
-{
-    if(arg1 == "Hall effect") {
+void MainWindow::on_cbCurrentSensorType_currentTextChanged(const QString &arg1) {
+    if (arg1 == "Hall effect") {
         ui->cbCurrentAutoOffset->setVisible(true);
         ui->lbCurrentSens->setVisible(true);
         ui->sbCurrentSens->setVisible(true);
         ui->lbAnalogCurrentMultiplier->setVisible(false);
         ui->sbAnalogCurrentMultiplier->setVisible(false);
-        if(ui->cbCurrentAutoOffset->isChecked()) {
+        if (ui->cbCurrentAutoOffset->isChecked()) {
             ui->lbQuiescentVoltage->setVisible(false);
             ui->sbQuiescentVoltage->setVisible(false);
         } else {
@@ -1011,7 +970,7 @@ void MainWindow::on_cbCurrentSensorType_currentTextChanged(
             ui->sbQuiescentVoltage->setVisible(true);
         }
     }
-    if(arg1 == "Shunt resistor") {
+    if (arg1 == "Shunt resistor") {
         ui->cbCurrentAutoOffset->setVisible(false);
         ui->lbCurrentSens->setVisible(false);
         ui->sbCurrentSens->setVisible(false);
@@ -1022,15 +981,13 @@ void MainWindow::on_cbCurrentSensorType_currentTextChanged(
     }
 }
 
-void MainWindow::on_cbClockStretch_toggled(bool checked)
-{
+void MainWindow::on_cbClockStretch_toggled(bool checked) {
     Q_UNUSED(checked);
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbEscAutoOffset_stateChanged(int arg1)
-{
-    if(arg1)
+void MainWindow::on_cbEscAutoOffset_stateChanged(int arg1) {
+    if (arg1)
         ui->sbEscOffset->setVisible(false);
     else
         ui->sbEscOffset->setVisible(true);

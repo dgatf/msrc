@@ -754,6 +754,7 @@ v1.1
 - Added support for CRSF protocol  
 - Added support for Sanwa protocol   
 - Improved airspeed calculation and linked to barometer if installed to get more accurate aurspeed value   
+- msrc_gui. Manage different config versions  
 
 [v1.0](https://github.com/dgatf/msrc/tree/v1.0)
 
