@@ -21,4 +21,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     ntc.c
     current.c
     serial_monitor.c
+    fuel_meter.c
 )

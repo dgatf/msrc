@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#define CONFIG_VERSION 1
+#define CONFIG_VERSION 2
 
 #include <QMainWindow>
 #include <QDebug>
@@ -133,6 +133,28 @@ typedef struct config_t {
     bool serial_monitor_inverted;
     int8_t airspeed_offset;
     int16_t airspeed_slope;
+    float fuel_flow_ml_per_pulse;
+    bool fuel_flow_sensor;
+    uint16_t spare2_1;
+    uint8_t spare2_2;
+    float tank_capacity;
+    uint32_t spare4;
+    uint32_t spare5;
+    uint32_t spare6;
+    uint32_t spare7;
+    uint32_t spare8;
+    uint32_t spare9;
+    uint32_t spare10;
+    uint32_t spare11;
+    uint32_t spare12;
+    uint32_t spare13;
+    uint32_t spare14;
+    uint32_t spare15;
+    uint32_t spare16;
+    uint32_t spare17;
+    uint32_t spare18;
+    uint32_t spare19;
+    uint32_t spare20;
 } config_t;
 
 class MainWindow : public QMainWindow

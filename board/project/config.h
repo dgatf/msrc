@@ -4,7 +4,7 @@
 #include "common.h"
 
 #define CONFIG_FORZE_WRITE false
-#define CONFIG_VERSION 1
+#define CONFIG_VERSION 2
 
 config_t *config_read();
 void config_write(config_t *config);

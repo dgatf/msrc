@@ -21,6 +21,7 @@
 #define I2C0_SDA_GPIO 8       // i2c module (vario)
 #define I2C0_SCL_GPIO 9       // i2c module (vario)
 #define PWM_OUT_GPIO 10       // pwm out
+#define FUELMETER_CAPTURE_GPIO 11   // fuel meter (pwm in)
 #define ADC0_GPIO 26          // Voltage
 #define ADC1_GPIO 27          // Current
 #define ADC2_GPIO 28          // NTC
