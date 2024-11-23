@@ -88,7 +88,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-1437</y>
+             <y>-1581</y>
              <width>603</width>
              <height>2245</height>
             </rect>
@@ -1211,7 +1211,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QDoubleSpinBox" name="sbPulsesLitre">
+                     <widget class="QDoubleSpinBox" name="sbMlPulse">
                       <property name="decimals">
                        <number>3</number>
                       </property>

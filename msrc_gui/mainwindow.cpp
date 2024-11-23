@@ -305,7 +305,7 @@ void MainWindow::readSerial() {
                     return;
                 }
                 if (config.version < CONFIG_VERSION) {
-                    QMessageBox::warning(this, tr("Information"), tr("Firmware config version is ") + QString::number(config.version) + ". mscr_gui config version is " + QString::number(CONFIG_VERSION) + ". Converting config version to " + QString::number(CONFIG_VERSION) + "\nPlease press Update button to update MSRC config with new config version.\nAlso is needed to update MSRC firmware, if not already done.", QMessageBox::Close);
+                    QMessageBox::warning(this, tr("Information"), tr("Firmware config version is ") + QString::number(config.version) + ". mscr_gui config version is " + QString::number(CONFIG_VERSION) + ". Converting config version to " + QString::number(CONFIG_VERSION) + "\nIt is needed to update MSRC firmware first or you will lose your config to the default values. Press Update button to update MSRC config with new config version only if MSRC firmware is updated to latest version first.", QMessageBox::Close);
                     config.version = CONFIG_VERSION;
                 }
 
@@ -505,6 +505,11 @@ void MainWindow::setUiFromConfig() {
     ui->sbVoltageDivisor->setValue(config.esc_hw4_divisor);
     ui->sbCurrentMultiplier->setValue(config.esc_hw4_current_multiplier);
     ui->sbCurrentMax->setValue(config.esc_hw4_current_max);
+
+    // Fuel flow
+
+    ui->gbFuelmeter->setChecked(config.enable_fuel_flow);
+    ui->sbMlPulse->setValue(config.fuel_flow_ml_per_pulse);
 }
 
 void MainWindow::getConfigFromUi() {
@@ -665,6 +670,11 @@ void MainWindow::getConfigFromUi() {
     config.esc_hw4_divisor = ui->sbVoltageDivisor->value();
     config.esc_hw4_current_multiplier = ui->sbCurrentMultiplier->value();
     config.esc_hw4_current_max = ui->sbCurrentMax->value();
+
+    // Fuel flow
+
+    config.enable_fuel_flow = ui->gbFuelmeter->isChecked();
+    config.fuel_flow_ml_per_pulse = ui->sbMlPulse->value();
 
     // Debug
 
@@ -942,6 +952,11 @@ void MainWindow::on_gbGps_toggled(bool enabled) {
 
 void MainWindow::on_gbAirspeed_toggled(bool enabled) {
     enableWidgets(ui->gbAirspeed, enabled);
+    generateCircuit(ui->lbCircuit);
+}
+
+void MainWindow::on_gbFuelmeter_toggled(bool enabled) {
+    enableWidgets(ui->gbFuelmeter, enabled);
     generateCircuit(ui->lbCircuit);
 }
 

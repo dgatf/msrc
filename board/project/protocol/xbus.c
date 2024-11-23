@@ -16,6 +16,7 @@
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
+#include "fuel_meter.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
@@ -195,6 +196,15 @@ void xbus_format_sensor(uint8_t address) {
                     swap_16((int16_t)(*sensor->rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP]));
             break;
         }
+        case XBUS_FUEL_FLOW_ID: {
+            if (sensor->fuel_flow[XBUS_FUEL_FLOW_CONSUMED])
+                sensor_formatted->fuel_flow->fuel_consumed_A =
+                    swap_16((uint16_t)(*sensor->fuel_flow[XBUS_FUEL_FLOW_CONSUMED] * 10));
+            if (sensor->fuel_flow[XBUS_FUEL_FLOW_RATE])
+                sensor_formatted->fuel_flow->flow_rate_A =
+                    swap_16((uint16_t)(*sensor->fuel_flow[XBUS_FUEL_FLOW_RATE] * 10));
+            break;
+        }
     }
 }
 
@@ -262,6 +272,13 @@ static void i2c_request_handler(uint8_t address) {
             i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->rpm_volt_temp);
             vTaskResume(context.led_task_handle);
             debug_buffer((uint8_t *)sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t), "0x%X ");
+            break;
+        case XBUS_FUEL_FLOW_ID:
+            if (!sensor->is_enabled[XBUS_FUEL_FLOW]) break;
+            xbus_format_sensor(address);
+            i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->fuel_flow);
+            vTaskResume(context.led_task_handle);
+            debug_buffer((uint8_t *)sensor_formatted->fuel_flow, sizeof(xbus_fuel_flow_t), "0x%X ");
             break;
     }
 }
@@ -578,12 +595,12 @@ static void set_config() {
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        
+
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
             baro_pressure = parameter.pressure;
         }
-        
+
         add_alarm_in_ms(250, interval_250_callback, NULL, false);
         add_alarm_in_ms(500, interval_500_callback, NULL, false);
         add_alarm_in_ms(1000, interval_1000_callback, NULL, false);
@@ -604,12 +621,12 @@ static void set_config() {
                                          malloc(sizeof(float))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        
+
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
             baro_pressure = parameter.pressure;
         }
-        
+
         add_alarm_in_ms(250, interval_250_callback, NULL, false);
         add_alarm_in_ms(500, interval_500_callback, NULL, false);
         add_alarm_in_ms(1000, interval_1000_callback, NULL, false);
@@ -636,12 +653,12 @@ static void set_config() {
         add_alarm_in_ms(1500, interval_1500_callback, NULL, false);
         add_alarm_in_ms(2000, interval_2000_callback, NULL, false);
         add_alarm_in_ms(3000, interval_3000_callback, NULL, false);
-        
+
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
             baro_pressure = parameter.pressure;
         }
-        
+
         sensor->vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
         sensor->is_enabled[XBUS_VARIO] = true;
         sensor_formatted->vario = calloc(1, 16);
@@ -667,6 +684,21 @@ static void set_config() {
         sensor_formatted->airspeed = calloc(1, 16);
         *sensor_formatted->airspeed = (xbus_airspeed_t){XBUS_AIRSPEED_ID, 0, 0, 0};
         i2c_multi_enable_address(XBUS_AIRSPEED_ID);
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_fuel_flow) {
+        fuel_meter_parameters_t parameter = {config->fuel_flow_ml_per_pulse, malloc(sizeof(float)),
+                                             malloc(sizeof(float))};
+        xTaskCreate(fuel_meter_task, "fuel_meter_task", STACK_FUEL_METER, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->fuel_flow[XBUS_FUEL_FLOW_RATE] = parameter.consumption_instant;
+        sensor->fuel_flow[XBUS_FUEL_FLOW_CONSUMED] = parameter.consumption_total;
+        sensor->is_enabled[XBUS_FUEL_FLOW] = true;
+        sensor_formatted->fuel_flow = calloc(1, 16);
+        *sensor_formatted->fuel_flow = (xbus_fuel_flow_t){XBUS_FUEL_FLOW_ID, 0, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_FUEL_FLOW_ID);
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

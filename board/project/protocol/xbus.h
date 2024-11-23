@@ -12,6 +12,7 @@
 #define XBUS_BATTERY_ID 0x34
 #define XBUS_VARIO_ID 0X40
 #define XBUS_RPMVOLTTEMP_ID 0x7E
+#define XBUS_FUEL_FLOW_ID 0x22
 
 #define XBUS_GPS_INFO_FLAGS_IS_NORTH_BIT 0
 #define XBUS_GPS_INFO_FLAGS_IS_EAST_BIT 1
@@ -27,7 +28,8 @@ typedef enum xbus_sensors_t {
     XBUS_BATTERY,
     XBUS_VARIO,
     XBUS_RPMVOLTTEMP,
-    XBUS_ENERGY
+    XBUS_ENERGY,
+    XBUS_FUEL_FLOW
 } xbus_sensors_t;
 
 typedef enum xbus_airspeed_enum_t { XBUS_AIRSPEED_AIRSPEED } xbus_airspeed_enum_t;
@@ -84,6 +86,11 @@ typedef enum xbus_rpm_volt_temp_enum_t {
     XBUS_RPMVOLTTEMP_VOLT,
     XBUS_RPMVOLTTEMP_TEMP
 } xbus_rpm_volt_temp_enum_t;
+
+typedef enum xbus_fuel_flow_enum_t {
+    XBUS_FUEL_FLOW_CONSUMED,
+    XBUS_FUEL_FLOW_RATE
+} xbus_fuel_flow_enum_t;
 
 typedef struct xbus_airspeed_t {
     uint8_t identifier;     // Source device 0x11
@@ -175,6 +182,18 @@ typedef struct xbus_rpm_volt_temp_t {
     int16_t temperature;    // degrees F
 } xbus_rpm_volt_temp_t;
 
+typedef struct xbus_fuel_flow_t {
+    uint8_t id;                // Source device = 0x22
+    uint8_t s_id;              // Secondary ID
+    uint16_t fuel_consumed_A;  // Integrated fuel consumption, 0.1mL
+    uint16_t flow_rate_A;      // Instantaneous consumption, 0.01mL/min
+    uint16_t temp_A;           // Temperature, 0.1C (0-655.34C)
+    uint16_t fuel_consumed_B;  // Integrated fuel consumption, 0.1mL
+    uint16_t flow_rate_B;      // Instantaneous consumption, 0.01mL/min
+    uint16_t temp_B;           // Temperature, 0.1C (0-655.34C)
+    uint16_t spare;            // Not used
+} xbus_fuel_flow_t;
+
 typedef struct xbus_sensor_formatted_t {
     xbus_airspeed_t *airspeed;
     xbus_altitude_t *altitude;
@@ -185,6 +204,7 @@ typedef struct xbus_sensor_formatted_t {
     xbus_vario_t *vario;
     xbus_rpm_volt_temp_t *rpm_volt_temp;
     xbus_energy_t *energy;
+    xbus_fuel_flow_t *fuel_flow;
 } xbus_sensor_formatted_t;
 
 typedef struct xbus_sensor_t {
@@ -198,6 +218,7 @@ typedef struct xbus_sensor_t {
     float *vario[1];
     float *rpm_volt_temp[3];
     float *energy[6];
+    float *fuel_flow[2];
 } xbus_sensor_t;
 
 extern context_t context;

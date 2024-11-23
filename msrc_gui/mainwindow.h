@@ -134,10 +134,10 @@ typedef struct config_t {
     int8_t airspeed_offset;
     int16_t airspeed_slope;
     float fuel_flow_ml_per_pulse;
-    bool fuel_flow_sensor;
+    bool enable_fuel_flow;
     uint16_t spare2_1;
     uint8_t spare2_2;
-    float tank_capacity;
+    uint32_t spare3;
     uint32_t spare4;
     uint32_t spare5;
     uint32_t spare6;
@@ -217,6 +217,8 @@ private slots:
     void on_cbClockStretch_toggled(bool checked);
     void on_cbEscAutoOffset_stateChanged(int arg1);
     void on_gbAirspeed_toggled(bool arg1);
+    void on_gbFuelmeter_toggled(bool arg1);
+
 
 };
 #endif // MAINWINDOW_H

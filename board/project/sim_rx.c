@@ -225,12 +225,12 @@ static void process(rx_protocol_t rx_protocol) {
     }
 
     else if (rx_protocol == RX_XBUS) {
-        uint8_t sensor_id[] = {XBUS_AIRSPEED_ID, XBUS_ALTIMETER_ID, XBUS_GPS_LOC_ID, XBUS_GPS_STAT_ID,
-                               XBUS_ESC_ID,      XBUS_BATTERY_ID,   XBUS_VARIO_ID,   XBUS_RPMVOLTTEMP_ID};
+        uint8_t sensor_id[] = {XBUS_AIRSPEED_ID, XBUS_ALTIMETER_ID, XBUS_GPS_LOC_ID,     XBUS_GPS_STAT_ID, XBUS_ESC_ID,
+                               XBUS_BATTERY_ID,  XBUS_VARIO_ID,     XBUS_RPMVOLTTEMP_ID, XBUS_FUEL_FLOW_ID};
         static uint8_t sensor_index = 0;
         xbus_i2c_handler(sensor_id[sensor_index]);
         sensor_index++;
-        if (sensor_index > XBUS_RPMVOLTTEMP) sensor_index = 0;
+        if (sensor_index > sizeof(sensor_id)) sensor_index = 0;
     }
 
     else if (rx_protocol == RX_SRXL) {
@@ -297,12 +297,11 @@ static void process(rx_protocol_t rx_protocol) {
 
     else if (rx_protocol == RX_SANWA) {
         static uint8_t type = 0;
-        static const uint8_t data[5][10] = {
-            {0x1, 0x4, 0x82, 0x2, 0xFF, 0x0, 0x3, 0x3, 0xFF, 0x8D},
-            {0x1, 0x1, 0x30, 0x4, 0xA7, 0x3, 0xFF, 0x3, 0xFF, 0xE1},
-            {0x1, 0x1, 0x31, 0x4, 0xA7, 0x0, 0x3, 0x3, 0xFF, 0xE3},
-            {0x1, 0x1, 0x30, 0x4, 0xA7, 0x3, 0xFF, 0x3, 0xFF, 0xE1},
-            {0x1, 0x1, 0x31, 0x4, 0xA8, 0x0, 0x3, 0x3, 0xFF, 0xE4}};
+        static const uint8_t data[5][10] = {{0x1, 0x4, 0x82, 0x2, 0xFF, 0x0, 0x3, 0x3, 0xFF, 0x8D},
+                                            {0x1, 0x1, 0x30, 0x4, 0xA7, 0x3, 0xFF, 0x3, 0xFF, 0xE1},
+                                            {0x1, 0x1, 0x31, 0x4, 0xA7, 0x0, 0x3, 0x3, 0xFF, 0xE3},
+                                            {0x1, 0x1, 0x30, 0x4, 0xA7, 0x3, 0xFF, 0x3, 0xFF, 0xE1},
+                                            {0x1, 0x1, 0x31, 0x4, 0xA8, 0x0, 0x3, 0x3, 0xFF, 0xE4}};
         for (uint8_t i = 0; i < sizeof(data[type % 5]); i++) xQueueSendToBack(uart_queue_handle, &data[type % 5][i], 0);
         type++;
     }

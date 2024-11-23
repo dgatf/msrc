@@ -28,8 +28,8 @@ void fuel_meter_task(void *parameters) {
 
     while (1) {
         read(&parameter);
-        debug("\nFuel sensor (%u) < ml/min %u ml %u", uxTaskGetStackHighWaterMark(NULL), *parameter.consumption_instant,
-              *parameter.consumption_total);
+        debug("\nFuel sensor (%u) < ml/min %.3f ml %.3f ml/pulse %.3f pulses %u", uxTaskGetStackHighWaterMark(NULL), *parameter.consumption_instant,
+              *parameter.consumption_total, parameter.ml_per_pulse, pwm_cycles_total);
         vTaskDelay(INSTANT_INTERVAL_MS / portTICK_PERIOD_MS);
     }
 }

@@ -30,6 +30,7 @@ Implemented sensors:
 - GPS serial (NMEA)
 - I2C sensors: BMP180, BMP280, MS5611
 - Analog sensors: voltage, temperature, current, air speed
+- Fuel meter (PWM pulses)
 
 All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with msrc_gui.
 
@@ -76,6 +77,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;&emsp;[7.3.2. Temperature sensors (NTC thermistors)](#732-temperature-sensors-ntc-thermistors)  
 &emsp;&emsp;[7.3.4. Airspeed sensor (MPXV7002)](#734-airspeed-sensor)  
 &emsp;[7.4. Vario sensors (I2C sensors)](#74-i2c-sensors)  
+&emsp;[7.5. Fuel Flow sensor](#75-fuel-flow-sensor)  
 [8. OpenTx sensors (Smartport)](#8-opentx-sensors-smartport)  
 [9. Annex](#9-annex)  
 &emsp;[9.1. ESC protocol specifications Hobbywing](#91-esc-protocol-specifications-hobbywing)  
@@ -123,6 +125,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | Sensor SDA                                | 8<sup>(2)</sup>  |
 | Sensor SCL                                | 9<sup>(2)</sup>  |
 | PWM out                                   | 10               |
+| Fuel meter PWM in                         | 11               |
 | Voltage                                   | 26               |
 | Current                                   | 27               |
 | NTC                                       | 28               |
@@ -504,13 +507,13 @@ Transformation formula with MSRC parameters:
 
 Air density calculation:
 
-<img src="https://latex.codecogs.com/svg.latex?ρ = \frac{P}{R \cdot T}" title="ρ = P / (R * T(Kelvin))" />
+<img src="https://latex.codecogs.com/svg.latex?\rho = \frac{P}{R \cdot T}" title="ρ = P / (R * T(Kelvin))" />
 
 R -> dry air constant  
 
 Airspeed calculation:
 
-<img src="https://latex.codecogs.com/svg.latex?TAS = \sqrt{\frac{2 \Delta P}{\ρ}}" title="TAS(m/s) = sqrt(2 * ΔP / air_density)" />
+<img src="https://latex.codecogs.com/svg.latex?TAS = \sqrt{\frac{2 \Delta P}{\rho}}" title="TAS(m/s) = sqrt(2 * ΔP / air_density)" />
 
 TAS -> airspeed (m/s)  
 
@@ -519,6 +522,27 @@ TAS -> airspeed (m/s)
 The following I2C sensors are suported:
 
 - Barometer: BMP180, BMP280, MS5611
+
+### 7.5. Fuel flow sensor
+
+Note: only XBUS for now
+
+Fuel flow sensor with PWM pulses are supported. It is neded to set the parameter ml/pulse.
+
+If this parameter is unknown, to calibrate:
+
+- Measure the weight of the tank or the model
+- Enable Fuel Flow sensor in msrc_gui
+- Then either:
+  - Set the parameter ml/pulse to 1 and then the number of pulses will be the consumption in your transmitter 
+  - Enable log in msrc_gui and note the number of pulses
+- After a while, stop the engine. Note the last number for pulses
+- Weight the tank or model again and use the folloing formula to obtain the parameter:
+
+<img src="https://latex.codecogs.com/svg.latex?ml/pulse= \frac{\Delta Weight \cdot \rho}{pulses}" title="ml/pulse=ΔWeight x ρ /pulses" />
+
+ρ -> fuel density (g/m<sup>3</sup>)  
+ΔWeight -> g
 
 ## 8. OpenTx sensors (Smartport)
 
