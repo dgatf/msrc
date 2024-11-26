@@ -43,6 +43,7 @@ void airspeed_task(void *parameters) {
             airspeed = /*-1 **/ sqrt(-2 * delta_pressure / air_density);
         else
             airspeed = sqrt(2 * delta_pressure / air_density);
+        airspeed *= 3.6; // m/s to km/h
         *parameter.airspeed = get_average(parameter.alpha, *parameter.airspeed, airspeed);
 
         debug("\nAirspeed (%u): %.2f (P(%u)%.2f T(%u)%.2f V %.2f AD %.2f dP %.2f)", uxTaskGetStackHighWaterMark(NULL),

@@ -78,7 +78,7 @@ void xbus_format_sensor(uint8_t address) {
     static float alt = 0;
     switch (address) {
         case XBUS_AIRSPEED_ID: {
-            sensor_formatted->airspeed->airspeed = swap_16((uint16_t)(*sensor->airspeed[XBUS_AIRSPEED_AIRSPEED] * 3.6)); // m/s to km/h
+            sensor_formatted->airspeed->airspeed = swap_16((uint16_t)(*sensor->airspeed[XBUS_AIRSPEED_AIRSPEED]));
             if (swap_16((uint16_t)(sensor_formatted->airspeed->airspeed)) >
                 swap_16((uint16_t)(sensor_formatted->airspeed->max_airspeed)))
                 sensor_formatted->airspeed->max_airspeed = sensor_formatted->airspeed->airspeed;
