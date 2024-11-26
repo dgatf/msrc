@@ -525,7 +525,7 @@ The following I2C sensors are suported:
 
 ### 7.5. Fuel flow sensor
 
-Note: only XBUS for now
+This sensor is available for: XBUS, Smartport and JetiEx.  
 
 Fuel flow sensor with PWM pulses are supported. It is neded to set the parameter ml/pulse.
 
