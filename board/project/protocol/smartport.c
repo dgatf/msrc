@@ -17,6 +17,7 @@
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
+#include "fuel_meter.h"
 #include "ms5611.h"
 #include "nmea.h"
 #include "ntc.h"
@@ -100,11 +101,11 @@
 #define GASSUIT_RES_VOL_LAST_ID 0x0d3f
 #define GASSUIT_RES_PERC_FIRST_ID 0x0d40  // 1 %
 #define GASSUIT_RES_PERC_LAST_ID 0x0d4f
-#define GASSUIT_FLOW_FIRST_ID 0x0d50  // 1 ml
+#define GASSUIT_FLOW_FIRST_ID 0x0d50  // 1 ml/min
 #define GASSUIT_FLOW_LAST_ID 0x0d5f
-#define GASSUIT_MAX_FLOW_FIRST_ID 0x0d60  // 1 ml
+#define GASSUIT_MAX_FLOW_FIRST_ID 0x0d60  // 1 ml/min
 #define GASSUIT_MAX_FLOW_LAST_ID 0x0d6f
-#define GASSUIT_AVG_FLOW_FIRST_ID 0x0d70  // 1 ml
+#define GASSUIT_AVG_FLOW_FIRST_ID 0x0d70  // 1 ml/min
 #define GASSUIT_AVG_FLOW_LAST_ID 0x0d7f
 #define SBEC_POWER_FIRST_ID 0x0e50  // bytes 1,2: 100 V,  bytes 3,4: 100 A
 #define SBEC_POWER_LAST_ID 0x0e5f
@@ -1138,6 +1139,26 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor.data_id = AIR_SPEED_FIRST_ID;
         parameter_sensor.value = parameter.airspeed;
         parameter_sensor.rate = config->refresh_rate_airspeed;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_fuel_flow) {
+        fuel_meter_parameters_t parameter = {config->fuel_flow_ml_per_pulse, malloc(sizeof(float)),
+                                             malloc(sizeof(float))};
+        xTaskCreate(fuel_meter_task, "fuel_meter_task", STACK_FUEL_METER, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        smartport_sensor_parameters_t parameter_sensor;
+        parameter_sensor.data_id = GASSUIT_FLOW_FIRST_ID;
+        parameter_sensor.value = parameter.consumption_instant;
+        parameter_sensor.rate = config->refresh_rate_default;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = GASSUIT_RES_VOL_FIRST_ID;
+        parameter_sensor.value = parameter.consumption_total;
+        parameter_sensor.rate = config->refresh_rate_default;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
