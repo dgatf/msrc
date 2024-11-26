@@ -104,6 +104,10 @@
 #define ESC_HW4_CURRENT_MULTIPLIER 10
 #define ESC_HW4_CURRENT_MAX 250
 
+/* Fuel flow sensor */
+#define ENABLE_FUEL_FLOW false
+#define FUEL_FLOW_ML_PER_MINUTE 0.01
+
 config_t *config_read() {
     uint16_t *version = (uint16_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET);
     if (*version != CONFIG_VERSION) {
@@ -190,5 +194,7 @@ void config_forze_write() {
     config.serial_monitor_inverted = SERIAL_MONITOR_INVERTED;
     config.airspeed_offset = AIRSPEED_OFFSET * 100;
     config.airspeed_slope = AIRSPEED_SLOPE * 100;
+    config.fuel_flow_ml_per_pulse = FUEL_FLOW_ML_PER_MINUTE;
+    config.enable_fuel_flow = ENABLE_FUEL_FLOW;
     config_write(&config);
 }
