@@ -250,6 +250,8 @@ For older telemetry receivers with only XBUS port like TM1000 and TM1100, pull u
 
 #### Boot time and clock stretch
 
+With old receivers this does not affect, but newer receivers boot faster and could be an issue.  
+
 If no telemetry is shown, may be MSRC is booting too slow and the first poll from the receiver is not answered. There are several ways to fix this:
 
 1. Power on the receiver after MSRC has started
