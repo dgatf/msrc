@@ -240,10 +240,23 @@ Connect MSRC the telemetry port.
 
 Auto-config may be used to detect the new sensors.
 
-For older telemetry receivers with only XBUS port like TM1000 and TM1100, pull up resistors are needed. For newer receivers with both XBUS and SRXL2 ports, pull up resistors are not needed. In either case it has to be the correct option, otherwise XBUS won't work. So, if no telemetry shown in transmitter try the other option (with or without pull ups). One of the two posibilities will work. (Thanks RCG_KevinB & Kallend from RCGroups for solving this issue). 
 
 <p align="center"><img src="./images/xbus_connector.png" width="300"><br>
   <i>XBUS port</i><br><br></p>
+
+#### Pullups
+
+For older telemetry receivers with only XBUS port like TM1000 and TM1100, pull up resistors are needed. For newer receivers with both XBUS and SRXL2 ports, pull up resistors are not needed. In either case it has to be the correct option, otherwise XBUS won't work. So, if no telemetry shown in transmitter try the other option (with or without pull ups). One of the two posibilities will work. (Thanks RCG_KevinB from RCGroups for solving this issue). 
+
+#### Boot time and clock stretch
+
+If no telemetry is shown, may be MSRC is booting too slow and the first poll from the receiver is not answered. There are several ways to fix this:
+
+1. Power on the receiver after MSRC has started
+3. I2C clock stretch. Pull down the SCL line until MSRC has started, then open the switch. You can use a manual switch or a NPN transistor (e.g. PN2222ABU). If using a transistor you need to enable _XBUS Clock Stretch_ to open the transistor switch after boot. If using manual switch, open the switch after boot, to finish the clock stretch
+
+<p align="center"><img src="./images/xbus_switch.png" width="300"><br>
+  <i>Clock stretch XBUS with manual switch</i><br><br></p>
 
 ### 6.4 Spektrum SRXL
 
@@ -638,7 +651,7 @@ Serial parameters:
 - Big endian
 
 
-#### 10.1.1. Hobbywing V3
+#### 9.1.1. Hobbywing V3
 
 | Byte  | 1                   | 2                | 3                | 4                | 5             | 6              | 7            | 8            | 9           | 10          |
 | ----- | :-----------------: | :--------------: | :--------------: | :--------------: | :-----------: | :------------: | :----------: | :----------: | :---------: | :---------: |
@@ -648,7 +661,7 @@ Serial parameters:
 
 thr, pwm: 0-255 (8bits)
 
-#### 10.1.2. Hobbywing V4 V5
+#### 9.1.2. Hobbywing V4 V5
 
 | Byte  | 1     | 2     | 3     | 4     | 5     | 6     | 7     | 8     | 9     | 10    | 11    | 12    | 13    | 14    | 15    | 16    | 17    | 18    | 19    |
 | ---   | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
