@@ -499,21 +499,21 @@ offset = ±6.25% VFSS = ±0.25. Nominal value is 0
 
 Transformation formula:
 
-<img src="https://latex.codecogs.com/svg.latex?V_{out} = V_{cc} x (2 \Delta P +0.5)\pm6.25\%VFSS" title="Vout = Vcc x (0.2 x ΔP + 0.5) ±6.25% VFSS" />
+<img src="https://latex.codecogs.com/svg.latex?V_{out}=V_{cc}(2\Delta{P}+0.5)\pm{6.25\%VFSS}" title="Vout = Vcc x (0.2 x ΔP + 0.5) ±6.25% VFSS" />
 
 Transformation formula with MSRC parameters:
 
-<img src="https://latex.codecogs.com/svg.latex?\Delta P = \frac{V_{out}-offset}{slope}-2.5" title="ΔP = (Vout - offset) / slope - 2.5" />
+<img src="https://latex.codecogs.com/svg.latex?\Delta{P}=\frac{V_{out}-offset}{slope}-2.5" title="ΔP = (Vout - offset) / slope - 2.5" />
 
 Air density calculation:
 
-<img src="https://latex.codecogs.com/svg.latex?\rho = \frac{P}{R \cdot T}" title="ρ = P / (R * T(Kelvin))" />
+<img src="https://latex.codecogs.com/svg.latex?\rho=\frac{P}{R\cdot{T}}" title="ρ = P / (R * T(Kelvin))" />
 
 R -> dry air constant  
 
 Airspeed calculation:
 
-<img src="https://latex.codecogs.com/svg.latex?TAS = \sqrt{\frac{2 \Delta P}{\rho}}" title="TAS(m/s) = sqrt(2 * ΔP / air_density)" />
+<img src="https://latex.codecogs.com/svg.latex?TAS=\sqrt{\frac{2\Delta{P}}{\rho}}" title="TAS(m/s) = sqrt(2 * ΔP / air_density)" />
 
 TAS -> airspeed (m/s)  
 
@@ -539,7 +539,7 @@ If this parameter is unknown, to calibrate:
 - After a while, stop the engine. Note the last number for pulses
 - Weight the tank or model again and use the folloing formula to obtain the parameter:
 
-<img src="https://latex.codecogs.com/svg.latex?ml/pulse= \frac{\Delta Weight \cdot \rho}{pulses}" title="ml/pulse=ΔWeight x ρ /pulses" />
+<img src="https://latex.codecogs.com/svg.latex?ml/pulse=\frac{\Delta{Weight}\cdot{\rho}}{pulses}" title="ml/pulse=ΔWeight x ρ /pulses" />
 
 ρ -> fuel density (g/m<sup>3</sup>)  
 ΔWeight -> g
