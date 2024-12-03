@@ -117,7 +117,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |
 | Hitec, XBUS SCL                           | 3<sup>(2)</sup>  |
 | ESC serial, Serial monitor                | 5                |
-| Phase sensor (PWM in)                     | 5                |
+| Phase sensor (PWM in)                     | 4                |
 | Castle. Receiver signal                   | 4                |
 | Castle. ESC signal                        | 5<sup>(2)</sup>  |
 | GPS                                       | 6                |
@@ -125,7 +125,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | Sensor SDA                                | 8<sup>(2)</sup>  |
 | Sensor SCL                                | 9<sup>(2)</sup>  |
 | PWM out                                   | 10               |
-| Fuel meter PWM in                         | 11               |
+| Fuel meter (PWM in)                       | 11               |
 | Voltage                                   | 26               |
 | Current                                   | 27               |
 | NTC                                       | 28               |
