@@ -50,7 +50,8 @@ typedef enum rx_protocol_t {
     SERIAL_MONITOR,
     RX_CRSF,
     RX_HOTT,
-    RX_SANWA
+    RX_SANWA,
+    RX_PIXHAWK
 } rx_protocol_t;
 
 typedef enum esc_protocol_t {
@@ -172,5 +173,7 @@ float get_average(float alpha, float prev_value, float new_value);
 float get_consumption(float current, uint16_t current_max, uint32_t *timestamp);
 float voltage_read(uint8_t adc_num);
 float get_altitude(float pressure, float temperature, float P0);
+
+void pixhawk_task(void *parameters);
 
 #endif
