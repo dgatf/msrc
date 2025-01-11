@@ -36,11 +36,12 @@
 #define HOTT_VARIO_MODULE_ID 0x89
 #define HOTT_GPS_MODULE_ID 0x8A
 #define HOTT_ESC_MODULE_ID 0x8C
-#define HOTT_GENERAL_AIR_MODULE_ID 0x8D
+#define HOTT_GENERAL_AIR_MODULE_ID 0x8D  // not used
 #define HOTT_ELECTRIC_AIR_MODULE_ID 0x8E
 
 #define HOTT_VARIO_SENSOR_ID 0x90
 #define HOTT_GPS_SENSOR_ID 0xA0
+#define HOTT_ESC_SENSOR_ID 0xC0
 #define HOTT_GENERAL_AIR_SENSOR_ID 0xD0
 #define HOTT_ELECTRIC_AIR_SENSOR_ID 0xE0
 
@@ -51,7 +52,7 @@
 #define HOTT_BINARY_MODE_REQUEST_ID 0x80
 #define HOTT_TEXT_MODE_REQUEST_ID 0x7F
 
-#define HOTT_TIMEOUT_US 1000
+#define HOTT_TIMEOUT_US 2000
 #define HOTT_PACKET_LENGHT 2
 
 #define HOTT_START_BYTE 0x7C
@@ -70,63 +71,63 @@
 #define HOTT_VARIO_M10S 3
 
 //  ESC
-#define HOTT_ESC_VOLTAGE 4
-#define HOTT_ESC_CAPACITY 5
-#define HOTT_ESC_TEMPERATURE 6
-#define HOTT_ESC_CURRENT 7
-#define HOTT_ESC_RPM 8
-#define HOTT_ESC_THROTTLE 9  // 0-100%
-#define HOTT_ESC_SPEED 10
-#define HOTT_ESC_BEC_VOLTAGE 11
-#define HOTT_ESC_BEC_CURRENT 12
-#define HOTT_ESC_BEC_TEMPERATURE 13
-#define HOTT_ESC_EXT_TEMPERATURE 14
+#define HOTT_ESC_VOLTAGE 0
+#define HOTT_ESC_CAPACITY 1
+#define HOTT_ESC_TEMPERATURE 2
+#define HOTT_ESC_CURRENT 3
+#define HOTT_ESC_RPM 4
+#define HOTT_ESC_THROTTLE 5  // 0-100%
+#define HOTT_ESC_SPEED 6
+#define HOTT_ESC_BEC_VOLTAGE 7
+#define HOTT_ESC_BEC_CURRENT 8
+#define HOTT_ESC_BEC_TEMPERATURE 9
+#define HOTT_ESC_EXT_TEMPERATURE 10
 
 // ELECTRIC (BATTERY)
-#define HOTT_ELECTRIC_EXT_TEMPERATURE 15
-#define HOTT_ELECTRIC_CELL_BAT_1_VOLTAGE 16
-#define HOTT_ELECTRIC_CELL_BAT_2_VOLTAGE 17
-#define HOTT_ELECTRIC_BAT_1_VOLTAGE 18
-#define HOTT_ELECTRIC_BAT_2_VOLTAGE 19
-#define HOTT_ELECTRIC_TEMPERATURE_1 20
-#define HOTT_ELECTRIC_TEMPERATURE_2 21
-#define HOTT_ELECTRIC_HEIGHT 22
-#define HOTT_ELECTRIC_CURRENT 23
-#define HOTT_ELECTRIC_CAPACITY 24
-#define HOTT_ELECTRIC_M2S 25
-#define HOTT_ELECTRIC_M3S 26
-#define HOTT_ELECTRIC_RPM 27
-#define HOTT_ELECTRIC_MINUTES 28
-#define HOTT_ELECTRIC_SECONDS 29
-#define HOTT_ELECTRIC_SPEED 30
+#define HOTT_ELECTRIC_EXT_TEMPERATURE 0
+#define HOTT_ELECTRIC_CELL_BAT_1_VOLTAGE 1
+#define HOTT_ELECTRIC_CELL_BAT_2_VOLTAGE 2
+#define HOTT_ELECTRIC_BAT_1_VOLTAGE 3
+#define HOTT_ELECTRIC_BAT_2_VOLTAGE 4
+#define HOTT_ELECTRIC_TEMPERATURE_1 5
+#define HOTT_ELECTRIC_TEMPERATURE_2 6
+#define HOTT_ELECTRIC_HEIGHT 7
+#define HOTT_ELECTRIC_CURRENT 8
+#define HOTT_ELECTRIC_CAPACITY 9
+#define HOTT_ELECTRIC_M2S 10
+#define HOTT_ELECTRIC_M3S 11
+#define HOTT_ELECTRIC_RPM 12
+#define HOTT_ELECTRIC_MINUTES 13
+#define HOTT_ELECTRIC_SECONDS 14
+#define HOTT_ELECTRIC_SPEED 15
 
 // GPS
-#define HOTT_GPS_DIRECTION 31
-#define HOTT_GPS_SPEED 32
-#define HOTT_GPS_LATITUDE 33
-#define HOTT_GPS_LONGITUDE 34
-#define HOTT_GPS_DISTANCE 35
-#define HOTT_GPS_ALTITUDE 36
-#define HOTT_GPS_CLIMBRATE 37
-#define HOTT_GPS_CLIMBRATE3S 38
-#define HOTT_GPS_SATS 39
+#define HOTT_GPS_DIRECTION 0
+#define HOTT_GPS_SPEED 1
+#define HOTT_GPS_LATITUDE 2
+#define HOTT_GPS_LONGITUDE 3
+#define HOTT_GPS_DISTANCE 4
+#define HOTT_GPS_ALTITUDE 5
+#define HOTT_GPS_CLIMBRATE 6
+#define HOTT_GPS_CLIMBRATE3S 7
+#define HOTT_GPS_SATS 8
 
 // GENERAL (FUEL) - not used by msrc
-#define HOTT_GENERAL_CELL 40
-#define HOTT_GENERAL_BATTERY_1 41
-#define HOTT_GENERAL_BATTERY_2 42
-#define HOTT_GENERAL_TEMP_1 43
-#define HOTT_GENERAL_TEMP_2 44
-#define HOTT_GENERAL_RPM_1 45
-#define HOTT_GENERAL_ALTITUDE 46
-#define HOTT_GENERAL_CLIMBRATE 47
-#define HOTT_GENERAL_CLIMBRATE3S 48
-#define HOTT_GENERAL_CURRENT 49
-#define HOTT_GENERAL_VOLTAGE 50
-#define HOTT_GENERAL_CAPACITY 51
-#define HOTT_GENERAL_SPEED 52
-#define HOTT_GENERAL_RPM_2 53
-#define HOTT_GENERAL_PRESSURE 54
+#define HOTT_GENERAL_CELL 0
+#define HOTT_GENERAL_BATTERY_1 1
+#define HOTT_GENERAL_BATTERY_2 2
+#define HOTT_GENERAL_TEMP_1 3
+#define HOTT_GENERAL_TEMP_2 4
+#define HOTT_GENERAL_RPM_1 5
+#define HOTT_GENERAL_ALTITUDE 6
+#define HOTT_GENERAL_CLIMBRATE 7
+#define HOTT_GENERAL_CLIMBRATE3S 8
+#define HOTT_GENERAL_CURRENT 9
+#define HOTT_GENERAL_VOLTAGE 10
+#define HOTT_GENERAL_CAPACITY 11
+#define HOTT_GENERAL_SPEED 12
+#define HOTT_GENERAL_RPM_2 13
+#define HOTT_GENERAL_PRESSURE 14
 
 typedef struct hott_sensor_vario_t {
     uint8_t startByte;
@@ -150,36 +151,36 @@ typedef struct hott_sensor_vario_t {
 typedef struct hott_sensor_airesc_t {
     uint8_t startByte;                  // 1
     uint8_t sensorID;                   // 2
-    uint8_t sensorTextID;               // Byte 3
-    uint8_t inverse;                    // Byte 4
-    uint8_t inverseStatusI;             // Byte 5
-    uint16_t inputVolt;                 // Byte 6
-    uint16_t minInputVolt;              // Byte 8
-    uint16_t capacity;                  // Byte 10
-    uint8_t escTemperature;             // Byte 12
-    uint8_t maxEscTemperature;          // Byte 13
-    uint16_t current;                   // Byte 14
-    uint16_t maxCurrent;                // Byte 16
-    uint16_t RPM;                       // Byte 18
-    uint16_t maxRPM;                    // Byte 20
-    uint8_t throttlePercent;            // Byte 22
-    uint16_t speed;                     // Byte 23
-    uint16_t maxSpeed;                  // Byte 25
-    uint8_t BECVoltage;                 // Byte 27
-    uint8_t minBECVoltage;              // Byte 28
-    uint8_t BECCurrent;                 // Byte 29
-    uint8_t minBECCurrent;              // Byte 30
-    uint8_t maxBECCurrent;              // Byte 31
-    uint8_t PWM;                        // Byte 32
-    uint8_t BECTemperature;             // Byte 33
-    uint8_t maxBECTemperature;          // Byte 34
-    uint8_t motorOrExtTemperature;      // Byte 35
-    uint8_t maxMotorOrExtTemperature;   // Byte 36
-    uint16_t RPMWithoutGearOrExt;       // Byte 37
-    uint8_t timing;                     // Byte 39
-    uint8_t advancedTiming;             // Byte 40
-    uint8_t highestCurrentMotorNumber;  // Byte 41
-    uint8_t versionNumber;              // Byte 42
+    uint8_t warningId;                  // 3
+    uint8_t sensorTextID;               // Byte 4
+    uint8_t inverse;                    // Byte 5
+    uint8_t inverseStatusI;             // Byte 6
+    uint16_t inputVolt;                 // Byte 7,8
+    uint16_t minInputVolt;              // Byte 9,10
+    uint16_t capacity;                  // Byte 11,12
+    uint8_t escTemperature;             // Byte 13
+    uint8_t maxEscTemperature;          // Byte 14
+    uint16_t current;                   // Byte 15,16
+    uint16_t maxCurrent;                // Byte 17,18
+    uint16_t RPM;                       // Byte 19,20
+    uint16_t maxRPM;                    // Byte 21,22
+    uint8_t throttlePercent;            // Byte 23
+    uint16_t speed;                     // Byte 24,25
+    uint16_t maxSpeed;                  // Byte 26,27
+    uint8_t BECVoltage;                 // Byte 28
+    uint8_t minBECVoltage;              // Byte 29
+    uint8_t BECCurrent;                 // Byte 30
+    uint8_t minBECCurrent;              // Byte 31
+    uint8_t maxBECCurrent;              // Byte 32
+    uint8_t PWM;                        // Byte 33
+    uint8_t BECTemperature;             // Byte 34
+    uint8_t maxBECTemperature;          // Byte 35
+    uint8_t motorOrExtTemperature;      // Byte 36
+    uint8_t maxMotorOrExtTemperature;   // Byte 37
+    uint16_t RPMWithoutGearOrExt;       // Byte 38,39
+    uint8_t timing;                     // Byte 40
+    uint8_t advancedTiming;             // Byte 41
+    uint8_t highestCurrentMotorNumber;  // Byte 42
     uint8_t version;                    /* Byte 43: 00 version number */
     uint8_t endByte;                    /* Byte 44: 0x7D Ende byte */
     uint8_t checksum;                   /* Byte 45: Parity Byte */
@@ -355,19 +356,11 @@ typedef struct hott_sensor_gps_t {
     uint8_t angleYdirection; /* Byte 31: angle y-direction (1 byte) */
     uint8_t angleZdirection; /* Byte 32: angle z-direction (1 byte) */
 
-    //  int8_t gps_time_h;  //#33 UTC time hours
-    //  int8_t gps_time_m;  //#34 UTC time minutes
-    //  int8_t gps_time_s;  //#35 UTC time seconds
-    //  int8_t gps_time_sss;//#36 UTC time milliseconds
-    //  int8_t msl_altitude_L;  //#37 mean sea level altitude
-    //  int8_t msl_altitude_H;  //#38
-
-    uint8_t gyroXLow;  /* Byte 33: gyro x low byte (2 bytes) */
-    uint8_t gyroXHigh; /* Byte 34: gyro x high byte */
-    uint8_t gyroYLow;  /* Byte 35: gyro y low byte (2 bytes) */
-    uint8_t gyroYHigh; /* Byte 36: gyro y high byte */
-    uint8_t gyroZLow;  /* Byte 37: gyro z low byte (2 bytes) */
-    uint8_t gyroZHigh; /* Byte 38: gyro z high byte */
+    uint8_t gps_time_h;  //#33 UTC time hours
+    uint8_t gps_time_m;  //#34 UTC time minutes
+    uint8_t gps_time_s;  //#35 UTC time seconds
+    uint8_t gps_time_sss;//#36 UTC time milliseconds
+    uint16_t msl_altitude;  //#37 mean sea level altitude
 
     uint8_t vibration; /* Byte 39: vibration (1 bytes) */
     uint8_t Ascii4;    /* Byte 40: 00 ASCII Free Character [4] appears right to home distance */
@@ -380,19 +373,21 @@ typedef struct hott_sensor_gps_t {
 
 typedef struct hott_sensors_t {
     bool is_enabled[4];
-    float **gps;
-    float **vario;
-    float **esc;
-    float **electric_air;
+    float *gps[9];
+    float *vario[4];
+    float *esc[11];
+    float *electric_air[16];
 } hott_sensors_t;
 
 typedef struct vario_alarm_parameters_t {
     float *altitude;
     uint16_t m1s;
-    uint16_t m2s;
     uint16_t m3s;
     uint16_t m10s;
 } vario_alarm_parameters_t;
+
+vario_alarm_parameters_t vario_alarm_parameters;
+float *baro_temp = NULL, *baro_pressure = NULL;
 
 static void process(hott_sensors_t *sensors);
 static void send_packet(hott_sensors_t *sensors, uint8_t address);
@@ -416,11 +411,12 @@ void hott_task(void *parameters) {
 }
 
 static void process(hott_sensors_t *sensors) {
-    if (uart0_available() == HOTT_PACKET_LENGHT) {
-        uint8_t buffer[HOTT_PACKET_LENGHT];
-        uart0_read_bytes(buffer, HOTT_PACKET_LENGHT);
+    uint8_t len = uart0_available();
+    if (len == HOTT_PACKET_LENGHT || len == HOTT_PACKET_LENGHT + 1) {
+        uint8_t buffer[len];
+        uart0_read_bytes(buffer, len);
         debug("\nHOTT (%u) < ", uxTaskGetStackHighWaterMark(NULL));
-        debug_buffer(buffer, HOTT_PACKET_LENGHT, "0x%X ");
+        debug_buffer(buffer, len, "0x%X ");
         if (buffer[0] == HOTT_BINARY_MODE_REQUEST_ID) send_packet(sensors, buffer[1]);
     }
 }
@@ -440,11 +436,14 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             if (min_altitude > packet.altitude) min_altitude = packet.altitude;
             packet.maxAltitude = max_altitude;
             packet.minAltitude = min_altitude;
+            packet.m1s = vario_alarm_parameters.m1s;
+            packet.m3s = vario_alarm_parameters.m3s;
+            packet.m10s = vario_alarm_parameters.m10s;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
             debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
-            debug_buffer(&packet, sizeof(packet), "0x%X ");
+            debug_buffer((uint8_t *)&packet, sizeof(packet), "0x%X ");
 
             // blink led
             vTaskResume(context.led_task_handle);
@@ -460,34 +459,53 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             static uint16_t maxSpeed = 0;
             static uint16_t minBECCurrent = 0xFFFF;
             static uint16_t maxBECCurrent = 0;
+            static uint16_t minBECVoltage = 0xFFFF;
             static uint16_t maxBECTemperature = 0;
             static uint16_t maxMotorOrExtTemperature = 0;
             packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_ESC_MODULE_ID;
-            // packet.sensorTextID = HOTT_ELECTRIC_AIR_SENSOR_ID;
-            packet.inputVolt = *sensors->esc[HOTT_ESC_VOLTAGE];
-            if (packet.inputVolt > minInputVolt) packet.minInputVolt = packet.inputVolt;
-            packet.capacity = *sensors->esc[HOTT_ESC_CAPACITY];
-            packet.escTemperature = *sensors->esc[HOTT_ESC_TEMPERATURE];
-            if (packet.escTemperature > maxEscTemperature) packet.maxEscTemperature = packet.escTemperature;
-            packet.current = *sensors->esc[HOTT_ESC_CURRENT];
-            if (packet.current > maxCurrent) packet.maxCurrent = packet.current;
-            packet.RPM = *sensors->esc[HOTT_ESC_RPM];
-            if (packet.RPM > maxRPM) packet.maxRPM = packet.RPM;
+            packet.sensorTextID = HOTT_ESC_SENSOR_ID;
+            if (sensors->esc[HOTT_ESC_VOLTAGE]) {
+                packet.inputVolt = *sensors->esc[HOTT_ESC_VOLTAGE] * 10;
+                if (packet.inputVolt > minInputVolt) packet.minInputVolt = packet.inputVolt;
+            }
+            if (sensors->esc[HOTT_ESC_TEMPERATURE]) {
+                packet.escTemperature = *sensors->esc[HOTT_ESC_TEMPERATURE] + 20;
+                if (packet.escTemperature > maxEscTemperature) packet.maxEscTemperature = packet.escTemperature;
+            }
+            if (sensors->esc[HOTT_ESC_CURRENT]) {
+                packet.current = *sensors->esc[HOTT_ESC_CURRENT] * 10;
+                if (packet.current > maxCurrent) packet.maxCurrent = packet.current;
+                packet.capacity = *sensors->esc[HOTT_ESC_CAPACITY] / 10;
+            }
+            if (sensors->esc[HOTT_ESC_RPM]) {
+                packet.RPM = *sensors->esc[HOTT_ESC_RPM] / 10;
+                if (packet.RPM > maxRPM) packet.maxRPM = packet.RPM;
+            }
             // uint8_t throttlePercent;            // Byte 22
-            packet.speed = *sensors->esc[HOTT_ESC_SPEED];
-            if (packet.speed > maxSpeed) packet.maxSpeed = packet.speed;
-            packet.BECVoltage = *sensors->esc[HOTT_ESC_BEC_VOLTAGE];
-            if (packet.minBECVoltage > packet.maxSpeed) packet.maxSpeed = packet.speed;
-            packet.BECCurrent = *sensors->esc[HOTT_ESC_BEC_CURRENT];
-            if (packet.BECCurrent < minBECCurrent) packet.minBECCurrent = packet.BECCurrent;
-            if (packet.BECCurrent > maxBECCurrent) packet.maxBECCurrent = packet.BECCurrent;
+            if (sensors->esc[HOTT_ESC_SPEED]) {
+                packet.speed = *sensors->esc[HOTT_ESC_SPEED];
+                if (packet.speed > maxSpeed) packet.maxSpeed = packet.speed;
+            }
+            if (sensors->esc[HOTT_ESC_BEC_VOLTAGE]) {
+                packet.BECVoltage = *sensors->esc[HOTT_ESC_BEC_VOLTAGE] * 10;
+                if (packet.minBECVoltage < minBECVoltage) packet.minBECVoltage = packet.BECVoltage;
+            }
+            if (sensors->esc[HOTT_ESC_BEC_CURRENT]) {
+                packet.BECCurrent = *sensors->esc[HOTT_ESC_BEC_CURRENT] * 10;
+                if (packet.BECCurrent < minBECCurrent) packet.minBECCurrent = packet.BECCurrent;
+                if (packet.BECCurrent > maxBECCurrent) packet.maxBECCurrent = packet.BECCurrent;
+            }
             // uint8_t PWM;                        // Byte 32
-            packet.BECTemperature = *sensors->esc[HOTT_ESC_BEC_TEMPERATURE];
-            if (packet.BECTemperature > maxBECTemperature) packet.maxBECTemperature = packet.BECTemperature;
-            packet.motorOrExtTemperature = *sensors->esc[HOTT_ESC_EXT_TEMPERATURE];
-            if (packet.motorOrExtTemperature > maxMotorOrExtTemperature)
-                packet.maxMotorOrExtTemperature = packet.motorOrExtTemperature;
+            if (sensors->esc[HOTT_ESC_BEC_TEMPERATURE]) {
+                packet.BECTemperature = *sensors->esc[HOTT_ESC_BEC_TEMPERATURE] + 20;
+                if (packet.BECTemperature > maxBECTemperature) packet.maxBECTemperature = packet.BECTemperature;
+            }
+            if (sensors->esc[HOTT_ESC_EXT_TEMPERATURE]) {
+                packet.motorOrExtTemperature = *sensors->esc[HOTT_ESC_EXT_TEMPERATURE] + 20;
+                if (packet.motorOrExtTemperature > maxMotorOrExtTemperature)
+                    packet.maxMotorOrExtTemperature = packet.motorOrExtTemperature;
+            }
             // uint16_t RPMWithoutGearOrExt;       // Byte 37
             // uint8_t timing;                     // Byte 39
             // uint8_t advancedTiming;             // Byte 40
@@ -508,11 +526,17 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_ELECTRIC_AIR_MODULE_ID;
             packet.sensorTextID = HOTT_ELECTRIC_AIR_SENSOR_ID;
+            if (sensors->electric_air[HOTT_ELECTRIC_BAT_1_VOLTAGE])
+                packet.battery1 = *sensors->electric_air[HOTT_ELECTRIC_BAT_1_VOLTAGE] * 10;
+            if (sensors->electric_air[HOTT_ELECTRIC_CURRENT])
+                packet.current = *sensors->electric_air[HOTT_ELECTRIC_CURRENT] * 10;
+            if (sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1])
+                packet.temp1 = *sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] + 20;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
             debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
-            debug_buffer(&packet, sizeof(packet), "0x%X ");
+            debug_buffer((uint8_t *)&packet, sizeof(packet), "0x%X ");
 
             // blink led
             vTaskResume(context.led_task_handle);
@@ -534,35 +558,28 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.longitudeDegMin = *sensors->gps[HOTT_GPS_LATITUDE] / 60 * 100 + *sensors->gps[HOTT_GPS_LATITUDE] +
                                      (int)(*sensors->gps[HOTT_GPS_LATITUDE]) % 60;
             packet.longitudeSec = *sensors->gps[HOTT_GPS_LATITUDE] * 60 - (int)(*sensors->gps[HOTT_GPS_LATITUDE] * 60);
-            packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
+            //packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
             packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
-            packet.climbrate = *sensors->gps[HOTT_GPS_ALTITUDE];    // 30000, 0.00
-            packet.climbrate3s = *sensors->gps[HOTT_GPS_ALTITUDE];  // 120, 0
+            // packet.climbrate = *sensors->gps[HOTT_GPS_ALTITUDE];    // 30000, 0.00
+            // packet.climbrate3s = *sensors->gps[HOTT_GPS_ALTITUDE];  // 120, 0
             packet.GPSNumSat = *sensors->gps[HOTT_GPS_SATS];
-            // uint8_t GPSFixChar;      /* Byte 28: GPS.FixChar. (GPS fix character. display, if DGPS, 2D oder 3D) (1
-            // byte) */ uint8_t homeDirection;   /* Byte 29: HomeDirection (direction from starting point to Model
-            // position) (1 byte) */ int8_t gps_time_h;  //#33 UTC time hours int8_t gps_time_m;  //#34 UTC time minutes
-            // int8_t gps_time_s;  //#35 UTC time seconds
-            // int8_t gps_time_sss;//#36 UTC time milliseconds
-            // int8_t msl_altitude_L;  //#37 mean sea level altitude
-            // int8_t msl_altitude_H;  //#38
-            // uint8_t gyroXLow;  /* Byte 33: gyro x low byte (2 bytes) */
-            // uint8_t gyroXHigh; /* Byte 34: gyro x high byte */
-            // uint8_t gyroYLow;  /* Byte 35: gyro y low byte (2 bytes) */
-            // uint8_t gyroYHigh; /* Byte 36: gyro y high byte */
-            // uint8_t gyroZLow;  /* Byte 37: gyro z low byte (2 bytes) */
-            // uint8_t gyroZHigh; /* Byte 38: gyro z high byte */
-            // uint8_t vibration; /* Byte 39: vibration (1 bytes) */
-            // uint8_t Ascii4;    /* Byte 40: 00 ASCII Free Character [4] appears right to home distance */
-            // uint8_t Ascii5;    /* Byte 41: 00 ASCII Free Character [5] appears right to home direction*/
-            // uint8_t GPS_fix;   /* Byte 42: 00 ASCII Free Character [6], we use it for GPS FIX */
-            // uint8_t version;   /* Byte 43: 00 version number */
+            // uint8_t GPSFixChar;      // Byte 28: GPS.FixChar. (GPS fix character. display, if DGPS, 2D oder 3D) (1 byte)
+            // uint8_t homeDirection;   // Byte 29: HomeDirection (direction from starting point to Model position) (1 byte)
+            // uint8_t gps_time_h;  //#33 UTC time hours int8_t gps_time_m;  //#34 UTC time minutes
+            // uint8_t gps_time_s;  //#35 UTC time seconds
+            // uint8_t gps_time_sss;//#36 UTC time milliseconds
+            // uint8_t msl_altitude;//#37 mean sea level altitudeuint8_t vibration;
+            // uint8_t vibration; // Byte 39 vibrations level in %
+            // uint8_t Ascii4;    // Byte 40: 00 ASCII Free Character [4] appears right to home distance
+            // uint8_t Ascii5;    // Byte 41: 00 ASCII Free Character [5] appears right to home direction
+            // uint8_t GPS_fix;   // Byte 42: 00 ASCII Free Character [6], we use it for GPS FIX
+            // uint8_t version;   // Byte 43: 00 version number*/
 
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
             debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
-            debug_buffer(&packet, sizeof(packet), "0x%X ");
+            debug_buffer((uint8_t *)&packet, sizeof(packet), "0x%X ");
 
             // blink led
             vTaskResume(context.led_task_handle);
@@ -580,7 +597,6 @@ static uint8_t get_crc(const uint8_t *buffer, uint len) {
 static void set_config(hott_sensors_t *sensors) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
-    float *baro_temp = NULL, *baro_pressure = NULL;
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
@@ -756,7 +772,6 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->gps[HOTT_GPS_ALTITUDE] = parameter.alt;
         sensors->gps[HOTT_GPS_SPEED] = parameter.spd_kmh;
         sensors->gps[HOTT_GPS_DIRECTION] = parameter.cog;
-        sensors->gps[HOTT_GPS_DIRECTION] = parameter.cog;
     }
     if (config->enable_analog_voltage) {
         voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage,
@@ -826,7 +841,6 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
 
-        vario_alarm_parameters_t vario_alarm_parameters;
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
@@ -846,6 +860,10 @@ static void set_config(hott_sensors_t *sensors) {
 
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
+
+        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
     }
     if (config->i2c_module == I2C_BMP180) {
         bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
@@ -862,6 +880,10 @@ static void set_config(hott_sensors_t *sensors) {
 
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
+
+        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
     }
 }
 
@@ -869,6 +891,9 @@ static int64_t interval_1000_callback(alarm_id_t id, void *parameters) {
     vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
     static float prev = 0;
     parameter->m1s = (*parameter->altitude - prev) * 100 + 30000;
+#ifdef SIM_SENSORS
+    vario_alarm_parameters.m1s = 12 * 100 + 30000;
+#endif
     prev = *parameter->altitude;
     return 1000000L;
 }
@@ -877,6 +902,9 @@ static int64_t interval_3000_callback(alarm_id_t id, void *parameters) {
     vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
     static float prev = 0;
     parameter->m3s = (*parameter->altitude - prev) * 100 + 30000;
+#ifdef SIM_SENSORS
+    vario_alarm_parameters.m3s = 34 * 100 + 30000;
+#endif
     prev = *parameter->altitude;
     return 3000000L;
 }
@@ -885,6 +913,9 @@ static int64_t interval_10000_callback(alarm_id_t id, void *parameters) {
     vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
     static float prev = 0;
     parameter->m10s = (*parameter->altitude - prev) * 100 + 30000;
+#ifdef SIM_SENSORS
+    vario_alarm_parameters.m10s = 56 * 100 + 30000;
+#endif
     prev = *parameter->altitude;
     return 10000000L;
 }
