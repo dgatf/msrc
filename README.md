@@ -1,4 +1,4 @@
-# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF, Sanwa, Hott
+# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF, Sanwa, Hott, SRXL2
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=9GKNBVGHKXFGW&no_recurring=0&currency_code=USD)
 
@@ -9,7 +9,8 @@ Compatible RX protocols:
 - Frsky Smartport
 - FrSky D
 - Spektrum XBUS
-- Spektrum SRXL V5
+- Spektrum SRXL
+- Spektrum SRXL2
 - Flysky IBUS
 - Futaba SBUS2
 - Multiplex Sensor Bus (MSB)
@@ -60,7 +61,8 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;[6.10 Serial Monitor](#610-serial-monitor)  
 &emsp;[6.11 CRSF](#611-crsf)  
 &emsp;[6.12 Sanwa](#612-sanwa)  
-&emsp;[6.13 Sanwa](#613-hott)  
+&emsp;[6.13 Hott](#613-hott)  
+&emsp;[6.14 Spektrum SRXL2](#614-spektrum-srxl2)  
 [7. Sensors](#7-sensors)  
 &emsp; [7.1. ESC](#71-esc)  
 &emsp;&emsp;[7.1.1 Hobbywing Platinum V3](#711-hobbywing-platinum-v3)  
@@ -114,7 +116,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | :---:                                     | :---:            |
 | 3.3-5v                                    | 5v               |
 | GND                                       | GND              |
-| Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex, CRSF, Sanwa  | 0<sup>(1)</sup> & 1 |
+| Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex, CRSF, Sanwa, Hott, SRXL2  | 0<sup>(1)</sup> & 1 |
 | Frsky D                                   | 0                |
 | Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |
 | Hitec, XBUS SCL                           | 3<sup>(2)</sup>  |
@@ -230,6 +232,7 @@ The following Rx protocols are supported:
 - CRSF: serial, 416666 bps  
 - Sanwa: serial, 115200 bps
 - Hott: serial 19200 bps  
+- Spektrum SRXL2: serial 115200 bps  
 
 ### 6.1 SMARTPORT
 
@@ -346,7 +349,14 @@ Available sensors:
 
 ### 6.13 Hott
 
+Coonect to the telemetry port marked with a T. Depending on the model, there is a dedicated port for telemetry (e.g. GR-32) or it uses a servo channel (e.g. GR-12).  
 
+### 6.14 Spektrum SRXL2
+
+See [SRXL2 specifications](https://github.com/SpektrumRC/SRXL2/blob/master/Docs/SRXL2%20Specification.pdf).
+
+<p align="center"><img src="./images/srxl2_connectors.png" width="500"><br>
+  <i>SRXL2 connectors</i><br><br></p>
 
 ## 7. Sensors
 
@@ -795,7 +805,8 @@ Po = pressure at ground (Pa)*
 v1.2
 
 - Added support for fuel flow sensor with pulses output  
-- Added suport for Hott telemetry  
+- Added support for Hott telemetry  
+- Added support for Spektrum SRXL2 telemetry  
 
 [v1.1](https://github.com/dgatf/msrc/tree/v1.1)
 
