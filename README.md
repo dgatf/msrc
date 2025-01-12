@@ -1,4 +1,4 @@
-# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF, Sanwa
+# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF, Sanwa, Hott
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=9GKNBVGHKXFGW&no_recurring=0&currency_code=USD)
 
@@ -16,6 +16,7 @@ Compatible RX protocols:
 - Jeti Ex Bus
 - CRSF
 - Sanwa
+- Hott
 
 Compatible ESCs: Hobbywing V3/V4/V5/Flyfun, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal.
 
@@ -59,6 +60,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;[6.10 Serial Monitor](#610-serial-monitor)  
 &emsp;[6.11 CRSF](#611-crsf)  
 &emsp;[6.12 Sanwa](#612-sanwa)  
+&emsp;[6.13 Sanwa](#613-hott)  
 [7. Sensors](#7-sensors)  
 &emsp; [7.1. ESC](#71-esc)  
 &emsp;&emsp;[7.1.1 Hobbywing Platinum V3](#711-hobbywing-platinum-v3)  
@@ -227,6 +229,7 @@ The following Rx protocols are supported:
 - Serial Monitor. This is not a Rx protocol, but a serial monitor on GPIO5 
 - CRSF: serial, 416666 bps  
 - Sanwa: serial, 115200 bps
+- Hott: serial 19200 bps  
 
 ### 6.1 SMARTPORT
 
@@ -340,6 +343,10 @@ Available sensors:
 - Motor temperature. In case the ESC provides BEC temperature, it is linked to this telemetry value. To measure motor temperature, enable analog temperature and use a ntc termistor attached to the motor. It overrides BEC temperature if available from the ESC.   
 - Rpms.
 - Voltage.
+
+### 6.13 Hott
+
+
 
 ## 7. Sensors
 
@@ -788,6 +795,7 @@ Po = pressure at ground (Pa)*
 v1.2
 
 - Added support for fuel flow sensor with pulses output  
+- Added suport for Hott telemetry  
 
 [v1.1](https://github.com/dgatf/msrc/tree/v1.1)
 
