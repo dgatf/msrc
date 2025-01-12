@@ -116,37 +116,37 @@ static void send_packet(void) {
     switch (cont) {
         case XBUS_AIRSPEED:
             xbus_format_sensor(XBUS_AIRSPEED_ID);
-            uart0_write_bytes((uint8_t *)&sensor_formatted->airspeed, sizeof(xbus_airspeed_t));
+            uart0_write_bytes((uint8_t *)sensor_formatted->airspeed, sizeof(xbus_airspeed_t));
             debug("\nSRXL (%u) < ", uxTaskGetStackHighWaterMark(NULL));
             debug_buffer((uint8_t *)sensor_formatted->airspeed, sizeof(xbus_airspeed_t), "0x%X ");
             break;
         case XBUS_BATTERY:
             xbus_format_sensor(XBUS_AIRSPEED_ID);
-            uart0_write_bytes((uint8_t *)&sensor_formatted->battery, sizeof(xbus_battery_t));
+            uart0_write_bytes((uint8_t *)sensor_formatted->battery, sizeof(xbus_battery_t));
             debug("\nSRXL (%u) < ", uxTaskGetStackHighWaterMark(NULL));
             debug_buffer((uint8_t *)sensor_formatted->battery, sizeof(xbus_battery_t), "0x%X ");
             break;
         case XBUS_ESC:
             xbus_format_sensor(XBUS_ESC_ID);
-            uart0_write_bytes((uint8_t *)&sensor_formatted->esc, sizeof(xbus_esc_t));
+            uart0_write_bytes((uint8_t *)sensor_formatted->esc, sizeof(xbus_esc_t));
             debug("\nSRXL (%u) < ", uxTaskGetStackHighWaterMark(NULL));
             debug_buffer((uint8_t *)sensor_formatted->esc, sizeof(xbus_esc_t), "0x%X ");
             break;
         case XBUS_GPS_LOC:
             xbus_format_sensor(XBUS_GPS_LOC_ID);
-            uart0_write_bytes((uint8_t *)&sensor_formatted->gps_loc, sizeof(xbus_gps_loc_t));
+            uart0_write_bytes((uint8_t *)sensor_formatted->gps_loc, sizeof(xbus_gps_loc_t));
             debug("\nSRXL (%u) < ", uxTaskGetStackHighWaterMark(NULL));
             debug_buffer((uint8_t *)sensor_formatted->gps_loc, sizeof(xbus_gps_loc_t), "0x%X ");
             break;
         case XBUS_GPS_STAT:
             xbus_format_sensor(XBUS_GPS_STAT_ID);
-            uart0_write_bytes((uint8_t *)&sensor_formatted->gps_stat, sizeof(xbus_gps_stat_t));
+            uart0_write_bytes((uint8_t *)sensor_formatted->gps_stat, sizeof(xbus_gps_stat_t));
             debug("\nSRXL (%u) < ", uxTaskGetStackHighWaterMark(NULL));
             debug_buffer((uint8_t *)sensor_formatted->gps_stat, sizeof(xbus_gps_stat_t), "0x%X ");
             break;
         case XBUS_RPMVOLTTEMP:
             xbus_format_sensor(XBUS_RPMVOLTTEMP_ID);
-            uart0_write_bytes((uint8_t *)&sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
+            uart0_write_bytes((uint8_t *)sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
             debug("\nSRXL (%u) < ", uxTaskGetStackHighWaterMark(NULL));
             debug_buffer((uint8_t *)sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t), "0x%X ");
             break;

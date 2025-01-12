@@ -25,7 +25,7 @@ static uint8_t smartport_get_crc(uint8_t *data);
 
 void sim_rx_task(void *parameters) {
     sim_rx_parameters_t *parameter = (sim_rx_parameters_t *)parameters;
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
     if (UART_RECEIVER == uart0)
         uart_queue_handle = context.uart0_queue_handle;
     else
@@ -238,6 +238,24 @@ static void process(rx_protocol_t rx_protocol) {
                                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         for (uint8_t i = 0; i < sizeof(data); i++) {
             xQueueSendToBack(uart_queue_handle, &data[i], 0);
+        }
+    }
+
+    else if (rx_protocol == RX_SRXL2) {
+        static uint8_t status = 0;
+        static uint8_t handshake_request[] = {0xA6, 0x21, 0xE,  0x10, 0x30, 0xA,  0x1,
+                                              0x1,  0xFC, 0x96, 0x8C, 0x4B, 0x30, 0xD9};
+        static uint8_t telemetry_request[] = {0xA6, 0xCD, 0x14, 0x0,  0x30, 0xEC, 0x0, 0x0,  0x91, 0x0,
+                                              0x0,  0x0,  0x60, 0x80, 0x0,  0x80, 0x0, 0x80, 0xB2, 0xA0};
+        if (status < 10) {
+            for (uint8_t i = 0; i < sizeof(handshake_request); i++) {
+                xQueueSendToBack(uart_queue_handle, &handshake_request[i], 0);
+            }
+            status++;
+        } else if (status == 10) {
+            for (uint8_t i = 0; i < sizeof(telemetry_request); i++) {
+                xQueueSendToBack(uart_queue_handle, &telemetry_request[i], 0);
+            }
         }
     }
 

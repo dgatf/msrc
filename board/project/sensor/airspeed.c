@@ -45,7 +45,9 @@ void airspeed_task(void *parameters) {
             airspeed = sqrt(2 * delta_pressure / air_density);
         airspeed *= 3.6; // m/s to km/h
         *parameter.airspeed = get_average(parameter.alpha, *parameter.airspeed, airspeed);
-
+#ifdef SIM_SENSORS
+        *parameter.airspeed = 123.34;
+#endif
         debug("\nAirspeed (%u): %.2f (P(%u)%.2f T(%u)%.2f V %.2f AD %.2f dP %.2f)", uxTaskGetStackHighWaterMark(NULL),
               *parameter.airspeed, parameter.pressure, pressure, parameter.temperature, temperature, voltage,
               air_density, delta_pressure);
