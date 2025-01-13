@@ -50,7 +50,8 @@ typedef enum rx_protocol_t {
     SERIAL_MONITOR,
     RX_CRSF,
     RX_HOTT,
-    RX_SANWA
+    RX_SANWA,
+    RX_JR_PROPO
 } rx_protocol_t;
 
 typedef enum esc_protocol_t {

@@ -16,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbReceiver->addItem("Frsky Smartport", RX_SMARTPORT);
     ui->cbReceiver->addItem("Frsky D", RX_FRSKY_D);
     ui->cbReceiver->addItem("Spektrum XBUS", RX_XBUS);
+    ui->cbReceiver->addItem("Spektrum SRXL", RX_SRXL);
+    ui->cbReceiver->addItem("Spektrum SRXL2", RX_SRXL2);
     ui->cbReceiver->addItem("Flysky IBUS", RX_IBUS);
     ui->cbReceiver->addItem("Futaba SBUS2", RX_SBUS);
     ui->cbReceiver->addItem("Jeti Ex Bus", RX_JETIEX);
@@ -25,8 +27,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbReceiver->addItem("HOTT", RX_HOTT);
     ui->cbReceiver->addItem("Hitec", RX_HITEC);
     ui->cbReceiver->addItem("Serial Monitor", SERIAL_MONITOR);
-    ui->cbReceiver->addItem("Spektrum SRXL", RX_SRXL);
-    ui->cbReceiver->addItem("Spektrum SRXL2", RX_SRXL2);
+    ui->cbReceiver->addItem("JR Propo", RX_JR_PROPO);
     ui->cbEscModel->addItems({"", "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A", "Platinum PRO v4 100A",
                               "Platinum PRO v4 120A", "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A",
                               "Platinum PRO v4 200A-HV", "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A", "FlyFun 120A",

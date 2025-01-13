@@ -333,6 +333,13 @@ static void process(rx_protocol_t rx_protocol) {
         index++;
     }
 
+    else if (rx_protocol == RX_JR_PROPO) {
+        static uint address = 0;
+        xQueueSendToBack(uart_queue_handle, &address, 0);
+        address++;
+        if (address > 10) address = 0;
+    }
+
     uart0_set_timestamp();
     vTaskDelay(SIM_RX_TIMEOUT_MS / portTICK_PERIOD_MS);
     xTaskNotifyGiveIndexed(context.uart0_notify_task_handle, 1);
