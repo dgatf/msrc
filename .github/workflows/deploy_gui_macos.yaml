@@ -1,0 +1,38 @@
+name: Deploy MSRC gui for macOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - msrc_gui/**
+
+jobs:
+  build:
+    runs-on: macos-14
+
+    steps:
+      - name: Get actions code
+        uses: actions/checkout@v4
+        
+      - name: Install QT
+        uses: jurplel/install-qt-action@v4
+        
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          qmake ../msrc_gui
+          make
+          
+      - name: Compress app folder
+        run: tar -czf build/msrc_gui.tgz build/msrc_gui.app
+        
+      - name: Upload to Google Drive
+        uses: logickoder/g-drive-upload@main
+        with:
+          credentials: ${{ secrets.GOOGLE_ID }}
+          filename: 'build/msrc_gui.tgz'
+          folderId: ${{ secrets.FOLDER_ID }}
+          overwrite: 'true'

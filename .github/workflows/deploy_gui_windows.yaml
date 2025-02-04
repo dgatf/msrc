@@ -1,0 +1,38 @@
+name: Deploy MSRC gui for Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - msrc_gui/**
+      
+jobs:
+  build:
+    runs-on: windows-2019
+
+    steps:
+      - name: Get actions code
+        uses: actions/checkout@v4
+        
+      - name: install qt static
+        uses: orestonce/install-qt-static@v0.4.3
+        with:
+          version: Qt5.15.7-Windows-x86_64-MinGW8.1.0-staticFull-20221104
+
+      - name: Build  
+        run: |
+          mkdir build
+          cd build
+          qmake ../msrc_gui
+          make
+          mingw32-make release
+
+      - name: Upload to Google Drive
+        uses: logickoder/g-drive-upload@main
+        with:
+          credentials: ${{ secrets.GOOGLE_ID }}
+          filename: 'build/release/msrc_gui.exe'
+          folderId: ${{ secrets.FOLDER_ID }}
+          overwrite: 'true'

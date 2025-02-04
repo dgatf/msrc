@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=MSRC
+Exec=AppRun %F
+Icon=default
+Comment=Sensors for RC
+Terminal=false
+Categories = Utility;
