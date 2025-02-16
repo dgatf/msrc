@@ -6,6 +6,8 @@
 #define CONFIG_FORZE_WRITE false
 #define CONFIG_VERSION 2
 
+extern context_t context;
+
 config_t *config_read();
 void config_write(config_t *config);
 void config_forze_write();

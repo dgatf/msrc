@@ -16,6 +16,7 @@
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
+#include "fuel_meter.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
@@ -29,6 +30,7 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
+#include "xgzp68xxd.h"
 
 #define SRXL2_TIMEOUT_US 500
 #define SRXL2_HEADER 0xA6
@@ -126,7 +128,7 @@ static void send_packet(void) {
     if (!srxl_sensors_count()) return;
     while (!sensor->is_enabled[cont]) {
         cont++;
-        if (cont > XBUS_ENERGY) cont = 0;
+        if (cont > XBUS_STRU_TELE_DIGITAL_AIR) cont = 0;
     }
     uint8_t buffer[SRXL2_TELEMETRY_LEN] = {0};
     buffer[0] = SRXL2_HEADER;
@@ -157,6 +159,15 @@ static void send_packet(void) {
         case XBUS_RPMVOLTTEMP:
             xbus_format_sensor(XBUS_RPMVOLTTEMP_ID);
             memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
+            break;
+        case XBUS_FUEL_FLOW:
+            xbus_format_sensor(XBUS_FUEL_FLOW_ID);
+            memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->fuel_flow, sizeof(xbus_fuel_flow_t));
+            break;
+        case XBUS_STRU_TELE_DIGITAL_AIR:
+            xbus_format_sensor(XBUS_STRU_TELE_DIGITAL_AIR_ID);
+            memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->stru_tele_digital_air,
+                   sizeof(xbus_stru_tele_digital_air_t));
             break;
     }
     uint16_t crc = srxl_get_crc(buffer, SRXL2_TELEMETRY_LEN - 2);  // all bytes, including header
@@ -469,6 +480,31 @@ static void set_config(void) {
         sensor->is_enabled[XBUS_AIRSPEED] = true;
         sensor_formatted->airspeed = malloc(sizeof(xbus_airspeed_t));
         *sensor_formatted->airspeed = (xbus_airspeed_t){XBUS_AIRSPEED_ID, 0, 0, 0};
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_fuel_flow) {
+        fuel_meter_parameters_t parameter = {config->fuel_flow_ml_per_pulse, malloc(sizeof(float)),
+                                             malloc(sizeof(float))};
+        xTaskCreate(fuel_meter_task, "fuel_meter_task", STACK_FUEL_METER, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->fuel_flow[XBUS_FUEL_FLOW_RATE] = parameter.consumption_instant;
+        sensor->fuel_flow[XBUS_FUEL_FLOW_CONSUMED] = parameter.consumption_total;
+        sensor->is_enabled[XBUS_FUEL_FLOW] = true;
+        sensor_formatted->fuel_flow = calloc(1, 16);
+        *sensor_formatted->fuel_flow = (xbus_fuel_flow_t){XBUS_FUEL_FLOW_ID, 0, 0, 0, 0, 0, 0, 0, 0};
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_fuel_pressure) {
+        xgzp68xxd_parameters_t parameter = {config->xgzp68xxd_k, malloc(sizeof(float)), malloc(sizeof(float))};
+        xTaskCreate(xgzp68xxd_task, "fuel_pressure_task", STACK_FUEL_PRESSURE, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE] = parameter.pressure;
+        sensor->is_enabled[XBUS_STRU_TELE_DIGITAL_AIR] = true;
+        sensor_formatted->stru_tele_digital_air = calloc(1, 16);
+        *sensor_formatted->stru_tele_digital_air =
+            (xbus_stru_tele_digital_air_t){XBUS_STRU_TELE_DIGITAL_AIR_ID, 0, 0, 0};
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }

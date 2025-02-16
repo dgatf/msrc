@@ -108,6 +108,9 @@
 #define ENABLE_FUEL_FLOW false
 #define FUEL_FLOW_ML_PER_MINUTE 0.01
 
+/* Fuel pressure */
+#define XGZP68XXD_K 64
+
 config_t *config_read() {
     uint16_t *version = (uint16_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET);
     if (*version != CONFIG_VERSION) {
@@ -119,7 +122,6 @@ config_t *config_read() {
 void config_write(config_t *config) {
     uint8_t flash[FLASH_PAGE_SIZE] = {0};
     memcpy(flash, (uint8_t *)config, sizeof(config_t));
-
     uint32_t ints = save_and_disable_interrupts();
     flash_range_erase(CONFIG_FLASH_TARGET_OFFSET, FLASH_SECTOR_SIZE);
     flash_range_program(CONFIG_FLASH_TARGET_OFFSET, flash, FLASH_PAGE_SIZE);
@@ -196,5 +198,7 @@ void config_forze_write() {
     config.airspeed_slope = AIRSPEED_SLOPE * 100;
     config.fuel_flow_ml_per_pulse = FUEL_FLOW_ML_PER_MINUTE;
     config.enable_fuel_flow = ENABLE_FUEL_FLOW;
+    config.enable_fuel_pressure = false;
+    config.xgzp68xxd_k = XGZP68XXD_K;
     config_write(&config);
 }

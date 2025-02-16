@@ -26,6 +26,7 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
+#include "xgzp68xxd.h"
 
 #define JETIEX_TYPE_INT6 0
 #define JETIEX_TYPE_INT14 1
@@ -859,6 +860,21 @@ static void set_config(sensor_jetiex_t **sensor) {
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0,    JETIEX_TYPE_INT14,          JETIEX_FORMAT_1_DECIMAL, "Total consumption",
                                         "ml", parameter.consumption_total};
+        add_sensor(new_sensor, sensor);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_fuel_pressure) {
+        xgzp68xxd_parameters_t parameter = {config->xgzp68xxd_k, malloc(sizeof(float)), malloc(sizeof(float))};
+
+        xTaskCreate(xgzp68xxd_task, "fuel_pressure_task", STACK_FUEL_PRESSURE, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0,
+                                        JETIEX_TYPE_INT22,
+                                        JETIEX_FORMAT_0_DECIMAL,
+                                        "Tank pressure",
+                                        "Pa",
+                                        parameter.pressure};
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

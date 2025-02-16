@@ -25,7 +25,10 @@ jobs:
           cd build
           qmake ../msrc_gui
           make
-          
+      
+      - name: Remove quarantine
+        run: xattr -rd com.apple.quarantine build/msrc_gui.app
+        
       - name: Compress app folder
         run: tar -czf build/msrc_gui.tgz build/msrc_gui.app
         

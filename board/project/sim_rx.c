@@ -225,8 +225,9 @@ static void process(rx_protocol_t rx_protocol) {
     }
 
     else if (rx_protocol == RX_XBUS) {
-        uint8_t sensor_id[] = {XBUS_AIRSPEED_ID, XBUS_ALTIMETER_ID, XBUS_GPS_LOC_ID,     XBUS_GPS_STAT_ID, XBUS_ESC_ID,
-                               XBUS_BATTERY_ID,  XBUS_VARIO_ID,     XBUS_RPMVOLTTEMP_ID, XBUS_FUEL_FLOW_ID};
+        uint8_t sensor_id[] = {
+            XBUS_AIRSPEED_ID, XBUS_ALTIMETER_ID, XBUS_GPS_LOC_ID,     XBUS_GPS_STAT_ID,  XBUS_ESC_ID,
+            XBUS_BATTERY_ID,  XBUS_VARIO_ID,     XBUS_RPMVOLTTEMP_ID, XBUS_FUEL_FLOW_ID, XBUS_STRU_TELE_DIGITAL_AIR_ID};
         static uint8_t sensor_index = 0;
         xbus_i2c_handler(sensor_id[sensor_index]);
         sensor_index++;

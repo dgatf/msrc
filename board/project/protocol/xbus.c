@@ -30,6 +30,7 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
+#include "xgzp68xxd.h"
 
 #define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
 
@@ -205,6 +206,12 @@ void xbus_format_sensor(uint8_t address) {
                     swap_16((uint16_t)(*sensor->fuel_flow[XBUS_FUEL_FLOW_RATE] * 10));
             break;
         }
+        case XBUS_STRU_TELE_DIGITAL_AIR_ID: {
+            if (sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE])
+                sensor_formatted->stru_tele_digital_air->pressure =
+                    swap_16((uint16_t)(*sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE] * 0.000145038 * 10)); // Pa to psi, precision 0.1 psi
+            break;
+        }
     }
 }
 
@@ -279,6 +286,13 @@ static void i2c_request_handler(uint8_t address) {
             i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->fuel_flow);
             vTaskResume(context.led_task_handle);
             debug_buffer((uint8_t *)sensor_formatted->fuel_flow, sizeof(xbus_fuel_flow_t), "0x%X ");
+            break;
+        case XBUS_STRU_TELE_DIGITAL_AIR_ID:
+            if (!sensor->is_enabled[XBUS_STRU_TELE_DIGITAL_AIR]) break;
+            xbus_format_sensor(address);
+            i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->stru_tele_digital_air);
+            vTaskResume(context.led_task_handle);
+            debug_buffer((uint8_t *)sensor_formatted->stru_tele_digital_air, sizeof(xbus_stru_tele_digital_air_t), "0x%X ");
             break;
     }
 }
@@ -702,6 +716,21 @@ static void set_config() {
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
+    if (config->enable_fuel_pressure) {
+        xgzp68xxd_parameters_t parameter = {config->xgzp68xxd_k, malloc(sizeof(float)),
+                                             malloc(sizeof(float))};
+        xTaskCreate(xgzp68xxd_task, "fuel_pressure_task", STACK_FUEL_PRESSURE, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE] = parameter.pressure;
+        sensor->is_enabled[XBUS_STRU_TELE_DIGITAL_AIR] = true;
+        sensor_formatted->stru_tele_digital_air = calloc(1, 16);
+        *sensor_formatted->stru_tele_digital_air = (xbus_stru_tele_digital_air_t){XBUS_STRU_TELE_DIGITAL_AIR_ID, 0, 0 ,0};
+        i2c_multi_enable_address(XBUS_STRU_TELE_DIGITAL_AIR_ID);
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+
     if (config->xbus_clock_stretch) {
         gpio_set_dir(CLOCK_STRETCH_GPIO, true);
         gpio_put(CLOCK_STRETCH_GPIO, false);

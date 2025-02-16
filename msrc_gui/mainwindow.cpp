@@ -53,6 +53,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbStopbits->addItems({"1", "2"});
     ui->cbParity->addItems({"None", "Odd", "Even"});
 
+    ui->cbMaxPressure->addItems({"< 1 kPa (K = 8192)", "< 2 kPa (K = 4096)", "< 4 kPa (K = 2048)", "< 8 kPa (K = 1024)",
+                                 "< 16 kPa (K = 512)", "< 32 kPa (K = 256)", "< 65 kPa (K = 128)",
+                                 "< 130 kPa (K = 64)", "< 260 kPa (K = 32)", "< 500 kPa (K = 16)", "< 1000 kPa (K = 8)", "> 1000 kPa (K = 4)"});
+
     connect(ui->btConnect, SIGNAL(released()), this, SLOT(buttonSerialPort()));
     connect(ui->btDebug, SIGNAL(released()), this, SLOT(buttonDebug()));
     connect(ui->btClearDebug, SIGNAL(released()), this, SLOT(buttonClearDebug()));
@@ -143,6 +147,11 @@ void MainWindow::generateCircuit(QLabel *label) {
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
+        if (ui->gbFuelPressure->isChecked()) {
+            image.load(":/res/vario_rp2040_zero.png");
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
         if (ui->cbReceiver->currentText() == "Frsky D") {
             image.load(":/res/receiver_frsky_d_rp2040_zero.png");
         } else if (ui->cbReceiver->currentText() == "Spektrum XBUS") {
@@ -170,13 +179,23 @@ void MainWindow::openConfig() {
         file.read((char *)&config, sizeof(config_t));
         file.close();
         if (config.version > CONFIG_VERSION) {
-            QMessageBox::warning(this, tr("Information"), tr("Firmware config version is ") + QString::number(config.version) + ". mscr_gui config version is " + QString::number(CONFIG_VERSION) + ". Download latest msrc_gui. Please save the config in case the conversion fails.", QMessageBox::Close);
+            QMessageBox::warning(this, tr("Information"),
+                                 tr("Firmware config version is ") + QString::number(config.version) +
+                                     ". mscr_gui config version is " + QString::number(CONFIG_VERSION) +
+                                     ". Download latest msrc_gui. Please save the config in case the conversion fails.",
+                                 QMessageBox::Close);
             saveConfig();
             closeSerialPort();
             return;
         }
         if (config.version < CONFIG_VERSION) {
-            QMessageBox::warning(this, tr("Information"), tr("Firmware config version is ") + QString::number(config.version) + ". mscr_gui config version is " + QString::number(CONFIG_VERSION) + ". Converting config version to " + QString::number(CONFIG_VERSION) + "\nPlease press Update button to update MSRC config with new config version.\nAlso is needed to update MSRC firmware, if not already done.", QMessageBox::Close);
+            QMessageBox::warning(this, tr("Information"),
+                                 tr("Firmware config version is ") + QString::number(config.version) +
+                                     ". mscr_gui config version is " + QString::number(CONFIG_VERSION) +
+                                     ". Converting config version to " + QString::number(CONFIG_VERSION) +
+                                     "\nPlease press Update button to update MSRC config with new config "
+                                     "version.\nAlso is needed to update MSRC firmware, if not already done.",
+                                 QMessageBox::Close);
             config.version = CONFIG_VERSION;
         }
         setUiFromConfig();
@@ -300,13 +319,26 @@ void MainWindow::readSerial() {
                 memcpy(&config, data.data() + 2, sizeof(config_t));
 
                 if (config.version > CONFIG_VERSION) {
-                    QMessageBox::warning(this, tr("Information"), tr("Firmware config version is ") + QString::number(config.version) + ". mscr_gui config version is " + QString::number(CONFIG_VERSION) + ". Download latest msrc_gui. Please save the config in case the conversion fails.", QMessageBox::Close);
+                    QMessageBox::warning(
+                        this, tr("Information"),
+                        tr("Firmware config version is ") + QString::number(config.version) +
+                            ". mscr_gui config version is " + QString::number(CONFIG_VERSION) +
+                            ". Download latest msrc_gui. Please save the config in case the conversion fails.",
+                        QMessageBox::Close);
                     saveConfig();
                     closeSerialPort();
                     return;
                 }
                 if (config.version < CONFIG_VERSION) {
-                    QMessageBox::warning(this, tr("Information"), tr("Firmware config version is ") + QString::number(config.version) + ". mscr_gui config version is " + QString::number(CONFIG_VERSION) + ". Converting config version to " + QString::number(CONFIG_VERSION) + "\nIt is needed to update MSRC firmware first or you will lose your config to the default values. Press Update button to update MSRC config with new config version only if MSRC firmware is updated to latest version first.", QMessageBox::Close);
+                    QMessageBox::warning(
+                        this, tr("Information"),
+                        tr("Firmware config version is ") + QString::number(config.version) +
+                            ". mscr_gui config version is " + QString::number(CONFIG_VERSION) +
+                            ". Converting config version to " + QString::number(CONFIG_VERSION) +
+                            "\nIt is needed to update MSRC firmware first or you will lose your config to the default "
+                            "values. Press Update button to update MSRC config with new config version only if MSRC "
+                            "firmware is updated to latest version first.",
+                        QMessageBox::Close);
                     config.version = CONFIG_VERSION;
                 }
 
@@ -511,6 +543,34 @@ void MainWindow::setUiFromConfig() {
 
     ui->gbFuelmeter->setChecked(config.enable_fuel_flow);
     ui->sbMlPulse->setValue(config.fuel_flow_ml_per_pulse);
+
+    // Fuel pressure
+
+    ui->gbFuelPressure->setChecked(config.enable_fuel_pressure);
+    if (config.xgzp68xxd_k == 8192)
+        ui->cbMaxPressure->setCurrentIndex(0);
+    else if (config.xgzp68xxd_k == 4096)
+        ui->cbMaxPressure->setCurrentIndex(1);
+    else if (config.xgzp68xxd_k == 2048)
+        ui->cbMaxPressure->setCurrentIndex(2);
+    else if (config.xgzp68xxd_k == 1024)
+        ui->cbMaxPressure->setCurrentIndex(3);
+    else if (config.xgzp68xxd_k == 512)
+        ui->cbMaxPressure->setCurrentIndex(4);
+    else if (config.xgzp68xxd_k == 256)
+        ui->cbMaxPressure->setCurrentIndex(5);
+    else if (config.xgzp68xxd_k == 128)
+        ui->cbMaxPressure->setCurrentIndex(6);
+    else if (config.xgzp68xxd_k == 64)
+        ui->cbMaxPressure->setCurrentIndex(7);
+    else if (config.xgzp68xxd_k == 32)
+        ui->cbMaxPressure->setCurrentIndex(8);
+    else if (config.xgzp68xxd_k == 16)
+        ui->cbMaxPressure->setCurrentIndex(9);
+    else if (config.xgzp68xxd_k == 8)
+        ui->cbMaxPressure->setCurrentIndex(10);
+    else
+        ui->cbMaxPressure->setCurrentIndex(11);
 }
 
 void MainWindow::getConfigFromUi() {
@@ -676,6 +736,34 @@ void MainWindow::getConfigFromUi() {
 
     config.enable_fuel_flow = ui->gbFuelmeter->isChecked();
     config.fuel_flow_ml_per_pulse = ui->sbMlPulse->value();
+
+    // Fuel pressure
+
+    config.enable_fuel_pressure = ui->gbFuelPressure->isChecked();
+    if (ui->cbMaxPressure->currentIndex() == 0)
+        config.xgzp68xxd_k = 8192;
+    else if (ui->cbMaxPressure->currentIndex() == 1)
+        config.xgzp68xxd_k = 4096;
+    else if (ui->cbMaxPressure->currentIndex() == 2)
+        config.xgzp68xxd_k = 2048;
+    else if (ui->cbMaxPressure->currentIndex() == 3)
+        config.xgzp68xxd_k = 1024;
+    else if (ui->cbMaxPressure->currentIndex() == 4)
+        config.xgzp68xxd_k = 512;
+    else if (ui->cbMaxPressure->currentIndex() == 5)
+        config.xgzp68xxd_k = 256;
+    else if (ui->cbMaxPressure->currentIndex() == 6)
+        config.xgzp68xxd_k = 128;
+    else if (ui->cbMaxPressure->currentIndex() == 7)
+        config.xgzp68xxd_k = 64;
+    else if (ui->cbMaxPressure->currentIndex() == 8)
+        config.xgzp68xxd_k = 32;
+    else if (ui->cbMaxPressure->currentIndex() == 9)
+        config.xgzp68xxd_k = 16;
+    else if (ui->cbMaxPressure->currentIndex() == 10)
+        config.xgzp68xxd_k = 8;
+    else
+        config.xgzp68xxd_k = 4;
 
     // Debug
 
