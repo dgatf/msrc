@@ -100,11 +100,12 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 ## 1. Binaries
 
 File to flash to RP2040:
-[MSRC-RP2040.uf2](https://drive.google.com/file/d/1pzIt4XdcLxiSUfSTfyoh_w5tLTFd9JN2/view?usp=sharing)
+[MSRC-RP2040.uf2](https://drive.google.com/file/d/1U6SIOXrxWNSM_oTFpoiJkpZdhAzVZ5Iy/view?usp=sharing)
 
 PC application for configuration:
-- Linux: [msrc_gui.AppImage](https://drive.google.com/file/d/1G5A5ucQUb3tXk_KQKVdSJNhs5huyyZiU/view?usp=sharing)
-- Windows: [msrc_gui.exe](https://drive.google.com/file/d/1WogFyMToZI1BenxwAIU2i_oVkPFHTB7D/view?usp=sharing)
+- Linux: [msrc_gui.AppImage](https://drive.google.com/file/d/1mvA-3e6PpEAfOVxoN4NynNnP9kEp_QXQ/view?usp=sharing)
+- Windows: [msrc_gui.exe](https://drive.google.com/file/d/1q56j305oKkxwy4nNbp1RR60IOu2S3hbO/view?usp=sharing)
+- macOS: [msrc_gui.dmg](https://drive.google.com/file/d/1zEmVQUYT4Z_JjZQU5CpxyqsHoHrJYY26/view?usp=sharing). Built with macOS 14.7.2
 
 ## 2. Connections
 
@@ -155,7 +156,7 @@ It can be powered from the telemetry port or from BEC. Some receivers deliver 5v
 
 ## 4. Flash firmware
 
-Press BOOT button during startup and paste the binary file [MSRC-RP2040.uf2](https://drive.google.com/file/d/1pzIt4XdcLxiSUfSTfyoh_w5tLTFd9JN2/view?usp=sharing) to RP2040 folder
+Press BOOT button during startup and paste the binary file [MSRC-RP2040.uf2](https://drive.google.com/file/d/1U6SIOXrxWNSM_oTFpoiJkpZdhAzVZ5Iy/view?usp=sharing) to RP2040 folder
 
 If you want to build the firmware for the RP2040 yourself:
 
@@ -174,7 +175,7 @@ File to flash: _project/MSRC-RP2040.uf2_
 
 ### 5.1. From PC - MSRC gui
 
-Connect RP2040 to USB and update config with msrc_gui. [msrc_gui.AppImage](https://drive.google.com/file/d/1G5A5ucQUb3tXk_KQKVdSJNhs5huyyZiU/view?usp=sharing) for Linux and [msrc_gui.exe](https://drive.google.com/file/d/1WogFyMToZI1BenxwAIU2i_oVkPFHTB7D/view?usp=sharing) for windows. After update reboot RP2040 manually.
+Connect RP2040 to USB and update config with msrc_gui. [msrc_gui.AppImage](https://drive.google.com/file/d/1mvA-3e6PpEAfOVxoN4NynNnP9kEp_QXQ/view?usp=sharing) for Linux, [msrc_gui.exe](https://drive.google.com/file/d/1q56j305oKkxwy4nNbp1RR60IOu2S3hbO/view?usp=sharing) for windows or [msrc_gui.dmg](https://drive.google.com/file/d/1zEmVQUYT4Z_JjZQU5CpxyqsHoHrJYY26/view?usp=sharing) for macOS. After update reboot RP2040 manually.
 
 <p align="center"><img src="./images/msrc_gui.png" width="600"><br>
 
@@ -804,6 +805,9 @@ Po = pressure at ground (Pa)*
 
 v1.2
 
+- Added github actions for continuous deployment
+- Added support for macOS
+- Added support for fuel tank pressure sensor (XGZP68XXD)
 - Added support for fuel flow sensor with pulses output  
 - Added support for Hott telemetry  
 - Added support for Spektrum SRXL2 telemetry  

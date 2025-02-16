@@ -25,17 +25,12 @@ jobs:
           cd build
           qmake ../msrc_gui
           make
-      
-      - name: Remove quarantine
-        run: xattr -rd com.apple.quarantine build/msrc_gui.app
-        
-      - name: Compress app folder
-        run: tar -czf build/msrc_gui.tgz build/msrc_gui.app
+          macdeployqt msrc_gui.app -dmg
         
       - name: Upload to Google Drive
         uses: logickoder/g-drive-upload@main
         with:
           credentials: ${{ secrets.GOOGLE_ID }}
-          filename: 'build/msrc_gui.tgz'
+          filename: 'build/msrc_gui.dmg'
           folderId: ${{ secrets.FOLDER_ID }}
           overwrite: 'true'
