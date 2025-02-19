@@ -30,9 +30,10 @@ Implemented sensors:
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
 - GPS serial (NMEA)
-- I2C sensors: BMP180, BMP280, MS5611
-- Analog sensors: voltage, temperature, current, air speed
+- Vario (I2C sensors): BMP180, BMP280, MS5611
+- Analog sensors: voltage, temperature, current, air speed (MPXV7002)  
 - Fuel meter (PWM pulses)
+- Fuel tank pressure (I2C sensor): XGZP68XXD
 
 All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with msrc_gui.
 
@@ -44,13 +45,13 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 [1.Binaries](#1-binaries)  
 [2.Connections](#2-connections)  
 [3. Power source](#3-power-source)  
-[4. Flash firmware to RP2040](#4-flash-firmware)  
+[4. Flash firmware](#4-flash-firmware)  
 [5. Configuration](#5-configuration)  
 &emsp;[5.1 From PC - MSRC gui](#51-from-pc---msrc-gui)  
 &emsp;[5.2. From transmitter using lua script (only Smartport)](#52-from-transmitter-using-lua-script-only-smartport)  
 [6. Receiver protocol](#6-receiver-protocol)  
-&emsp;[6.1 SMARTPORT](#61-smartport)  
-&emsp;[6.2 FRSKY D](#62-frsky-d)  
+&emsp;[6.1 Smartport](#61-smartport)  
+&emsp;[6.2 Frsky D](#62-frsky-d)  
 &emsp;[6.3 Spektrum XBUS](#63-spektrum-xbus)  
 &emsp;[6.4 Spektrum SRXL](#64-spektrum-srxl)  
 &emsp;[6.5 Flysky IBUS](#65-flysky-ibus)  
@@ -78,10 +79,11 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;[7.2. Serial GPS](#72-serial-gps)  
 &emsp;[7.3. Analog sensors](#73-analog-sensors)  
 &emsp;&emsp;[7.3.1. Voltage divider](#731-voltage-divider)  
-&emsp;&emsp;[7.3.2. Temperature sensors (NTC thermistors)](#732-temperature-sensors-ntc-thermistors)  
-&emsp;&emsp;[7.3.4. Airspeed sensor (MPXV7002)](#734-airspeed-sensor)  
-&emsp;[7.4. Vario sensors (I2C sensors)](#74-i2c-sensors)  
-&emsp;[7.5. Fuel Flow sensor](#75-fuel-flow-sensor)  
+&emsp;&emsp;[7.3.2. Temperature (NTC)](#732-temperature)  
+&emsp;&emsp;[7.3.4. Airspeed (MPXV7002)](#734-airspeed)  
+&emsp;[7.4. Vario](#74-vario)  
+&emsp;[7.5. Fuel Flow](#75-fuel-flow)  
+&emsp;[7.6. Fuel pressure](#76-fuel-pressure)  
 [8. OpenTx sensors (Smartport)](#8-opentx-sensors-smartport)  
 [9. Annex](#9-annex)  
 &emsp;[9.1. ESC protocol specifications Hobbywing](#91-esc-protocol-specifications-hobbywing)  
@@ -235,11 +237,11 @@ The following Rx protocols are supported:
 - Hott: serial 19200 bps  
 - Spektrum SRXL2: serial 115200 bps  
 
-### 6.1 SMARTPORT
+### 6.1 Smartport
 
 Connect MSRC to Smartport.  
 
-### 6.2 FRSKY D
+### 6.2 Frsky D
 
 Connect MSRC the telemetry port.  
 
@@ -498,11 +500,11 @@ Calibrate voltage analog sensors with _Voltage multiplier_. Or from opentx, but 
 
 Multiplier = (R1+R2)/ R2
 
-#### 7.3.2 Temperature sensors (NTC thermistors)
+#### 7.3.2 Temperature
 
-No need to calibrate. For fine tuning adjust in ntc.h: NTC_R_REF, NTC_R1, NTC_BETA
+Use NTC thermistors. No need to calibrate. For fine tuning adjust in ntc.h: NTC_R_REF, NTC_R1, NTC_BETA
 
-#### 7.3.3. Current sensor
+#### 7.3.3. Current
 
 Calibrate current analog sensor from msrc_gui. Or from opentx, but it is recommended in order to increase sensor resolution
 
@@ -512,9 +514,9 @@ Set sensor type:
 
 - Shunt resistor sensor. Multiplier = 1000 / (ampgain * resistor(mΩ))
 
-#### 7.3.4. Airspeed sensor
+#### 7.3.4. Airspeed
 
-Vcc for the airspeed sensor must be 5V. The maximum readable output the sensor is 3.3V due to the rp2040 ADC range : 0-3-3V
+Use differential pressure analog sensor MPXV7002. Vcc for the airspeed sensor must be 5V. The maximum readable output the sensor is 3.3V due to the rp2040 ADC range : 0-3-3V
 The limits the maximum speed to about 120km/h. Over 3.3V output the reading is the same as for 3.3V. It won't damage the rp2040 as Vout current is 0.1mA.  
 If higher speed measurement (up to 170km/h) is needed, an stepdown has to be added. But this is still not added to the code.  
 
@@ -550,13 +552,15 @@ Airspeed calculation:
 
 TAS -> airspeed (m/s)  
 
-### 7.4. I2C sensors
+### 7.4. Vario
 
-The following I2C sensors are suported:
+The following I2C barometer sensors are suported:
 
 - Barometer: BMP180, BMP280, MS5611
 
-### 7.5. Fuel flow sensor
+Vspeed is calculated from air pressure and temperature.   
+
+### 7.5. Fuel flow
 
 This sensor is available for: XBUS, Smartport and JetiEx.  
 
@@ -576,6 +580,12 @@ If this parameter is unknown, to calibrate:
 
 ρ -> fuel density (g/m<sup>3</sup>)  
 ΔWeight -> g
+
+### 7.6. Fuel pressure
+ 
+Use XGZP68XXD. Set K parameter with sensor maximum pressure, depending on the model.
+
+Available for: XBUS, SRXL, SRXL2 and Jeti Ex.   
 
 ## 8. OpenTx sensors (Smartport)
 
