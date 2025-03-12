@@ -21,7 +21,7 @@ void esc_hw3_task(void *parameters) {
 #ifdef SIM_SENSORS
     *parameter.rpm = 12345.67;
 #endif
-    uart1_begin(19200, UART1_TX_GPIO, UART_ESC_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart1_begin(19200, UART1_TX_GPIO, UART_ESC_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, false);
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process(&parameter);

@@ -16,7 +16,7 @@ void serial_monitor_task(void *parameters) {
           config->serial_monitor_baudrate, config->serial_monitor_stop_bits, config->serial_monitor_parity,
           config->serial_monitor_inverted, config->serial_monitor_timeout_ms);
     uart1_begin(config->serial_monitor_baudrate, UART1_TX_GPIO, UART_ESC_RX, config->serial_monitor_timeout_ms * 1000,
-                8, 1, config->serial_monitor_parity, config->serial_monitor_inverted);
+                8, 1, config->serial_monitor_parity, config->serial_monitor_inverted, false);
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process();

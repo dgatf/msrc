@@ -83,7 +83,7 @@ void sanwa_task(void *parameters) {
     set_config(sensors);
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
-    uart0_begin(115200L, UART_RECEIVER_TX, UART_RECEIVER_RX, SANWA_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(115200L, UART_RECEIVER_TX, UART_RECEIVER_RX, SANWA_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
     debug("\nSanwa init");
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);

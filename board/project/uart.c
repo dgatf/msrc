@@ -8,20 +8,30 @@
 
 static volatile uint uart0_timeout, uart1_timeout, uart0_timestamp, uart1_timestamp;
 static volatile bool uart0_is_timedout = true, uart1_is_timedout = true;
-
+static bool half_duplex0, half_duplex1, inverted0, inverted1;
+static int gpio_tx0, gpio_rx0, gpio_tx1, gpio_rx1;
 static int64_t uart0_timeout_callback(alarm_id_t id, void *user_data);
 static int64_t uart1_timeout_callback(alarm_id_t id, void *user_data);
 static void uart0_rx_handler();
 static void uart1_rx_handler();
 
 void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity,
-                 bool inverted) {
+                 bool inverted, bool half_duplex) {
+    half_duplex0 = half_duplex;
+    gpio_tx0 = gpio_tx;
+    gpio_rx0 = gpio_rx;
+    inverted0 = inverted;
     if (context.uart_alarm_pool == NULL) context.uart_alarm_pool = alarm_pool_create(2, 10);
     uart_init(uart0, baudrate);
     uart_set_fifo_enabled(uart0, false);
-    gpio_set_function(gpio_tx, GPIO_FUNC_UART);
     gpio_set_function(gpio_rx, GPIO_FUNC_UART);
-    if (inverted) {
+    if (!half_duplex) gpio_set_function(gpio_tx, GPIO_FUNC_UART);
+    if (!inverted) {
+        gpio_pull_up(gpio_tx);
+        gpio_pull_up(gpio_rx);
+    } else {
+        gpio_pull_down(gpio_tx);
+        gpio_pull_down(gpio_rx);
         gpio_set_outover(gpio_tx, GPIO_OVERRIDE_INVERT);
         gpio_set_inover(gpio_rx, GPIO_OVERRIDE_INVERT);
     }
@@ -34,18 +44,25 @@ void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint d
 }
 
 void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity,
-                 bool inverted) {
+                 bool inverted, bool half_duplex) {
+    half_duplex1 = half_duplex;
+    gpio_tx1 = gpio_tx;
+    gpio_rx1 = gpio_rx;
+    inverted1 = inverted;
     if (context.uart_alarm_pool == NULL) context.uart_alarm_pool = alarm_pool_create(2, 10);
     uart_init(uart1, baudrate);
     uart_set_fifo_enabled(uart1, false);
-    gpio_set_function(gpio_tx, GPIO_FUNC_UART);
     gpio_set_function(gpio_rx, GPIO_FUNC_UART);
-    if (inverted) {
+    if (!half_duplex) gpio_set_function(gpio_tx, GPIO_FUNC_UART);
+    gpio_set_function(gpio_rx, GPIO_FUNC_UART);
+    if (!inverted) {
+        gpio_pull_up(gpio_tx);
+        gpio_pull_up(gpio_rx);
+    } else {
+        gpio_pull_down(gpio_tx);
         gpio_pull_down(gpio_rx);
         gpio_set_outover(gpio_tx, GPIO_OVERRIDE_INVERT);
         gpio_set_inover(gpio_rx, GPIO_OVERRIDE_INVERT);
-    } else {
-        gpio_pull_up(gpio_rx);
     }
     uart_set_format(uart1, databits, stopbits, parity);
     irq_set_exclusive_handler(UART1_IRQ, uart1_rx_handler);
@@ -145,13 +162,53 @@ void uart1_read_bytes(uint8_t *data, uint8_t lenght) {
     for (uint8_t i = 0; i < lenght; i++) xQueueReceive(context.uart1_queue_handle, data + i, 0);
 }
 
-void uart0_write(uint8_t data) { uart_putc_raw(uart0, data); }
+void uart0_write(uint8_t data) {
+    if (half_duplex0) {
+        gpio_set_function(gpio_tx0, GPIO_FUNC_UART);
+        if (inverted0) gpio_set_outover(gpio_tx0, GPIO_OVERRIDE_INVERT);
+    }
+    uart_putc_raw(uart0, data);
+    if (half_duplex0) {
+        uart_tx_wait_blocking(uart0);
+        gpio_set_function(gpio_tx0, GPIO_FUNC_NULL);
+    }
+}
 
-void uart1_write(uint8_t data) { uart_putc_raw(uart1, data); }
+void uart1_write(uint8_t data) {
+    if (half_duplex1) {
+        gpio_set_function(gpio_tx1, GPIO_FUNC_UART);
+        if (inverted1) gpio_set_outover(gpio_tx1, GPIO_OVERRIDE_INVERT);
+    }
+    uart_putc_raw(uart1, data);
+    if (half_duplex1) {
+        uart_tx_wait_blocking(uart1);
+        gpio_set_function(gpio_tx1, GPIO_FUNC_NULL);
+    }
+}
 
-void uart0_write_bytes(uint8_t *data, uint8_t lenght) { uart_write_blocking(uart0, data, lenght); }
+void uart0_write_bytes(uint8_t *data, uint8_t lenght) {
+    if (half_duplex0) {
+        gpio_set_function(gpio_tx0, GPIO_FUNC_UART);
+        if (inverted0) gpio_set_outover(gpio_tx0, GPIO_OVERRIDE_INVERT);
+    }
+    uart_write_blocking(uart0, data, lenght);
+    if (half_duplex0) {
+        uart_tx_wait_blocking(uart0);
+        gpio_set_function(gpio_tx0, GPIO_FUNC_NULL);
+    }
+}
 
-void uart1_write_bytes(uint8_t *data, uint8_t lenght) { uart_write_blocking(uart1, data, lenght); }
+void uart1_write_bytes(uint8_t *data, uint8_t lenght) {
+    if (half_duplex1) {
+        gpio_set_function(gpio_tx1, GPIO_FUNC_UART);
+        if (inverted1) gpio_set_outover(gpio_tx1, GPIO_OVERRIDE_INVERT);
+    }
+    uart_write_blocking(uart1, data, lenght);
+    if (half_duplex1) {
+        uart_tx_wait_blocking(uart1);
+        gpio_set_function(gpio_tx1, GPIO_FUNC_NULL);
+    }
+}
 
 uint8_t uart0_available() { return uxQueueMessagesWaiting(context.uart0_queue_handle); }
 

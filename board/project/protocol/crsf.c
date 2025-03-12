@@ -124,7 +124,7 @@ void crsf_task(void *parameters) {
     set_config(&sensors);
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
-    uart0_begin(416666L, UART_RECEIVER_TX, UART_RECEIVER_RX, CRSF_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(416666L, UART_RECEIVER_TX, UART_RECEIVER_RX, CRSF_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
     debug("\nCRSF init");
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);

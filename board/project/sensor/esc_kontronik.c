@@ -40,7 +40,7 @@ void esc_kontronik_task(void *parameters) {
     xTaskCreate(cell_count_task, "cell_count_task", STACK_CELL_COUNT, (void *)&cell_count_parameters, 1, &task_handle);
     xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-    uart1_begin(115200, UART1_TX_GPIO, UART_ESC_RX, TIMEOUT_US, 8, 1, UART_PARITY_EVEN, false);
+    uart1_begin(115200, UART1_TX_GPIO, UART_ESC_RX, TIMEOUT_US, 8, 1, UART_PARITY_EVEN, false, false);
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process(&parameter);

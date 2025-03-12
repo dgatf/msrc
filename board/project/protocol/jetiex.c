@@ -74,7 +74,7 @@ void jetiex_task(void *parameters) {
     sensor_jetiex_t *sensor[32] = {NULL};
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
-    uart0_begin(baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, JETIEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, JETIEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
     set_config(sensor);
     debug("\nJeti Ex init");
     while (1) {
@@ -319,7 +319,7 @@ static int64_t timeout_callback(alarm_id_t id, void *parameters) {
         *baudrate = 250000L;
     else
         *baudrate = 125000L;
-    uart0_begin(*baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, JETIEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(*baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, JETIEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
     debug("\nJeti Ex timeout. Baudrate");
     return 0;
 }

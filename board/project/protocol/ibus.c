@@ -110,7 +110,7 @@ void ibus_task(void *parameters) {
     uint16_t sensor_mask = 0B1111111111111110;
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
-    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, IBUS_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, IBUS_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
     set_config(sensor, sensor_mask);
     debug("\nIbus init");
     while (1) {

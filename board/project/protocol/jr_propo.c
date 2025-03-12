@@ -25,6 +25,7 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
+//#include "uart_jr.h"
 
 #define JR_PROPO_TEMPERATURE_SENSOR 1
 #define JR_PROPO_RPM_SENSOR 2
@@ -43,8 +44,10 @@
 #define JR_PROPO_BATTERY_CAPACITY_INDEX 0         // 1 mAh
 #define JR_PROPO_BATTERY_POWER_INDEX 0            // 0.1 W
 
-#define JR_PROPO_TIMEOUT_US 1000
+#define JR_PROPO_TIMEOUT_US 2000
 #define JR_PROPO_PACKET_LENGHT 1
+
+#define PIN_BASE 12
 
 static void process(void);
 static void send_packet(uint8_t address);
@@ -52,7 +55,8 @@ static void send_packet(uint8_t address);
 void jr_propo_task(void *parameters) {
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
-    uart0_begin(250000, UART_RECEIVER_TX, UART_RECEIVER_RX, JR_PROPO_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(250000, UART_RECEIVER_TX, UART_RECEIVER_RX, JR_PROPO_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
+    //uart_jr_init(pio0, PIN_BASE);
     debug("\nJR Propo init");
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);

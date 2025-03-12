@@ -119,7 +119,7 @@ void sbus_task(void *parameters) {
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
     set_config();
-    uart0_begin(100000, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 2, UART_PARITY_EVEN, true);
+    uart0_begin(100000, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 2, UART_PARITY_EVEN, true, true);
     debug("\nSbus init");
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);

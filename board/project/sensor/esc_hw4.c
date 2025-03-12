@@ -69,7 +69,7 @@ void esc_hw4_task(void *parameters) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
     }
 
-    uart1_begin(19200, UART1_TX_GPIO, UART_ESC_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart1_begin(19200, UART1_TX_GPIO, UART_ESC_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, false);
 
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);

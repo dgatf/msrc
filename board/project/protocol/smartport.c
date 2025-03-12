@@ -125,8 +125,8 @@
 #define FUEL_QTY_FIRST_ID 0x0a10  // 100 ml
 #define FUEL_QTY_LAST_ID 0x0a1f
 
-#define TIMEOUT_USPACKET_LENGHT 1000
-#define PACKET_LENGHTTIMEOUT_USPACKET_LENGHT 2
+#define TIMEOUT_US 1000
+#define PACKET_LENGHT 2
 
 static SemaphoreHandle_t semaphore_sensor = NULL;
 static bool is_maintenance_mode = false;
@@ -162,7 +162,7 @@ void smartport_task(void *parameters) {
     smartport_parameters_t parameter;
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
-    uart0_begin(57600, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_USPACKET_LENGHT, 8, 1, UART_PARITY_NONE, true);
+    uart0_begin(57600, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, true, true);
     semaphore_sensor = xSemaphoreCreateBinary();
     xSemaphoreTake(semaphore_sensor, 0);
     set_config(&parameter);
@@ -190,9 +190,9 @@ static void process(smartport_parameters_t *parameter) {
         }
         uart0_read_bytes(data, lenght);
         if (data[0] == 0x7E && data[1] == sensor_id_to_crc(parameter->sensor_id)) {
-            if (lenght == PACKET_LENGHTTIMEOUT_USPACKET_LENGHT) {
+            if (lenght == PACKET_LENGHT) {
                 debug("\nSmartport (%u) < ", uxTaskGetStackHighWaterMark(NULL));
-                debug_buffer(data, PACKET_LENGHTTIMEOUT_USPACKET_LENGHT, "0x%X ");
+                debug_buffer(data, PACKET_LENGHT, "0x%X ");
                 if (is_maintenance_mode && uxQueueMessagesWaiting(packet_queue_handle)) {
                     xTaskNotifyGive(packet_task_handle);
                 } else if (!is_maintenance_mode) {

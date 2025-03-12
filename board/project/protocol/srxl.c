@@ -48,7 +48,7 @@ void srxl_task(void *parameters) {
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
 
-    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, SRXL_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
+    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, SRXL_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
     set_config();
     debug("\nSRXL init");
     while (1) {
