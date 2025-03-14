@@ -3,28 +3,29 @@
 
 #define CONFIG_VERSION 2
 
-#include <QMainWindow>
 #include <QDebug>
-#include <QPainter>
+#include <QFileDialog>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLabel>
+#include <QMainWindow>
+#include <QMessageBox>
+#include <QPainter>
 #include <QSerialPort>
 #include <QSerialPortInfo>
-#include <QFileDialog>
-#include <QJsonObject>
-#include <QJsonDocument>
 #include <QTimer>
-#include <QMessageBox>
 
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 1
 #define VERSION_PATCH 0
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui {
+class MainWindow;
+}
 QT_END_NAMESPACE
 
-typedef enum rx_protocol_t : uint8_t
-{
+typedef enum rx_protocol_t : uint8_t {
     RX_SMARTPORT,
     RX_FRSKY_D,
     RX_XBUS,
@@ -42,8 +43,7 @@ typedef enum rx_protocol_t : uint8_t
     RX_JR_PROPO
 } rx_protocol_t;
 
-typedef enum esc_protocol_t : uint8_t
-{
+typedef enum esc_protocol_t : uint8_t {
     ESC_NONE,
     ESC_HW3,
     ESC_HW4,
@@ -55,19 +55,9 @@ typedef enum esc_protocol_t : uint8_t
     ESC_HW5
 } esc_protocol_t;
 
-typedef enum i2c_module_t : uint8_t
-{
-    I2C_NONE,
-    I2C_BMP280,
-    I2C_MS5611,
-    I2C_BMP180
-} i2c_module_t;
+typedef enum i2c_module_t : uint8_t { I2C_NONE, I2C_BMP280, I2C_MS5611, I2C_BMP180 } i2c_module_t;
 
-typedef enum analog_current_type_t : uint8_t
-{
-    CURRENT_TYPE_HALL,
-    CURRENT_TYPE_SHUNT
-} analog_current_type_t;
+typedef enum analog_current_type_t : uint8_t { CURRENT_TYPE_HALL, CURRENT_TYPE_SHUNT } analog_current_type_t;
 
 typedef struct config_t {
     uint16_t version;
@@ -158,17 +148,16 @@ typedef struct config_t {
     uint32_t spare20;
 } config_t;
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
-public:
+   public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
     void generateCircuit(QLabel *label);
 
-private:
+   private:
     Ui::MainWindow *ui;
     QSerialPort *serial = nullptr;
     QByteArray data;
@@ -176,6 +165,7 @@ private:
     QStringList portsList;
     config_t config;
     bool isDebug = false;
+    bool autoscroll = true;
 
     void requestSerialConfig();
     void getConfigFromUi();
@@ -184,7 +174,7 @@ private:
     void closeSerialPort();
     void enableWidgets(QWidget *widget, bool enable);
 
-private slots:
+   private slots:
     void buttonSerialPort();
     void buttonDebug();
     void buttonClearDebug();
@@ -211,7 +201,7 @@ private slots:
     void on_cbEsc_currentTextChanged(const QString &arg1);
     void on_cbReceiver_currentTextChanged(const QString &arg1);
     void on_btCircuit_clicked();
-    void resizeEvent(QResizeEvent* event);
+    void resizeEvent(QResizeEvent *event);
     void on_gbGps_toggled(bool arg1);
     void on_cbCurrentAutoOffset_toggled(bool checked);
     void on_cbCurrentSensorType_currentTextChanged(const QString &arg1);
@@ -219,5 +209,6 @@ private slots:
     void on_cbEscAutoOffset_stateChanged(int arg1);
     void on_gbAirspeed_toggled(bool arg1);
     void on_gbFuelmeter_toggled(bool arg1);
+    void on_btScroll_clicked();
 };
-#endif // MAINWINDOW_H
+#endif  // MAINWINDOW_H

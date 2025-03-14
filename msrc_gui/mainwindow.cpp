@@ -6,6 +6,8 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), serial(new QSerialPort()) {
     ui->setupUi(this);
+    ui->tbViews->setCurrentIndex(0);
+    ui->ptDebug->ensureCursorVisible();
     ui->saConfig->setEnabled(false);
     ui->btDebug->setDisabled(true);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
@@ -26,8 +28,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbReceiver->addItem("Sanwa", RX_SANWA);
     ui->cbReceiver->addItem("HOTT", RX_HOTT);
     ui->cbReceiver->addItem("Hitec", RX_HITEC);
-    ui->cbReceiver->addItem("Serial Monitor", SERIAL_MONITOR);
     ui->cbReceiver->addItem("JR Propo", RX_JR_PROPO);
+    ui->cbReceiver->addItem("Serial Monitor", SERIAL_MONITOR);
     ui->cbEscModel->addItems({"", "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A", "Platinum PRO v4 100A",
                               "Platinum PRO v4 120A", "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A",
                               "Platinum PRO v4 200A-HV", "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A", "FlyFun 120A",
@@ -54,8 +56,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbParity->addItems({"None", "Odd", "Even"});
 
     ui->cbMaxPressure->addItems({"< 1 kPa (K = 8192)", "< 2 kPa (K = 4096)", "< 4 kPa (K = 2048)", "< 8 kPa (K = 1024)",
-                                 "< 16 kPa (K = 512)", "< 32 kPa (K = 256)", "< 65 kPa (K = 128)",
-                                 "< 130 kPa (K = 64)", "< 260 kPa (K = 32)", "< 500 kPa (K = 16)", "< 1000 kPa (K = 8)", "> 1000 kPa (K = 4)"});
+                                 "< 16 kPa (K = 512)", "< 32 kPa (K = 256)", "< 65 kPa (K = 128)", "< 130 kPa (K = 64)",
+                                 "< 260 kPa (K = 32)", "< 500 kPa (K = 16)", "< 1000 kPa (K = 8)",
+                                 "> 1000 kPa (K = 4)"});
 
     connect(ui->btConnect, SIGNAL(released()), this, SLOT(buttonSerialPort()));
     connect(ui->btDebug, SIGNAL(released()), this, SLOT(buttonDebug()));
@@ -348,6 +351,7 @@ void MainWindow::readSerial() {
     } else {
         data = serial->readAll();
         ui->ptDebug->insertPlainText(data);
+        if (autoscroll) ui->ptDebug->ensureCursorVisible();
     }
 }
 
@@ -1095,4 +1099,12 @@ void MainWindow::on_cbEscAutoOffset_stateChanged(int arg1) {
         ui->sbEscOffset->setVisible(false);
     else
         ui->sbEscOffset->setVisible(true);
+}
+
+void MainWindow::on_btScroll_clicked() {
+    autoscroll = !autoscroll;
+    if (autoscroll)
+        ui->btScroll->setText("No scroll");
+    else
+        ui->btScroll->setText("Autoscroll");
 }

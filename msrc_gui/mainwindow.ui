@@ -88,7 +88,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-1253</y>
+             <y>0</y>
              <width>603</width>
              <height>2320</height>
             </rect>
@@ -1459,7 +1459,7 @@
            <bool>true</bool>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">
@@ -1557,6 +1557,13 @@
                <widget class="QPushButton" name="btClearDebug">
                 <property name="text">
                  <string>Clear Debug</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btScroll">
+                <property name="text">
+                 <string>No scroll</string>
                 </property>
                </widget>
               </item>
