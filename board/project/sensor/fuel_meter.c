@@ -23,6 +23,8 @@ void fuel_meter_task(void *parameters) {
     *parameter.consumption_total = 0;    // ml
     xTaskNotifyGive(context.receiver_task_handle);
 
+    gpio_pull_up(FUELMETER_CAPTURE_GPIO);
+
     capture_edge_init(pio0, FUELMETER_CAPTURE_GPIO, CLOCK_DIV, PIO0_IRQ_0);
     capture_edge_set_handler(0, capture_pin_0_handler);
 
