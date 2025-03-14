@@ -12,5 +12,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     crsf.c
     hott.c
     sanwa.c
-    jr_propo.c
+    jr_dmss.c
 )

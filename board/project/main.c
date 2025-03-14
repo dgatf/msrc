@@ -18,7 +18,7 @@
 #include "crsf.h"
 #include "hott.h"
 #include "sanwa.h"
-#include "jr_propo.h"
+#include "jr_dmss.h"
 
 context_t context;
 
@@ -117,7 +117,7 @@ int main() {
             xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
             break;
         case RX_JR_PROPO:
-            xTaskCreate(jr_propo_task, "jr_propo_task", STACK_RX_JR_PROPO, NULL, 3, &context.receiver_task_handle);
+            xTaskCreate(jr_dmss_task, "jr_dmss_task", STACK_RX_JR_PROPO, NULL, 3, &context.receiver_task_handle);
             context.uart0_notify_task_handle = context.receiver_task_handle;
             xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
             break;

@@ -1,4 +1,4 @@
-# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF, Sanwa, Hott, SRXL2
+# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF, Sanwa, Hott, SRXL2, JR DMSS
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=9GKNBVGHKXFGW&no_recurring=0&currency_code=USD)
 
@@ -18,6 +18,7 @@ Compatible RX protocols:
 - CRSF
 - Sanwa
 - Hott
+- JR DMSS
 
 Compatible ESCs: Hobbywing V3/V4/V5/Flyfun, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal.
 
@@ -64,6 +65,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;[6.12 Sanwa](#612-sanwa)  
 &emsp;[6.13 Hott](#613-hott)  
 &emsp;[6.14 Spektrum SRXL2](#614-spektrum-srxl2)  
+&emsp;[6.15 JR DMSS](#615-jr-dmss)  
 [7. Sensors](#7-sensors)  
 &emsp; [7.1. ESC](#71-esc)  
 &emsp;&emsp;[7.1.1 Hobbywing Platinum V3](#711-hobbywing-platinum-v3)  
@@ -140,7 +142,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 
 </center>
 
-(1) with 1k resistor  
+(1) with 100Ω to 1kΩ resistor. This resistor is optional as RP2040 has internal protection resistors for GPIOs  
 (2) for older receivers like TM1000 & TM110, 1k-3.3k pull up resistors are needed. For newer receivers with both XBUS and SRXL2 ports, no pull ups are needed. If incorrect choice, XBUS won't work. Try the other option if no telemetry is shown in transmitter   
 (3) Optional  
 
@@ -236,6 +238,7 @@ The following Rx protocols are supported:
 - Sanwa: serial, 115200 bps
 - Hott: serial 19200 bps  
 - Spektrum SRXL2: serial 115200 bps  
+- JR DMSS: serial 250000, 2 stop bits
 
 ### 6.1 Smartport
 
@@ -360,6 +363,10 @@ See [SRXL2 specifications](https://github.com/SpektrumRC/SRXL2/blob/master/Docs/
 
 <p align="center"><img src="./images/srxl2_connectors.png" width="500"><br>
   <i>SRXL2 connectors</i><br><br></p>
+
+### 6.15 JR DMSS
+
+Connect to XBUS port.  
 
 ## 7. Sensors
 
@@ -821,6 +828,8 @@ v1.2
 - Added support for fuel flow sensor with pulses output  
 - Added support for Hott telemetry  
 - Added support for Spektrum SRXL2 telemetry  
+- Implemented serial half duplex
+- Added support for JR DMSS telemetry  
 
 [v1.1](https://github.com/dgatf/msrc/tree/v1.1)
 
