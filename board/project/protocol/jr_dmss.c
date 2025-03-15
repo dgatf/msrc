@@ -110,7 +110,7 @@ static void send_packet(uint8_t address, float **sensor) {
     switch (address) {
         case JR_DMSS_TEMPERATURE_SENSOR_ID: {
             if (sensor[TEMPERATURE] == NULL) return;
-            buffer[0] = JR_DMSS_TEMPERATURE_SENSOR_ID;
+            buffer[0] = JR_DMSS_TEMPERATURE_SENSOR_ID | 0xE0;
             buffer[1] = 0x3;
             buffer[2] = JR_DMSS_TEMPERATURE_TEMPERATURE_INDEX;
             uint16_t value = *sensor[TEMPERATURE];
@@ -125,7 +125,7 @@ static void send_packet(uint8_t address, float **sensor) {
         }
         case JR_DMSS_RPM_SENSOR_ID: {
             if (sensor[RPM] == NULL) return;
-            buffer[0] = JR_DMSS_RPM_SENSOR_ID;
+            buffer[0] = JR_DMSS_RPM_SENSOR_ID | 0xE0;
             buffer[1] = 0x3;
             buffer[2] = JR_DMSS_RPM_RPM_INDEX;
             uint16_t value = *sensor[RPM];
@@ -141,7 +141,7 @@ static void send_packet(uint8_t address, float **sensor) {
         case JR_DMSS_VARIO_SENSOR_ID: {
             {
                 static uint8_t index = 0;
-                buffer[0] = JR_DMSS_VARIO_SENSOR_ID;
+                buffer[0] = JR_DMSS_VARIO_SENSOR_ID  | 0xE0;
                 buffer[1] = 0x3;
                 uint16_t value;
                 if ((index % 3) == 0) {
@@ -179,7 +179,7 @@ static void send_packet(uint8_t address, float **sensor) {
         }
         case JR_DMSS_AIRSPEED_SENSOR_ID: {
             if (sensor[AIRSPEED] == NULL) return;
-            buffer[0] = JR_DMSS_AIRSPEED_SENSOR_ID;
+            buffer[0] = JR_DMSS_AIRSPEED_SENSOR_ID | 0xE0;
             buffer[1] = 0x3;
             buffer[2] = JR_DMSS_AIRSPEED_AIRSPEED_INDEX;
             uint16_t value = *sensor[AIRSPEED];
@@ -194,7 +194,7 @@ static void send_packet(uint8_t address, float **sensor) {
         }
         case JR_DMSS_BATTERY_SENSOR_ID: {
             static uint8_t index = 0;
-            buffer[0] = JR_DMSS_VARIO_SENSOR_ID;
+            buffer[0] = JR_DMSS_VARIO_SENSOR_ID | 0xE0;
             buffer[1] = 0x3;
             uint16_t value;
             if ((index % 3) == 0) {
