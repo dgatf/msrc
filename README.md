@@ -829,7 +829,7 @@ v1.2
 - Added support for Hott telemetry  
 - Added support for Spektrum SRXL2 telemetry  
 - Implemented serial half duplex
-- Added support for JR DMSS telemetry  
+- Added support for JR DMSS telemetry. Thanks to *Gorochan* and *gardfiel2412* from RCGroups  
 
 [v1.1](https://github.com/dgatf/msrc/tree/v1.1)
 

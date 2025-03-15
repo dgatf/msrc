@@ -31,16 +31,16 @@
 #define JR_DMSS_AIRSPEED_SENSOR_ID 5
 #define JR_DMSS_BATTERY_SENSOR_ID 8
 
-#define JR_DMSS_TEMPERATURE_TEMPERATURE_INDEX 0  // 1ºC
-#define JR_DMSS_RPM_RPM_INDEX 0                  // 1 rpm
-#define JR_DMSS_VARIO_ALTITUDE_INDEX 3           // 0.1m
-#define JR_DMSS_VARIO_VSPEED_INDEX 2             // 0.1 m/s
-#define JR_DMSS_VARIO_PRESSURE_INDEX 1           // 0.1 hPa
-#define JR_DMSS_AIRSPEED_AIRSPEED_INDEX 0        // 1 km/h
-#define JR_DMSS_BATTERY_VOLTAGE_INDEX 0          // 0.01 V
-#define JR_DMSS_BATTERY_CURRENT_INDEX 0x50       // 0.01 A
-#define JR_DMSS_BATTERY_CAPACITY_INDEX 8         // 1 mAh
-#define JR_DMSS_BATTERY_POWER_INDEX 0x5A         // 0.1 W
+#define JR_DMSS_TEMPERATURE_TEMPERATURE_INDEX 0x0  // 1ºC
+#define JR_DMSS_RPM_RPM_INDEX 0x0                  // 1 rpm
+#define JR_DMSS_VARIO_ALTITUDE_INDEX 0x3           // 0.1m
+#define JR_DMSS_VARIO_VSPEED_INDEX 0x2             // 0.1 m/s
+#define JR_DMSS_VARIO_PRESSURE_INDEX 0x1           // 0.1 hPa
+#define JR_DMSS_AIRSPEED_AIRSPEED_INDEX 0x0        // 1 km/h
+#define JR_DMSS_BATTERY_VOLTAGE_INDEX 0x0          // 0.01 V
+#define JR_DMSS_BATTERY_CURRENT_INDEX 0x80         // 0.01 A
+#define JR_DMSS_BATTERY_CAPACITY_INDEX 0x8         // 1 mAh
+#define JR_DMSS_BATTERY_POWER_INDEX 0x90           // 0.1 W
 
 #define JR_DMSS_TIMEOUT_US 300
 #define JR_DMSS_PACKET_LENGHT 1
@@ -110,7 +110,7 @@ static void send_packet(uint8_t address, float **sensor) {
     switch (address) {
         case JR_DMSS_TEMPERATURE_SENSOR_ID: {
             if (sensor[TEMPERATURE] == NULL) return;
-            buffer[0] = JR_DMSS_TEMPERATURE_SENSOR_ID;
+            buffer[0] = JR_DMSS_TEMPERATURE_SENSOR_ID | 0xE0;
             buffer[1] = 0x3;
             buffer[2] = JR_DMSS_TEMPERATURE_TEMPERATURE_INDEX;
             uint16_t value = *sensor[TEMPERATURE];
@@ -125,7 +125,7 @@ static void send_packet(uint8_t address, float **sensor) {
         }
         case JR_DMSS_RPM_SENSOR_ID: {
             if (sensor[RPM] == NULL) return;
-            buffer[0] = JR_DMSS_RPM_SENSOR_ID;
+            buffer[0] = JR_DMSS_RPM_SENSOR_ID | 0xE0;
             buffer[1] = 0x3;
             buffer[2] = JR_DMSS_RPM_RPM_INDEX;
             uint16_t value = *sensor[RPM];
@@ -141,7 +141,7 @@ static void send_packet(uint8_t address, float **sensor) {
         case JR_DMSS_VARIO_SENSOR_ID: {
             {
                 static uint8_t index = 0;
-                buffer[0] = JR_DMSS_VARIO_SENSOR_ID;
+                buffer[0] = JR_DMSS_VARIO_SENSOR_ID  | 0xE0;
                 buffer[1] = 0x3;
                 uint16_t value;
                 if ((index % 3) == 0) {
@@ -179,7 +179,7 @@ static void send_packet(uint8_t address, float **sensor) {
         }
         case JR_DMSS_AIRSPEED_SENSOR_ID: {
             if (sensor[AIRSPEED] == NULL) return;
-            buffer[0] = JR_DMSS_AIRSPEED_SENSOR_ID;
+            buffer[0] = JR_DMSS_AIRSPEED_SENSOR_ID | 0xE0;
             buffer[1] = 0x3;
             buffer[2] = JR_DMSS_AIRSPEED_AIRSPEED_INDEX;
             uint16_t value = *sensor[AIRSPEED];
@@ -194,7 +194,7 @@ static void send_packet(uint8_t address, float **sensor) {
         }
         case JR_DMSS_BATTERY_SENSOR_ID: {
             static uint8_t index = 0;
-            buffer[0] = JR_DMSS_VARIO_SENSOR_ID;
+            buffer[0] = JR_DMSS_BATTERY_SENSOR_ID | 0xE0;
             buffer[1] = 0x3;
             uint16_t value;
             if ((index % 3) == 0) {
