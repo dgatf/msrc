@@ -454,9 +454,11 @@ void MainWindow::setUiFromConfig() {
     ui->gbCurrent->setChecked(config.enable_analog_current);
     ui->cbCurrentSensorType->setCurrentIndex(config.analog_current_type);
     ui->cbCurrentAutoOffset->setChecked(config.analog_current_autoffset);
-    ui->sbCurrentSens->setValue(config.analog_current_sensitivity);
     ui->sbQuiescentVoltage->setValue(config.analog_current_quiescent_voltage);
-    ui->sbAnalogCurrentMultiplier->setValue(config.analog_current_multiplier);
+    if (config.analog_current_type == analog_current_type_t::CURRENT_TYPE_HALL)
+        ui->sbCurrentSens->setValue(1000 / config.analog_current_multiplier);
+    else
+        ui->sbAnalogCurrentMultiplier->setValue(config.analog_current_multiplier);
 
     // Airspeed
 
@@ -616,19 +618,31 @@ void MainWindow::getConfigFromUi() {
     // Voltage
 
     config.enable_analog_voltage = ui->gbVoltage1->isChecked();
-
-    // Temperature
-
-    config.enable_analog_ntc = ui->cbTemperature1->isChecked();
+    config.analog_voltage_multiplier = ui->sbVoltage1Mult->value();
 
     // Current
 
     config.enable_analog_current = ui->gbCurrent->isChecked();
     config.analog_current_type = (analog_current_type_t)ui->cbCurrentSensorType->currentIndex();
-    config.analog_current_autoffset = ui->cbCurrentAutoOffset->isChecked();
-    config.analog_current_sensitivity = ui->sbCurrentSens->value();
     config.analog_current_quiescent_voltage = ui->sbQuiescentVoltage->value();
-    config.analog_current_multiplier = ui->sbAnalogCurrentMultiplier->value();
+    if (ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_HALL) {
+        if (ui->cbCurrentAutoOffset->isChecked()) {
+            config.analog_current_autoffset = true;
+            config.analog_current_offset = 0;
+        } else {
+            config.analog_current_autoffset = false;
+            config.analog_current_offset = ui->sbQuiescentVoltage->value();
+        }
+        config.analog_current_multiplier = 1000 / ui->sbCurrentSens->value();
+    } else if (ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_SHUNT) {
+        config.analog_current_autoffset = false;
+        config.analog_current_offset = 0;
+        config.analog_current_multiplier = ui->sbAnalogCurrentMultiplier->value();
+    }
+
+    // Temperature
+
+    config.enable_analog_ntc = ui->cbTemperature1->isChecked();
 
     // Airspeed
 
@@ -669,29 +683,6 @@ void MainWindow::getConfigFromUi() {
     // Analog rate
 
     config.analog_rate = ui->sbAnalogRate->value();
-
-    // Analog voltage multipliers
-
-    config.analog_voltage_multiplier = ui->sbVoltage1Mult->value();
-    // config.analog_voltage2_multiplier = ui->sbVoltage2Mult->value()
-
-    // Analog current sensor
-
-    if (ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_HALL) {
-        if (ui->cbCurrentAutoOffset->isChecked()) {
-            config.analog_current_autoffset = true;
-            config.analog_current_offset = 0;
-        } else {
-            config.analog_current_autoffset = false;
-            config.analog_current_offset = ui->sbQuiescentVoltage->value();
-        }
-        config.analog_current_multiplier = 1000 / ui->sbCurrentSens->value();
-    } else if (ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_SHUNT) {
-        config.analog_current_autoffset = false;
-        config.analog_current_offset = 0;
-        config.analog_current_multiplier = ui->sbAnalogCurrentMultiplier->value();
-    }
-    config.analog_current_type = (analog_current_type_t)ui->cbCurrentSensorType->currentIndex();
 
     // RPM Multipliers
 
@@ -1057,7 +1048,7 @@ void MainWindow::on_cbCurrentAutoOffset_toggled(bool checked) {
     if (checked) {
         ui->lbQuiescentVoltage->setVisible(false);
         ui->sbQuiescentVoltage->setVisible(false);
-    } else {
+    } else if (ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_HALL) {
         ui->lbQuiescentVoltage->setVisible(true);
         ui->sbQuiescentVoltage->setVisible(true);
     }

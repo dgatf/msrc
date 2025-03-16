@@ -57,7 +57,6 @@
 */
 #define ANALOG_CURRENT_OFFSET 0
 #define ANALOG_CURRENT_AUTO_OFFSET true
-#define ANALOG_CURRENT_SENSITIVITY 1000
 /* Analog airspeed */
 #define AIRSPEED_OFFSET 0
 #define AIRSPEED_SLOPE 1
@@ -165,7 +164,6 @@ void config_forze_write() {
     config.analog_current_multiplier = ANALOG_CURRENT_MULTIPLIER;
     config.analog_current_offset = ANALOG_CURRENT_OFFSET;
     config.analog_current_autoffset = ANALOG_CURRENT_AUTO_OFFSET;
-    config.analog_current_sensitivity = ANALOG_CURRENT_SENSITIVITY;
     config.pairOfPoles = RPM_PAIR_OF_POLES;
     config.mainTeeth = RPM_MAIN_TEETH;
     config.pinionTeeth = RPM_PINION_TEETH;

@@ -99,7 +99,7 @@ typedef struct config_t {
     uint16_t refresh_rate_default;
     float analog_voltage_multiplier;
     enum analog_current_type_t analog_current_type;
-    uint16_t analog_current_sensitivity;
+    uint16_t spare0;
     float analog_current_quiescent_voltage;
     float analog_current_multiplier;
     float analog_current_offset;
