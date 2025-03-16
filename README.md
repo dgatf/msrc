@@ -142,7 +142,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 
 </center>
 
-(1) with 100Ω to 1kΩ resistor. This resistor is optional as RP2040 has internal protection resistors for GPIOs  
+(1) with 100Ω resistor. This resistor is optional as RP2040 has internal protection resistors for GPIOs  
 (2) for older receivers like TM1000 & TM110, 1k-3.3k pull up resistors are needed. For newer receivers with both XBUS and SRXL2 ports, no pull ups are needed. If incorrect choice, XBUS won't work. Try the other option if no telemetry is shown in transmitter   
 (3) Optional  
 
