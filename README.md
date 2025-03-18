@@ -330,8 +330,8 @@ If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected 
 
 Wire colors in the images bellow:
 
-- Red wire is SCL (gpio3)
-- Yellow is SDA (gpio2)
+- Yellow wire is SCL (gpio3)
+- Red is SDA (gpio2)
 - Black is GND
 
 <p align="center"><img src="./images/hitec_7.jpg" width="300"><br>
