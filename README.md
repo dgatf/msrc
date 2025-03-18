@@ -328,6 +328,12 @@ Configure receiver pin (E1 or E2) as Ex Bus. The maximum number of sensors (valu
 
 If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected to Vin/RAW instead Vcc. Use pull ups resistors 1k to 2.7k
 
+Wire colors in the images bellow:
+
+- Red wire is SCL (gpio3)
+- Yellow is SDA (gpio2)
+- Black is GND
+
 <p align="center"><img src="./images/hitec_7.jpg" width="300"><br>
   <i>Hitec Optima 7</i><br><br></p>
 
