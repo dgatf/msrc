@@ -2,9 +2,13 @@
 
 #include "hardware/irq.h"
 #include "hardware/uart.h"
+#include <stdio.h>
 
 #define UART0_BUFFER_SIZE 256
 #define UART1_BUFFER_SIZE 256
+
+#define enable_rx(UART) hw_set_bits(&uart_get_hw(UART)->cr, 0x00000200)
+#define disable_rx(UART) hw_clear_bits(&uart_get_hw(UART)->cr, 0x00000200)
 
 static volatile uint uart0_timeout, uart1_timeout, uart0_timestamp, uart1_timestamp;
 static volatile bool uart0_is_timedout = true, uart1_is_timedout = true;
@@ -89,10 +93,6 @@ static int64_t uart1_timeout_callback(alarm_id_t id, void *user_data) {
 }
 
 static void uart0_rx_handler() {
-    if (uart_get_hw(uart0)->fr & UART_UARTFR_BUSY_BITS) {
-        while (uart_is_readable(uart0)) uart_getc(uart0);
-        return;
-    }
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     static alarm_id_t uart0_timeout_alarm_id = 0;
     if (uart0_timeout_alarm_id) alarm_pool_cancel_alarm(context.uart_alarm_pool, uart0_timeout_alarm_id);
@@ -102,7 +102,7 @@ static void uart0_rx_handler() {
     }
     while (uart_is_readable(uart0)) {
         uint8_t data = uart_getc(uart0);
-        // printf("-%X-", data);
+        // debug("-%X-", data);
         // busy_wait_us(1);
         xQueueSendToBackFromISR(context.uart0_queue_handle, &data, &xHigherPriorityTaskWoken);
     }
@@ -115,10 +115,6 @@ static void uart0_rx_handler() {
 }
 
 static void uart1_rx_handler() {
-    if (uart_get_hw(uart1)->fr & UART_UARTFR_BUSY_BITS) {
-        while (uart_is_readable(uart1)) uart_getc(uart1);
-        return;
-    }
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     static alarm_id_t uart1_timeout_alarm_id = 0;
     if (uart1_timeout_alarm_id) {
@@ -130,9 +126,9 @@ static void uart1_rx_handler() {
     }
     while (uart_is_readable(uart1)) {
         uint8_t data = uart_getc(uart1);
-        // printf("%X ", data);
+        // debug("%X ", data);
         xQueueSendToBackFromISR(context.uart1_queue_handle, &data, &xHigherPriorityTaskWoken);
-        // printf("-%X/%i-", data, uxQueueMessagesWaiting(context.uart1_queue_handle));
+        // debug("-%X/%i-", data, uxQueueMessagesWaiting(context.uart1_queue_handle));
     }
     if (uart1_timeout) {
         uart1_timeout_alarm_id =
@@ -164,48 +160,56 @@ void uart1_read_bytes(uint8_t *data, uint8_t lenght) {
 
 void uart0_write(uint8_t data) {
     if (half_duplex0) {
+        disable_rx(uart0);
         gpio_set_function(gpio_tx0, GPIO_FUNC_UART);
         if (inverted0) gpio_set_outover(gpio_tx0, GPIO_OVERRIDE_INVERT);
     }
     uart_putc_raw(uart0, data);
     if (half_duplex0) {
         uart_tx_wait_blocking(uart0);
+        enable_rx(uart0);
         gpio_set_function(gpio_tx0, GPIO_FUNC_NULL);
     }
 }
 
 void uart1_write(uint8_t data) {
     if (half_duplex1) {
+        disable_rx(uart1);
         gpio_set_function(gpio_tx1, GPIO_FUNC_UART);
         if (inverted1) gpio_set_outover(gpio_tx1, GPIO_OVERRIDE_INVERT);
     }
     uart_putc_raw(uart1, data);
     if (half_duplex1) {
         uart_tx_wait_blocking(uart1);
+        enable_rx(uart1);
         gpio_set_function(gpio_tx1, GPIO_FUNC_NULL);
     }
 }
 
 void uart0_write_bytes(uint8_t *data, uint8_t lenght) {
     if (half_duplex0) {
+        disable_rx(uart0);
         gpio_set_function(gpio_tx0, GPIO_FUNC_UART);
         if (inverted0) gpio_set_outover(gpio_tx0, GPIO_OVERRIDE_INVERT);
     }
     uart_write_blocking(uart0, data, lenght);
     if (half_duplex0) {
         uart_tx_wait_blocking(uart0);
+        enable_rx(uart0);
         gpio_set_function(gpio_tx0, GPIO_FUNC_NULL);
     }
 }
 
 void uart1_write_bytes(uint8_t *data, uint8_t lenght) {
     if (half_duplex1) {
+        disable_rx(uart1);
         gpio_set_function(gpio_tx1, GPIO_FUNC_UART);
         if (inverted1) gpio_set_outover(gpio_tx1, GPIO_OVERRIDE_INVERT);
     }
     uart_write_blocking(uart1, data, lenght);
     if (half_duplex1) {
         uart_tx_wait_blocking(uart1);
+        enable_rx(uart1);
         gpio_set_function(gpio_tx1, GPIO_FUNC_NULL);
     }
 }
