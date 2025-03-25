@@ -32,7 +32,7 @@
 #include "voltage.h"
 #include "xgzp68xxd.h"
 
-#define SRXL2_TIMEOUT_US 500
+#define SRXL2_TIMEOUT_US 1000
 #define SRXL2_HEADER 0xA6
 #define SRXL2_HANDSHAKE_LEN 14
 #define SRXL2_CONTROL_LEN 8
@@ -41,18 +41,17 @@
 #define SRXL2_PACKET_TYPE_CONTROL 0xCD
 #define SRXL2_PACKET_TYPE_TELEMETRY 0x80
 #define SRXL2_DEVICE_ID 0x30
-#define SRXL2_DEVICE_PRIORITY 20
+#define SRXL2_DEVICE_PRIORITY 10
 #define SRXL2_DEVICE_BAUDRATE 0
 #define SRXL2_DEVICE_INFO 0
 
-static uint8_t dest_id = 0xFF;
-static uint32_t uid;
+static uint8_t dest_id = 0;
 static alarm_id_t alarm_id;
 
 static void process(void);
 static void send_packet(void);
 static void set_config(void);
-static void send_handshake(uint8_t *data);
+static void send_handshake(void);
 static int64_t alarm_50ms(alarm_id_t id, void *user_data);
 
 void srxl2_task(void *parameters) {
@@ -60,9 +59,7 @@ void srxl2_task(void *parameters) {
     *sensor = (xbus_sensor_t){{0}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}};
     sensor_formatted = malloc(sizeof(xbus_sensor_formatted_t));
     *sensor_formatted = (xbus_sensor_formatted_t){NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-
-    // alarm_id = add_alarm_in_ms(50, alarm_50ms, NULL, true);
-
+    alarm_id = add_alarm_in_us(50000, alarm_50ms, NULL, true);
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
 
@@ -79,28 +76,32 @@ static void process(void) {
     static bool mute = true;
     uint8_t length = uart0_available();
     if (length) {
+        cancel_alarm(alarm_id);
+        alarm_id = add_alarm_in_us(50000, alarm_50ms, NULL, true);
+        if (length < 3 || length > 128) return;
         uint8_t data[length];
+        uint16_t crc;
         uart0_read_bytes(data, length);
         debug("\nSRXL2 (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         debug_buffer(data, length, " 0x%X");
-        uint16_t crc = srxl_get_crc(data, length - 2);
+        crc = srxl_get_crc(data, length - 2);
         if ((crc >> 8) == data[length - 2] && (crc & 0xFF) == data[length - 1]) {
             debug(" -> CRC OK");
         } else {
             debug(" -> BAD CRC");
-            return;
+            debug(" %X", crc);
+            if (dest_id != 0) return; // allow packets with wrong crc for 20400
         }
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID) {
-            // cancel_alarm(alarm_id);
-            send_handshake(data);
+            dest_id = data[3];
+            send_handshake();
         } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE_ID) {
             send_packet();
         }
     }
 }
 
-static void send_handshake(uint8_t *data) {
-    dest_id = data[3];
+static void send_handshake(void) {
     uint8_t buffer[SRXL2_HANDSHAKE_LEN];
     buffer[0] = SRXL2_HEADER;                                      // header
     buffer[1] = SRXL2_PACKET_TYPE_HANDSHAKE;                       // packet type
@@ -181,11 +182,9 @@ static void send_packet(void) {
 }
 
 static int64_t alarm_50ms(alarm_id_t id, void *user_data) {
-    static uint count = 0;
-    send_handshake(0);
-    if (count == 5) return 0;
-    count++;
-    return 30;
+    dest_id = 0;
+    send_handshake();
+    return 50000;
 }
 
 static void set_config(void) {
