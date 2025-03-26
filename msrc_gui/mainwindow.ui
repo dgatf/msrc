@@ -88,7 +88,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-1474</y>
+             <y>-1565</y>
              <width>603</width>
              <height>2320</height>
             </rect>
@@ -1262,7 +1262,7 @@
                     <item>
                      <widget class="QDoubleSpinBox" name="sbMlPulse">
                       <property name="decimals">
-                       <number>3</number>
+                       <number>4</number>
                       </property>
                      </widget>
                     </item>
