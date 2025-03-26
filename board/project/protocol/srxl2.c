@@ -40,18 +40,18 @@
 #define SRXL2_PACKET_TYPE_HANDSHAKE 0x21
 #define SRXL2_PACKET_TYPE_CONTROL 0xCD
 #define SRXL2_PACKET_TYPE_TELEMETRY 0x80
-#define SRXL2_DEVICE_ID 0x30
+#define SRXL2_DEVICE_ID 0x31
 #define SRXL2_DEVICE_PRIORITY 10
 #define SRXL2_DEVICE_BAUDRATE 0
 #define SRXL2_DEVICE_INFO 0
 
-static uint8_t dest_id = 0;
+static volatile uint8_t dest_id = 0;
 static alarm_id_t alarm_id;
 
 static void process(void);
 static void send_packet(void);
 static void set_config(void);
-static void send_handshake(void);
+static void send_handshake(uint8_t receiver_id);
 static int64_t alarm_50ms(alarm_id_t id, void *user_data);
 
 void srxl2_task(void *parameters) {
@@ -90,24 +90,25 @@ static void process(void) {
         } else {
             debug(" -> BAD CRC");
             debug(" %X", crc);
-            if (dest_id != 0) return; // allow packets with wrong crc for 20400
+            if (dest_id != 0) return;  // allow packets with wrong crc for handshake
         }
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID) {
             dest_id = data[3];
-            send_handshake();
+            debug("\nSRXL2. Set dest_id 0x%X", dest_id);
+            send_handshake(dest_id);
         } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE_ID) {
             send_packet();
         }
     }
 }
 
-static void send_handshake(void) {
+static void send_handshake(uint8_t receiver_id) {
     uint8_t buffer[SRXL2_HANDSHAKE_LEN];
     buffer[0] = SRXL2_HEADER;                                      // header
     buffer[1] = SRXL2_PACKET_TYPE_HANDSHAKE;                       // packet type
     buffer[2] = SRXL2_HANDSHAKE_LEN;                               // length
     buffer[3] = SRXL2_DEVICE_ID;                                   // source Id
-    buffer[4] = dest_id;                                           // dest Id
+    buffer[4] = receiver_id;                                       // dest Id
     buffer[5] = SRXL2_DEVICE_PRIORITY;                             // priority (0-100)
     buffer[6] = SRXL2_DEVICE_BAUDRATE;                             // baudrate: 0 = 115200, 1 = 400000
     buffer[7] = SRXL2_DEVICE_INFO;                                 // info
@@ -182,8 +183,7 @@ static void send_packet(void) {
 }
 
 static int64_t alarm_50ms(alarm_id_t id, void *user_data) {
-    dest_id = 0;
-    send_handshake();
+    send_handshake(0);
     return 50000;
 }
 
