@@ -365,7 +365,7 @@ Coonect to the telemetry port marked with a T. Depending on the model, there is 
 
 ### 6.14 Spektrum SRXL2
 
-For AR10400T, AR14400T, AR20400T receivers it is recommended to use XBUS.
+If the receiver goes into bind mode or there is no telemetry, add a 10k pullup to the signal line.
 
 See [SRXL2 specifications](https://github.com/SpektrumRC/SRXL2/blob/master/Docs/SRXL2%20Specification.pdf).
 
@@ -828,12 +828,12 @@ Po = pressure at ground (Pa)*
 
 ## 10. Change log
 
-[v1.2.1](https://github.com/dgatf/msrc/tree/v1.2.1)
+[v1.2.1](https://github.com/dgatf/msrc/releases/tag/v1.2.1)
 
 - Fixed serial half duplex from interrupts
 - Fixed SRXL2 for no remote receivers
 
-[v1.2](https://github.com/dgatf/msrc/tree/v1.2)
+[v1.2](https://github.com/dgatf/msrc/releases/tag/v1.2)
 
 - Added github actions for continuous deployment
 - Added support for macOS
@@ -845,8 +845,7 @@ Po = pressure at ground (Pa)*
 - Added support for JR DMSS telemetry. Thanks to *Gorochan* and *gardfiel2412* from RCGroups  
 - Added two decimals for current sensitivity and offset  
 
-[v1.1](https://github.com/dgatf/msrc/tree/v1.1)
-
+[v1.1](https://github.com/dgatf/msrc/releases/tag/v1.1)
 
 - Fixed Xbus negative values and improve vspeed accuracy  
 - Updated sdk and third party libraries to support new hardware  
@@ -856,7 +855,7 @@ Po = pressure at ground (Pa)*
 - Improved airspeed calculation and linked to barometer if installed to get more accurate aurspeed value   
 - msrc_gui. Manage different config versions  
 
-[v1.0](https://github.com/dgatf/msrc/tree/v1.0)
+[v1.0](https://github.com/dgatf/msrc/releases/tag/v1.0)
 
 - Ported to RP2040
 
