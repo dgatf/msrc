@@ -365,6 +365,8 @@ Coonect to the telemetry port marked with a T. Depending on the model, there is 
 
 ### 6.14 Spektrum SRXL2
 
+For AR10400T, AR14400T, AR20400T receivers it is recommended to use XBUS.
+
 See [SRXL2 specifications](https://github.com/SpektrumRC/SRXL2/blob/master/Docs/SRXL2%20Specification.pdf).
 
 <p align="center"><img src="./images/srxl2_connectors.png" width="500"><br>
@@ -826,7 +828,12 @@ Po = pressure at ground (Pa)*
 
 ## 10. Change log
 
-v1.2
+[v1.2.1](https://github.com/dgatf/msrc/tree/v1.2.1)
+
+- Fixed serial half duplex from interrupts
+- Fixed SRXL2 for no remote receivers
+
+[v1.2](https://github.com/dgatf/msrc/tree/v1.2)
 
 - Added github actions for continuous deployment
 - Added support for macOS
