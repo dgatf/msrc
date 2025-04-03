@@ -51,7 +51,7 @@ void ms5611_task(void *parameters) {
     xTaskCreate(vspeed_task, "vspeed_task", STACK_VSPEED, (void *)&parameters_vspeed, 2, &task_handle);
     xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
     ms5611_calibration_t calibration;
     begin(&parameter, &calibration);
     while (1) {
