@@ -22,8 +22,4 @@ extern context_t context;
 
 void hitec_task(void *parameters);
 
-#ifdef SIM_RX
-void hitec_i2c_handler();
-#endif
-
 #endif

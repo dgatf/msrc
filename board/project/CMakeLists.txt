@@ -28,6 +28,7 @@ target_link_libraries(${PROJECT_NAME}
     hardware_pio
     hardware_i2c
     hardware_flash
+    pico_i2c_slave
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
