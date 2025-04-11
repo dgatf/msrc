@@ -45,7 +45,7 @@
 #define SRXL2_DEVICE_BAUDRATE 0
 #define SRXL2_DEVICE_INFO 0
 
-static volatile uint8_t dest_id = 0;
+static volatile uint8_t dest_id = 0xFF;
 static alarm_id_t alarm_id;
 
 static void process(void);
@@ -90,7 +90,7 @@ static void process(void) {
         } else {
             debug(" -> BAD CRC");
             debug(" %X", crc);
-            if (dest_id != 0) return;  // allow packets with wrong crc for handshake
+            if (dest_id != 0xFF) return;  // allow packets with wrong crc for handshake
         }
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID) {
             dest_id = data[3];
@@ -122,7 +122,6 @@ static void send_handshake(uint8_t receiver_id) {
     uart0_write_bytes(buffer, SRXL2_HANDSHAKE_LEN);
     debug("\nSRXL2. Send Handshake >");
     debug_buffer(buffer, SRXL2_HANDSHAKE_LEN, " 0x%X");
-    vTaskResume(context.led_task_handle);
 }
 
 static void send_packet(void) {
