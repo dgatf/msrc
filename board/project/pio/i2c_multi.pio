@@ -30,7 +30,7 @@ do_irq:
 public start:
 .wrap_target
     wait 1 pin 0
-    wait 0 pin 0 [12] // Wait for falling edge of SDA + 1us before checking SCL
+    wait 0 pin 0
     jmp pin do_irq
 .wrap
 
@@ -40,15 +40,15 @@ do_irq:
 public start:
 .wrap_target
     wait 0 pin 0
-    wait 1 pin 0 [12] // 1us@12.5MHz before checking SCL
+    wait 1 pin 0
     jmp pin do_irq
 .wrap
 
-.program read_byte  // 12
+.program read_byte  // 10
+.side_set 2 opt pindirs
     wait irq 4
 read:
-    set pindirs 0
-    set x 7
+    set x 7 side 0
 bit_loop:
     wait 0 pin 1
     wait 1 pin 1
@@ -57,17 +57,18 @@ bit_loop:
     push noblock
 do_ack:
     out exec 16
-    out exec 16
     jmp do_ack
 do_irq:
     irq 5
 
 .program do_ack
+.side_set 2 opt pindirs
     wait 0 pin 1
-    set pindirs 3
-    set pins 0 [15] // Drive SCL low for clock stretching and SDA low to force ACK
+    set pins 0 side 3
+    nop
     irq wait 0
-    set pindirs 1
+
+    set pins 0 side 1
     wait 1 pin 1
     wait 0 pin 1
 
@@ -75,45 +76,41 @@ do_irq:
     jmp 1 
 
     // write (write request)
-    jmp 11
+    jmp 9
 
     // address not enabled
-    set pindirs 0 [31]
+    set pindirs 0
     jmp 0
 
-    // fill up to 12 instructions to allow compilation
-    nop
-    nop
-
-.program write_byte  // 11
+.program write_byte  // 9
+.side_set 2 opt pindirs
     wait irq 5
 write:
-    set pindirs 1
-    set x 7
+    set x 7 side 1
 bit_loop:
-    wait 0 pin 1 [31]
+    wait 0 pin 1
     out pins 1
     wait 1 pin 1
     jmp x-- bit_loop
     out null 32
 wait_ack:
     out exec 16
-    out exec 16
     jmp wait_ack
 
 .program wait_ack
-    wait 0 pin 1 [31]
-    set pindirs 2
-    set pins 0
+.side_set 2 opt pindirs
+    // clk stretch
+    wait 0 pin 1
+    nop //set pindirs 2
+    set pins 0 side 2
     irq wait 0
-    set pindirs 0 [31]
-    wait 1 pin 1
+    
+    // check ack
     nop
+    wait 1 pin 1 side 0
     jmp pin 0
-    nop
     jmp 1
 
-    set pindirs 0
-    out null 32
-
-
+    // stop
+    out null 32 side 0
+    jmp 0

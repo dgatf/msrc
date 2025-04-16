@@ -17,10 +17,11 @@
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
 #include "hardware/i2c.h"
+#include "hardware/irq.h"
+#include "i2c_multi.h"
 #include "ms5611.h"
 #include "nmea.h"
 #include "ntc.h"
-#include "pico/i2c_slave.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"
 #include "stdlib.h"
@@ -29,9 +30,10 @@
 #include "voltage.h"
 
 #define I2C_INTR_MASK_RD_REQ 0x00000020
-#define I2C_BAUDRATE 100000  // 100 kHz
+
 #define I2C_ADDRESS 0x08
 #define TIMEOUT 1000
+#define FRAME_LENGTH 7
 
 #define FRAME_0X11 0
 #define FRAME_0X12 1
@@ -73,11 +75,13 @@
 
 static sensor_hitec_t *sensor;
 
-static void i2c_slave_handler(i2c_inst_t *i2c, i2c_slave_event_t event);
-static void init_slave(void);
+static void i2c_request_handler(uint8_t address);
+static void i2c_stop_handler(uint8_t length);
 static void set_config(void);
 static int next_frame(void);
 static void format_packet(uint8_t frame, uint8_t *buffer);
+
+void hitec_i2c_handler(void) { i2c_request_handler(I2C_ADDRESS); }
 
 void hitec_task(void *parameters) {
     sensor = malloc(sizeof(sensor_hitec_t));
@@ -88,55 +92,33 @@ void hitec_task(void *parameters) {
     context.led_cycles = 1;
 
     set_config();
-    if (next_frame() != -1) init_slave();
+
+    PIO pio = pio1;
+    uint pin = I2C1_SDA_GPIO;
+    i2c_multi_init(pio, pin);
+    i2c_multi_set_request_handler(i2c_request_handler);
+    i2c_multi_set_stop_handler(i2c_stop_handler);
+    i2c_multi_enable_address(I2C_ADDRESS);
+    i2c_multi_fixed_length(FRAME_LENGTH);
+
     debug("\nHitec init");
     vTaskSuspend(NULL);
-    // free(sensor);
-    // vTaskDelete(NULL);
 }
 
-static void init_slave(void) {
-    gpio_init(I2C1_SDA_GPIO);
-    gpio_set_function(I2C1_SDA_GPIO, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C1_SDA_GPIO);
-    gpio_init(I2C1_SCL_GPIO);
-    gpio_set_function(I2C1_SCL_GPIO, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C1_SCL_GPIO);
-    i2c_init(i2c1, I2C_BAUDRATE);
-    i2c_slave_init(i2c1, I2C_ADDRESS, &i2c_slave_handler);
-}
+static void i2c_stop_handler(uint8_t length) { debug(" - STOP (%u)", length); }
 
-static void i2c_slave_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
-    static uint8_t cont = 0;
-    switch (event) {
-        case I2C_SLAVE_RECEIVE: {
-            uint8_t c = i2c_read_byte_raw(i2c);
-            debug("\nHitec. Received: 0x%X ", c);
-            break;
-        }
-        case I2C_SLAVE_REQUEST: {
-            uint frame;
-            static uint8_t buffer[7];
-            if (!cont) {
-                frame = next_frame();
-                if (frame < 0) return;
-                format_packet(frame, buffer);
-            }
-            i2c_write_byte_raw(i2c, buffer[cont]);
-            if (!cont) debug("\nHitec (%u) > ", uxTaskGetStackHighWaterMark(context.receiver_task_handle));
-            debug("(%u)0x%X ", cont, buffer[cont]);
-            if (cont < 6) cont++;
-            break;
-        }
-        case I2C_SLAVE_FINISH:  // master has signalled Stop / Restart
-            debug("<END>");
-            cont = 0;
-            // blink led
-            vTaskResume(context.led_task_handle);
-            break;
-        default:
-            break;
-    }
+static void i2c_request_handler(uint8_t address) {
+    uint8_t buffer[7] = {0};
+    uint8_t frame = next_frame();
+    if (frame < 0) return;
+    format_packet(frame, buffer);
+    i2c_multi_set_write_buffer(buffer);
+
+    // blink led
+    vTaskResume(context.led_task_handle);
+
+    debug("\nHitec (%u) > ", uxTaskGetStackHighWaterMark(context.receiver_task_handle));
+    debug_buffer(buffer, sizeof(buffer), "%X ");
 }
 
 static int next_frame(void) {

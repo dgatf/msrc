@@ -16,6 +16,7 @@ typedef struct i2c_multi_t {
     i2c_multi_status_t status;
     uint8_t *buffer, *buffer_start;
     uint8_t bytes_count;
+    int16_t length;
     uint address[4];
 } i2c_multi_t;
 
@@ -34,5 +35,6 @@ bool i2c_multi_is_address_enabled(uint8_t address);
 void i2c_multi_disable();
 void i2c_multi_restart();
 void i2c_multi_remove();
+void i2c_multi_fixed_length(int16_t length);
 
 #endif
