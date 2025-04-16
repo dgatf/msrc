@@ -30,8 +30,8 @@
 #define OVERSAMPLING_512 0x02
 #define OVERSAMPLING_256 0x00
 
-#define VARIO_INTERVAL 500
-#define SENSOR_INTERVAL_MS 100  // min 10
+#define SENSOR_INTERVAL_MS 20  // min 10
+#define VSPEED_INTERVAL_MS 500
 
 static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibration);
 static void begin(ms5611_parameters_t *parameter, ms5611_calibration_t *calibration);
@@ -46,12 +46,7 @@ void ms5611_task(void *parameters) {
 
     TaskHandle_t task_handle;
 
-    uint vspeed_interval = 500;
-    vspeed_parameters_t parameters_vspeed = {vspeed_interval, parameter.altitude, parameter.vspeed};
-    xTaskCreate(vspeed_task, "vspeed_task", STACK_VSPEED, (void *)&parameters_vspeed, 2, &task_handle);
-    xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
     ms5611_calibration_t calibration;
     begin(&parameter, &calibration);
     while (1) {
@@ -108,6 +103,7 @@ static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibrati
     *parameter->pressure = (float)P;              // Pa
     if (pressure_initial == 0 && discard_readings == 0) pressure_initial = *parameter->pressure;
     *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
+    get_vspeed(parameter->vspeed, *parameter->altitude, VSPEED_INTERVAL_MS);
     if (discard_readings > 0) discard_readings--;
     debug("\nMS5611 P0: %.0f", pressure_initial);
 #ifdef SIM_SENSORS

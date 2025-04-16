@@ -55,8 +55,8 @@
 #define STANDBY_MS_2000 0x06
 #define STANDBY_MS_4000 0x07
 
-#define VARIO_INTERVAL 500
-#define SENSOR_INTERVAL_MS 100  // min 30
+#define SENSOR_INTERVAL_MS 40  // min 30
+#define VSPEED_INTERVAL_MS 500
 
 static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibration);
 static void begin(bmp280_parameters_t *parameter, bmp280_calibration_t *calibration);
@@ -71,13 +71,9 @@ void bmp280_task(void *parameters) {
 
     TaskHandle_t task_handle;
 
-    uint vspeed_interval = 500;
-    vspeed_parameters_t parameters_vspeed = {vspeed_interval, parameter.altitude, parameter.vspeed};
-    xTaskCreate(vspeed_task, "vspeed_task", STACK_VSPEED, (void *)&parameters_vspeed, 2, &task_handle);
-    xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-
     bmp280_calibration_t calibration;
     vTaskDelay(500 / portTICK_PERIOD_MS);
+    
     begin(&parameter, &calibration);
     while (1) {
         read(&parameter, &calibration);
@@ -131,6 +127,7 @@ static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibrati
 
     if (pressure_initial == 0 && discard_readings == 0) pressure_initial = *parameter->pressure;
     *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
+    get_vspeed(parameter->vspeed, *parameter->altitude, VSPEED_INTERVAL_MS);
     if (discard_readings > 0) discard_readings--;
     debug("\nBMP280 P0: %.0f", pressure_initial);
 #ifdef SIM_SENSORS

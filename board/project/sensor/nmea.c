@@ -33,6 +33,7 @@
 #define NMEA_LAT 13
 
 #define TIMEOUT_US 5000
+#define VSPEED_INTERVAL_MS 2000
 
 static void process(nmea_parameters_t *parameter);
 static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, nmea_parameters_t *parameter);
@@ -66,10 +67,7 @@ void nmea_task(void *parameters) {
     *parameter.spd_kmh = 123;
 #endif
     TaskHandle_t task_handle;
-    uint vspeed_interval = 500;
-    vspeed_parameters_t parameters_vspeed = {vspeed_interval, parameter.alt, parameter.vspeed};
-    xTaskCreate(vspeed_task, "vspeed_task", STACK_VSPEED, (void *)&parameters_vspeed, 2, &task_handle);
-    xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
     distance_parameters_t parameters_distance = {parameter.dist, parameter.lat, parameter.lon, parameter.alt,
                                                  parameter.sat};
     xTaskCreate(distance_task, "distance_task", STACK_DISTANCE, (void *)&parameters_distance, 2, &task_handle);
@@ -149,6 +147,7 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, nmea_pa
             *parameter->lon = lon_dir * (atof(degrees) * 60 + minutes);
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_ALT) {
             *parameter->alt = atof(buffer);
+            get_vspeed_gps(parameter->vspeed, *parameter->alt, VSPEED_INTERVAL_MS);
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_SPD) {
             *parameter->spd = atof(buffer);
             *parameter->spd_kmh = *parameter->spd * 1.852;

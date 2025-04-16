@@ -31,8 +31,9 @@
 #define READ_PRESSURE_OVERSAMPLING_1 0x74
 #define READ_PRESSURE_OVERSAMPLING_2 0xB4
 #define READ_PRESSURE_OVERSAMPLING_3 0xF4
-#define PRESSURE_INTERVAL_MS 100     // min 30
-#define TEMPERATURE_INTERVAL_MS 100  // min 10
+#define PRESSURE_INTERVAL_MS 40     // min 30
+#define TEMPERATURE_INTERVAL_MS 20  // min 10
+#define VSPEED_INTERVAL_MS 500
 
 static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibration);
 static void begin(bmp180_parameters_t *parameter, bmp180_calibration_t *calibration);
@@ -46,11 +47,6 @@ void bmp180_task(void *parameters) {
     *parameter.pressure = 0;
 
     TaskHandle_t task_handle;
-
-    uint vspeed_interval = 500;
-    vspeed_parameters_t parameters_vspeed = {vspeed_interval, parameter.altitude, parameter.vspeed};
-    xTaskCreate(vspeed_task, "vspeed_task", STACK_VSPEED, (void *)&parameters_vspeed, 2, &task_handle);
-    xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
     vTaskDelay(500 / portTICK_PERIOD_MS);
     bmp180_calibration_t calibration;
@@ -117,6 +113,7 @@ static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibrati
     *parameter->pressure = p;  // Pa    calcAverage((float)alphaVario_ / 100, pressure_, p);
     if (pressure_initial == 0 && discard_readings == 0) pressure_initial = *parameter->pressure;
     *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
+    get_vspeed(parameter->vspeed, *parameter->altitude, VSPEED_INTERVAL_MS);
     if (discard_readings > 0) discard_readings--;
     debug("\nBMP180 P0: %.0f", pressure_initial);
 #ifdef SIM_SENSORS

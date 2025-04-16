@@ -39,6 +39,28 @@ float get_altitude(float pressure, float temperature, float pressure_initial) {
     return (temperature + 273.15) * (1 - pow(pressure / pressure_initial, 1 / 5.256)) / 0.0065;
 }
 
+void get_vspeed(float *vspeed, float altitude, uint interval) {
+    static float altitude_prev = 0;
+    static uint ts = 0;
+    uint now = time_us_32();
+    if (now - ts >= interval * 1000) {
+        *vspeed = (altitude - altitude_prev) / ((now - ts) / 1000000.0);
+        altitude_prev = altitude;
+        ts = time_us_32();
+    }
+}
+
+void get_vspeed_gps(float *vspeed, float altitude, uint interval) {
+    static float altitude_prev = 0;
+    static uint ts = 0;
+    uint now = time_us_32();
+    if (now - ts >= interval * 1000) {
+        *vspeed = (altitude - altitude_prev) / ((now - ts) / 1000000.0);
+        altitude_prev = altitude;
+        ts = time_us_32();
+    }
+}
+
 /*
 void circular_buffer_add(buffer_node_t *node, void *item)
 {
