@@ -15,6 +15,7 @@ Compatible RX protocols:
 - Futaba SBUS2
 - Multiplex Sensor Bus (MSB)
 - Jeti Ex Bus
+- Hitec
 - CRSF
 - Sanwa
 - Hott
@@ -326,7 +327,10 @@ Configure receiver pin (E1 or E2) as Ex Bus. The maximum number of sensors (valu
 
 ### 6.9 Hitec
 
-Use pullup resistors 1k to 2.7k
+Use pullup resistors:
+
+- SDA: 1k
+- SCL: 8K  
 
 If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected to Vin/RAW instead Vcc.  
 
