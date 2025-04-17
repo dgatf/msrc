@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Get actions code
@@ -31,7 +31,10 @@ jobs:
           cd msrc_gui
           wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
           sudo chmod +x linuxdeployqt-continuous-x86_64.AppImage
-        
+      
+      - name: Install fuse
+        run: sudo apt install libfuse2
+
       - name: Create AppImage
         run: |
           cp build/msrc_gui msrc_gui/appdir
