@@ -18,6 +18,7 @@
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
 #include "fuel_meter.h"
+#include "gpio.h"
 #include "ms5611.h"
 #include "nmea.h"
 #include "ntc.h"
@@ -1158,6 +1159,19 @@ static void set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = GASSUIT_RES_VOL_FIRST_ID;
         parameter_sensor.value = parameter.consumption_total;
+        parameter_sensor.rate = config->refresh_rate_default;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_gpio) {
+        gpio_parameters_t parameter = {config->gpio_interval, malloc(sizeof(float))};
+        xTaskCreate(gpio_task, "gpio_task", STACK_GPIO, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        smartport_sensor_parameters_t parameter_sensor;
+        parameter_sensor.data_id = DIY_FIRST_ID;
+        parameter_sensor.value = parameter.value;
         parameter_sensor.rate = config->refresh_rate_default;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);

@@ -23,4 +23,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     serial_monitor.c
     fuel_meter.c
     xgzp68xxd.c
+    gpio.c
 )

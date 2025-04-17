@@ -23,7 +23,7 @@ Compatible RX protocols:
 
 Compatible ESCs: Hobbywing V3/V4/V5/Flyfun, Kontronik Kosmic/Kolibri/JivePro, Castle Link, APD F/HV/UHV, phase sensor/PWM signal.
 
-Compatible MCUs: RP2040. Any model is compatible. Recommended [RP2040 Zero](https://www.mischianti.org/wp-content/uploads/2022/09/Waveshare-rp2040-zero-Raspberry-Pi-Pico-alternative-pinout.jpg), for size and GPIO selection.
+Compatible MCUs: RP2040. Any model is compatible. Recommended [RP2040 Zero](https://www.mischianti.org/wp-content/uploads/2022/09/Waveshare-rp2040-zero-Raspberry-Pi-Pico-alternative-pinout.jpg), for size and GPIO selection. Uunless you require GPIOs, then it is recommended to use RP2040 as this has pins 17 to 22 with a hole.   
 
 Implemented sensors:
 
@@ -36,6 +36,7 @@ Implemented sensors:
 - Analog sensors: voltage, temperature, current, air speed (MPXV7002)  
 - Fuel meter (PWM pulses)
 - Fuel tank pressure (I2C sensor): XGZP68XXD
+- 6 switches (gpio high or low)
 
 All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with msrc_gui.
 
@@ -87,6 +88,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;[7.4. Vario](#74-vario)  
 &emsp;[7.5. Fuel Flow](#75-fuel-flow)  
 &emsp;[7.6. Fuel pressure](#76-fuel-pressure)  
+&emsp;[7.7. GPIOs](#77-gpios)  
 [8. OpenTx sensors (Smartport)](#8-opentx-sensors-smartport)  
 [9. Annex](#9-annex)  
 &emsp;[9.1. ESC protocol specifications Hobbywing](#91-esc-protocol-specifications-hobbywing)  
@@ -327,10 +329,7 @@ Configure receiver pin (E1 or E2) as Ex Bus. The maximum number of sensors (valu
 
 ### 6.9 Hitec
 
-Use pullup resistors:
-
-- SDA: 1k
-- SCL: 8K  
+Use 6k pullup resistors.  
 
 If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected to Vin/RAW instead Vcc.  
 
@@ -608,6 +607,12 @@ Use XGZP68XXD. Set K parameter with sensor maximum pressure, depending on the mo
 
 Available for: XBUS, SRXL, SRXL2 and Jeti Ex.   
 
+### 7.7. GPIOs
+ 
+Enable GPIOs 17 to 22 to read the pin state (high or low). It is recommended to use the RP2040-zero as this has those pin with a hole.   
+
+Available for Smartport at dataId 0x5100. Value is 6 bits masked.    
+
 ## 8. OpenTx sensors (Smartport)
 
 The default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
@@ -833,6 +838,10 @@ Po = pressure at ground (Pa)*
 
 
 ## 10. Change log
+
+v1.3
+
+- Added GPIOs 17 to 22 for input
 
 [v1.2.2](https://github.com/dgatf/msrc/releases/tag/v1.2.2)
 

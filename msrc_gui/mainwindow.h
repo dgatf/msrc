@@ -88,7 +88,7 @@ typedef struct config_t {
     uint16_t refresh_rate_default;
     float analog_voltage_multiplier;
     enum analog_current_type_t analog_current_type;
-    uint16_t spare0;
+    uint16_t gpio_interval;
     float analog_current_quiescent_voltage;
     float analog_current_multiplier;
     float analog_current_offset;
@@ -115,7 +115,7 @@ typedef struct config_t {
     bool esc_hw4_is_manual_offset;
     uint8_t analog_rate;
     bool xbus_use_alternative_volt_temp;
-    uint8_t spare1;
+    bool enable_gpio;
     float esc_hw4_offset;
     uint32_t serial_monitor_baudrate;
     uint8_t serial_monitor_stop_bits;

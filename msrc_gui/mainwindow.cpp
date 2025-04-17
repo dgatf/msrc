@@ -577,6 +577,11 @@ void MainWindow::setUiFromConfig() {
         ui->cbMaxPressure->setCurrentIndex(10);
     else
         ui->cbMaxPressure->setCurrentIndex(11);
+
+    // GPIOs
+    if (config.enable_gpio) ui->gbGpio->setChecked(true);
+    ui->sbGpioInterval->setValue(config.gpio_interval);
+
 }
 
 void MainWindow::getConfigFromUi() {
@@ -759,6 +764,10 @@ void MainWindow::getConfigFromUi() {
         config.xgzp68xxd_k = 8;
     else
         config.xgzp68xxd_k = 4;
+
+    // GPIOs
+    config.enable_gpio = ui->gbGpio->isChecked();
+    config.gpio_interval = ui->sbGpioInterval->value();
 
     // Debug
 
