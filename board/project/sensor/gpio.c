@@ -14,7 +14,9 @@ void gpio_task(void *parameters) {
 
     while (1) {
         uint8_t value = 0;
-        for (uint i = 0; i < 6; i++) value |= gpio_get(i + 17) << i;
+        for (uint i = 0; i < 6; i++) {
+            if (parameter.mask & (1 << i)) value |= gpio_get(i + 17) << i;
+        }
 #ifdef SIM_SENSORS
         value = 0B101;
 #endif

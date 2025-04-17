@@ -579,9 +579,13 @@ void MainWindow::setUiFromConfig() {
         ui->cbMaxPressure->setCurrentIndex(11);
 
     // GPIOs
-    if (config.enable_gpio) ui->gbGpio->setChecked(true);
+    ui->cbGpio17->setChecked(config.gpio_mask & 1);
+    ui->cbGpio18->setChecked(config.gpio_mask & (1 << 1));
+    ui->cbGpio19->setChecked(config.gpio_mask & (1 << 2));
+    ui->cbGpio20->setChecked(config.gpio_mask & (1 << 3));
+    ui->cbGpio21->setChecked(config.gpio_mask & (1 << 4));
+    ui->cbGpio22->setChecked(config.gpio_mask & (1 << 5));
     ui->sbGpioInterval->setValue(config.gpio_interval);
-
 }
 
 void MainWindow::getConfigFromUi() {
@@ -766,7 +770,12 @@ void MainWindow::getConfigFromUi() {
         config.xgzp68xxd_k = 4;
 
     // GPIOs
-    config.enable_gpio = ui->gbGpio->isChecked();
+    config.gpio_mask = ui->cbGpio17->isChecked();
+    config.gpio_mask |= ui->cbGpio18->isChecked() << 1;
+    config.gpio_mask |= ui->cbGpio19->isChecked() << 2;
+    config.gpio_mask |= ui->cbGpio20->isChecked() << 3;
+    config.gpio_mask |= ui->cbGpio21->isChecked() << 4;
+    config.gpio_mask |= ui->cbGpio22->isChecked() << 5;
     config.gpio_interval = ui->sbGpioInterval->value();
 
     // Debug

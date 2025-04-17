@@ -1164,8 +1164,8 @@ static void set_config(smartport_parameters_t *parameter) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-    if (config->enable_gpio) {
-        gpio_parameters_t parameter = {config->gpio_interval, malloc(sizeof(float))};
+    if (config->gpio_mask) {
+        gpio_parameters_t parameter = {config->gpio_mask, config->gpio_interval, malloc(sizeof(float))};
         xTaskCreate(gpio_task, "gpio_task", STACK_GPIO, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);

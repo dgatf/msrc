@@ -4,6 +4,7 @@
 #include "common.h"
 
 typedef struct gpio_parameters_t {
+    uint8_t mask;
     uint16_t interval;
     float *value;
 } gpio_parameters_t;

@@ -115,7 +115,7 @@ typedef struct config_t {
     bool esc_hw4_is_manual_offset;
     uint8_t analog_rate;
     bool xbus_use_alternative_volt_temp;
-    bool enable_gpio;
+    uint8_t gpio_mask;
     float esc_hw4_offset;
     uint32_t serial_monitor_baudrate;
     uint8_t serial_monitor_stop_bits;

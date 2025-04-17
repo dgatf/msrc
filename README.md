@@ -614,8 +614,6 @@ Enable GPIOs 17 to 22 to read the pin state (high or low). It is recommended to 
 
 Available for Smartport at dataId 0x5100. Value is 6 bits masked.    
 
-Depending how the data is processed, you may need to ground unused GPIOs (17 to 22) to avoid garbage.  
-
 ## 8. OpenTx sensors (Smartport)
 
 The default sensor id is 10. This can be changed with [change_id_frsky](https://github.com/dgatf/change_id_frsky)
