@@ -201,13 +201,11 @@ static inline void byte_handler_pio() {
     uint8_t received = 0;
     bool is_address = false;
     i2c_multi->bytes_count++;
-    debug("\nHDL_PIO %u", i2c_multi->bytes_count);
     if (i2c_multi->status != I2C_WRITE) {
         received = transpond_byte(pio_sm_get_blocking(i2c_multi->pio, i2c_multi->sm_read) >>
                                   24);  // Do the bit-reverse here as PIO instructions are scarce
     }
     if (i2c_multi->status == I2C_IDLE) {
-        debug("\nI2C ADDR 0x%X (%s)", received >> 1, received & 1 ? "W" : "R");
         if (!i2c_multi_is_address_enabled(received >> 1)) {
             i2c_multi->status = I2C_IDLE;
             i2c_multi->bytes_count = 0;

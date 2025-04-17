@@ -143,7 +143,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 </center>
 
 (1) with 100Ω resistor. This resistor is optional as RP2040 has internal protection resistors for GPIOs  
-(2) for older receivers like TM1000 & TM110, 1k-3.3k pull up resistors are needed. For newer receivers with both XBUS and SRXL2 ports, no pull ups are needed. If incorrect choice, XBUS won't work. Try the other option if no telemetry is shown in transmitter   
+(2) Pullups. See [6.3 Spektrum XBUS](#63-spektrum-xbus) and [6.9 Hitec](#69-hitec)     
 (3) Optional  
 
 Status led of the board blinks when sending telemetry. If it doesn't blink check connections and config.
@@ -326,7 +326,9 @@ Configure receiver pin (E1 or E2) as Ex Bus. The maximum number of sensors (valu
 
 ### 6.9 Hitec
 
-If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected to Vin/RAW instead Vcc. Use pull ups resistors 1k to 2.7k
+Use pullup resistors 1k to 2.7k
+
+If Vin is a regulated 5V source (e.g. receiver, BEC), pull ups can be connected to Vin/RAW instead Vcc.  
 
 Wire colors in the images bellow:
 
@@ -827,6 +829,12 @@ Po = pressure at ground (Pa)*
 
 
 ## 10. Change log
+
+[v1.2.2](https://github.com/dgatf/msrc/releases/tag/v1.2.2)
+
+- Fixed Hitec protocol
+- Improved vspeed accuracy
+- SRXL2. Ask for re-handshake on reboot
 
 [v1.2.1](https://github.com/dgatf/msrc/releases/tag/v1.2.1)
 
