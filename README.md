@@ -142,6 +142,7 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | Current                                   | 27               |
 | NTC                                       | 28               |
 | Airspeed                                  | 29               |
+| GPIOs                                     | 17 to 22         |
 
 </center>
 
@@ -612,6 +613,8 @@ Available for: XBUS, SRXL, SRXL2 and Jeti Ex.
 Enable GPIOs 17 to 22 to read the pin state (high or low). It is recommended to use the RP2040-zero as this has those pin with a hole.   
 
 Available for Smartport at dataId 0x5100. Value is 6 bits masked.    
+
+Depending how the data is processed, you may need to ground unused GPIOs (17 to 22) to avoid garbage.  
 
 ## 8. OpenTx sensors (Smartport)
 
