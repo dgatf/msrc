@@ -612,7 +612,13 @@ Available for: XBUS, SRXL, SRXL2 and Jeti Ex.
  
 Enable GPIOs 17 to 22 to read the pin state (high or low). It is recommended to use the RP2040-zero as this has those pin with a hole.   
 
-Available for Smartport at dataId 0x5100. Value is 6 bits masked.    
+Available for Smartport at dataId 0x5100. Value is 6 bits masked.   
+
+If using Ethos firmware, you have to create a DIY sensor. Use the same *Physical ID* as any other sensor in MSRC. And set *Application Id* to 5100.  
+
+<p align="center"><img src="./images/ethos_gpio.png" width="500"><br>
+  <i>Ethos DIY Sensor</i><br><br></p>
+
 
 ## 8. OpenTx sensors (Smartport)
 
