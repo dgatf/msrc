@@ -6,7 +6,7 @@ CircuitDialog::CircuitDialog(QWidget *parent) :
     ui(new Ui::CircuitDialog)
 {
     ui->setupUi(this);
-    this->setWindowFlags(Qt::SubWindow);
+    this->setWindowFlags(Qt::Dialog | Qt::Window);
     ui->saCircuit->takeWidget();
     ui->saCircuit->setWidget(ui->lbCircuit);
 }
