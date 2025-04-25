@@ -18,6 +18,8 @@ jobs:
         
       - name: Install QT
         uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
         
       - name: Build
         run: |
