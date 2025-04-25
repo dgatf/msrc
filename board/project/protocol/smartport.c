@@ -375,6 +375,30 @@ static void sensor_task(void *parameters) {
     }
 }
 
+static void sensor_gpio_task(void *parameters) {
+    smartport_sensor_gpio_parameters_t parameter = *(smartport_sensor_gpio_parameters_t *)parameters;
+    xTaskNotifyGive(context.receiver_task_handle);
+    uint cont = 0;
+    while (1) {
+        vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
+        xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
+        if (parameter.gpio_mask) {
+            while (!(parameter.gpio_mask & (1 << cont))) {
+                cont++;
+                if (cont == 6) cont = 0;
+            }
+            float value = *parameter.value & (1 << cont) ? 1 : 0;
+            uint16_t data_id = parameter.data_id + 17 + cont;
+            int32_t data_formatted = format(data_id, value);
+            debug("\nSmartport. Sensor GPIO (%u) > GPIO: %u STATE: %u > ", uxTaskGetStackHighWaterMark(NULL), 17 + cont,
+                  (uint)value);
+            send_packet(0x10, data_id, data_formatted);
+            cont++;
+            if (cont == 6) cont = 0;
+        }
+    }
+}
+
 static void sensor_void_task(void *parameters) {
     while (1) {
         xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
@@ -1169,11 +1193,14 @@ static void set_config(smartport_parameters_t *parameter) {
         xTaskCreate(gpio_task, "gpio_task", STACK_GPIO, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        smartport_sensor_parameters_t parameter_sensor;
+
+        smartport_sensor_gpio_parameters_t parameter_sensor;
         parameter_sensor.data_id = DIY_FIRST_ID;
         parameter_sensor.value = parameter.value;
-        parameter_sensor.rate = config->refresh_rate_default;
-        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        parameter_sensor.rate = config->gpio_interval;
+        parameter_sensor.gpio_mask = config->gpio_mask;
+        xTaskCreate(sensor_gpio_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3,
+                    &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

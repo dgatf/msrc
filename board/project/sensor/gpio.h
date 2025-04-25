@@ -6,7 +6,7 @@
 typedef struct gpio_parameters_t {
     uint8_t mask;
     uint16_t interval;
-    float *value;
+    uint8_t *value;
 } gpio_parameters_t;
 
 extern context_t context;

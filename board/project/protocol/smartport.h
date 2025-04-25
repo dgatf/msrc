@@ -24,6 +24,13 @@ typedef struct smartport_sensor_parameters_t {
     uint16_t rate;
 } smartport_sensor_parameters_t;
 
+typedef struct smartport_sensor_gpio_parameters_t {
+    uint16_t data_id;
+    uint8_t gpio_mask;
+    uint8_t *value;
+    uint16_t rate;
+} smartport_sensor_gpio_parameters_t;
+
 typedef struct smartport_sensor_double_parameters_t {
     uint16_t data_id;
     float *value_l;
