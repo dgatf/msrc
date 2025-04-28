@@ -107,12 +107,12 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 ## 1. Binaries
 
 File to flash to RP2040:
-[MSRC-RP2040.uf2](https://drive.google.com/file/d/1U6SIOXrxWNSM_oTFpoiJkpZdhAzVZ5Iy/view?usp=sharing)
+[MSRC-RP2040.uf2](https://drive.google.com/file/d/1D2POIdtwIJXGI-dHK78g2dTKvUnJVf65/view?usp=sharing)
 
 PC application for configuration:
-- Linux: [msrc_gui.AppImage](https://drive.google.com/file/d/1mvA-3e6PpEAfOVxoN4NynNnP9kEp_QXQ/view?usp=sharing)
-- Windows: [msrc_gui.exe](https://drive.google.com/file/d/1q56j305oKkxwy4nNbp1RR60IOu2S3hbO/view?usp=sharing)
-- macOS: [msrc_gui.dmg](https://drive.google.com/file/d/1zEmVQUYT4Z_JjZQU5CpxyqsHoHrJYY26/view?usp=sharing). Built with macOS 14.7.2
+- Linux: [msrc_gui.AppImage](https://drive.google.com/file/d/16HKzOUz-pHu0FiNNqsd6UvzH1dXUbeao/view?usp=sharing)
+- Windows: [msrc_gui.exe](https://drive.google.com/file/d/1f8ttDbwBAi8wI0ftW3WFy9LLaWnSEdvf/view?usp=sharing)
+- macOS: [msrc_gui.dmg](https://drive.google.com/file/d/1hJD56Z4wOZTtu4Hz51h2b_V4zc7Qv3zn/view?usp=sharing). Built with macOS 14.7.2
 
 ## 2. Connections
 
@@ -614,7 +614,7 @@ Enable GPIOs 17 to 22 to read the pin state (high or low). It is recommended to 
 
 Available for Smartport with dataId 0x51nn, where nn is the GPIO number.  
 
-If using Ethos firmware, you have to create a DIY sensor. Use the same *Physical ID* as any other sensor in MSRC. And set *Application Id* to 51nn. Repeat for ech enabled GPIO.    
+If using Ethos firmware, you have to create a DIY sensor. Set *Physical ID* as *Sensor Id*. And set *Application Id* to 51nn. Repeat for ech enabled GPIO.    
 
 <p align="center"><img src="./images/ethos_gpio.png" width="500"><br>
   <i>Ethos DIY Sensor</i><br><br></p>
