@@ -32,14 +32,6 @@
 #include "voltage.h"
 #include "xgzp68xxd.h"
 
-#define SRXL2_TIMEOUT_US 1000
-#define SRXL2_HEADER 0xA6
-#define SRXL2_HANDSHAKE_LEN 14
-#define SRXL2_CONTROL_LEN 8
-#define SRXL2_TELEMETRY_LEN 22
-#define SRXL2_PACKET_TYPE_HANDSHAKE 0x21
-#define SRXL2_PACKET_TYPE_CONTROL 0xCD
-#define SRXL2_PACKET_TYPE_TELEMETRY 0x80
 #define SRXL2_DEVICE_ID 0x31
 #define SRXL2_DEVICE_PRIORITY 10
 #define SRXL2_DEVICE_BAUDRATE 0
@@ -51,7 +43,6 @@ static alarm_id_t alarm_id;
 static void process(void);
 static void send_packet(void);
 static void set_config(void);
-static void send_handshake(uint8_t receiver_id);
 static int64_t alarm_50ms(alarm_id_t id, void *user_data);
 
 void srxl2_task(void *parameters) {
@@ -70,6 +61,32 @@ void srxl2_task(void *parameters) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process();
     }
+}
+
+void srxl2_send_handshake(uart_inst_t *uart, uint8_t source_id, uint8_t dest_id, uint8_t priority, uint8_t baudrate,
+                          uint8_t info) {
+    uint8_t buffer[SRXL2_HANDSHAKE_LEN];
+    buffer[0] = SRXL2_HEADER;                                      // header
+    buffer[1] = SRXL2_PACKET_TYPE_HANDSHAKE;                       // packet type
+    buffer[2] = SRXL2_HANDSHAKE_LEN;                               // length
+    buffer[3] = source_id;                                         // source Id
+    buffer[4] = dest_id;                                           // dest Id
+    buffer[5] = priority;                                          // priority (0-100)
+    buffer[6] = baudrate;                                          // baudrate: 0 = 115200, 1 = 400000
+    buffer[7] = info;                                              // info
+    buffer[8] = 0x12;                                              // uid
+    buffer[9] = 0x34;                                              // uid
+    buffer[10] = 0x56;                                             // uid
+    buffer[11] = 0x78;                                             // uid
+    uint16_t crc = srxl_get_crc(buffer, SRXL2_HANDSHAKE_LEN - 2);  // all bytes, including header
+    buffer[12] = crc >> 8;                                         // crc high
+    buffer[13] = crc & 0xFF;                                       // crc low
+    if (uart_get_index(uart))
+        uart1_write_bytes(buffer, SRXL2_HANDSHAKE_LEN);
+    else
+        uart0_write_bytes(buffer, SRXL2_HANDSHAKE_LEN);
+    debug("\nSRXL2. Send Handshake >");
+    debug_buffer(buffer, SRXL2_HANDSHAKE_LEN, " 0x%X");
 }
 
 static void process(void) {
@@ -95,33 +112,12 @@ static void process(void) {
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID) {
             dest_id = data[3];
             debug("\nSRXL2. Set dest_id 0x%X", dest_id);
-            send_handshake(dest_id);
+            srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, dest_id, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE,
+                                 SRXL2_DEVICE_INFO);
         } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE_ID) {
             send_packet();
         }
     }
-}
-
-static void send_handshake(uint8_t receiver_id) {
-    uint8_t buffer[SRXL2_HANDSHAKE_LEN];
-    buffer[0] = SRXL2_HEADER;                                      // header
-    buffer[1] = SRXL2_PACKET_TYPE_HANDSHAKE;                       // packet type
-    buffer[2] = SRXL2_HANDSHAKE_LEN;                               // length
-    buffer[3] = SRXL2_DEVICE_ID;                                   // source Id
-    buffer[4] = receiver_id;                                       // dest Id
-    buffer[5] = SRXL2_DEVICE_PRIORITY;                             // priority (0-100)
-    buffer[6] = SRXL2_DEVICE_BAUDRATE;                             // baudrate: 0 = 115200, 1 = 400000
-    buffer[7] = SRXL2_DEVICE_INFO;                                 // info
-    buffer[8] = 0x12;                                              // uid
-    buffer[9] = 0x34;                                              // uid
-    buffer[10] = 0x56;                                             // uid
-    buffer[11] = 0x78;                                             // uid
-    uint16_t crc = srxl_get_crc(buffer, SRXL2_HANDSHAKE_LEN - 2);  // all bytes, including header
-    buffer[12] = crc >> 8;                                         // crc high
-    buffer[13] = crc & 0xFF;                                       // crc low
-    uart0_write_bytes(buffer, SRXL2_HANDSHAKE_LEN);
-    debug("\nSRXL2. Send Handshake >");
-    debug_buffer(buffer, SRXL2_HANDSHAKE_LEN, " 0x%X");
 }
 
 static void send_packet(void) {
@@ -182,7 +178,7 @@ static void send_packet(void) {
 }
 
 static int64_t alarm_50ms(alarm_id_t id, void *user_data) {
-    send_handshake(0);
+    srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, 0, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE, SRXL2_DEVICE_INFO);
     return 50000;
 }
 

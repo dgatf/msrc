@@ -43,7 +43,7 @@ void esc_castle_task(void *parameters) {
     *parameter.cell_voltage = 3.75;
 #endif
 
-    castle_link_init(pio0, CASTLE_RX_GPIO, PIO0_IRQ_0);
+    castle_link_init(pio0, CASTLE_PWM_GPIO, PIO0_IRQ_0);
     castle_link_set_handler(castle_link_handler);
     debug("\nCastle init");
     TaskHandle_t task_handle;

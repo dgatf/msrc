@@ -14,7 +14,7 @@
 #define UART1_TX_GPIO 4       // not used
 #define UART1_RX_GPIO 5       // esc tx
 #define PWM_CAPTURE_GPIO 4    // pwm (rpm)
-#define CASTLE_RX_GPIO 4      // receiver throttle signal
+#define CASTLE_PWM_GPIO 4     // receiver throttle signal
 #define CASTLE_ESC_GPIO 5     // esc throttle signal
 #define UART_RX_PIO_GPIO 6    // gps tx
 #define CLOCK_STRETCH_GPIO 7  // npn switch
@@ -26,6 +26,7 @@
 #define ADC1_GPIO 27          // Current
 #define ADC2_GPIO 28          // NTC
 #define ADC3_GPIO 29          // Airspeed
+#define SMART_ESC_PWM_GPIO 12 // receiver throttle signal
 
 /* UARTS */
 #define UART_RECEIVER uart0
@@ -86,6 +87,7 @@
 #define STACK_ESC_KONTRONIK (212 + STACK_EXTRA)
 #define STACK_ESC_APD_F (194 + STACK_EXTRA)
 #define STACK_ESC_APD_HV (194 + STACK_EXTRA)
+#define STACK_SMART_ESC (232 + STACK_EXTRA)
 #define STACK_GPS (202 + STACK_EXTRA)
 
 #define STACK_VOLTAGE (156 + STACK_EXTRA)
@@ -106,7 +108,7 @@
 #define STACK_AUTO_OFFSET (140 + STACK_EXTRA)
 #define STACK_PWM_OUT (200 + STACK_EXTRA)
 
-#define STACK_USB (180 + STACK_EXTRA)
+#define STACK_USB (196 + STACK_EXTRA)
 #define STACK_LED (186 + STACK_EXTRA)
 
 /* RPM multiplier */

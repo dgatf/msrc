@@ -32,7 +32,6 @@
 #include "voltage.h"
 #include "xgzp68xxd.h"
 
-#define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
 
 xbus_sensor_t *sensor;
 xbus_sensor_formatted_t *sensor_formatted;
