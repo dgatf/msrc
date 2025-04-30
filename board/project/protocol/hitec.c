@@ -100,6 +100,8 @@ void hitec_task(void *parameters) {
     i2c_multi_set_stop_handler(i2c_stop_handler);
     i2c_multi_enable_address(I2C_ADDRESS);
     i2c_multi_fixed_length(FRAME_LENGTH);
+    gpio_set_drive_strength(I2C1_SDA_GPIO, GPIO_DRIVE_STRENGTH_12MA);
+    gpio_set_drive_strength(I2C1_SDA_GPIO + 1, GPIO_DRIVE_STRENGTH_12MA);
 
     debug("\nHitec init");
     vTaskSuspend(NULL);
