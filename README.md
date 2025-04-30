@@ -130,8 +130,8 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | Frsky D                                   | 0                |
 | Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |
 | Hitec, XBUS SCL                           | 3<sup>(2)</sup>  |
-| ESC serial, Serial monitor                | 5                |
-| Phase sensor (PWM in)                     | 4                |
+| ESC serial, Serial monitor, Smart ESC     | 5                |
+| Phase sensor (PWM in), Smart ESC          | 4                |
 | Castle. Receiver signal                   | 4                |
 | Castle. ESC signal                        | 5<sup>(2)</sup>  |
 | GPS                                       | 6                |
@@ -140,6 +140,8 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | Sensor SCL                                | 9<sup>(2)</sup>  |
 | PWM out                                   | 10               |
 | Fuel meter (PWM in)                       | 11               |
+| Throttle PWM (Smart ESC)                  | 12               |
+| Reverse PWM (Smart ESC)                   | 13               |
 | Voltage                                   | 26               |
 | Current                                   | 27               |
 | NTC                                       | 28               |
@@ -516,6 +518,14 @@ The telemetry is send over the ESC signal. *Castle Link* has to be enabled in th
 #### 7.1.11. Smart ESC and Battery
 
 Spektrum Smart ESC & Battery uses SRXL2 protocol.  
+
+Reverse is at channel 7.  
+
+Connections:
+
+- Smart ESC signal -> GPIOs 4 & 5
+- Throttle PWM -> GPIO 12
+- Reverse PWM -> GPIO 13 (optional)
 
 Smart Battery sends telemetry for: current, consumption, cells voltage and temperature.  
 
