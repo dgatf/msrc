@@ -15,9 +15,10 @@
 #define SRXL2_RECEIVER_ID 0x21
 #define SRXL2_ESC_ID 0x40
 #define SRXL2_RECEIVER_PRIORITY 0xA
-#define SRXL2_RECEIVER_BAUDRATE 0
+#define SRXL2_RECEIVER_BAUDRATE 1
 #define SRXL2_RECEIVER_INFO 0x7
 #define SRXL2_INTERVAL_MS 10
+#define SRXL2_RECEIVER_UID 0x27A2C29C  // 0x12345678
 
 #define SRXL2_CONTROL_LEN_CHANNEL 5 + 9 + 2  // header + channel data (1 channel) + crc
 
@@ -114,6 +115,16 @@ typedef struct srxl2_channel_data_t {
     uint16_t channel_data;
 } __attribute__((packed)) srxl2_channel_data_t;
 
+typedef struct srxl2_control_packet_t {
+    uint8_t header;
+    uint8_t type;
+    uint8_t len;
+    uint8_t command;
+    uint8_t reply_id;
+    srxl2_channel_data_t channel_data;
+    uint16_t crc;
+} __attribute__((packed)) srxl2_control_packet_t;
+
 static volatile uint8_t esc_id = 0, esc_priority = 10;
 static volatile uint16_t throttle = 0;
 
@@ -122,8 +133,6 @@ static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter);
 static void send_packet(void);
 static void capture_pwm_handler(uint counter, edge_type_t edge);
 static int64_t timeout_callback(alarm_id_t id, void *user_data);
-
-static int64_t send_packet_alarm(alarm_id_t id, void *user_data);
 
 void smart_esc_task(void *parameters) {
     smart_esc_parameters_t parameter = *(smart_esc_parameters_t *)parameters;
@@ -175,7 +184,7 @@ static void process(smart_esc_parameters_t *parameter) {
             debug("\nSmart ESC. Handshake request from 0x%X", data[3]);
             if (data[3] == SRXL2_ESC_ID)
                 srxl2_send_handshake(uart1, SRXL2_RECEIVER_ID, SRXL2_ESC_ID, SRXL2_RECEIVER_PRIORITY,
-                                     SRXL2_RECEIVER_BAUDRATE, SRXL2_RECEIVER_INFO);
+                                     SRXL2_RECEIVER_BAUDRATE, SRXL2_RECEIVER_INFO, SRXL2_RECEIVER_UID);
         }
         // Handshake confirmation
         else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[3] == SRXL2_ESC_ID) {
@@ -190,7 +199,7 @@ static void process(smart_esc_parameters_t *parameter) {
         // Re-handshake request
         else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_TELEMETRY && data[3] == 0xFF) {
             srxl2_send_handshake(uart1, SRXL2_RECEIVER_ID, SRXL2_ESC_ID, SRXL2_RECEIVER_PRIORITY,
-                                 SRXL2_RECEIVER_BAUDRATE, SRXL2_RECEIVER_INFO);
+                                 SRXL2_RECEIVER_BAUDRATE, SRXL2_RECEIVER_INFO, SRXL2_RECEIVER_UID);
         }
     }
 }
@@ -292,26 +301,26 @@ static void send_packet(void) {
     static uint cont = 0;
     if (!esc_id) {
         srxl2_send_handshake(uart1, SRXL2_RECEIVER_ID, SRXL2_ESC_ID, SRXL2_RECEIVER_PRIORITY, SRXL2_RECEIVER_BAUDRATE,
-                             SRXL2_RECEIVER_INFO);
+                             SRXL2_RECEIVER_INFO, SRXL2_RECEIVER_UID);
     } else {
-        uint8_t buffer[SRXL2_CONTROL_LEN_CHANNEL] = {0};
-        buffer[0] = SRXL2_HEADER;
-        buffer[1] = SRXL2_PACKET_TYPE_CONTROL;
-        buffer[2] = SRXL2_CONTROL_LEN_CHANNEL;
-        buffer[3] = SRXL2_CONTROL_CMD_CHANNEL;
-        if (!(cont % 10)) buffer[4] = esc_id;
-        srxl2_channel_data_t channel_data = {0};
+        srxl2_control_packet_t packet;
+        packet.header = SRXL2_HEADER;
+        packet.type = SRXL2_PACKET_TYPE_CONTROL;
+        packet.len = SRXL2_CONTROL_LEN_CHANNEL;
+        packet.command = SRXL2_CONTROL_CMD_CHANNEL;
+        if (!(cont % 10)) packet.reply_id = esc_id;
+        srxl2_channel_data_t channel_data;
         channel_data.rssi = 0x64;
+        channel_data.frame_losses = 0;
         channel_data.channel_mask = 1;
         channel_data.channel_data = throttle;
-        memcpy(buffer + 5, &channel_data, sizeof(srxl2_channel_data_t));
-        uint16_t crc = srxl_get_crc(buffer, sizeof(buffer) - 2);
-        buffer[SRXL2_CONTROL_LEN_CHANNEL - 2] = crc >> 8;
-        buffer[SRXL2_CONTROL_LEN_CHANNEL - 1] = crc;
-        uart1_write_bytes(buffer, sizeof(buffer));
+        packet.channel_data = channel_data;
+        uint16_t crc = srxl_get_crc((uint8_t *)&packet, sizeof(packet) - 2);
+        packet.crc = swap_16(crc);
+        uart1_write_bytes((uint8_t *)&packet, sizeof(packet));
         cont++;
         debug("\nSmart ESC (%u) > ", uxTaskGetStackHighWaterMark(NULL));
-        debug_buffer(buffer, sizeof(buffer), " 0x%X");
+        debug_buffer((uint8_t *)&packet, sizeof(packet), " 0x%X");
     }
 }
 

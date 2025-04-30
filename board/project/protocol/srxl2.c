@@ -36,6 +36,7 @@
 #define SRXL2_DEVICE_PRIORITY 10
 #define SRXL2_DEVICE_BAUDRATE 0
 #define SRXL2_DEVICE_INFO 0
+#define SRXL2_DEVICE_UID 0x12345678
 
 static volatile uint8_t dest_id = 0xFF;
 static alarm_id_t alarm_id;
@@ -64,29 +65,25 @@ void srxl2_task(void *parameters) {
 }
 
 void srxl2_send_handshake(uart_inst_t *uart, uint8_t source_id, uint8_t dest_id, uint8_t priority, uint8_t baudrate,
-                          uint8_t info) {
-    uint8_t buffer[SRXL2_HANDSHAKE_LEN];
-    buffer[0] = SRXL2_HEADER;                                      // header
-    buffer[1] = SRXL2_PACKET_TYPE_HANDSHAKE;                       // packet type
-    buffer[2] = SRXL2_HANDSHAKE_LEN;                               // length
-    buffer[3] = source_id;                                         // source Id
-    buffer[4] = dest_id;                                           // dest Id
-    buffer[5] = priority;                                          // priority (0-100)
-    buffer[6] = baudrate;                                          // baudrate: 0 = 115200, 1 = 400000
-    buffer[7] = info;                                              // info
-    buffer[8] = 0x12;                                              // uid
-    buffer[9] = 0x34;                                              // uid
-    buffer[10] = 0x56;                                             // uid
-    buffer[11] = 0x78;                                             // uid
-    uint16_t crc = srxl_get_crc(buffer, SRXL2_HANDSHAKE_LEN - 2);  // all bytes, including header
-    buffer[12] = crc >> 8;                                         // crc high
-    buffer[13] = crc & 0xFF;                                       // crc low
+                          uint8_t info, uint uid) {
+    srxl2_handshake_t handshake;
+    handshake.header = SRXL2_HEADER;
+    handshake.type = SRXL2_PACKET_TYPE_HANDSHAKE;
+    handshake.len = SRXL2_HANDSHAKE_LEN;
+    handshake.source_id = source_id;
+    handshake.dest_id = dest_id;
+    handshake.priority = priority;
+    handshake.baudrate = baudrate;
+    handshake.info = info;
+    handshake.uid = uid;
+    uint16_t crc = srxl_get_crc((uint8_t *)&handshake, SRXL2_HANDSHAKE_LEN - 2);
+    handshake.crc = swap_16(crc);
     if (uart_get_index(uart))
-        uart1_write_bytes(buffer, SRXL2_HANDSHAKE_LEN);
+        uart1_write_bytes((uint8_t *)&handshake, SRXL2_HANDSHAKE_LEN);
     else
-        uart0_write_bytes(buffer, SRXL2_HANDSHAKE_LEN);
+        uart0_write_bytes((uint8_t *)&handshake, SRXL2_HANDSHAKE_LEN);
     debug("\nSRXL2. Send Handshake >");
-    debug_buffer(buffer, SRXL2_HANDSHAKE_LEN, " 0x%X");
+    debug_buffer((uint8_t *)&handshake, SRXL2_HANDSHAKE_LEN, " 0x%X");
 }
 
 static void process(void) {
@@ -113,7 +110,7 @@ static void process(void) {
             dest_id = data[3];
             debug("\nSRXL2. Set dest_id 0x%X", dest_id);
             srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, dest_id, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE,
-                                 SRXL2_DEVICE_INFO);
+                                 SRXL2_DEVICE_INFO, SRXL2_DEVICE_UID);
         } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE_ID) {
             send_packet();
         }
@@ -127,58 +124,57 @@ static void send_packet(void) {
         cont++;
         if (cont > XBUS_STRU_TELE_DIGITAL_AIR) cont = 0;
     }
-    uint8_t buffer[SRXL2_TELEMETRY_LEN] = {0};
-    buffer[0] = SRXL2_HEADER;
-    buffer[1] = SRXL2_PACKET_TYPE_TELEMETRY;
-    buffer[2] = SRXL2_TELEMETRY_LEN;
-    buffer[3] = dest_id;
+    srxl2_telemetry_t packet = {0};
+    packet.header = SRXL2_HEADER;
+    packet.type = SRXL2_PACKET_TYPE_TELEMETRY;
+    packet.len = SRXL2_TELEMETRY_LEN;
+    packet.dest_id = dest_id;
     switch (cont) {
         case XBUS_AIRSPEED:
             xbus_format_sensor(XBUS_AIRSPEED_ID);
-            memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->airspeed, sizeof(xbus_airspeed_t));
+            memcpy((uint8_t *)&packet.xbus_packet, (uint8_t *)sensor_formatted->airspeed, sizeof(xbus_airspeed_t));
             break;
         case XBUS_BATTERY:
             xbus_format_sensor(XBUS_BATTERY_ID);
-            memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->battery, sizeof(xbus_battery_t));
+            memcpy((uint8_t *)&packet.xbus_packet, (uint8_t *)sensor_formatted->battery, sizeof(xbus_battery_t));
             break;
         case XBUS_ESC:
             xbus_format_sensor(XBUS_ESC_ID);
-            memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->esc, sizeof(xbus_esc_t));
+            memcpy((uint8_t *)&packet.xbus_packet, (uint8_t *)sensor_formatted->esc, sizeof(xbus_esc_t));
             break;
         case XBUS_GPS_LOC:
             xbus_format_sensor(XBUS_GPS_LOC_ID);
-            memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->gps_loc, sizeof(xbus_gps_loc_t));
+            memcpy((uint8_t *)&packet.xbus_packet, (uint8_t *)sensor_formatted->gps_loc, sizeof(xbus_gps_loc_t));
             break;
         case XBUS_GPS_STAT:
             xbus_format_sensor(XBUS_GPS_STAT_ID);
-            memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->gps_stat, sizeof(xbus_gps_stat_t));
+            memcpy((uint8_t *)&packet.xbus_packet, (uint8_t *)sensor_formatted->gps_stat, sizeof(xbus_gps_stat_t));
             break;
         case XBUS_RPMVOLTTEMP:
             xbus_format_sensor(XBUS_RPMVOLTTEMP_ID);
-            memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
+            memcpy((uint8_t *)&packet.xbus_packet, (uint8_t *)sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
             break;
         case XBUS_FUEL_FLOW:
             xbus_format_sensor(XBUS_FUEL_FLOW_ID);
-            memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->fuel_flow, sizeof(xbus_fuel_flow_t));
+            memcpy((uint8_t *)&packet.xbus_packet, (uint8_t *)sensor_formatted->fuel_flow, sizeof(xbus_fuel_flow_t));
             break;
         case XBUS_STRU_TELE_DIGITAL_AIR:
             xbus_format_sensor(XBUS_STRU_TELE_DIGITAL_AIR_ID);
-            memcpy((uint8_t *)&buffer[4], (uint8_t *)sensor_formatted->stru_tele_digital_air,
+            memcpy((uint8_t *)&packet.xbus_packet, (uint8_t *)sensor_formatted->stru_tele_digital_air,
                    sizeof(xbus_stru_tele_digital_air_t));
             break;
     }
-    uint16_t crc = srxl_get_crc(buffer, SRXL2_TELEMETRY_LEN - 2);  // all bytes, including header
-    buffer[20] = crc >> 8;
-    buffer[21] = crc;
-    uart0_write_bytes(buffer, SRXL2_TELEMETRY_LEN);
+    uint16_t crc = srxl_get_crc((uint8_t *)&packet, SRXL2_TELEMETRY_LEN - 2);
+    packet.crc = swap_16(crc);
+    uart0_write_bytes((uint8_t *)&packet, SRXL2_TELEMETRY_LEN);
     cont++;
     debug("\nSRXL2 (%u) > ", uxTaskGetStackHighWaterMark(NULL));
-    debug_buffer(buffer, SRXL2_TELEMETRY_LEN, "0x%X ");
+    debug_buffer((uint8_t *)&packet, SRXL2_TELEMETRY_LEN, "0x%X ");
     vTaskResume(context.led_task_handle);
 }
 
 static int64_t alarm_50ms(alarm_id_t id, void *user_data) {
-    srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, 0, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE, SRXL2_DEVICE_INFO);
+    srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, 0, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE, SRXL2_DEVICE_INFO, 0x12345678);
     return 50000;
 }
 

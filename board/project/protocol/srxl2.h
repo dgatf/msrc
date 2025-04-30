@@ -17,8 +17,30 @@ extern context_t context;
 extern xbus_sensor_t *sensor;
 extern xbus_sensor_formatted_t *sensor_formatted;
 
+typedef struct srxl2_handshake_t {
+    uint8_t header;
+    uint8_t type;
+    uint8_t len;
+    uint8_t source_id;
+    uint8_t dest_id;
+    uint8_t priority;
+    uint8_t baudrate;
+    uint8_t info;
+    uint32_t uid;
+    uint16_t crc;
+} __attribute__((packed)) srxl2_handshake_t;
+
+typedef struct srxl2_telemetry_t {
+    uint8_t header;
+    uint8_t type;
+    uint8_t len;
+    uint8_t dest_id;
+    uint8_t xbus_packet[16];
+    uint16_t crc;
+} __attribute__((packed)) srxl2_telemetry_t;
+
 void srxl2_task(void *parameters);
 void srxl2_send_handshake(uart_inst_t *uart, uint8_t source_id, uint8_t dest_id, uint8_t priority, uint8_t baudrate,
-                          uint8_t info);
+                          uint8_t info, uint uid);
 
 #endif
