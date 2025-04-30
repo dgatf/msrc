@@ -38,8 +38,8 @@ typedef struct srxl2_smart_bat_realtime_t {
     uint8_t s_id;        // Secondary ID
     uint8_t type;        // 0x00
     int8_t temp;
-    uint32_t consumption;  // mAh or A?
-    uint16_t capacity;     // mAh
+    uint32_t current;   // A
+    uint16_t consumption;  // mAh
     uint16_t min_cel;
     uint16_t max_cel;
 } __attribute__((packed)) srxl2_smart_bat_realtime_t;
@@ -143,6 +143,7 @@ void smart_esc_task(void *parameters) {
     *parameter.temperature_bec = 0;
     *parameter.voltage_bec = 0;
     *parameter.current_bec = 0;
+    *parameter.current_bat = 0;
     *parameter.consumption = 0;
     xTaskNotifyGive(context.receiver_task_handle);
 #ifdef SIM_SENSORS
@@ -210,7 +211,7 @@ static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter) {
         memcpy(&esc, buffer, sizeof(xbus_esc_t));
         *parameter->rpm = swap_16(esc.rpm) * 10;
         *parameter->voltage = swap_16(esc.volts_input) / 100.0;
-        *parameter->current = swap_16(esc.current_motor) / 10.0;
+        *parameter->current = swap_16(esc.current_motor) / 100.0;
         *parameter->voltage_bec = esc.voltage_bec == 0xFF ? 0 : esc.voltage_bec / 20.0;
         *parameter->current_bec = esc.current_bec == 0xFF ? 0 : esc.current_bec / 100.0;
         *parameter->temperature_fet = esc.temp_fet == 0xFFFF ? 0 : (swap_16(esc.temp_fet) / 10.0);
@@ -225,11 +226,11 @@ static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter) {
                 srxl2_smart_bat_realtime_t bat_realtime;
                 memcpy(&bat_realtime, buffer, sizeof(srxl2_smart_bat_realtime_t));
                 *parameter->temperature_bat = bat_realtime.temp;
-                *parameter->consumption = bat_realtime.consumption;
-                *parameter->capacity = bat_realtime.capacity;
+                *parameter->current_bat = bat_realtime.current / 100;
+                *parameter->consumption = bat_realtime.consumption / 10;
                 debug("\nSmart ESC (Bat 0x%X) (%u) < Temp: %.0f Cons: %0.2f Cap: %.2f ", XBUS_SMART_BAT_REALTIME,
-                      uxTaskGetStackHighWaterMark(NULL), *parameter->temperature_bat, *parameter->consumption,
-                      *parameter->capacity);
+                      uxTaskGetStackHighWaterMark(NULL), *parameter->temperature_bat, *parameter->current_bat,
+                      *parameter->consumption);
                 break;
             }
             case XBUS_SMART_BAT_CELLS_1: {

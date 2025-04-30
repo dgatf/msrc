@@ -972,8 +972,8 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter.voltage_bec = malloc(sizeof(float));
         parameter.current_bec = malloc(sizeof(float));
         parameter.temperature_bat = malloc(sizeof(float));
+        parameter.current_bat = malloc(sizeof(float));
         parameter.consumption = malloc(sizeof(float));
-        parameter.capacity = malloc(sizeof(float));
         for (uint i = 0; i < 18; i++) parameter.cell[i] = malloc(sizeof(float));
         parameter.cells = malloc(sizeof(uint8_t));
         parameter.cycles = malloc(sizeof(uint16_t));
@@ -1030,6 +1030,13 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor.data_id = ESC_TEMPERATURE_FIRST_ID + 2;
         parameter_sensor.value = parameter.temperature_bat;
         parameter_sensor.rate = config->refresh_rate_temperature;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        // current_bat
+        parameter_sensor.data_id = CURR_FIRST_ID + 1;
+        parameter_sensor.value = parameter.current_bat;
+        parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
