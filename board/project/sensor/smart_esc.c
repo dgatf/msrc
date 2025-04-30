@@ -20,8 +20,6 @@
 #define SRXL2_INTERVAL_MS 10
 #define SRXL2_RECEIVER_UID 0x27A2C29C  // 0x12345678
 
-#define SRXL2_CONTROL_LEN_CHANNEL 5 + 9 + 2  // header + channel data (1 channel) + crc
-
 #define XBUS_SMART_BAT 0x42
 #define XBUS_SMART_BAT_REALTIME 0x00
 #define XBUS_SMART_BAT_CELLS_1 0x10
@@ -125,6 +123,8 @@ typedef struct srxl2_control_packet_t {
     srxl2_channel_data_t channel_data;
     uint16_t crc;
 } __attribute__((packed)) srxl2_control_packet_t;
+
+#define SRXL2_CONTROL_LEN_CHANNEL (5 + sizeof(srxl2_channel_data_t) + 2)  // header + channel data (1 channel) + crc
 
 static volatile uint8_t esc_id = 0, esc_priority = 10;
 static volatile uint16_t throttle = 0, reverse = 0;
