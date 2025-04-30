@@ -535,8 +535,8 @@ static void set_config(void) {
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x17[FRAME_0X17_TEMP3] = parameter.ntc;
-        sensor->is_enabled_frame[FRAME_0X17] = true;
+        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.ntc;
+        sensor->is_enabled_frame[FRAME_0X14] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
