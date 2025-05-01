@@ -8,8 +8,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
     ui->tbViews->setCurrentIndex(0);
     ui->ptDebug->ensureCursorVisible();
-    ui->saConfig->setEnabled(false);
+    ui->saScroll->setEnabled(false);
     ui->btDebug->setDisabled(true);
+    ui->btUpdate->setDisabled(true);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
                          "Kiss", "APD HV", "HobbyWing V5", "Smart ESC/BAT"});
 
@@ -139,8 +140,10 @@ void MainWindow::generateCircuit(QLabel *label) {
                 image.load(":/res/esc_rp2040_zero.png");
             else if (ui->cbEsc->currentText() == "PWM")
                 image.load(":/res/pwm_rp2040_zero.png");
-            else if (ui->cbEsc->currentText() == "Castle Link" || ui->cbEsc->currentText() == "Smart ESC/BAT")
+            else if (ui->cbEsc->currentText() == "Castle Link")
                 image.load(":/res/castle_rp2040_zero.png");
+            else if (ui->cbEsc->currentText() == "Smart ESC/BAT")
+                image.load(":/res/smart_esc.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         } else {
         }
@@ -151,7 +154,12 @@ void MainWindow::generateCircuit(QLabel *label) {
         }
 
         if (ui->gbFuelPressure->isChecked()) {
-            image.load(":/res/vario_rp2040_zero.png");
+            image.load(":/res/fuel_pressure.png");
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
+        if (ui->gbFuelmeter->isChecked()) {
+            image.load(":/res/fuel_meter.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
@@ -273,7 +281,7 @@ void MainWindow::openSerialPort() {
         ui->btConnect->setText("Disconnect");
         ui->actionUpdateConfig->setEnabled(true);
         ui->actionDefaultConfig->setEnabled(true);
-        ui->saConfig->setEnabled(true);
+        ui->saScroll->setEnabled(true);
         ui->cbPortList->setDisabled(true);
         ui->btDebug->setEnabled(true);
         ui->btDebug->setText("Enable Debug");
@@ -284,7 +292,7 @@ void MainWindow::openSerialPort() {
         ui->btConnect->setText("Connect");
         ui->actionUpdateConfig->setEnabled(false);
         ui->actionDefaultConfig->setEnabled(false);
-        ui->saConfig->setEnabled(false);
+        ui->saScroll->setEnabled(false);
         ui->btDebug->setEnabled(false);
         ui->btDebug->setText("Enable Debug");
     }
@@ -298,7 +306,7 @@ void MainWindow::closeSerialPort() {
     ui->btConnect->setText("Connect");
     ui->actionUpdateConfig->setEnabled(false);
     ui->actionDefaultConfig->setEnabled(false);
-    ui->saConfig->setEnabled(false);
+    ui->saScroll->setEnabled(false);
     ui->cbPortList->setDisabled(false);
     ui->btDebug->setDisabled(true);
     ui->btDebug->setText("Enable Debug");
@@ -878,6 +886,7 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->cbSpeedUnitsGps->setVisible(false);
         ui->lbSpeedUnitsGps->setVisible(false);
     }
+
     if (arg1 == "Serial Monitor") {
         ui->cbBaudrate->setVisible(true);
         ui->cbStopbits->setVisible(true);
@@ -898,6 +907,99 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->lbStopbits->setVisible(false);
         ui->lbParity->setVisible(false);
         ui->lbTimeout->setVisible(false);
+    }
+
+    // Fuel meter
+    if (arg1 == "Frsky Smartport"  || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS") {
+        ui->gbFuelmeter->setVisible(true);
+    } else {
+        ui->gbFuelmeter->setVisible(false);
+    }
+
+    // Fuel pressure
+    if (arg1 == "Spektrum SRXL"  || arg1 == "Spektrum SRXL2" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS") {
+        ui->gbFuelPressure->setVisible(true);
+    } else {
+        ui->gbFuelPressure->setVisible(false);
+    }
+
+    // Analog temperature
+    if (arg1 == "CRSF") {
+        ui->cbTemperature1->setVisible(false);
+
+    } else {
+        ui->cbTemperature1->setVisible(true);
+    }
+
+    // Airspeed
+    if (arg1 == "CRSF") {
+        ui->gbAirspeed->setVisible(false);
+    } else {
+        ui->gbAirspeed->setVisible(true);
+
+    }
+
+    // GPIO
+    if (arg1 == "Frsky Smartport") {
+        ui->gbGpio->setVisible(true);
+    } else {
+        ui->gbGpio->setVisible(false);
+    }
+
+    // GPS, current, airspeed
+    if (arg1 == "Sanwa") {
+        ui->gbGps->setVisible(false);
+        ui->gbCurrent->setVisible(false);
+        ui->gbAirspeed->setVisible(false);
+        ui->gbAltitude->setVisible(false);
+    } else {
+        ui->gbGps->setVisible(true);
+        ui->gbCurrent->setVisible(true);
+        ui->gbAirspeed->setVisible(true);
+        ui->gbAltitude->setVisible(true);
+
+    }
+
+    // Average elements
+    if (arg1 == "Sanwa") {
+        ui->lbRpmAvg->setVisible(true);
+        ui->sbRpmAvg->setVisible(true);
+        ui->lbVoltageAvg->setVisible(true);
+        ui->sbVoltageAvg->setVisible(true);
+        ui->lbCurrentAvg->setVisible(false);
+        ui->sbCurrentAvg->setVisible(false);
+        ui->lbTemperatureAvg->setVisible(true);
+        ui->sbTemperatureAvg->setVisible(true);
+        ui->lbVarioAvg->setVisible(false);
+        ui->sbVarioAvg->setVisible(false);
+        ui->lbAirspeedAvg->setVisible(false);
+        ui->sbAirspeedAvg->setVisible(false);
+    } else if (arg1 == "CRSF") {
+        ui->lbRpmAvg->setVisible(true);
+        ui->sbRpmAvg->setVisible(true);
+        ui->lbVoltageAvg->setVisible(true);
+        ui->sbVoltageAvg->setVisible(true);
+        ui->lbCurrentAvg->setVisible(true);
+        ui->sbCurrentAvg->setVisible(true);
+        ui->lbTemperatureAvg->setVisible(false);
+        ui->sbTemperatureAvg->setVisible(false);
+        ui->lbVarioAvg->setVisible(true);
+        ui->sbVarioAvg->setVisible(true);
+        ui->lbAirspeedAvg->setVisible(true);
+        ui->sbAirspeedAvg->setVisible(true);
+    } else {
+        ui->lbRpmAvg->setVisible(true);
+        ui->sbRpmAvg->setVisible(true);
+        ui->lbVoltageAvg->setVisible(true);
+        ui->sbVoltageAvg->setVisible(true);
+        ui->lbCurrentAvg->setVisible(true);
+        ui->sbCurrentAvg->setVisible(true);
+        ui->lbTemperatureAvg->setVisible(true);
+        ui->sbTemperatureAvg->setVisible(true);
+        ui->lbVarioAvg->setVisible(true);
+        ui->sbVarioAvg->setVisible(true);
+        ui->lbAirspeedAvg->setVisible(true);
+        ui->sbAirspeedAvg->setVisible(true);
     }
 }
 
@@ -1117,3 +1219,10 @@ void MainWindow::on_btScroll_clicked() {
     else
         ui->btScroll->setText("Autoscroll");
 }
+
+void MainWindow::on_gbFuelPressure_toggled(bool enabled)
+{
+    enableWidgets(ui->gbFuelPressure, enabled);
+    generateCircuit(ui->lbCircuit);
+}
+

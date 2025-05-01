@@ -17,5 +17,8 @@
         <file>res/clock_stretch_xbus_rp2040_zero.png</file>
         <file>res/msrc.png</file>
         <file>res/msrc.ico</file>
+        <file>res/smart_esc.png</file>
+        <file>res/fuel_pressure.png</file>
+        <file>res/fuel_meter.png</file>
     </qresource>
 </RCC>

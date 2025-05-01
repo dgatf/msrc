@@ -211,5 +211,6 @@ class MainWindow : public QMainWindow {
     void on_gbAirspeed_toggled(bool arg1);
     void on_gbFuelmeter_toggled(bool arg1);
     void on_btScroll_clicked();
+    void on_gbFuelPressure_toggled(bool arg1);
 };
 #endif  // MAINWINDOW_H
