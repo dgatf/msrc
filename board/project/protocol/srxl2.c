@@ -40,6 +40,7 @@
 
 static volatile uint8_t dest_id = 0xFF;
 static alarm_id_t alarm_id;
+static volatile bool send_handshake = false;
 
 static void process(void);
 static void send_packet(void);
@@ -61,6 +62,11 @@ void srxl2_task(void *parameters) {
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process();
+        if (send_handshake) {
+            send_handshake = false;
+            srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, 0, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE,
+                                 SRXL2_DEVICE_INFO, SRXL2_DEVICE_UID);
+        }
     }
 }
 
@@ -82,12 +88,11 @@ void srxl2_send_handshake(uart_inst_t *uart, uint8_t source_id, uint8_t dest_id,
         uart1_write_bytes((uint8_t *)&handshake, SRXL2_HANDSHAKE_LEN);
     else
         uart0_write_bytes((uint8_t *)&handshake, SRXL2_HANDSHAKE_LEN);
-    debug("\nSRXL2. Send Handshake >");
+    debug("\nSRXL2 (%u). Send Handshake >", uxTaskGetStackHighWaterMark(NULL));
     debug_buffer((uint8_t *)&handshake, SRXL2_HANDSHAKE_LEN, " 0x%X");
 }
 
 static void process(void) {
-    static bool mute = true;
     uint8_t length = uart0_available();
     if (length) {
         cancel_alarm(alarm_id);
@@ -152,7 +157,8 @@ static void send_packet(void) {
             break;
         case XBUS_RPMVOLTTEMP:
             xbus_format_sensor(XBUS_RPMVOLTTEMP_ID);
-            memcpy((uint8_t *)&packet.xbus_packet, (uint8_t *)sensor_formatted->rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
+            memcpy((uint8_t *)&packet.xbus_packet, (uint8_t *)sensor_formatted->rpm_volt_temp,
+                   sizeof(xbus_rpm_volt_temp_t));
             break;
         case XBUS_FUEL_FLOW:
             xbus_format_sensor(XBUS_FUEL_FLOW_ID);
@@ -174,7 +180,10 @@ static void send_packet(void) {
 }
 
 static int64_t alarm_50ms(alarm_id_t id, void *user_data) {
-    srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, 0, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE, SRXL2_DEVICE_INFO, SRXL2_DEVICE_UID);
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    send_handshake = true;
+    vTaskNotifyGiveIndexedFromISR(context.uart0_notify_task_handle, 1, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return 50000;
 }
 

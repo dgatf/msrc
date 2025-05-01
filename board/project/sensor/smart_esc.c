@@ -36,7 +36,7 @@ typedef struct srxl2_smart_bat_realtime_t {
     uint8_t s_id;        // Secondary ID
     uint8_t type;        // 0x00
     int8_t temp;
-    uint32_t current;   // A
+    uint32_t current;      // A
     uint16_t consumption;  // mAh
     uint16_t min_cel;
     uint16_t max_cel;
@@ -128,6 +128,7 @@ typedef struct srxl2_control_packet_t {
 
 static volatile uint8_t esc_id = 0, esc_priority = 10;
 static volatile uint16_t throttle = 0, reverse = 0;
+static volatile bool packet_pending = false;
 
 static void process(smart_esc_parameters_t *parameter);
 static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter);
@@ -136,6 +137,7 @@ static void capture_pwm_throttle_handler(uint counter, edge_type_t edge);
 static void capture_pwm_reverse_handler(uint counter, edge_type_t edge);
 static int64_t timeout_throttle_callback(alarm_id_t id, void *user_data);
 static int64_t timeout_reverse_callback(alarm_id_t id, void *user_data);
+static int64_t alarm_packet(alarm_id_t id, void *user_data);
 
 void smart_esc_task(void *parameters) {
     smart_esc_parameters_t parameter = *(smart_esc_parameters_t *)parameters;
@@ -164,11 +166,15 @@ void smart_esc_task(void *parameters) {
     gpio_pull_up(SMART_ESC_PWM_GPIO);
     gpio_pull_up(SMART_ESC_PWM_GPIO + 1);
     uart1_begin(115200, UART1_TX_GPIO, UART_ESC_RX, SRXL2_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
+    add_alarm_in_us(SRXL2_INTERVAL_MS * 1000, alarm_packet, NULL, true);
 
     while (1) {
-        if (uart1_available()) process(&parameter);
-        send_packet();
-        vTaskDelay(SRXL2_INTERVAL_MS / portTICK_PERIOD_MS);
+        ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
+        process(&parameter);
+        if (packet_pending) {
+            packet_pending = false;
+            send_packet();
+        }
     }
 }
 
@@ -383,4 +389,12 @@ static int64_t timeout_reverse_callback(alarm_id_t id, void *user_data) {
     reverse = 0;
     debug("\nSmart Esc. Signal timeout. Reverse 0");
     return 0;
+}
+
+static int64_t alarm_packet(alarm_id_t id, void *user_data) {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    packet_pending = true;
+    vTaskNotifyGiveIndexedFromISR(context.uart1_notify_task_handle, 1, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    return SRXL2_INTERVAL_MS * 1000;
 }
