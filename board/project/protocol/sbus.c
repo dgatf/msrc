@@ -106,13 +106,15 @@
 
 static sensor_sbus_t *sbus_sensor[32] = {NULL};
 static uint packet_id;
+static volatile uint slot = 0;
+static volatile bool slot_pending = false;
 
 static void process();
 static int64_t send_slot_callback(alarm_id_t id, void *parameters);
 static inline void send_slot(uint8_t slot);
 static uint16_t format(uint8_t data_id, float value);
 static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor);
-static void set_config();
+static void set_config(void);
 static uint8_t get_slot_id(uint8_t slot);
 
 void sbus_task(void *parameters) {
@@ -124,6 +126,10 @@ void sbus_task(void *parameters) {
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process();
+        if (slot_pending) {
+            send_slot(slot);
+            slot_pending = false;
+        }
     }
 }
 
@@ -144,9 +150,11 @@ static void process() {
 }
 
 static int64_t send_slot_callback(alarm_id_t id, void *parameters) {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     static uint timestamp;
     static uint8_t index = 0;
-    uint8_t slot = index + packet_id * 8;
+    uint next_alarm;
+    slot = index + packet_id * 8;
     if (context.debug == 2) {
         if (slot == 0 || slot == 8 || slot == 16 || slot == 24)
             printf("\nT:%u\n", uart0_get_time_elapsed());
@@ -154,14 +162,18 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters) {
             printf("\nT:%u\n", time_us_32() - timestamp);
     }
     timestamp = time_us_32();
-    send_slot(slot);
     if (index < 7) {
         index++;
-        return INTER_SLOT_DELAY - (time_us_32() - timestamp);
+        next_alarm = INTER_SLOT_DELAY - (time_us_32() - timestamp);
+    } else {
+        index = 0;
+        next_alarm = 0;
     }
-    index = 0;
     vTaskResume(context.led_task_handle);
-    return 0;
+    slot_pending = true;
+    vTaskNotifyGiveIndexedFromISR(context.uart0_notify_task_handle, 1, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    return next_alarm;
 }
 
 static inline void send_slot(uint8_t slot) {
@@ -258,7 +270,7 @@ static uint8_t get_slot_id(uint8_t slot) {
 
 static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor) { sbus_sensor[slot] = new_sensor; }
 
-static void set_config(sensor_sbus_t *sensor[]) {
+static void set_config(void) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
     sensor_sbus_t *new_sensor;
@@ -644,7 +656,7 @@ static void set_config(sensor_sbus_t *sensor[]) {
                                          malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        
+
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
             baro_pressure = parameter.pressure;
