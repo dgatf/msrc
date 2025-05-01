@@ -124,7 +124,7 @@ typedef struct srxl2_control_packet_t {
     uint16_t crc;
 } __attribute__((packed)) srxl2_control_packet_t;
 
-#define SRXL2_CONTROL_LEN_CHANNEL (5 + sizeof(srxl2_channel_data_t) + 2)  // header + channel data (1 channel) + crc
+#define SRXL2_CONTROL_LEN_CHANNEL (5 + sizeof(srxl2_channel_data_t) + 2)  // header + channel data + crc
 
 static volatile uint8_t esc_id = 0, esc_priority = 10;
 static volatile uint16_t throttle = 0, reverse = 0;
@@ -326,7 +326,7 @@ static void send_packet(void) {
         packet.crc = swap_16(crc);
         uart1_write_bytes((uint8_t *)&packet, sizeof(packet));
         cont++;
-        debug("\nSmart ESC (%u) > ", uxTaskGetStackHighWaterMark(NULL));
+        debug("\nSmart ESC (%u) Thr: %u Rev: %u > ", uxTaskGetStackHighWaterMark(NULL), throttle, reverse);
         debug_buffer((uint8_t *)&packet, sizeof(packet), " 0x%X");
     }
 }

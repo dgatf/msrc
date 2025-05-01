@@ -519,8 +519,6 @@ The telemetry is send over the ESC signal. *Castle Link* has to be enabled in th
 
 Spektrum Smart ESC & Battery uses SRXL2 protocol.  
 
-Reverse is at channel 7.  
-
 Connections:
 
 - Smart ESC signal -> GPIOs 4 & 5
