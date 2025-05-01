@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->saConfig->setEnabled(false);
     ui->btDebug->setDisabled(true);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
-                         "Kiss", "APD HV", "HobbyWing V5"});
+                         "Kiss", "APD HV", "HobbyWing V5", "Smart ESC/BAT"});
 
     ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
@@ -139,7 +139,7 @@ void MainWindow::generateCircuit(QLabel *label) {
                 image.load(":/res/esc_rp2040_zero.png");
             else if (ui->cbEsc->currentText() == "PWM")
                 image.load(":/res/pwm_rp2040_zero.png");
-            else if (ui->cbEsc->currentText() == "Castle Link")
+            else if (ui->cbEsc->currentText() == "Castle Link" || ui->cbEsc->currentText() == "Smart ESC/BAT")
                 image.load(":/res/castle_rp2040_zero.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         } else {

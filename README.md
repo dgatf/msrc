@@ -31,6 +31,7 @@ Implemented sensors:
   - ESCs with serial telemetry: Hobbywing V3/V4/V5/FlyFun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, Kiss (APD F, blheli32, Summit X), APD HV/UHV
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
+  - Specktrum Smart ESC & Battery  
 - GPS serial (NMEA)
 - Vario (I2C sensors): BMP180, BMP280, MS5611
 - Analog sensors: voltage, temperature, current, air speed (MPXV7002)  
@@ -70,16 +71,17 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;[6.15 JR DMSS](#615-jr-dmss)  
 [7. Sensors](#7-sensors)  
 &emsp; [7.1. ESC](#71-esc)  
-&emsp;&emsp;[7.1.1 Hobbywing Platinum V3](#711-hobbywing-platinum-v3)  
-&emsp;&emsp;[7.1.2 Hobbywing Platinum V4 / FlyFun](#712-hobbywing-platinum-v4--flyfun)  
-&emsp;&emsp;[7.1.3 Hobbywing Platinum V5](#713-hobbywing-platinum-v5)  
-&emsp;&emsp;[7.1.4 Kontronik Kosmic/Kolibri/JivePro](#714-kontronik-kosmickolibrijivepro)  
-&emsp;&emsp;[7.1.5 Kiss (APD F, blheli32, Summit X)](#715-kiss-apd-f-blheli32-summit-x)  
-&emsp;&emsp;[7.1.6 APD UHV/HV series](#716-apd-uhvhv-series)  
-&emsp;&emsp;[7.1.7. PWM signal](#717-pwm-signal)  
-&emsp;&emsp;[7.1.8. Castle Link](#718-castle-link)  
-&emsp;&emsp;[7.1.9. Available ESC telemetry](#719-available-esc-telemetry)  
-&emsp;&emsp;[7.1.10. RPM multipliers](#7110-rpm-multipliers)  
+&emsp;&emsp;[7.1.1. Available ESC telemetry](#711-available-esc-telemetry)  
+&emsp;&emsp;[7.1.2. RPM multipliers](#712-rpm-multipliers)  
+&emsp;&emsp;[7.1.3 Hobbywing Platinum V3](#713-hobbywing-platinum-v3)  
+&emsp;&emsp;[7.1.4 Hobbywing Platinum V4 / FlyFun](#714-hobbywing-platinum-v4--flyfun)  
+&emsp;&emsp;[7.1.5 Hobbywing Platinum V5](#715-hobbywing-platinum-v5)  
+&emsp;&emsp;[7.1.6 Kontronik Kosmic/Kolibri/JivePro](#716-kontronik-kosmickolibrijivepro)  
+&emsp;&emsp;[7.1.7 Kiss (APD F, blheli32, Summit X)](#717-kiss-apd-f-blheli32-summit-x)  
+&emsp;&emsp;[7.1.8 APD UHV/HV series](#718-apd-uhvhv-series)  
+&emsp;&emsp;[7.1.9. PWM signal](#719-pwm-signal)  
+&emsp;&emsp;[7.1.10. Castle Link](#7110-castle-link)  
+&emsp;&emsp;[7.1.11. Smart ESC and Battery](#7111-smart-esc-and-battery)   
 &emsp;[7.2. Serial GPS](#72-serial-gps)  
 &emsp;[7.3. Analog sensors](#73-analog-sensors)  
 &emsp;&emsp;[7.3.1. Voltage divider](#731-voltage-divider)  
@@ -107,12 +109,12 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 ## 1. Binaries
 
 File to flash to RP2040:
-[MSRC-RP2040.uf2](https://drive.google.com/file/d/1U6SIOXrxWNSM_oTFpoiJkpZdhAzVZ5Iy/view?usp=sharing)
+[MSRC-RP2040.uf2](https://drive.google.com/file/d/1D2POIdtwIJXGI-dHK78g2dTKvUnJVf65/view?usp=sharing)
 
 PC application for configuration:
-- Linux: [msrc_gui.AppImage](https://drive.google.com/file/d/1mvA-3e6PpEAfOVxoN4NynNnP9kEp_QXQ/view?usp=sharing)
-- Windows: [msrc_gui.exe](https://drive.google.com/file/d/1q56j305oKkxwy4nNbp1RR60IOu2S3hbO/view?usp=sharing)
-- macOS: [msrc_gui.dmg](https://drive.google.com/file/d/1zEmVQUYT4Z_JjZQU5CpxyqsHoHrJYY26/view?usp=sharing). Built with macOS 14.7.2
+- Linux: [msrc_gui.AppImage](https://drive.google.com/file/d/16HKzOUz-pHu0FiNNqsd6UvzH1dXUbeao/view?usp=sharing)
+- Windows: [msrc_gui.exe](https://drive.google.com/file/d/1f8ttDbwBAi8wI0ftW3WFy9LLaWnSEdvf/view?usp=sharing)
+- macOS: [msrc_gui.dmg](https://drive.google.com/file/d/1hJD56Z4wOZTtu4Hz51h2b_V4zc7Qv3zn/view?usp=sharing). Built with macOS 14.7.2
 
 ## 2. Connections
 
@@ -128,8 +130,8 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | Frsky D                                   | 0                |
 | Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |
 | Hitec, XBUS SCL                           | 3<sup>(2)</sup>  |
-| ESC serial, Serial monitor                | 5                |
-| Phase sensor (PWM in)                     | 4                |
+| ESC serial, Serial monitor, Smart ESC     | 5                |
+| Phase sensor (PWM in), Smart ESC          | 4                |
 | Castle. Receiver signal                   | 4                |
 | Castle. ESC signal                        | 5<sup>(2)</sup>  |
 | GPS                                       | 6                |
@@ -138,6 +140,8 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 | Sensor SCL                                | 9<sup>(2)</sup>  |
 | PWM out                                   | 10               |
 | Fuel meter (PWM in)                       | 11               |
+| Throttle PWM (Smart ESC)                  | 12               |
+| Reverse PWM (Smart ESC)                   | 13               |
 | Voltage                                   | 26               |
 | Current                                   | 27               |
 | NTC                                       | 28               |
@@ -398,13 +402,46 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 
 ### 7.1. ESC
 
-#### 7.1.1 Hobbywing Platinum V3
+#### 7.1.1. Available ESC telemetry
+
+| Model              | RPM         | Throttle    | Motor PWM   | Voltage     | Current   | Voltage BEC | Current BEC | Temperature 1 | Temperature 2 | Ripple Volt |
+| ------------------ | :---------: | :---------: | :---------: | :---------: | :-------: | :---------: | :---------: | :-----------: | :-----------: | :---------: |
+| Hobbywing V3       | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      |             |           |             |             |               |               |             |
+| Hobbywing V4/V5<sup>(4)</sup><sup>(5)</sup> | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:<sup>(2)</sup>    |             |             | :heavy_check_mark: FET       | :heavy_check_mark: BEC       |             |
+| Castle Link        | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:       | :heavy_check_mark:<sup>(3)</sup>      | :heavy_check_mark:<sup>(3)</sup>      | :heavy_check_mark:           |               | :heavy_check_mark:         |
+| Kontronik        | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:       | :heavy_check_mark:      | :heavy_check_mark: | :heavy_check_mark: Power amp | :heavy_check_mark: BEC     |         |
+| APD F | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup> | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:       |        |             |
+| APD HV/UHV | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>  | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:      |       |             |
+| Smart ESC&Bat(6)      | :heavy_check_mark: | :heavy_check_mark:<sup>(1)</sup> | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    | :heavy_check_mark:<sup>(3)</sup> | :heavy_check_mark:<sup>(3)</sup> | :heavy_check_mark:      |       |             |
+
+
+(1) Available but not forwarded to smartport  
+(2) For 80A models and higher  
+(3) Not available in all models  
+(4) Sensors varies depending on model and firmware. See [annex](#Hobbywing-V4-V5)  
+(5) Upgrade to latest firmware version. But note VBAR versions of firmware are not compatible. Install a non VBAR version of the ESC firmware  
+(6) See [Smart ESC and Battery](#7111-smart-esc-and-battery) for battery telemetry  
+
+If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for correct cell count
+
+If current is available, battery consumption is calculated in mAh
+
+#### 7.1.2. RPM multipliers
+
+Adjust RPMs in *msrc_gui*:
+
+- Set the number of pair of poles of the motor, _Pair of poles_
+- For helis also set the pinion and main gear teeth: _Pinion teeth_, _Main teeth_
+
+Alternatively this can be done in the transmitter
+
+#### 7.1.3. Hobbywing Platinum V3
 
 Serial protocol: 19200 baud.  
 
 Telemetry port is the program port. It is a servo male plug on the ESC
 
-#### 7.1.2 Hobbywing Platinum V4 / FlyFun
+#### 7.1.4. Hobbywing Platinum V4 / FlyFun
 
 Serial protocol: 19200 baud.  
 
@@ -442,17 +479,17 @@ Check your ESC firmware is not VBAR version. Telemetry port is the program port.
 
 (1) Extrapolated from confirmed models. If you find discrepancy adjust gain parameter and send gain and ESC model to update the table
 
-#### 7.1.3 Hobbywing Platinum V5
+#### 7.1.5. Hobbywing Platinum V5
 
 Serial protocol: 115200 baud.  
 
-#### 7.1.4 Kontronik Kosmic/Kolibri/JivePro
+#### 7.1.6. Kontronik Kosmic/Kolibri/JivePro
 
 Serial protocol: 115200 baud, even parity. 
 
 Supported models: Kosmic, Kolibri, JivePro. Not supported: Jive.  
 
-#### 7.1.5 Kiss (APD F, blheli32, Summit X)
+#### 7.1.7 Kiss (APD F, blheli32, Summit X)
 
 Any ESC with Kiss telemetry: APD F, blheli32, Summit X.  
 
@@ -466,48 +503,29 @@ Types of telemetry:
 
 - *PWM telemetry*. For this type of telemetry you need to flash [beta firmware](https://docs.powerdrives.net/products/firmware-installation/f_series-beta-configurable-firmware). It provides serial telemetry with RPMs, voltage, current and temperature. Select PROTOCOL_APD_F. Connect ESC pin T to pin Rx as defined in [connections table](#1-connections).  
 
-#### 7.1.6 APD UHV/HV series
+#### 7.1.8 APD UHV/HV series
 
 Serial telemetry with RPMs, voltage, current and temperature.
 
-#### 7.1.7. PWM signal
+#### 7.1.9. PWM signal
 
 If the ESC have a PWM signal or a phase sensor is installed, RPMs can be measured. If ESC have both serial and PWM signal, like Hobbywing V4/V5, then PWM signal is not needed for telemetry
 
-#### 7.1.8. Castle Link
+#### 7.1.10. Castle Link
 
-The telemetry is send over the ESC signal. *Castle Link* has to be enabled in the ESC config
+The telemetry is send over the ESC signal. *Castle Link* has to be enabled in the ESC config.  
 
-#### 7.1.9. Available ESC telemetry
+#### 7.1.11. Smart ESC and Battery
 
-| Model              | RPM         | Throttle    | Motor PWM   | Voltage     | Current   | Voltage BEC | Current BEC | Temperature 1 | Temperature 2 | Ripple Volt |
-| ------------------ | :---------: | :---------: | :---------: | :---------: | :-------: | :---------: | :---------: | :-----------: | :-----------: | :---------: |
-| Hobbywing V3       | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      |             |           |             |             |               |               |             |
-| Hobbywing V4/V5<sup>(4)</sup><sup>(5)</sup> | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:<sup>(2)</sup>    |             |             | :heavy_check_mark: FET       | :heavy_check_mark: BEC       |             |
-| Castle Link        | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:       | :heavy_check_mark:<sup>(3)</sup>      | :heavy_check_mark:<sup>(3)</sup>      | :heavy_check_mark:           |               | :heavy_check_mark:         |
-| Kontronik        | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:       | :heavy_check_mark:      | :heavy_check_mark: | :heavy_check_mark: Power amp | :heavy_check_mark: BEC     |         |
-| APD F | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:       |        |             |
-| APD HV/UHV | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:      |       |             |
+Spektrum Smart ESC & Battery uses SRXL2 protocol.  
 
+Connections:
 
-(1) Available but not forwarded to smartport  
-(2) For 80A models and higher  
-(3) Not available in all models  
-(4) Sensors varies depending on model and firmware. See [annex](#Hobbywing-V4-V5)  
-(5) Upgrade to latest firmware version. But note VBAR versions of firmware are not compatible. Install a non VBAR version of the ESC firmware
+- Smart ESC signal -> GPIOs 4 & 5
+- Throttle PWM -> GPIO 12
+- Reverse PWM -> GPIO 13 (optional)
 
-If voltage is available the cell voltage average is calculated for 3S,4S,5S,6S,7S,8S,10S and 12S batteries. 10 seconds after power on the number of cells is autodetected. Average cell voltage to be >3.8v for correct cell count
-
-If current is available, battery consumption is calculated in mAh
-
-#### 7.1.10. RPM multipliers
-
-Adjust RPMs in *msrc_gui*:
-
-- Set the number of pair of poles of the motor, _Pair of poles_
-- For helis also set the pinion and main gear teeth: _Pinion teeth_, _Main teeth_
-
-Alternatively this can be done in the transmitter
+Smart Battery sends telemetry for: current, consumption, cells voltage and temperature.  
 
 ### 7.2. Serial GPS
 
@@ -614,7 +632,7 @@ Enable GPIOs 17 to 22 to read the pin state (high or low). It is recommended to 
 
 Available for Smartport with dataId 0x51nn, where nn is the GPIO number.  
 
-If using Ethos firmware, you have to create a DIY sensor. Use the same *Physical ID* as any other sensor in MSRC. And set *Application Id* to 51nn. Repeat for ech enabled GPIO.    
+If using Ethos firmware, you have to create a DIY sensor. Set *Physical ID* as *Sensor Id*. And set *Application Id* to 51nn. Repeat for ech enabled GPIO.    
 
 <p align="center"><img src="./images/ethos_gpio.png" width="500"><br>
   <i>Ethos DIY Sensor</i><br><br></p>
@@ -849,6 +867,7 @@ Po = pressure at ground (Pa)*
 v1.3
 
 - Added GPIOs 17 to 22 for input
+- Added support for Spektrum Smart ESC & Battery   
 
 [v1.2.2](https://github.com/dgatf/msrc/releases/tag/v1.2.2)
 

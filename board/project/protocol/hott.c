@@ -32,6 +32,7 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
+#include "smart_esc.h"
 
 #define HOTT_VARIO_MODULE_ID 0x89
 #define HOTT_GPS_MODULE_ID 0x8A
@@ -754,6 +755,45 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
         sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
         sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+    }
+    if (config->esc_protocol == ESC_SMART) {
+        smart_esc_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temperature_fet = malloc(sizeof(float));
+        parameter.temperature_bec = malloc(sizeof(float));
+        parameter.voltage_bec = malloc(sizeof(float));
+        parameter.current_bec = malloc(sizeof(float));
+        parameter.temperature_bat = malloc(sizeof(float));
+        parameter.current_bat = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        for (uint i = 0; i < 18; i++) parameter.cell[i] = malloc(sizeof(float));
+        parameter.cells = malloc(sizeof(uint8_t));
+        parameter.cycles = malloc(sizeof(uint16_t));
+        xTaskCreate(smart_esc_task, "smart_esc_task", STACK_SMART_ESC, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature_fet;
+        sensors->esc[HOTT_ESC_BEC_TEMPERATURE] = parameter.temperature_bec;
+        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
+        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
+        sensors->esc[HOTT_ESC_BEC_VOLTAGE] = parameter.voltage_bec;
+        sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
+
+        sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
+        sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] = parameter.temperature_bat;
+        sensors->electric_air[HOTT_ELECTRIC_CURRENT] = parameter.current_bat;
+        sensors->electric_air[HOTT_ELECTRIC_CAPACITY] = parameter.consumption;
     }
     if (config->enable_gps) {
         nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),

@@ -21,6 +21,7 @@
 #include "nmea.h"
 #include "ntc.h"
 #include "pwm_out.h"
+#include "smart_esc.h"
 #include "stdlib.h"
 #include "string.h"
 #include "uart.h"
@@ -660,6 +661,60 @@ static void set_config(sensor_jetiex_t **sensor) {
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
+    if (config->esc_protocol == ESC_SMART) {
+        smart_esc_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temperature_fet = malloc(sizeof(float));
+        parameter.temperature_bec = malloc(sizeof(float));
+        parameter.voltage_bec = malloc(sizeof(float));
+        parameter.current_bec = malloc(sizeof(float));
+        parameter.temperature_bat = malloc(sizeof(float));
+        parameter.current_bat = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        for (uint i = 0; i < 18; i++) parameter.cell[i] = malloc(sizeof(float));
+        parameter.cells = malloc(sizeof(uint8_t));
+        parameter.cycles = malloc(sizeof(uint16_t));
+        xTaskCreate(smart_esc_task, "smart_esc_task", STACK_SMART_ESC, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor =
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current", "A", parameter.current};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor =
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_2_DECIMAL, "Voltage", "V", parameter.voltage};
+        add_sensor(new_sensor, sensor);
+        *new_sensor =
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current BEC", "A", parameter.current_bec};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor =
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_2_DECIMAL, "Voltage BEC", "V", parameter.voltage_bec};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0,   JETIEX_TYPE_INT14,        JETIEX_FORMAT_0_DECIMAL, "Temp FET",
+                                        "C", parameter.temperature_fet};
+        add_sensor(new_sensor, sensor);
+        *new_sensor = (sensor_jetiex_t){0,   JETIEX_TYPE_INT14,        JETIEX_FORMAT_0_DECIMAL, "Temp BEC",
+                                        "C", parameter.temperature_bec};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0,     JETIEX_TYPE_INT22,    JETIEX_FORMAT_0_DECIMAL, "Consumption",
+                                        "mAh", parameter.consumption};
+        add_sensor(new_sensor, sensor);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
     if (config->enable_gps) {
         nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
                                        malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
@@ -869,12 +924,8 @@ static void set_config(sensor_jetiex_t **sensor) {
         xTaskCreate(xgzp68xxd_task, "fuel_pressure_task", STACK_FUEL_PRESSURE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
-        *new_sensor = (sensor_jetiex_t){0,
-                                        JETIEX_TYPE_INT22,
-                                        JETIEX_FORMAT_0_DECIMAL,
-                                        "Tank pressure",
-                                        "Pa",
-                                        parameter.pressure};
+        *new_sensor =
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Tank pressure", "Pa", parameter.pressure};
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

@@ -26,6 +26,7 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
+#include "smart_esc.h"
 
 #define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
 #define swap_24(value) (((value & 0xFF) << 16) | (value & 0xFF00) | (value & 0xFF0000) >> 16)
@@ -368,6 +369,37 @@ static void set_config(crsf_sensors_t *sensors) {
             config->alpha_temperature, malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_apd_hv_task, "esc_apd_hv_task", STACK_ESC_APD_HV, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensors->enabled_sensors[TYPE_BATERY] = true;
+        sensors->battery.voltage = parameter.voltage;
+        sensors->battery.current = parameter.current;
+        sensors->battery.capacity = parameter.consumption;
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_SMART) {
+        smart_esc_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temperature_fet = malloc(sizeof(float));
+        parameter.temperature_bec = malloc(sizeof(float));
+        parameter.voltage_bec = malloc(sizeof(float));
+        parameter.current_bec = malloc(sizeof(float));
+        parameter.temperature_bat = malloc(sizeof(float));
+        parameter.current_bat = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        for (uint i = 0; i < 18; i++) parameter.cell[i] = malloc(sizeof(float));
+        parameter.cells = malloc(sizeof(uint8_t));
+        parameter.cycles = malloc(sizeof(uint16_t));
+        xTaskCreate(smart_esc_task, "smart_esc_task", STACK_SMART_ESC, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 

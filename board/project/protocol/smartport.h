@@ -58,6 +58,12 @@ typedef struct smartport_sensor_cell_parameters_t {
     uint16_t rate;
 } smartport_sensor_cell_parameters_t;
 
+typedef struct smartport_sensor_cell_individual_parameters_t {
+    uint8_t *cell_count;
+    float *cell_voltage[18];
+    uint16_t rate;
+} smartport_sensor_cell_individual_parameters_t;
+
 typedef struct smartport_packet_parameters_t {
     uint16_t data_id;
     QueueHandle_t queue_handle;
