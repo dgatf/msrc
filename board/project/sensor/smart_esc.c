@@ -158,7 +158,7 @@ void smart_esc_task(void *parameters) {
     *parameter.temperature_bec = 23.45;
     *parameter.cell_voltage = 3.75;
 #endif
-    capture_edge_init(pio0, SMART_ESC_PWM_GPIO, CLOCK_DIV, PIO0_IRQ_0);
+    capture_edge_init(pio0, SMART_ESC_PWM_GPIO, 2, CLOCK_DIV, PIO0_IRQ_0);
     capture_edge_set_handler(0, capture_pwm_throttle_handler);
     capture_edge_set_handler(1, capture_pwm_reverse_handler);
     gpio_pull_up(SMART_ESC_PWM_GPIO);

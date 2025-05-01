@@ -6,13 +6,11 @@
  * LICENSE file in the root directory of this source tree. 
  */
 
-.define PUBLIC CAPTURE_EDGE_PIN_COUNT 2   // use 1 to 32
 .define PUBLIC CAPTURE_EDGE_IRQ_NUM 2     // use 0 to 3
 
 .define PUBLIC COUNTER_CYCLES 9
 
 .program capture_edge
-.define ZERO_COUNT 32-CAPTURE_EDGE_PIN_COUNT
 intr:
     mov osr isr        // bk counter
     mov isr ~isr
@@ -29,8 +27,8 @@ decr:
     jmp y-- loop       // adjust counter
 .wrap_target
 loop:
-    in pins CAPTURE_EDGE_PIN_COUNT  // read pins
-    in null ZERO_COUNT // fill with zeros
+    nop                //in pins pin_count    // read pins
+    nop                //in null 32-pin_count // fill with zeros
     mov x isr          // pins to x
     mov isr y          // bk counter
     mov y osr          // prev to y
