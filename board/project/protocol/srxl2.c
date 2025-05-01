@@ -174,7 +174,7 @@ static void send_packet(void) {
 }
 
 static int64_t alarm_50ms(alarm_id_t id, void *user_data) {
-    srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, 0, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE, SRXL2_DEVICE_INFO, 0x12345678);
+    srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, 0, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE, SRXL2_DEVICE_INFO, SRXL2_DEVICE_UID);
     return 50000;
 }
 
