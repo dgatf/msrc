@@ -157,8 +157,12 @@ Connections to RP2040 in the table bellow are GPIO numbers, which are the same f
 Status led of the board blinks when sending telemetry. If it doesn't blink check connections and config.
 
 
-<p align="center"><img src="./images/rp2040_zero_pinout.jpg" width="500"><br>
+<p align="center"><img src="./images/rp2040_zero_pinout.png" width="400"><br>
   <i>RP2040 Zero pinout</i><br><br></p>
+
+<p align="center"><img src="./images/rp2040_pico_pinout.jpg" width="700"><br>
+  <i>RP2040 Pico pinout</i><br><br></p>
+
 
 ## 3. Power source
 
