@@ -36,4 +36,4 @@ jobs:
           filename: 'build/release/msrc_gui.exe'
           folderId: ${{ secrets.FOLDER_ID }}
           overwrite: 'true'
-          name: msrc_gui_smart_esc.exe
+          name: msrc_gui.exe

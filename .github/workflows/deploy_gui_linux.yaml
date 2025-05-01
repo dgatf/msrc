@@ -49,4 +49,4 @@ jobs:
           filename: 'msrc_gui/appdir/msrc_gui.AppImage'
           folderId: ${{ secrets.FOLDER_ID }}
           overwrite: 'true'
-          name: msrc_gui_smart_esc.AppImage
+          name: msrc_gui.AppImage

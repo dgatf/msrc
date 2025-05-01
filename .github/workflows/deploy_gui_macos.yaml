@@ -36,4 +36,4 @@ jobs:
           filename: 'build/msrc_gui.dmg'
           folderId: ${{ secrets.FOLDER_ID }}
           overwrite: 'true'
-          name: msrc_gui_smart_esc.dmg
+          name: msrc_gui.dmg
