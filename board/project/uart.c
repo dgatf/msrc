@@ -19,7 +19,7 @@ static int64_t uart1_timeout_callback(alarm_id_t id, void *user_data);
 static void uart0_rx_handler();
 static void uart1_rx_handler();
 
-void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity,
+void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uart_parity_t parity,
                  bool inverted, bool half_duplex) {
     half_duplex0 = half_duplex;
     gpio_tx0 = gpio_tx;
@@ -47,7 +47,7 @@ void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint d
     uart_set_irq_enables(uart0, true, false);
 }
 
-void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uint parity,
+void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uart_parity_t parity,
                  bool inverted, bool half_duplex) {
     half_duplex1 = half_duplex;
     gpio_tx1 = gpio_tx;
