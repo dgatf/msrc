@@ -36,6 +36,8 @@
     if (context.debug == 2)                   \
         for (int i = 0; i < (length); i++) printf((format), (buffer)[i])
 
+#define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
+
 typedef enum rx_protocol_t {
     RX_SMARTPORT,
     RX_FRSKY_D,
@@ -64,7 +66,8 @@ typedef enum esc_protocol_t {
     ESC_APD_F,
     ESC_APD_HV,
     ESC_HW5,
-    ESC_SMART
+    ESC_SMART,
+    ESC_FLYCOLOR
 } esc_protocol_t;
 
 typedef enum i2c_module_t { I2C_NONE, I2C_BMP280, I2C_MS5611, I2C_BMP180 } i2c_module_t;

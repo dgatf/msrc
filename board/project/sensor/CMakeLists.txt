@@ -25,4 +25,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     xgzp68xxd.c
     gpio.c
     smart_esc.c
+    esc_flycolor.c
 )

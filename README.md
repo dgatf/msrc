@@ -28,7 +28,7 @@ Compatible MCUs: RP2040. Any model is compatible. Recommended [RP2040 Zero](http
 Implemented sensors:
 
 - ESC
-  - ESCs with serial telemetry: Hobbywing V3/V4/V5/FlyFun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, Kiss (APD F, blheli32, Summit X), APD HV/UHV
+  - ESCs with serial telemetry: Hobbywing V3/V4/V5/FlyFun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, Kiss (APD F, blheli32, Summit X), APD HV/UHV, Flycolor
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
   - Specktrum Smart ESC & Battery  
@@ -82,6 +82,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;&emsp;[7.1.9. PWM signal](#719-pwm-signal)  
 &emsp;&emsp;[7.1.10. Castle Link](#7110-castle-link)  
 &emsp;&emsp;[7.1.11. Smart ESC and Battery](#7111-smart-esc-and-battery)   
+&emsp;&emsp;[7.1.11. Flycolor](#7112-flycolor)   
 &emsp;[7.2. Serial GPS](#72-serial-gps)  
 &emsp;[7.3. Analog sensors](#73-analog-sensors)  
 &emsp;&emsp;[7.3.1. Voltage divider](#731-voltage-divider)  
@@ -395,9 +396,10 @@ Connect to XBUS port.
 Available sensors:
 
 - ESC
-  - ESCs with serial telemetry: Hobbywing V3/V4/V5/Flyfun, Kontronik<sup>(2)</sup>, Kiss (APD F, blheli32, Summit X), APD HV/UHV  
+  - ESCs with serial telemetry: Hobbywing V3/V4/V5/Flyfun, Kontronik<sup>(2)</sup>, Kiss (APD F, blheli32, Summit X), APD HV/UHV, Flycolor  
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
+  - Specktrum Smart ESC & Battery  
 - GPS serial (NMEA)
 - I2C sensors (vario): BMP180, BMP280, MS5611
 - Analog sensors: voltage, temperature, current, air speed
@@ -417,6 +419,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 | APD F | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup> | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:       |        |             |
 | APD HV/UHV | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>  | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:      |       |             |
 | Smart ESC&Bat(6)      | :heavy_check_mark: | :heavy_check_mark:<sup>(1)</sup> | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    | :heavy_check_mark:<sup>(3)</sup> | :heavy_check_mark:<sup>(3)</sup> | :heavy_check_mark:      |       |             |
+| Flycolor | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>  | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:      |       |             |
 
 
 (1) Available but not forwarded to smartport  
@@ -530,6 +533,10 @@ Connections:
 - Reverse PWM -> GPIO 13 (optional)
 
 Smart Battery sends telemetry for: current, consumption, cells voltage and temperature.  
+
+#### 7.1.12. Flycolor
+
+Serial telemetry with RPMs, voltage, current, temperature and BEC voltage. Connect to Wifi port.  
 
 ### 7.2. Serial GPS
 
@@ -872,6 +879,7 @@ v1.3
 
 - Added GPIOs 17 to 22 for input
 - Added support for Spektrum Smart ESC & Battery   
+- Added support for Flycolor ESC
 
 [v1.2.2](https://github.com/dgatf/msrc/releases/tag/v1.2.2)
 

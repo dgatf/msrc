@@ -12,8 +12,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->btDebug->setDisabled(true);
     ui->btUpdate->setDisabled(true);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
-                         "Kiss", "APD HV", "HobbyWing V5", "Smart ESC/BAT"});
-
+                         "Kiss", "APD HV", "HobbyWing V5", "Smart ESC/BAT", "Flycolor"});
     ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItem("Frsky Smartport", RX_SMARTPORT);
@@ -136,7 +135,7 @@ void MainWindow::generateCircuit(QLabel *label) {
             if (ui->cbEsc->currentText() == "Hobbywing V3" ||
                 ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
                 ui->cbEsc->currentText() == "Kontronic" || ui->cbEsc->currentText() == "KIss" ||
-                ui->cbEsc->currentText() == "APD HV" || ui->cbEsc->currentText() == "HobbyWing V5")
+                ui->cbEsc->currentText() == "APD HV" || ui->cbEsc->currentText() == "HobbyWing V5" || ui->cbEsc->currentText() == "Flycolor")
                 image.load(":/res/esc_rp2040_zero.png");
             else if (ui->cbEsc->currentText() == "PWM")
                 image.load(":/res/pwm_rp2040_zero.png");

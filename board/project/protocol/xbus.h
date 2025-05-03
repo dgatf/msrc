@@ -20,8 +20,6 @@
 #define XBUS_GPS_INFO_FLAGS_LONG_GREATER_99_BIT 2
 #define XBUS_GPS_INFO_FLAGS_NEGATIVE_ALT_BIT 7
 
-#define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
-
 typedef enum xbus_sensors_t {
     XBUS_AIRSPEED,
     XBUS_ALTIMETER,
