@@ -135,7 +135,7 @@ void MainWindow::generateCircuit(QLabel *label) {
             // ui->gbRpmMultipliers->setEnabled(true);
             if (ui->cbEsc->currentText() == "Hobbywing V3" ||
                 ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
-                ui->cbEsc->currentText() == "Kontronic" || ui->cbEsc->currentText() == "KIss" ||
+                ui->cbEsc->currentText() == "Kontronic" || ui->cbEsc->currentText() == "Kiss" ||
                 ui->cbEsc->currentText() == "APD HV" || ui->cbEsc->currentText() == "HobbyWing V5")
                 image.load(":/res/esc_rp2040_zero.png");
             else if (ui->cbEsc->currentText() == "PWM")
