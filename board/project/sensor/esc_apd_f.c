@@ -59,6 +59,7 @@ static void process(esc_apd_f_parameters_t *parameter) {
             float current = ((uint16_t)data[3] << 8 | data[4]) / 100.0;
             float consumption = ((uint16_t)data[5] << 8 | data[6]);
             float rpm = ((uint16_t)data[7] << 8 | data[8]) * 100.0;
+            rpm *= parameter->rpm_multiplier;
             *parameter->temperature = get_average(parameter->alpha_temperature, *parameter->temperature, temperature);
             *parameter->voltage = get_average(parameter->alpha_voltage, *parameter->voltage, voltage);
             *parameter->current = get_average(parameter->alpha_current, *parameter->current, current);

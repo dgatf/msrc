@@ -58,6 +58,7 @@ static void process(esc_apd_hv_parameters_t *parameter) {
             float temp = get_temperature((uint16_t)data[3] << 8 | data[2]);
             float current = ((uint16_t)data[5] << 8 | data[4]) / 12.5;
             float rpm = (uint32_t)data[11] << 24 | (uint32_t)data[10] << 16 | (uint16_t)data[9] << 8 | data[8];
+            rpm *= parameter->rpm_multiplier;
             *parameter->temperature = get_average(parameter->alpha_temperature, *parameter->temperature, temp);
             *parameter->voltage = get_average(parameter->alpha_voltage, *parameter->voltage, voltage);
             *parameter->current = get_average(parameter->alpha_current, *parameter->current, current);

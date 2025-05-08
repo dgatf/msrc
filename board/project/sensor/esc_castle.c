@@ -62,7 +62,7 @@ static void castle_link_handler(castle_link_telemetry_t packet) {
     *parameter.current = packet.current;
     *parameter.thr = packet.thr;
     *parameter.output = packet.output;
-    *parameter.rpm = packet.rpm;
+    *parameter.rpm = packet.rpm * parameter.rpm_multiplier;
     *parameter.voltage_bec = packet.voltage_bec;
     *parameter.current_bec = packet.current_bec;
     *parameter.temperature = packet.temperature;

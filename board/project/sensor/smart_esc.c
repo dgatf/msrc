@@ -220,10 +220,10 @@ static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter) {
     if (buffer[0] == XBUS_ESC_ID) {
         xbus_esc_t esc;
         memcpy(&esc, buffer, sizeof(xbus_esc_t));
-        *parameter->rpm = swap_16(esc.rpm) * 10;
+        *parameter->rpm = swap_16(esc.rpm) * 10 * parameter->rpm_multiplier;
         *parameter->voltage = swap_16(esc.volts_input) / 100.0;
         *parameter->current = swap_16(esc.current_motor) / 100.0;
-        *parameter->voltage_bec = esc.voltage_bec == 0xFF ? 0 : esc.voltage_bec / 20.0;
+        *parameter->voltage_bec = esc.voltage_bec == 0xFF ? 0 : esc.voltage_bec / 2.0;
         *parameter->current_bec = esc.current_bec == 0xFF ? 0 : esc.current_bec / 100.0;
         *parameter->temperature_fet = esc.temp_fet == 0xFFFF ? 0 : (swap_16(esc.temp_fet) / 10.0);
         *parameter->temperature_bec = esc.temp_bec == 0xFFFF ? 0 : swap_16(esc.temp_bec) / 10.0;
