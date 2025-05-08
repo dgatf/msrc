@@ -166,7 +166,7 @@ void smart_esc_task(void *parameters) {
     gpio_pull_up(SMART_ESC_PWM_GPIO);
     gpio_pull_up(SMART_ESC_PWM_GPIO + 1);
     uart1_begin(115200, UART1_TX_GPIO, UART_ESC_RX, SRXL2_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
-    add_alarm_in_us(SRXL2_INTERVAL_MS * 1000, alarm_packet, NULL, true);
+    add_alarm_in_us(0, alarm_packet, NULL, true);
 
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
