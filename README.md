@@ -39,7 +39,7 @@ Implemented sensors:
 - Fuel tank pressure (I2C sensor): XGZP68XXD
 - 6 switches (gpio high or low)
 
-All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with msrc_gui.
+All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with MSRC Link.
 
 (1) If ESC doesn't arm, enable _ESC Init Delay_ or connect MSRC after the ESC is armed  
 (2) Supported: Kosmic, Kolibri, JivePro. Not supported: Jive.
@@ -51,7 +51,7 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 [3. Power source](#3-power-source)  
 [4. Flash firmware](#4-flash-firmware)  
 [5. Configuration](#5-configuration)  
-&emsp;[5.1 From PC - MSRC gui](#51-from-pc---msrc-gui)  
+&emsp;[5.1 From PC - MSRC Link](#51-from-pc---msrc-link)  
 &emsp;[5.2. From transmitter using lua script (only Smartport)](#52-from-transmitter-using-lua-script-only-smartport)  
 [6. Receiver protocol](#6-receiver-protocol)  
 &emsp;[6.1 Smartport](#61-smartport)  
@@ -112,9 +112,9 @@ File to flash to RP2040:
 [MSRC-RP2040.uf2](https://drive.google.com/file/d/1U6SIOXrxWNSM_oTFpoiJkpZdhAzVZ5Iy/view?usp=drive_link)
 
 PC application for configuration:
-- Linux: [msrc_gui.AppImage](https://drive.google.com/file/d/1mvA-3e6PpEAfOVxoN4NynNnP9kEp_QXQ/view?usp=drive_link)
-- Windows: [msrc_gui.exe](https://drive.google.com/file/d/1q56j305oKkxwy4nNbp1RR60IOu2S3hbO/view?usp=drive_link)
-- macOS: [msrc_gui.dmg](https://drive.google.com/file/d/1zEmVQUYT4Z_JjZQU5CpxyqsHoHrJYY26/view?usp=drive_link). Built with macOS 14.7.2
+- Linux: [msrc_link.AppImage](https://drive.google.com/file/d/17P40iiHR0922LCWhkZL1TOPi4ZBDt9s2/view?usp=sharing)
+- Windows: [msrc_link.exe](https://drive.google.com/file/d/1_FFV-m0gzIAyoKbQ9NkGw03RcrQqp-ai/view?usp=sharing)
+- macOS: [msrc_link.dmg](https://drive.google.com/file/d/1cJbMsachQ-t8PQ0PnhHz_OMkK600yrIR/view?usp=sharing). Built with macOS 14.7.2
 
 ## 2. Connections
 
@@ -189,17 +189,17 @@ File to flash: _project/MSRC-RP2040.uf2_
 
 ## 5. Configuration
 
-### 5.1. From PC - MSRC gui
+### 5.1. From PC - MSRC Link
 
-Connect RP2040 to USB and update config with msrc_gui. [msrc_gui.AppImage](https://drive.google.com/file/d/1mvA-3e6PpEAfOVxoN4NynNnP9kEp_QXQ/view?usp=sharing) for Linux, [msrc_gui.exe](https://drive.google.com/file/d/1q56j305oKkxwy4nNbp1RR60IOu2S3hbO/view?usp=sharing) for windows or [msrc_gui.dmg](https://drive.google.com/file/d/1zEmVQUYT4Z_JjZQU5CpxyqsHoHrJYY26/view?usp=sharing) for macOS. After update reboot RP2040 manually.
+Connect RP2040 to USB and update config with MSRC Link. [msrc_link.AppImage](https://drive.google.com/file/d/1mvA-3e6PpEAfOVxoN4NynNnP9kEp_QXQ/view?usp=sharing) for Linux, [msrc_link.exe](https://drive.google.com/file/d/1q56j305oKkxwy4nNbp1RR60IOu2S3hbO/view?usp=sharing) for windows or [msrc_link.dmg](https://drive.google.com/file/d/1zEmVQUYT4Z_JjZQU5CpxyqsHoHrJYY26/view?usp=sharing) for macOS. After update reboot RP2040 manually.
 
 <p align="center"><img src="./images/msrc_gui.png" width="600"><br>
 
-Debug mode can be enabled and viewed with msrc_gui.
+Debug mode can be enabled and viewed with MSRC Link.
 
 <p align="center"><img src="./images/msrc_gui_debug.png" width="600"><br>
 
-If you want to build msrc_gui:
+If you want to build MSRC Link:
 
 - Install [QT](https://www.qt.io/)
 - Install Qt serial port library (Use _Maintenance Tool_ or in Ubuntu *sudo apt install libqt5serialport5-dev*)
@@ -211,7 +211,7 @@ If you want to build msrc_gui:
 
 ### 5.2. From transmitter using lua script (only Smartport)
 
-It is recommended to update config with *msrc_gui* as not all parameters are implemented in lua script.
+It is recommended to update config with *MSRC Link* as not all parameters are implemented in lua script.
 
 The configuration is modified with a lua script (X7, X9, X-lite and Horus with openTx 2.2 or higher)
 
@@ -402,7 +402,7 @@ Available sensors:
 - I2C sensors (vario): BMP180, BMP280, MS5611
 - Analog sensors: voltage, temperature, current, air speed
 
-All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with msrc_gui.
+All sensors are optional. Make the circuit with the desired sensors and enable them in the configuration. It can be configured from the PC with MSRC Link.
 
 ### 7.1. ESC
 
@@ -432,7 +432,7 @@ If current is available, battery consumption is calculated in mAh
 
 #### 7.1.2. RPM multipliers
 
-Adjust RPMs in *msrc_gui*:
+Adjust RPMs in *MSRC Link*:
 
 - Set the number of pair of poles of the motor, _Pair of poles_
 - For helis also set the pinion and main gear teeth: _Pinion teeth_, _Main teeth_
@@ -549,7 +549,7 @@ Use NTC thermistors. No need to calibrate. For fine tuning adjust in ntc.h: NTC_
 
 #### 7.3.3. Current
 
-Calibrate current analog sensor from msrc_gui. Or from opentx, but it is recommended in order to increase sensor resolution
+Calibrate current analog sensor from MSRC Link. Or from opentx, but it is recommended in order to increase sensor resolution
 
 Set sensor type:
 
@@ -612,10 +612,10 @@ Fuel flow sensor with PWM pulses are supported. It is neded to set the parameter
 If this parameter is unknown, to calibrate:
 
 - Measure the weight of the tank or the model
-- Enable Fuel Flow sensor in msrc_gui
+- Enable Fuel Flow sensor in MSRC Link
 - Then either:
   - Set the parameter ml/pulse to 1 and then the number of pulses will be the consumption in your transmitter 
-  - Enable log in msrc_gui and note the number of pulses
+  - Enable log in MSRC Link and note the number of pulses
 - After a while, stop the engine. Note the last number for pulses
 - Weight the tank or model again and use the folloing formula to obtain the parameter:
 
@@ -868,10 +868,13 @@ Po = pressure at ground (Pa)*
 
 ## 10. Change log
 
-v1.3
+[v1.3](https://github.com/dgatf/msrc/releases/tag/v1.3)
 
 - Added GPIOs 17 to 22 for input
-- Added support for Spektrum Smart ESC & Battery   
+- Added support for Spektrum Smart ESC & Battery
+- Fixed rpm multiplier on some ESCs
+- Minor bug fixes and improvements
+- Changed name from msrc_gui to MSRC Link
 
 [v1.2.2](https://github.com/dgatf/msrc/releases/tag/v1.2.2)
 
@@ -904,7 +907,7 @@ v1.3
 - Added support for CRSF protocol  
 - Added support for Sanwa protocol   
 - Improved airspeed calculation and linked to barometer if installed to get more accurate aurspeed value   
-- msrc_gui. Manage different config versions  
+- MSRC Link. Manage different config versions  
 
 [v1.0](https://github.com/dgatf/msrc/releases/tag/v1.0)
 
@@ -928,13 +931,13 @@ v1.3
 - Added Hitec protocol
 - Fixed Futaba SBUS2
 - Fixed Pololu compilation in Arduino IDE
-- Improved msrc_gui
+- Improved MSRC Link
 - Added support for MS5611
 
 [v0.8](https://github.com/dgatf/msrc/tree/v0.8)
 
 - Added specific drivers for hardware serial and software serial
-- Added msrc_gui to create config.h (not all options are avaiable from gui)
+- Added MSRC Link to create config.h (not all options are avaiable from gui)
 - Added Rx protocols: Frsky D, Spektrum XBUS, Spektrum SRXL V5, Flysky Ibus, Futaba SBUS2, Multiplex Sensor Bus, Jeti Ex Bus
 - Added support for ATmega328PB, ATmega2560, ATmega32U4, ARM Cortex M0+ and ARM Cortex M4
 - Improved accuracy for PWM input (rpm) measurement

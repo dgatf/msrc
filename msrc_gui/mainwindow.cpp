@@ -6,6 +6,8 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), serial(new QSerialPort()) {
     ui->setupUi(this);
+
+    this->setWindowTitle(QString::asprintf("MSRC Link %s", PROJECT_VERSION));
     ui->tbViews->setCurrentIndex(0);
     ui->ptDebug->ensureCursorVisible();
     ui->saScroll->setEnabled(false);
@@ -230,7 +232,7 @@ void MainWindow::saveConfig() {
 void MainWindow::showAbout() {
     QMessageBox::information(
         this, tr("About"),
-        QString::asprintf("MSRC V%u.%u.%u\n\rDaniel Gorbea © 2020/2024", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH),
+        QString::asprintf("MSRC Link %s\n\rDaniel Gorbea © 2020/2025", PROJECT_VERSION),
         QMessageBox::Close);
 }
 

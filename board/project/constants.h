@@ -1,11 +1,6 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-/* Version */
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 3
-#define VERSION_PATCH 0
-
 /* Pins */
 #define UART0_TX_GPIO 0       // receiver rx
 #define UART0_RX_GPIO 1       // receiver tx

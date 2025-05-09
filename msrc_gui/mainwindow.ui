@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MSRC config</string>
+   <string>MSRC Link</string>
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
@@ -88,7 +88,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-1817</y>
+             <y>0</y>
              <width>603</width>
              <height>2481</height>
             </rect>

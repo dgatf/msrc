@@ -1,0 +1,166 @@
+name: Build Release
+
+on:
+  release:
+    types: [published]
+
+env:
+  FIRMWARE_FILENAME: MSRC-RP2040_${{ github.ref_name }}.uf2
+  LINK_FILENAME: msrc_link_${{ github.ref_name }}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  
+jobs:
+  firmware:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get actions code
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+
+      - name: Git tags
+        run: git fetch --prune --unshallow
+
+      - name: Build firmware
+        uses: samyarsadat/Pico-Build-Action@v1
+        with:
+          source_dir: "board"
+          output_dir: "../build"
+          cmake_args: "-DCMAKE_BUILD_TYPE=Release"
+      
+      - name: Set version
+        run: mv build/project/MSRC-RP2040.uf2 build/project/MSRC-RP2040_${{ github.ref_name }}.uf2
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/project/MSRC-RP2040_${{ github.ref_name }}.uf2
+            
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: build/project/MSRC-RP2040_${{ github.ref_name }}.uf2
+          github-token: ${{ secrets.TOKEN }}
+        
+  linux:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Get actions code
+        uses: actions/checkout@v4
+        
+      - name: Install QT
+        uses: jurplel/install-qt-action@v2
+      
+      - name: Git tags
+        run: git fetch --prune --unshallow
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          qmake ../msrc_gui
+          make
+          
+      - name: Install LinuxDeploy
+        run: |
+          cd msrc_gui
+          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+          sudo chmod +x linuxdeployqt-continuous-x86_64.AppImage
+      
+      - name: Install fuse
+        run: sudo apt install libfuse2
+
+      - name: Create AppImage
+        run: |
+          cp build/msrc_gui msrc_gui/appdir
+          cd msrc_gui/appdir
+          ../linuxdeployqt-continuous-x86_64.AppImage msrc_gui -appimage
+          mv *.AppImage msrc_link_${{ github.ref_name }}.AppImage
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: msrc_gui/appdir/msrc_link.AppImage
+              
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: msrc_gui/appdir/msrc_link_${{ github.ref_name }}.AppImage
+          github-token: ${{ secrets.TOKEN }}
+            
+  macos:
+    runs-on: macos-14
+
+    steps:
+      - name: Get actions code
+        uses: actions/checkout@v4
+        
+      - name: Install QT
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+        
+      - name: Git tags
+        run: git fetch --prune --unshallow
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          qmake ../msrc_gui
+          make
+          mv msrc_gui.app msrc_link_${{ github.ref_name }}.app
+          macdeployqt msrc_link_${{ github.ref_name }}.app -dmg
+        
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/msrc_link_${{ github.ref_name }}.dmg
+                
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: build/msrc_link_${{ github.ref_name }}.dmg
+          github-token: ${{ secrets.TOKEN }}
+
+  windows:
+    runs-on: windows-2019
+
+    steps:
+      - name: Get actions code
+        uses: actions/checkout@v4
+        
+      - name: Install qt static
+        uses: orestonce/install-qt-static@v0.4.3
+        with:
+          version: Qt5.15.7-Windows-x86_64-MinGW8.1.0-staticFull-20221104
+
+      - name: Git tags
+        run: git fetch --prune --unshallow
+        
+      - name: Build  
+        run: |
+          mkdir build
+          cd build
+          qmake ../msrc_gui
+          make
+          mingw32-make release
+          mv release/msrc_gui.exe release/msrc_link_${{ github.ref_name }}.exe
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/release/msrc_link_${{ github.ref_name }}.exe
+          
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: build/release/msrc_link_${{ github.ref_name }}.exe
+          github-token: ${{ secrets.TOKEN }}
+

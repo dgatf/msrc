@@ -274,9 +274,9 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
         config_t *config = config_read();
         // packet 1
         value = 0xF1;
-        value |= (uint32_t)VERSION_PATCH << 8;
-        value |= (uint32_t)VERSION_MINOR << 16;
-        value |= (uint32_t)VERSION_MAJOR << 24;
+        // value |= (uint32_t)VERSION_PATCH << 8;
+        // value |= (uint32_t)VERSION_MINOR << 16;
+        // value |= (uint32_t)VERSION_MAJOR << 24;
         packet.type_id = 0x32;
         packet.data_id = parameter->data_id;
         packet.data = value;

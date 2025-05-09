@@ -1,4 +1,6 @@
-name: Deploy MSRC firmware
+# gh search commits --hash 272effd --repo dgatf/msrc
+
+name: CI - MSRC firmware
 
 on:
   workflow_dispatch:
@@ -18,9 +20,9 @@ jobs:
         with:
           submodules: 'true'
 
-      - name: Create build folder
-        run: mkdir build
-        
+      - name: Git tags
+        run: git fetch --prune --unshallow
+
       - name: Build firmware
         uses: samyarsadat/Pico-Build-Action@v1
         with:

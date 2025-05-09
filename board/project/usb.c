@@ -78,7 +78,7 @@ static void process_usb(int lenght) {
             debug("\nUSB. Send config");
         } else if (buffer_rx[1] == 0x33 && lenght == 2) {  // debug enable
             context.debug = 1;
-            debug("\nUSB. Debug enabled. MSRC firmware version %u.%u.%u", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+            debug("\nUSB. Debug enabled. MSRC %s", PROJECT_VERSION);
         } else if (buffer_rx[1] == 0x34 && lenght == 2) {  // debug disable
             context.debug = 0;
             debug("\nUSB. Debug disabled");

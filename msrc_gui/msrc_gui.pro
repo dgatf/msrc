@@ -2,6 +2,12 @@ QT       += core gui serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+system(git describe --tags > VERSION)
+PROJECT_VERSION = "\\\"$$cat(VERSION)"\\\"
+system(rm VERSION)
+message($${PROJECT_VERSION})
+DEFINES += PROJECT_VERSION=$${PROJECT_VERSION}
+
 CONFIG += c++11
 
 # You can make your code fail to compile if it uses deprecated APIs.
