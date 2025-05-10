@@ -555,6 +555,10 @@ void MainWindow::setUiFromConfig() {
     ui->sbCurrentMultiplier->setValue(config.esc_hw4_current_multiplier);
     ui->sbCurrentMax->setValue(config.esc_hw4_current_max);
 
+    // Smart esc
+
+    ui->cbCalculateConsumption->setChecked(config.smart_esc_calc_consumption);
+
     // Fuel flow
 
     ui->gbFuelmeter->setChecked(config.enable_fuel_flow);
@@ -745,6 +749,10 @@ void MainWindow::getConfigFromUi() {
     config.esc_hw4_divisor = ui->sbVoltageDivisor->value();
     config.esc_hw4_current_multiplier = ui->sbCurrentMultiplier->value();
     config.esc_hw4_current_max = ui->sbCurrentMax->value();
+
+    // Smart esc
+
+    config.smart_esc_calc_consumption = ui->cbCalculateConsumption->isChecked();
 
     // Fuel flow
 
@@ -1132,6 +1140,10 @@ void MainWindow::on_cbEsc_currentTextChanged(const QString &arg1) {
         ui->cbPwmOut->setVisible(true);
     else
         ui->cbPwmOut->setVisible(false);
+    if (arg1 == "Smart ESC/BAT")
+        ui->cbCalculateConsumption->setVisible(true);
+    else
+        ui->cbCalculateConsumption->setVisible(false);
 }
 
 void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {

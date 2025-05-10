@@ -959,6 +959,7 @@ static void set_config(smartport_parameters_t *parameter) {
     }
     if (config->esc_protocol == ESC_SMART) {
         smart_esc_parameters_t parameter;
+        parameter.calc_consumption = config->smart_esc_calc_consumption;
         parameter.rpm_multiplier = config->rpm_multiplier;
         parameter.alpha_rpm = config->alpha_rpm;
         parameter.alpha_voltage = config->alpha_voltage;

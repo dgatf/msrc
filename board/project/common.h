@@ -140,7 +140,9 @@ typedef struct config_t {
     bool enable_fuel_flow;
     uint16_t xgzp68xxd_k;
     uint8_t enable_fuel_pressure;
-    uint32_t spare3;
+    bool smart_esc_calc_consumption;
+    uint8_t spare3_1;
+    uint16_t spare3_2;
     uint32_t spare4;
     uint32_t spare5;
     uint32_t spare6;

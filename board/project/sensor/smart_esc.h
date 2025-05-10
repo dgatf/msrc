@@ -4,6 +4,7 @@
 #include "common.h"
 
 typedef struct smart_esc_parameters_t {
+    bool calc_consumption;
     float rpm_multiplier;
     float alpha_rpm, alpha_voltage, alpha_current, alpha_temperature;
     float *rpm, *voltage, *current, *temperature_fet, *temperature_bec, *voltage_bec,
