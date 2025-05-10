@@ -237,8 +237,8 @@ static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter) {
                 srxl2_smart_bat_realtime_t bat_realtime;
                 memcpy(&bat_realtime, buffer, sizeof(srxl2_smart_bat_realtime_t));
                 *parameter->temperature_bat = bat_realtime.temp;
-                *parameter->current_bat = bat_realtime.current / 1000;
-                *parameter->consumption = bat_realtime.consumption / 10;
+                *parameter->current_bat = bat_realtime.current / 1000.0;
+                *parameter->consumption = bat_realtime.consumption / 10.0;
                 debug("\nSmart ESC (Bat 0x%X) (%u) < Temp: %.0f Curr: %0.2f Cons: %.2f ", XBUS_SMART_BAT_REALTIME,
                       uxTaskGetStackHighWaterMark(NULL), *parameter->temperature_bat, *parameter->current_bat,
                       *parameter->consumption);
