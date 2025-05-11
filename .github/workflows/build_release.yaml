@@ -34,7 +34,7 @@ jobs:
           cmake_args: "-DCMAKE_BUILD_TYPE=Release"
       
       - name: Set version
-        run: mv build/project/MSRC-RP2040.uf2 build/project/MSRC-RP2040_${{ github.ref_name }}.uf2
+        run: sudo mv build/project/MSRC-RP2040.uf2 build/project/MSRC-RP2040_${{ github.ref_name }}.uf2
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -86,7 +86,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          files: msrc_gui/appdir/msrc_link.AppImage
+          files: msrc_gui/appdir/msrc_link_${{ github.ref_name }}.AppImage
               
       - name: Generate attestation
         uses: actions/attest-build-provenance@v2
