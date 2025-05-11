@@ -4,6 +4,8 @@ include(pico_sdk_import.cmake)
 
 project(MSRC-RP2040)
 
+include_directories(../include)
+
 execute_process(
     COMMAND git config --global --add safe.directory /github/workspace
     COMMAND git describe --tags
