@@ -228,7 +228,7 @@ static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter) {
         *parameter->current_bec = esc.current_bec == 0xFF ? 0 : esc.current_bec / 100.0;
         *parameter->temperature_fet = esc.temp_fet == 0xFFFF ? 0 : (swap_16(esc.temp_fet) / 10.0);
         *parameter->temperature_bec = esc.temp_bec == 0xFFFF ? 0 : swap_16(esc.temp_bec) / 10.0;
-        if (parameter->calc_consumption) *parameter->consumption += get_consumption(*parameter->current, 0, &timestamp);;
+        if (parameter->calc_consumption) *parameter->consumption += get_consumption(*parameter->current, 0, &timestamp);
         debug("\nSmart ESC (%u) < Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f Vbec: %.1f Cbec: %.1f ",
               uxTaskGetStackHighWaterMark(NULL), *parameter->rpm, *parameter->voltage, *parameter->current,
               *parameter->temperature_fet, *parameter->temperature_bec, *parameter->voltage_bec,
