@@ -25,6 +25,8 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "smart_esc.h"
+#include "esc_omp_m4.h"
+#include "esc_ztw.h"
 
 /* Flysky IBUS Data Id */
 #define IBUS_ID_VOLTAGE 0x00       // Internal Voltage
@@ -545,6 +547,89 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
         add_sensor(new_sensor, sensor, sensormask);
         new_sensor = malloc(sizeof(sensor_ibus_t));
         *new_sensor = (sensor_ibus_t){IBUS_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temperature_bec};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_FUEL, IBUS_TYPE_U16, parameter.consumption};
+        add_sensor(new_sensor, sensor, sensormask);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OMP_M4) {
+        esc_omp_m4_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_MOT, IBUS_TYPE_U16, parameter.rpm};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_EXTV, IBUS_TYPE_U16, parameter.voltage};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_BAT_CURR, IBUS_TYPE_U16, parameter.current};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temp_esc};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temp_motor};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_CELL_VOLTAGE, IBUS_TYPE_U16, parameter.cell_voltage};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_FUEL, IBUS_TYPE_U16, parameter.consumption};
+        add_sensor(new_sensor, sensor, sensormask);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_ZTW) {
+        esc_ztw_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.bec_voltage = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_ztw_task, "esc_ztw_task", STACK_ESC_ZTW, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_MOT, IBUS_TYPE_U16, parameter.rpm};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_EXTV, IBUS_TYPE_U16, parameter.voltage};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_BAT_CURR, IBUS_TYPE_U16, parameter.current};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temp_esc};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temp_motor};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_CELL_VOLTAGE, IBUS_TYPE_U16, parameter.cell_voltage};
         add_sensor(new_sensor, sensor, sensormask);
         new_sensor = malloc(sizeof(sensor_ibus_t));
         *new_sensor = (sensor_ibus_t){IBUS_ID_FUEL, IBUS_TYPE_U16, parameter.consumption};

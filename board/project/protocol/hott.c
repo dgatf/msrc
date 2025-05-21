@@ -33,6 +33,8 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "smart_esc.h"
+#include "esc_omp_m4.h"
+#include "esc_ztw.h"
 
 #define HOTT_VARIO_MODULE_ID 0x89
 #define HOTT_GPS_MODULE_ID 0x8A
@@ -794,6 +796,64 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] = parameter.temperature_bat;
         sensors->electric_air[HOTT_ELECTRIC_CURRENT] = parameter.current_bat;
         sensors->electric_air[HOTT_ELECTRIC_CAPACITY] = parameter.consumption;
+    }
+    if (config->esc_protocol == ESC_OMP_M4) {
+        esc_omp_m4_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_SMART_ESC, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temp_esc;
+        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
+        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
+        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+        sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.temp_motor;
+
+    }
+    if (config->esc_protocol == ESC_ZTW) {
+        esc_ztw_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.bec_voltage = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_omp_m4_task, "esc_ztw_task", STACK_ESC_ZTW, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_ESC] = true;
+        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temp_esc;
+        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
+        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
+        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+        sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.temp_motor;
     }
     if (config->enable_gps) {
         nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),

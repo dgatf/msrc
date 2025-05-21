@@ -30,6 +30,8 @@
 #include "voltage.h"
 #include "fuel_meter.h"
 #include "xgzp68xxd.h"
+#include "esc_omp_m4.h"
+#include "esc_ztw.h"
 
 #define SRXL_HEADER 0xA5
 #define SRXL_FRAMELEN 18
@@ -327,6 +329,61 @@ static void set_config(void) {
         sensor->esc[XBUS_ESC_VOLTAGE] = parameter.voltage;
         sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
         sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temperature;
+        sensor->is_enabled[XBUS_ESC] = true;
+        sensor_formatted->esc = malloc(sizeof(xbus_esc_t));
+        *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OMP_M4) {
+        esc_omp_m4_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        sensor->esc[XBUS_ESC_RPM] = parameter.rpm;
+        sensor->esc[XBUS_ESC_VOLTAGE] = parameter.voltage;
+        sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
+        sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temp_esc;
+        sensor->is_enabled[XBUS_ESC] = true;
+        sensor_formatted->esc = malloc(sizeof(xbus_esc_t));
+        *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_ZTW) {
+        esc_ztw_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.bec_voltage = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_ztw_task, "esc_omp_m4_task", STACK_ESC_ZTW, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        sensor->esc[XBUS_ESC_RPM] = parameter.rpm;
+        sensor->esc[XBUS_ESC_VOLTAGE] = parameter.voltage;
+        sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
+        sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temp_esc;
         sensor->is_enabled[XBUS_ESC] = true;
         sensor_formatted->esc = malloc(sizeof(xbus_esc_t));
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};

@@ -27,11 +27,8 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "smart_esc.h"
-
-#define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
-#define swap_24(value) (((value & 0xFF) << 16) | (value & 0xFF00) | (value & 0xFF0000) >> 16)
-#define swap_32(value) \
-    (((value & 0xFF) << 24) | ((value & 0xFF00) << 8) | ((value & 0xFF0000) >> 8) | ((value & 0xFF000000) >> 24))
+#include "esc_omp_m4.h"
+#include "esc_ztw.h"
 
 #define CRSF_FRAMETYPE_GPS 0x02
 #define CRSF_FRAMETYPE_VARIO 0x07
@@ -400,6 +397,59 @@ static void set_config(crsf_sensors_t *sensors) {
         parameter.cells = malloc(sizeof(uint8_t));
         parameter.cycles = malloc(sizeof(uint16_t));
         xTaskCreate(smart_esc_task, "smart_esc_task", STACK_SMART_ESC, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensors->enabled_sensors[TYPE_BATERY] = true;
+        sensors->battery.voltage = parameter.voltage;
+        sensors->battery.current = parameter.current;
+        sensors->battery.capacity = parameter.consumption;
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OMP_M4) {
+        esc_omp_m4_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensors->enabled_sensors[TYPE_BATERY] = true;
+        sensors->battery.voltage = parameter.voltage;
+        sensors->battery.current = parameter.current;
+        sensors->battery.capacity = parameter.consumption;
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_ZTW) {
+        esc_ztw_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.bec_voltage = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_ztw_task, "esc_ztw_task", STACK_ESC_ZTW, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 

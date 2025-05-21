@@ -31,7 +31,8 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "xgzp68xxd.h"
-
+#include "esc_omp_m4.h"
+#include "esc_ztw.h"
 
 xbus_sensor_t *sensor;
 xbus_sensor_formatted_t *sensor_formatted;
@@ -496,6 +497,78 @@ static void set_config() {
         sensor->esc[XBUS_ESC_VOLTAGE] = parameter.voltage;
         sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
         sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temperature;
+        sensor->is_enabled[XBUS_ESC] = true;
+        sensor_formatted->esc = calloc(1, 16);
+        *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_ESC_ID);
+        // sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
+        // sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
+        // sensor->is_enabled[XBUS_BATTERY] = true;
+        // sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
+        //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
+        // i2c_multi_enable_address(XBUS_BATTERY_ID);
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OMP_M4) {
+        esc_omp_m4_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->esc[XBUS_ESC_RPM] = parameter.rpm;
+        sensor->esc[XBUS_ESC_VOLTAGE] = parameter.voltage;
+        sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
+        sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temp_esc;
+        sensor->is_enabled[XBUS_ESC] = true;
+        sensor_formatted->esc = calloc(1, 16);
+        *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_ESC_ID);
+        // sensor->battery[XBUS_BATTERY_CURRENT1] = parameter.current;
+        // sensor->battery[XBUS_BATTERY_CONSUMPTION1] = parameter.consumption;
+        // sensor->is_enabled[XBUS_BATTERY] = true;
+        // sensor_formatted->battery = malloc(sizeof(xbus_battery_t));
+        //*sensor_formatted->battery = (xbus_battery_t){XBUS_BATTERY_ID, 0, 0, 0, 0, 0, 0};
+        // i2c_multi_enable_address(XBUS_BATTERY_ID);
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OMP_M4) {
+        esc_omp_m4_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_ztw_task, "esc_ztw_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->esc[XBUS_ESC_RPM] = parameter.rpm;
+        sensor->esc[XBUS_ESC_VOLTAGE] = parameter.voltage;
+        sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
+        sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temp_esc;
         sensor->is_enabled[XBUS_ESC] = true;
         sensor_formatted->esc = calloc(1, 16);
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};

@@ -28,11 +28,6 @@
 #include "uart_pio.h"
 #include "voltage.h"
 
-#define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
-#define swap_24(value) (((value & 0xFF) << 16) | (value & 0xFF00) | (value & 0xFF0000) >> 16)
-#define swap_32(value) \
-    (((value & 0xFF) << 24) | ((value & 0xFF00) << 8) | ((value & 0xFF0000) >> 8) | ((value & 0xFF000000) >> 24))
-
 #define SANWA_TIMEOUT_US 500
 
 #define TYPE_TEMP_MOTOR 0

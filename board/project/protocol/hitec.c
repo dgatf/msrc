@@ -28,6 +28,9 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
+#include "smart_esc.h"
+#include "esc_omp_m4.h"
+#include "esc_ztw.h"
 
 #define I2C_INTR_MASK_RD_REQ 0x00000020
 
@@ -472,6 +475,99 @@ static void set_config(void) {
         sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
         sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
         sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temperature;
+        sensor->is_enabled_frame[FRAME_0X15] = true;
+        sensor->is_enabled_frame[FRAME_0X18] = true;
+        sensor->is_enabled_frame[FRAME_0X14] = true;
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_SMART) {
+        smart_esc_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temperature_fet = malloc(sizeof(float));
+        parameter.temperature_bec = malloc(sizeof(float));
+        parameter.voltage_bec = malloc(sizeof(float));
+        parameter.current_bec = malloc(sizeof(float));
+        parameter.temperature_bat = malloc(sizeof(float));
+        parameter.current_bat = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        for (uint i = 0; i < 18; i++) parameter.cell[i] = malloc(sizeof(float));
+        parameter.cells = malloc(sizeof(uint8_t));
+        parameter.cycles = malloc(sizeof(uint16_t));
+        xTaskCreate(smart_esc_task, "smart_esc_task", STACK_SMART_ESC, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
+        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
+        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
+        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temperature_fet;
+        sensor->is_enabled_frame[FRAME_0X15] = true;
+        sensor->is_enabled_frame[FRAME_0X18] = true;
+        sensor->is_enabled_frame[FRAME_0X14] = true;
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OMP_M4) {
+        esc_omp_m4_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
+        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
+        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
+        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temp_esc;
+        sensor->is_enabled_frame[FRAME_0X15] = true;
+        sensor->is_enabled_frame[FRAME_0X18] = true;
+        sensor->is_enabled_frame[FRAME_0X14] = true;
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_ZTW) {
+        esc_ztw_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.bec_voltage = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
+        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
+        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
+        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temp_esc;
         sensor->is_enabled_frame[FRAME_0X15] = true;
         sensor->is_enabled_frame[FRAME_0X18] = true;
         sensor->is_enabled_frame[FRAME_0X14] = true;

@@ -28,7 +28,7 @@ Compatible MCUs: RP2040. Any model is compatible. Recommended [RP2040 Zero](http
 Implemented sensors:
 
 - ESC
-  - ESCs with serial telemetry: Hobbywing V3/V4/V5/FlyFun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, Kiss (APD F, blheli32, Summit X), APD HV/UHV
+  - ESCs with serial telemetry: Hobbywing V3/V4/V5/FlyFun<sup>(1)</sup>, Kontronik<sup>(2)</sup>, Kiss (APD F, blheli32, Summit X), APD HV/UHV, OMP M4, ZTW
   - ESC with PWM signal or phase sensor
   - ESC Castle Link
   - Specktrum Smart ESC & Battery  
@@ -82,6 +82,8 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 &emsp;&emsp;[7.1.9. PWM signal](#719-pwm-signal)  
 &emsp;&emsp;[7.1.10. Castle Link](#7110-castle-link)  
 &emsp;&emsp;[7.1.11. Smart ESC and Battery](#7111-smart-esc-and-battery)   
+&emsp;&emsp;[7.1.12. OMP M4](#7112-omp-m4)   
+&emsp;&emsp;[7.1.13. ZTW](#7113-ztw)   
 &emsp;[7.2. Serial GPS](#72-serial-gps)  
 &emsp;[7.3. Analog sensors](#73-analog-sensors)  
 &emsp;&emsp;[7.3.1. Voltage divider](#731-voltage-divider)  
@@ -417,6 +419,9 @@ All sensors are optional. Make the circuit with the desired sensors and enable t
 | APD F | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup> | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:       |        |             |
 | APD HV/UHV | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>  | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |             |             | :heavy_check_mark:      |       |             |
 | Smart ESC&Bat(6)      | :heavy_check_mark: | :heavy_check_mark:<sup>(1)</sup> | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    | :heavy_check_mark:<sup>(3)</sup> | :heavy_check_mark:<sup>(3)</sup> | :heavy_check_mark:      |       |             |
+| ZTW | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>  | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    | :heavy_check_mark: |             | :heavy_check_mark:      |       |             |
+| OMP M4 | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>  | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    |     |             | :heavy_check_mark:      | :heavy_check_mark:      |             |
+| ZTW | :heavy_check_mark:         | :heavy_check_mark:<sup>(1)</sup>  | :heavy_check_mark:<sup>(1)</sup>      | :heavy_check_mark:         | :heavy_check_mark:    | :heavy_check_mark: |             | :heavy_check_mark:      | :heavy_check_mark:      |             |
 
 
 (1) Available but not forwarded to smartport  
@@ -530,6 +535,14 @@ Connections:
 - Reverse PWM -> GPIO 13 (optional)
 
 Smart Battery sends telemetry for: current, consumption, cells voltage and temperature.  
+
+#### 7.1.12 OMP M4
+
+Serial telemetry with RPMs, voltage, current, ESC temperature and motor temperature.
+
+#### 7.1.13 ZTW
+
+Serial telemetry with RPMs, voltage, current, ESC temperature, motor temperature and BEC voltage.
 
 ### 7.2. Serial GPS
 
@@ -867,6 +880,11 @@ Po = pressure at ground (Pa)*
 
 
 ## 10. Change log
+
+v1.4
+
+- Added support for ESC OMP M4
+- Added support for ESC ZTW
 
 [v1.3](https://github.com/dgatf/msrc/releases/tag/v1.3)
 

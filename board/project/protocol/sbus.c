@@ -25,6 +25,8 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "smart_esc.h"
+#include "esc_omp_m4.h"
+#include "esc_ztw.h"
 
 #define SLOT_TEMP1 1
 #define SLOT_RPM 2
@@ -563,6 +565,85 @@ static void set_config(void) {
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){SBUS_TEMP, parameter.temperature_fet};
         add_sensor(SLOT_TEMP1, new_sensor);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OMP_M4) {
+        esc_omp_m4_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_RPM, parameter.rpm};
+        add_sensor(SLOT_RPM, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_VOLT, parameter.voltage};
+        add_sensor(SLOT_POWER_VOLT1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_CURR, parameter.current};
+        add_sensor(SLOT_POWER_CURR1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_CONS, parameter.consumption};
+        add_sensor(SLOT_POWER_CONS1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_TEMP, parameter.temp_esc};
+        add_sensor(SLOT_TEMP1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_TEMP, parameter.temp_motor};
+        add_sensor(SLOT_TEMP2, new_sensor);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_ZTW) {
+        esc_ztw_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temp_esc = malloc(sizeof(float));
+        parameter.temp_motor = malloc(sizeof(float));
+        parameter.bec_voltage = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_ztw_task, "esc_ztw_task", STACK_ESC_ZTW, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_RPM, parameter.rpm};
+        add_sensor(SLOT_RPM, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_VOLT, parameter.voltage};
+        add_sensor(SLOT_POWER_VOLT1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_CURR, parameter.current};
+        add_sensor(SLOT_POWER_CURR1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_CONS, parameter.consumption};
+        add_sensor(SLOT_POWER_CONS1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_TEMP, parameter.temp_esc};
+        add_sensor(SLOT_TEMP1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_TEMP, parameter.temp_motor};
+        add_sensor(SLOT_TEMP2, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
