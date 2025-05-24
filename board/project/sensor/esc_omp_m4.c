@@ -40,8 +40,8 @@ void esc_omp_m4_task(void *parameters) {
     *parameter.cell_count = 1;
     xTaskNotifyGive(context.receiver_task_handle);
 #ifdef SIM_SENSORS
-    *parameter.temperature_esc = 12.34;
-    *parameter.temperature_motor = 23.45;
+    *parameter.temp_esc = 12.34;
+    *parameter.temp_motor = 23.45;
     *parameter.voltage = 12.34;
     *parameter.current = 12.34;
     *parameter.consumption = 12.34;
