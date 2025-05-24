@@ -133,7 +133,6 @@
 #define HOTT_GENERAL_PRESSURE 14
 
 typedef struct hott_sensor_vario_t {
-    uint8_t startByte;
     uint8_t sensorID;
     uint8_t warningId;
     uint8_t sensorTextID;
@@ -145,7 +144,6 @@ typedef struct hott_sensor_vario_t {
     uint16_t m3s;   // ?? idem
     uint16_t m10s;  // ?? idem
     uint8_t text[24];
-    uint8_t empty;
     uint8_t version;
     uint8_t endByte;
     uint8_t checksum;
@@ -431,7 +429,6 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             static uint16_t max_altitude = 0, min_altitude = 0;
             if (!sensors->is_enabled[HOTT_TYPE_VARIO]) return;
             hott_sensor_vario_t packet = {0};
-            packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_VARIO_MODULE_ID;
             packet.sensorTextID = HOTT_VARIO_SENSOR_ID;
             packet.altitude = *sensors->vario[HOTT_VARIO_ALTITUDE] + 500;
@@ -592,8 +589,10 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
 }
 
 static uint8_t get_crc(const uint8_t *buffer, uint len) {
-    uint8_t crc = 0;
-    for (uint i = 0; i < len; i++) crc += buffer[i];
+    uint16_t crc = 0;
+    for (uint i = 0; i < len; i++) {
+        crc += buffer[i];
+    }
     return crc;
 }
 
