@@ -934,22 +934,6 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->gbFuelPressure->setVisible(false);
     }
 
-    // Analog temperature
-    if (arg1 == "CRSF") {
-        ui->cbTemperature1->setVisible(false);
-
-    } else {
-        ui->cbTemperature1->setVisible(true);
-    }
-
-    // Airspeed
-    if (arg1 == "CRSF") {
-        ui->gbAirspeed->setVisible(false);
-    } else {
-        ui->gbAirspeed->setVisible(true);
-
-    }
-
     // GPIO
     if (arg1 == "Frsky Smartport") {
         ui->gbGpio->setVisible(true);
@@ -992,8 +976,8 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->sbVoltageAvg->setVisible(true);
         ui->lbCurrentAvg->setVisible(true);
         ui->sbCurrentAvg->setVisible(true);
-        ui->lbTemperatureAvg->setVisible(false);
-        ui->sbTemperatureAvg->setVisible(false);
+        ui->lbTemperatureAvg->setVisible(true);
+        ui->sbTemperatureAvg->setVisible(true);
         ui->lbVarioAvg->setVisible(true);
         ui->sbVarioAvg->setVisible(true);
         ui->lbAirspeedAvg->setVisible(true);
