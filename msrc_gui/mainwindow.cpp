@@ -54,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
     ui->cbAddress->setCurrentIndex(0x77);
 
+    ui->cbSerialMonitorGpio->addItems({"1", "5"});
     ui->cbBaudrate->addItems({"115200", "57600", "38400", "19200", "9600", "4800"});
     ui->cbStopbits->addItems({"1", "2"});
     ui->cbParity->addItems({"None", "Odd", "Even"});
@@ -100,10 +101,7 @@ void MainWindow::generateCircuit(QLabel *label) {
     image.load(":/res/rp2040_zero.png");
     paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
 
-    if (ui->cbReceiver->currentText() == "Serial Monitor") {
-        image.load(":/res/esc_rp2040_zero.png");
-        paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
-    } else {
+    if (ui->cbReceiver->currentText() != "Serial Monitor") {
         if (ui->gbCurrent->isChecked()) {
             image.load(":/res/current_rp2040_zero.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
@@ -397,6 +395,8 @@ void MainWindow::setUiFromConfig() {
 
     /* Serial Monitor */
 
+    if (config.serial_monitor_gpio == 1) ui->cbSerialMonitorGpio->setCurrentText("1");
+    else ui->cbSerialMonitorGpio->setCurrentText("5");
     int item = ui->cbBaudrate->findText(QString::number(config.serial_monitor_baudrate));
     if (item == -1)
         ui->cbBaudrate->setCurrentText(QString::number(config.serial_monitor_baudrate));
@@ -615,6 +615,7 @@ void MainWindow::getConfigFromUi() {
     /* Serial Monitor */
 
     config.serial_monitor_baudrate = ui->cbBaudrate->currentText().toInt();
+    config.serial_monitor_gpio = ui->cbSerialMonitorGpio->currentText().toInt();
     config.serial_monitor_stop_bits = ui->cbStopbits->currentText().toInt();
     if (ui->cbParity->currentText() == "None")
         config.serial_monitor_parity = 0;

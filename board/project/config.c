@@ -90,6 +90,7 @@
 #define SERIAL_MONITOR_PARITY 0
 #define SERIAL_MONITOR_TIMEOUT_MS 1
 #define SERIAL_MONITOR_INVERTED false
+#define SERIAL_MONITOR_GPIO 5 // GPIO 1 or 5
 
 /* Add init delay for FlyFun ESC. Enable if the ESC doesn't arm */
 #define ENABLE_ESC_INIT_DELAY false

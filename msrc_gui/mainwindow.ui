@@ -88,9 +88,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-536</y>
+             <y>0</y>
              <width>603</width>
-             <height>2510</height>
+             <height>2541</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -109,6 +109,26 @@
                <string>Receiver</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_2">
+               <item row="1" column="0">
+                <widget class="QCheckBox" name="cbClockStretch">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="text">
+                  <string>Clock stretch</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="1">
+                <widget class="QSpinBox" name="sbTimeout">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
+                </widget>
+               </item>
                <item row="4" column="1">
                 <widget class="QSpinBox" name="sbSensorId">
                  <property name="enabled">
@@ -122,83 +142,40 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="lbBaudrate">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="text">
-                  <string>Baudrate</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QCheckBox" name="cbClockStretch">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="text">
-                  <string>Clock stretch</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="1">
-                <widget class="QSpinBox" name="sbTimeout">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="maximum">
-                  <number>100</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="QComboBox" name="cbBaudrate">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="editable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QCheckBox" name="cbAlternativePacket">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="text">
-                  <string>Alternative packet</string>
-                 </property>
-                </widget>
-               </item>
                <item row="9" column="0">
-                <widget class="QCheckBox" name="cbInverted">
+                <widget class="QLabel" name="lbTimeout">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
                  <property name="text">
-                  <string>Inverted</string>
+                  <string>Timeout (ms)</string>
                  </property>
                 </widget>
                </item>
                <item row="7" column="0">
-                <widget class="QLabel" name="lbParity">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="text">
-                  <string>Parity</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0">
                 <widget class="QLabel" name="lbStopbits">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
                  <property name="text">
                   <string>Stop bits</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="1">
+                <widget class="QComboBox" name="cbParity">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QComboBox" name="cbBaudrate">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="editable">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -219,14 +196,34 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="10" column="0">
+                <widget class="QCheckBox" name="cbInverted">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="text">
+                  <string>Inverted</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="1">
                 <widget class="QComboBox" name="cbStopbits">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0" colspan="2">
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="cbAlternativeCoordinates">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="text">
+                  <string>Alternative coordinates</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="0" colspan="2">
                 <widget class="QGroupBox" name="gbRate">
                  <property name="enabled">
                   <bool>true</bool>
@@ -446,13 +443,6 @@
                  </layout>
                 </widget>
                </item>
-               <item row="7" column="1">
-                <widget class="QComboBox" name="cbParity">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
                <item row="4" column="0">
                 <widget class="QLabel" name="lbSensorId">
                  <property name="enabled">
@@ -463,25 +453,45 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0">
-                <widget class="QCheckBox" name="cbAlternativeCoordinates">
+               <item row="8" column="0">
+                <widget class="QLabel" name="lbParity">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
                  <property name="text">
-                  <string>Alternative coordinates</string>
+                  <string>Parity</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
-                <widget class="QLabel" name="lbTimeout">
+               <item row="6" column="0">
+                <widget class="QLabel" name="lbBaudrate">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
                  <property name="text">
-                  <string>Timeout (ms)</string>
+                  <string>Baudrate</string>
                  </property>
                 </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QCheckBox" name="cbAlternativePacket">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="text">
+                  <string>Alternative packet</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_4">
+                 <property name="text">
+                  <string>GPIO</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QComboBox" name="cbSerialMonitorGpio"/>
                </item>
               </layout>
              </widget>
