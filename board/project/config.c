@@ -90,6 +90,8 @@
 #define SERIAL_MONITOR_PARITY 0
 #define SERIAL_MONITOR_TIMEOUT_MS 1
 #define SERIAL_MONITOR_INVERTED false
+#define SERIAL_MONITOR_GPIO 5 // GPIO 1 or 5
+#define SERIAL_MONITOR_FORMAT 0 // 0 = hex, 1 = text
 
 /* Add init delay for FlyFun ESC. Enable if the ESC doesn't arm */
 #define ENABLE_ESC_INIT_DELAY false
@@ -109,6 +111,13 @@
 
 /* Fuel pressure */
 #define XGZP68XXD_K 64
+
+/* GPIO */
+#define GPIO_INTERVAL_MS 1000
+#define GPIO_MASK 0
+
+/* GPS */
+#define GPS_RATE 1
 
 config_t *config_read() {
     uint16_t *version = (uint16_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET);
@@ -198,5 +207,10 @@ void config_forze_write() {
     config.enable_fuel_flow = ENABLE_FUEL_FLOW;
     config.enable_fuel_pressure = false;
     config.xgzp68xxd_k = XGZP68XXD_K;
+    config.serial_monitor_format = SERIAL_MONITOR_FORMAT;
+    config.serial_monitor_gpio = SERIAL_MONITOR_GPIO;
+    config.gps_rate = GPS_RATE;
+    config.gpio_interval = GPIO_INTERVAL_MS;
+    config.gpio_mask = GPIO_MASK;
     config_write(&config);
 }

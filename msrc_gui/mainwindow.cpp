@@ -54,10 +54,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
     ui->cbAddress->setCurrentIndex(0x77);
 
+    ui->cbSerialMonitorGpio->addItems({"1", "5", "6"});
     ui->cbBaudrate->addItems({"115200", "57600", "38400", "19200", "9600", "4800"});
     ui->cbStopbits->addItems({"1", "2"});
     ui->cbParity->addItems({"None", "Odd", "Even"});
-
+    ui->cbSerialFormat->addItems({"Hex", "String"});
     ui->cbMaxPressure->addItems({"< 1 kPa (K = 8192)", "< 2 kPa (K = 4096)", "< 4 kPa (K = 2048)", "< 8 kPa (K = 1024)",
                                  "< 16 kPa (K = 512)", "< 32 kPa (K = 256)", "< 65 kPa (K = 128)", "< 130 kPa (K = 64)",
                                  "< 260 kPa (K = 32)", "< 500 kPa (K = 16)", "< 1000 kPa (K = 8)",
@@ -100,10 +101,7 @@ void MainWindow::generateCircuit(QLabel *label) {
     image.load(":/res/rp2040_zero.png");
     paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
 
-    if (ui->cbReceiver->currentText() == "Serial Monitor") {
-        image.load(":/res/esc_rp2040_zero.png");
-        paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
-    } else {
+    if (ui->cbReceiver->currentText() != "Serial Monitor") {
         if (ui->gbCurrent->isChecked()) {
             image.load(":/res/current_rp2040_zero.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
@@ -397,6 +395,12 @@ void MainWindow::setUiFromConfig() {
 
     /* Serial Monitor */
 
+    if (config.serial_monitor_gpio == 1)
+        ui->cbSerialMonitorGpio->setCurrentText("1");
+    else if (config.serial_monitor_gpio == 5)
+        ui->cbSerialMonitorGpio->setCurrentText("5");
+    else
+        ui->cbSerialMonitorGpio->setCurrentText("6");
     int item = ui->cbBaudrate->findText(QString::number(config.serial_monitor_baudrate));
     if (item == -1)
         ui->cbBaudrate->setCurrentText(QString::number(config.serial_monitor_baudrate));
@@ -409,7 +413,10 @@ void MainWindow::setUiFromConfig() {
     if (config.serial_monitor_timeout_ms > 100) config.serial_monitor_timeout_ms = 100;
     ui->sbTimeout->setValue(config.serial_monitor_timeout_ms);
     ui->cbInverted->setChecked(config.serial_monitor_inverted);
-
+    if (config.serial_monitor_format == FORMAT_HEX)
+        ui->cbSerialFormat->setCurrentText("Hex");
+    else
+        ui->cbSerialFormat->setCurrentText("String");
     /* Sensors */
 
     // ESC
@@ -615,6 +622,7 @@ void MainWindow::getConfigFromUi() {
     /* Serial Monitor */
 
     config.serial_monitor_baudrate = ui->cbBaudrate->currentText().toInt();
+    config.serial_monitor_gpio = ui->cbSerialMonitorGpio->currentText().toInt();
     config.serial_monitor_stop_bits = ui->cbStopbits->currentText().toInt();
     if (ui->cbParity->currentText() == "None")
         config.serial_monitor_parity = 0;
@@ -624,6 +632,7 @@ void MainWindow::getConfigFromUi() {
         config.serial_monitor_parity = 2;
     config.serial_monitor_timeout_ms = ui->sbTimeout->value();
     config.serial_monitor_inverted = ui->cbInverted->isChecked();
+    config.serial_monitor_format = ui->cbSerialFormat->currentText() == "Hex" ? FORMAT_HEX : FORMAT_STRING;
 
     /* Sensors */
 
@@ -898,7 +907,7 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->lbSpeedUnitsGps->setVisible(false);
     }
 
-    if (arg1 == "Serial Monitor") {
+if (arg1 == "Serial Monitor") {
         ui->cbBaudrate->setVisible(true);
         ui->cbStopbits->setVisible(true);
         ui->cbParity->setVisible(true);
@@ -908,6 +917,12 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->lbStopbits->setVisible(true);
         ui->lbParity->setVisible(true);
         ui->lbTimeout->setVisible(true);
+        ui->lbSerialFormat->setVisible(true);
+        ui->cbSerialFormat->setVisible(true);
+        ui->gbSensors->setVisible(false);
+        ui->gbAverage->setVisible(false);
+        ui->lbSerialMonitorGpio->setVisible(true);
+        ui->cbSerialMonitorGpio->setVisible(true);
     } else {
         ui->cbBaudrate->setVisible(false);
         ui->cbStopbits->setVisible(false);
@@ -918,6 +933,12 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->lbStopbits->setVisible(false);
         ui->lbParity->setVisible(false);
         ui->lbTimeout->setVisible(false);
+        ui->lbSerialFormat->setVisible(false);
+        ui->cbSerialFormat->setVisible(false);
+        ui->gbSensors->setVisible(true);
+        ui->gbAverage->setVisible(true);
+        ui->lbSerialMonitorGpio->setVisible(false);
+        ui->cbSerialMonitorGpio->setVisible(false);
     }
 
     // Fuel meter

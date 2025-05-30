@@ -15,6 +15,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     sim_rx.c
     uart_pio.c
     usb.c
+    serial_monitor.c
 )
 
 target_link_libraries(${PROJECT_NAME}

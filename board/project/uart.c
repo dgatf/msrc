@@ -1,11 +1,12 @@
 #include "uart.h"
 
-#include "hardware/irq.h"
-#include "hardware/uart.h"
 #include <stdio.h>
 
-#define UART0_BUFFER_SIZE 256
-#define UART1_BUFFER_SIZE 256
+#include "hardware/irq.h"
+#include "hardware/uart.h"
+
+#define UART0_BUFFER_SIZE 512
+#define UART1_BUFFER_SIZE 512
 
 #define enable_rx(UART) hw_set_bits(&uart_get_hw(UART)->cr, 0x00000200)
 #define disable_rx(UART) hw_clear_bits(&uart_get_hw(UART)->cr, 0x00000200)
@@ -19,8 +20,8 @@ static int64_t uart1_timeout_callback(alarm_id_t id, void *user_data);
 static void uart0_rx_handler();
 static void uart1_rx_handler();
 
-void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uart_parity_t parity,
-                 bool inverted, bool half_duplex) {
+void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits,
+                 uart_parity_t parity, bool inverted, bool half_duplex) {
     half_duplex0 = half_duplex;
     gpio_tx0 = gpio_tx;
     gpio_rx0 = gpio_rx;
@@ -47,8 +48,8 @@ void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint d
     uart_set_irq_enables(uart0, true, false);
 }
 
-void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits, uart_parity_t parity,
-                 bool inverted, bool half_duplex) {
+void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits,
+                 uart_parity_t parity, bool inverted, bool half_duplex) {
     half_duplex1 = half_duplex;
     gpio_tx1 = gpio_tx;
     gpio_rx1 = gpio_rx;
@@ -103,8 +104,12 @@ static void uart0_rx_handler() {
     while (uart_is_readable(uart0)) {
         uint8_t data = uart_getc(uart0);
         // debug("-%X-", data);
-        // busy_wait_us(1);
         xQueueSendToBackFromISR(context.uart0_queue_handle, &data, &xHigherPriorityTaskWoken);
+        if (uart0_timeout == 0) {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            vTaskNotifyGiveIndexedFromISR(context.uart0_notify_task_handle, 1, &xHigherPriorityTaskWoken);
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
     }
     if (uart0_timeout) {
         uart0_timeout_alarm_id =
@@ -128,7 +133,11 @@ static void uart1_rx_handler() {
         uint8_t data = uart_getc(uart1);
         // debug("%X ", data);
         xQueueSendToBackFromISR(context.uart1_queue_handle, &data, &xHigherPriorityTaskWoken);
-        // debug("-%X/%i-", data, uxQueueMessagesWaiting(context.uart1_queue_handle));
+        if (uart1_timeout == 0) {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            vTaskNotifyGiveIndexedFromISR(context.uart1_notify_task_handle, 1, &xHigherPriorityTaskWoken);
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
     }
     if (uart1_timeout) {
         uart1_timeout_alarm_id =

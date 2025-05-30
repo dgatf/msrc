@@ -11,6 +11,7 @@
 #define PWM_CAPTURE_GPIO 4    // pwm (rpm)
 #define CASTLE_PWM_GPIO 4     // receiver throttle signal
 #define CASTLE_ESC_GPIO 5     // esc throttle signal
+#define UART_TX_PIO_GPIO 13   // gps rx
 #define UART_RX_PIO_GPIO 6    // gps tx
 #define CLOCK_STRETCH_GPIO 7  // npn switch
 #define I2C0_SDA_GPIO 8       // i2c module (vario)
@@ -55,7 +56,7 @@
 #define STACK_RX_SRXL (200 + STACK_EXTRA)
 #define STACK_RX_SRXL2 (300 + STACK_EXTRA)
 #define STACK_SERIAL_MONITOR (250 + STACK_EXTRA)
-#define STACK_RX_CRSF (274 + STACK_EXTRA)
+#define STACK_RX_CRSF (292 + STACK_EXTRA)
 #define STACK_RX_HOTT (220 + STACK_EXTRA)
 #define STACK_RX_SANWA (200 + STACK_EXTRA)
 #define STACK_RX_JR_PROPO (300 + STACK_EXTRA)
