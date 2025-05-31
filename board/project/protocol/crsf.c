@@ -184,6 +184,7 @@ typedef struct crsf_sensor_gps_time_t {
 typedef struct crsf_sensor_gps_extended_t {
     float *fix;
     float *hdop;
+    float *vdop;
 } crsf_sensor_gps_extended_t;
 
 typedef struct crsf_sensors_t {
@@ -353,8 +354,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
                 for (uint i = 0; i < *sensors->cells.cell_count; i++)
                     sensor.cells[i] = swap_16((uint16_t)(*sensors->cells.cell[i] * 1000));
             }
-            uint8_t size =
-                sizeof(sensor.source) + sizeof(sensor.cells[0]) * *sensors->cells.cell_count;
+            uint8_t size = sizeof(sensor.source) + sizeof(sensor.cells[0]) * *sensors->cells.cell_count;
             memcpy(&buffer[3], &sensor, size);
             buffer[3 + size] = get_crc(&buffer[2], size + 1);
             len = size + 4;
@@ -382,7 +382,8 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             buffer[2] = CRSF_FRAMETYPE_GPS_EXTENDED;
             crsf_sensor_gps_extended_formatted_t sensor = {0};
             sensor.hDOP = (uint)(*sensors->gps_extended.hdop * 10);
-            // sensor.fix_type = sensors->gps_extended.fix;
+            sensor.vDOP = (uint)(*sensors->gps_extended.vdop * 10);
+            sensor.fix_type = (uint)(*sensors->gps_extended.fix);
             memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_gps_extended_formatted_t));
             buffer[3 + sizeof(crsf_sensor_gps_extended_formatted_t)] =
                 get_crc(&buffer[2], sizeof(crsf_sensor_gps_extended_formatted_t) + 1);
@@ -395,7 +396,8 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
 
 static inline uint sensor_count(crsf_sensors_t *sensors) {
     uint count = 0;
-    for (uint i = 0; i < MAX_SENSORS; i++) if (sensors->enabled_sensors[i]) count++;
+    for (uint i = 0; i < MAX_SENSORS; i++)
+        if (sensors->enabled_sensors[i]) count++;
     return count;
 }
 
@@ -770,11 +772,11 @@ static void set_config(crsf_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
-        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float))};
+        nmea_parameters_t parameter = {
+            config->gps_baudrate,  config->gps_rate,      malloc(sizeof(float)), malloc(sizeof(float)),
+            malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
+            malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
+            malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
 
@@ -792,7 +794,7 @@ static void set_config(crsf_sensors_t *sensors) {
 
         sensors->enabled_sensors[TYPE_GPS_EXTENDED] = true;
         sensors->gps_extended.hdop = parameter.hdop;
-        // sensors->gps_extended.fix = parameter.fix;
+        sensors->gps_extended.fix = parameter.fix;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

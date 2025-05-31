@@ -13,7 +13,6 @@
 #define COMMAND_GGA 0
 #define COMMAND_RMC 1
 #define COMMAND_UNK 2
-#define COMMAND_GSA 3
 
 #define COMMAND_VTG 4
 #define COMMAND_GLL 5
@@ -37,6 +36,7 @@
 
 static void process(nmea_parameters_t *parameter);
 static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, nmea_parameters_t *parameter);
+static void send_ublox_message(uint8_t *buf, uint len);
 
 void nmea_task(void *parameters) {
     nmea_parameters_t parameter = *(nmea_parameters_t *)parameters;
@@ -72,13 +72,82 @@ void nmea_task(void *parameters) {
                                                  parameter.sat};
     xTaskCreate(distance_task, "distance_task", STACK_DISTANCE, (void *)&parameters_distance, 2, &task_handle);
     xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-    // uart1_begin(parameter.baudrate, UART1_TX_GPIO, UART_ESC_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, false);
-    uart_pio_begin(parameter.baudrate, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1);
+
+    uint baudrate[] = {115200, 57600, 38400, 19200, 14400, 9600};
+    uint8_t buffer[30] = {0};
+
+    uart_pio_begin(parameter.baudrate, UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1);
+    uart_pio_write(0);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    uart_pio_remove();
+
+    // Try to change GPS config. ublox compatible devices only...
+
+    // Set baudrate
+    for (uint i = 0; i < sizeof(baudrate) / sizeof(uint); i++) {
+        sprintf(buffer, "$PUBX,41,1,3,3,%i,0\r\n", parameter.baudrate);
+        uart_pio_begin(baudrate[i], UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1);
+        uart_pio_write_bytes(buffer, strlen(buffer));
+        vTaskDelay(200 / portTICK_PERIOD_MS);
+        uart_pio_remove();
+    }
+
+    uart_pio_begin(parameter.baudrate, UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1);
+
+    // Disable unneeded messages
+    char *msg_str[] = {"GLL", "GSV", "GSA", "VTG", "ZDA"};
+    for (uint i = 0; i < sizeof(msg_str) / sizeof(msg_str[0]); i++) {
+        sprintf(buffer, "$PUBX,40,%s,0,0,0,0,0,0\r\n", msg_str[i]);
+        uart_pio_write_bytes(buffer, strlen(buffer));
+    }
+
+    // Set rate
+    switch (parameter.rate) {
+        case 1: {
+            uint8_t msg_rate[] = {0x06, 0x08, 0x06, 0x00, 0xE8, 0x03, 0x01, 0x00, 0x01, 0x00};
+            send_ublox_message(msg_rate, sizeof(msg_rate));
+            break;
+        }
+        case 5: {
+            uint8_t msg_rate[] = {0x06, 0x08, 0x06, 0x00, 0xC8, 0x00, 0x01, 0x00, 0x01, 0x00};
+            send_ublox_message(msg_rate, sizeof(msg_rate));
+            break;
+        }
+        case 10: {
+            uint8_t msg_rate[] = {0x06, 0x08, 0x06, 0x00, 0x64, 0x00, 0x01, 0x00, 0x01, 0x00};
+            send_ublox_message(msg_rate, sizeof(msg_rate));
+            break;
+        }
+        case 20: {
+            uint8_t msg_rate[] = {0x06, 0x08, 0x06, 0x00, 0x00, 0x32, 0x01, 0x00, 0x01, 0x00};
+            send_ublox_message(msg_rate, sizeof(msg_rate));
+            break;
+        }
+    }
+
+    // Save cghanges
+    uint8_t msg_save[] = {0xB5, 0x62, 0x06, 0x09, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
+                          0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x1D, 0xAB};
+    send_ublox_message(msg_save, sizeof(msg_save));
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process(&parameter);
     }
+}
+
+static inline void send_ublox_message(uint8_t *buf, uint len) {
+    uint8_t a = 0, b = 0;
+    uart_pio_write(0xB5);
+    uart_pio_write(0x62);
+    for (uint i = 0; i < len; i++) {
+        a += buf[i];
+        b += a;
+        uart_pio_write(buf[i]);
+    }
+    uart_pio_write(a);
+    uart_pio_write(b);
 }
 
 static void process(nmea_parameters_t *parameter) {

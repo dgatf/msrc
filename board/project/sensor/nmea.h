@@ -4,8 +4,8 @@
 #include "common.h"
 
 typedef struct nmea_parameters_t {
-    uint32_t baudrate;
-    float *lat, *lon, *alt, *spd, *cog, *hdop, *sat, *time, *date, *vspeed, *dist, *spd_kmh;
+    uint baudrate, rate;
+    float *lat, *lon, *alt, *spd, *cog, *hdop, *sat, *time, *date, *vspeed, *dist, *spd_kmh, *fix, *vdop;
 } nmea_parameters_t;
 
 extern context_t context;

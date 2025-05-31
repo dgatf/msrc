@@ -42,6 +42,8 @@ typedef enum i2c_module_t : uint8_t { I2C_NONE, I2C_BMP280, I2C_MS5611, I2C_BMP1
 
 typedef enum analog_current_type_t : uint8_t { CURRENT_TYPE_HALL, CURRENT_TYPE_SHUNT } analog_current_type_t;
 
+typedef enum serial_monitor_format_t : uint8_t { FORMAT_HEX, FORMAT_STRING } serial_monitor_format_t;
+
 #else
 
 typedef enum rx_protocol_t {
@@ -80,6 +82,8 @@ typedef enum esc_protocol_t {
 typedef enum i2c_module_t { I2C_NONE, I2C_BMP280, I2C_MS5611, I2C_BMP180 } i2c_module_t;
 
 typedef enum analog_current_type_t { CURRENT_TYPE_HALL, CURRENT_TYPE_SHUNT } analog_current_type_t;
+
+typedef enum serial_monitor_format_t { FORMAT_HEX, FORMAT_STRING } serial_monitor_format_t;
 
 #endif
 
@@ -154,7 +158,8 @@ typedef struct config_t {
     uint8_t enable_fuel_pressure;
     bool smart_esc_calc_consumption;
     uint8_t serial_monitor_gpio;
-    uint16_t spare3_2;
+    uint8_t gps_rate;
+    serial_monitor_format_t serial_monitor_format;
     uint32_t spare4;
     uint32_t spare5;
     uint32_t spare6;

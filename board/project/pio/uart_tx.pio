@@ -1,0 +1,19 @@
+/**
+ * Copyright (c) 2025, Daniel Gorbea
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT-style license found in the
+ * LICENSE file in the root directory of this source tree. 
+ */
+
+.define PUBLIC UART_TX_CYCLES_PER_BIT 16  // we want here resolution to reduce division error when writing. more cycles less error
+
+.program uart_tx  // 1 bit every 16 cycles
+start:
+    set x 7
+    pull block
+    set pins 0 [16-1]  // start bit
+bit_loop:
+    out pins 1
+    jmp x-- bit_loop [16-2]
+    set pins 1 [16-3]  // stop bit
