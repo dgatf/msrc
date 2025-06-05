@@ -245,8 +245,6 @@ static void process(gps_parameters_t *parameter) {
                 // alarm_id_ublox = add_alarm_in_ms(2000, alarm_ublox_timeout, &alarm_parameters, false);
                 ublox_navpvt_t navpvt;
                 uart_pio_read_bytes((uint8_t *)&navpvt, sizeof(ublox_navpvt_t));
-                navpvt.lat = 1234567890 * 1e-7;
-                navpvt.lon = -1234567890 * 1e-7;
                 *parameter->alt = navpvt.hMSL / 1000.0F;
                 *parameter->lat = navpvt.lat * 1.0e-7;
                 *parameter->lon = navpvt.lon * 1.0e-7;
@@ -324,8 +322,6 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_HDOP) {
             *parameter->hdop = atof(buffer);
         }
-        *parameter->lat = 1234567890 * 1e-7;
-        *parameter->lon = -1234567890 * 1e-7;
         debug("%s(%i),", buffer, nmea_field[nmea_cmd][cmd_field]);
     }
 }
