@@ -17,17 +17,17 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
 #include "esc_pwm.h"
+#include "esc_ztw.h"
+#include "gps.h"
 #include "ms5611.h"
-#include "nmea.h"
 #include "ntc.h"
 #include "pwm_out.h"
+#include "smart_esc.h"
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
-#include "smart_esc.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 /* FrSky D Data Id */
 #define FRSKY_D_GPS_ALT_BP_ID 0x01
@@ -68,13 +68,27 @@
 
 #define FRSKY_D_INTERVAL 10
 
+typedef struct frsky_d_sensor_parameters_t {
+    uint8_t data_id;
+    void *value;
+    uint16_t rate;
+
+} frsky_d_sensor_parameters_t;
+
+typedef struct frsky_d_sensor_cell_parameters_t {
+    float *voltage;
+    uint8_t *count;
+    uint16_t rate;
+
+} frsky_d_sensor_cell_parameters_t;
+
 static SemaphoreHandle_t semaphore = NULL;
 
 static void sensor_task(void *parameters);
 static void send_packet(uint8_t dataId, uint16_t value);
 static void send_byte(uint8_t c, bool header);
-static uint16_t format(uint8_t data_id, float value);
-static void set_config();
+static uint16_t format(uint8_t data_id, void *value);
+static void set_config(void);
 
 void frsky_d_task(void *parameters) {
     context.led_cycle_duration = 6;
@@ -93,7 +107,7 @@ static void sensor_task(void *parameters) {
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
         xSemaphoreTake(semaphore, portMAX_DELAY);
-        uint16_t data_formatted = format(parameter.data_id, *parameter.value);
+        uint16_t data_formatted = format(parameter.data_id, parameter.value);
         debug("\nFrSky D. Sensor (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(parameter.data_id, data_formatted);
         xSemaphoreGive(semaphore);
@@ -117,59 +131,64 @@ static void sensor_cell_task(void *parameters) {
     }
 }
 
-static uint16_t format(uint8_t data_id, float value) {
+static uint16_t format(uint8_t data_id, void *value) {
     if (data_id == FRSKY_D_GPS_ALT_BP_ID || data_id == FRSKY_D_BARO_ALT_BP_ID || data_id == FRSKY_D_GPS_SPEED_BP_ID ||
         data_id == FRSKY_D_GPS_COURS_BP_ID)
-        return (int16_t)value;
+        return *(float *)value;
 
     if (data_id == FRSKY_D_GPS_ALT_AP_ID || data_id == FRSKY_D_BARO_ALT_AP_ID || data_id == FRSKY_D_GPS_SPEED_AP_ID ||
-        data_id == FRSKY_D_GPS_LONG_AP_ID || data_id == FRSKY_D_GPS_LAT_AP_ID || data_id == FRSKY_D_GPS_COURS_AP_ID)
-        return (abs(value) - (int16_t)abs(value)) * 10000;
+        data_id == FRSKY_D_GPS_COURS_AP_ID)
+        return (*(float *)value) - (int)(*(float *)value) * 10000;
 
-    if (data_id == FRSKY_D_VOLTS_BP_ID) return value * 2;
+    if (data_id == FRSKY_D_GPS_LONG_AP_ID || data_id == FRSKY_D_GPS_LAT_AP_ID) {
+        double min = fabs(*(double *)value) * 60;
+        return (min - (uint)min) * 10000;
+    }
 
-    if (data_id == FRSKY_D_VOLTS_AP_ID) return ((value * 2) - (int16_t)(value * 2)) * 10000;
+    if (data_id == FRSKY_D_VOLTS_BP_ID) return *(float *)value * 2;
+
+    if (data_id == FRSKY_D_VOLTS_AP_ID) return ((*(float *)value * 2) - (int)(*(float *)value * 2)) * 10000;
 
     if (data_id == FRSKY_D_GPS_LONG_BP_ID || data_id == FRSKY_D_GPS_LAT_BP_ID) {
-        value = abs(value);
-        uint8_t deg = value / 60;
-        uint8_t min = (int)value % 60;
+        double coord = fabs(*(double *)value);
+        uint8_t deg = coord;
+        uint8_t min = (coord - deg) * 60;
         char buf[7];
         sprintf(buf, "%d%d", deg, min);
         return atoi(buf);
     }
 
     if (data_id == FRSKY_D_GPS_LONG_EW_ID) {
-        if (value >= 0) return 'E';
+        if (*(double *)value >= 0) return 'E';
         return 'O';
     }
 
     if (data_id == FRSKY_D_GPS_LAT_NS_ID) {
-        if (value >= 0) return 'N';
+        if (*(double *)value >= 0) return 'N';
         return 'S';
     }
 
     if (data_id == FRSKY_D_GPS_YEAR_ID) {
-        return value / 10000;
+        return *(float *)value / 10000;
     }
 
     if (data_id == FRSKY_D_GPS_DAY_MONTH_ID) {
-        return value - (uint32_t)(value / 10000) * 10000;
+        return *(float *)value - (uint32_t)(*(float *)value / 10000) * 10000;
     }
 
     if (data_id == FRSKY_D_GPS_HOUR_MIN_ID) {
-        return value / 100;
+        return *(float *)value / 100;
     }
 
     if (data_id == FRSKY_D_GPS_SEC_ID) {
-        return value - (uint32_t)(value / 100) * 100;
+        return *(float *)value - (uint32_t)(*(float *)value / 100) * 100;
     }
 
-    if (data_id == FRSKY_D_CURRENT_ID || data_id == FRSKY_D_VFAS_ID) return round(value * 10);
+    if (data_id == FRSKY_D_CURRENT_ID || data_id == FRSKY_D_VFAS_ID) return round(*(float *)value * 10);
 
-    if (data_id == FRSKY_D_RPM_ID) return value / 60;
+    if (data_id == FRSKY_D_RPM_ID) return *(float *)value / 60;
 
-    return round(value);
+    return round(*(float *)value);
 }
 
 static void send_byte(uint8_t c, bool header) {
@@ -198,7 +217,7 @@ static void send_packet(uint8_t data_id, uint16_t value) {
     vTaskResume(context.led_task_handle);
 }
 
-static void set_config() {
+static void set_config(void) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
     frsky_d_sensor_parameters_t parameter_sensor;
@@ -811,12 +830,34 @@ static void set_config() {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
-        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float))};
-        xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
+        gps_parameters_t parameter;
+        parameter.protocol = config->gps_protocol;
+        parameter.baudrate = config->gps_baudrate;
+        parameter.rate = config->gps_rate;
+        parameter.lat = malloc(sizeof(double));
+        parameter.lon = malloc(sizeof(double));
+        parameter.alt = malloc(sizeof(float));
+        parameter.spd = malloc(sizeof(float));
+        parameter.cog = malloc(sizeof(float));
+        parameter.hdop = malloc(sizeof(float));
+        parameter.sat = malloc(sizeof(float));
+        parameter.time = malloc(sizeof(float));
+        parameter.date = malloc(sizeof(float));
+        parameter.vspeed = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        parameter.spd_kmh = malloc(sizeof(float));
+        parameter.fix = malloc(sizeof(float));
+        parameter.vdop = malloc(sizeof(float));
+        parameter.speed_acc = malloc(sizeof(float));
+        parameter.h_acc = malloc(sizeof(float));
+        parameter.v_acc = malloc(sizeof(float));
+        parameter.track_acc = malloc(sizeof(float));
+        parameter.n_vel = malloc(sizeof(float));
+        parameter.e_vel = malloc(sizeof(float));
+        parameter.v_vel = malloc(sizeof(float));
+        parameter.alt_elipsiod = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
@@ -1034,7 +1075,7 @@ static void set_config() {
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
+
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
             baro_pressure = parameter.pressure;

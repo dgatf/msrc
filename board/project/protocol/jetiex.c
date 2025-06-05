@@ -18,7 +18,7 @@
 #include "esc_pwm.h"
 #include "fuel_meter.h"
 #include "ms5611.h"
-#include "nmea.h"
+#include "gps.h"
 #include "ntc.h"
 #include "pwm_out.h"
 #include "smart_esc.h"
@@ -58,6 +58,16 @@
 #define JETIEX_PACKET_LENGHT 8
 #define JETIEX_TIMEOUT_US 500
 #define JETIEX_BAUDRATE_TIMEOUT_MS 5000
+
+typedef struct sensor_jetiex_t {
+    uint8_t data_id;
+    uint8_t type;
+    uint8_t format;
+    char text[32];
+    char unit[8];
+    void *value;
+
+} sensor_jetiex_t;
 
 static void process(uint *baudrate, sensor_jetiex_t **sensor);
 static void send_packet(uint8_t packet_id, sensor_jetiex_t **sensor);
@@ -178,7 +188,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
             if (*buffer_index > 25)  // 29 bytes max:  25+2=pos27=byte28 +1crc=byte29
                 return false;
             else {
-                int8_t value = *sensor->value * pow(10, sensor->format);
+                int8_t value = *(float *)sensor->value * pow(10, sensor->format);
                 if (value > 0x1F)
                     value = 0x1F;
                 else if (value < -0x1F)
@@ -193,7 +203,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
             if (*buffer_index > 24)
                 return false;
             else {
-                int16_t value = *sensor->value * pow(10, sensor->format);
+                int16_t value = *(float *)sensor->value * pow(10, sensor->format);
                 if (value > 0x1FFF) value = 0x1FFF;
                 if (value < -0x1FFF) value = -0x1FFF;
                 value &= ~((uint16_t)3 << (5 + 8));
@@ -207,7 +217,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
             if (*buffer_index > 23)
                 return false;
             else {
-                int32_t value = *sensor->value * pow(10, sensor->format);
+                int32_t value = *(float *)sensor->value * pow(10, sensor->format);
                 if (value > 0x1FFFFF)
                     value = 0x1FFFFF;
                 else if (value < -0x1FFFFF)
@@ -224,7 +234,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
             if (*buffer_index > 22)
                 return false;
             else {
-                int32_t value = *sensor->value * pow(10, sensor->format);
+                int32_t value = *(float *)sensor->value * pow(10, sensor->format);
                 if (value > 0x1FFFFFFF)
                     value = 0x1FFFFFFF;
                 else if (value < -0x1FFFFFFF)
@@ -247,7 +257,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 // byte 2: month/minute
                 // byte 3(bits 1-5): year/hour
                 // byte 3(bit 6): 0=time 1=date
-                uint32_t value = *sensor->value;
+                uint32_t value = *(float *)sensor->value;
                 uint8_t hourYearFormat = format;
                 hourYearFormat |= value / 10000;                              // hour, year
                 uint8_t minuteMonth = (value / 100 - (value / 10000) * 100);  // minute, month
@@ -267,14 +277,14 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 // byte 3: DD
                 // byte 4(bit 6): 0=lat 1=lon
                 // byte 4(bit 7): 0=+(N,E), 1=-(S,W)
-                float value = *sensor->value;
+                double value = *(double *)sensor->value;
                 if (value < 0) {
                     format |= 1 << 6;
                     value *= -1;
                 }
                 *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
-                uint8_t degrees = value / 60;
-                uint16_t minutes = (value - degrees * 60) * 1000;
+                uint8_t degrees = value;
+                uint16_t minutes = (value - degrees) * 60 * 1000;
                 *(buffer + *buffer_index + 1) = minutes;
                 *(buffer + *buffer_index + 2) = minutes >> 8;
                 *(buffer + *buffer_index + 3) = degrees;
@@ -300,7 +310,6 @@ static bool add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sens
             *buffer_index += lenText;
             strcpy((char *)buffer + *buffer_index, sensor->unit);
             *buffer_index += lenUnit;
-            // printf("[%i %s]", sensor_index, sensor->text);
             return true;
         }
     }
@@ -817,12 +826,34 @@ static void set_config(sensor_jetiex_t **sensor) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
-        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float))};
-        xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
+        gps_parameters_t parameter;
+        parameter.protocol = config->gps_protocol;
+        parameter.baudrate = config->gps_baudrate;
+        parameter.rate = config->gps_rate;
+        parameter.lat = malloc(sizeof(double));
+        parameter.lon = malloc(sizeof(double));
+        parameter.alt = malloc(sizeof(float));
+        parameter.spd = malloc(sizeof(float));
+        parameter.cog = malloc(sizeof(float));
+        parameter.hdop = malloc(sizeof(float));
+        parameter.sat = malloc(sizeof(float));
+        parameter.time = malloc(sizeof(float));
+        parameter.date = malloc(sizeof(float));
+        parameter.vspeed = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        parameter.spd_kmh = malloc(sizeof(float));
+        parameter.fix = malloc(sizeof(float));
+        parameter.vdop = malloc(sizeof(float));
+        parameter.speed_acc = malloc(sizeof(float));
+        parameter.h_acc = malloc(sizeof(float));
+        parameter.v_acc = malloc(sizeof(float));
+        parameter.track_acc = malloc(sizeof(float));
+        parameter.n_vel = malloc(sizeof(float));
+        parameter.e_vel = malloc(sizeof(float));
+        parameter.v_vel = malloc(sizeof(float));
+        parameter.alt_elipsiod = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT6, JETIEX_FORMAT_0_DECIMAL, "Sats", "", parameter.sat};

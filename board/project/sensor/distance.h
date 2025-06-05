@@ -4,7 +4,8 @@
 #include "common.h"
 
 typedef struct distance_parameters_t {
-    float *distance, *latitude, *longitude, *altitude, *sat;
+    float *distance, *altitude, *sat;
+    double *latitude, *longitude;
 
 } distance_parameters_t;
 

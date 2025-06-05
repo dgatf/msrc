@@ -1,4 +1,4 @@
 misc
 build/
-build_*/
+build-*/
 msrc_gui/msrc_gui.pro.user*

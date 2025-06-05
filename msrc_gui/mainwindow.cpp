@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
                          "Kiss", "APD HV", "HobbyWing V5", "Smart ESC/BAT", "OMP M4", "ZTW"});
 
-    ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "19200", "14400", "9600", "4800"});
+    ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "19200", "9600", "4800"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItem("Frsky Smartport", RX_SMARTPORT);
     ui->cbReceiver->addItem("Frsky D", RX_FRSKY_D);
@@ -44,6 +44,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbBarometerType->addItems({"BMP280", "MS5611", "BMP180"});
     ui->cbAltitudeFilter->addItems({"Low", "Medium", "High"});
     ui->cbAltitudeFilter->setCurrentIndex(2);
+    ui->cbGpsRate->addItems({"1", "5", "10", "20"});
+    ui->cbGpsProtocol->addItems({"UBLOX", "NMEA"});
     ui->cbSpeedUnitsGps->addItems({"km/h", "kts"});
     ui->lbQuiescentVoltage->setText("Zero current output voltage, V<sub>IOUT</sub> (V)");
     ui->cbVarioAutoOffset->setVisible(false);
@@ -54,10 +56,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
     ui->cbAddress->setCurrentIndex(0x77);
 
-    ui->cbSerialMonitorGpio->addItems({"1", "5"});
+    ui->cbSerialMonitorGpio->addItems({"1", "5", "6"});
     ui->cbBaudrate->addItems({"115200", "57600", "38400", "19200", "9600", "4800"});
     ui->cbStopbits->addItems({"1", "2"});
     ui->cbParity->addItems({"None", "Odd", "Even"});
+    ui->cbSerialFormat->addItems({"Hex", "String"});
 
     ui->cbMaxPressure->addItems({"< 1 kPa (K = 8192)", "< 2 kPa (K = 4096)", "< 4 kPa (K = 2048)", "< 8 kPa (K = 1024)",
                                  "< 16 kPa (K = 512)", "< 32 kPa (K = 256)", "< 65 kPa (K = 128)", "< 130 kPa (K = 64)",
@@ -229,10 +232,9 @@ void MainWindow::saveConfig() {
 }
 
 void MainWindow::showAbout() {
-    QMessageBox::information(
-        this, tr("About"),
-        QString::asprintf("MSRC Link %s\n\rDaniel Gorbea © 2020/2025", PROJECT_VERSION),
-        QMessageBox::Close);
+    QMessageBox::information(this, tr("About"),
+                             QString::asprintf("MSRC Link %s\n\rDaniel Gorbea © 2020/2025", PROJECT_VERSION),
+                             QMessageBox::Close);
 }
 
 void MainWindow::buttonSerialPort() {
@@ -395,8 +397,12 @@ void MainWindow::setUiFromConfig() {
 
     /* Serial Monitor */
 
-    if (config.serial_monitor_gpio == 1) ui->cbSerialMonitorGpio->setCurrentText("1");
-    else ui->cbSerialMonitorGpio->setCurrentText("5");
+    if (config.serial_monitor_gpio == 1)
+        ui->cbSerialMonitorGpio->setCurrentText("1");
+    else if (config.serial_monitor_gpio == 5)
+        ui->cbSerialMonitorGpio->setCurrentText("5");
+    else
+        ui->cbSerialMonitorGpio->setCurrentText("6");
     int item = ui->cbBaudrate->findText(QString::number(config.serial_monitor_baudrate));
     if (item == -1)
         ui->cbBaudrate->setCurrentText(QString::number(config.serial_monitor_baudrate));
@@ -409,6 +415,10 @@ void MainWindow::setUiFromConfig() {
     if (config.serial_monitor_timeout_ms > 100) config.serial_monitor_timeout_ms = 100;
     ui->sbTimeout->setValue(config.serial_monitor_timeout_ms);
     ui->cbInverted->setChecked(config.serial_monitor_inverted);
+    if (config.serial_monitor_format == FORMAT_HEX)
+        ui->cbSerialFormat->setCurrentText("Hex");
+    else
+        ui->cbSerialFormat->setCurrentText("String");
 
     /* Sensors */
 
@@ -424,29 +434,9 @@ void MainWindow::setUiFromConfig() {
     // GPS
 
     ui->gbGps->setChecked(config.enable_gps);
-    switch (config.gps_baudrate) {
-        case 115200:
-            ui->cbGpsBaudrate->setCurrentIndex(0);
-            break;
-        case 57600:
-            ui->cbGpsBaudrate->setCurrentIndex(1);
-            break;
-        case 38400:
-            ui->cbGpsBaudrate->setCurrentIndex(2);
-            break;
-        case 19200:
-            ui->cbGpsBaudrate->setCurrentIndex(3);
-            break;
-        case 14400:
-            ui->cbGpsBaudrate->setCurrentIndex(4);
-            break;
-        case 9600:
-            ui->cbGpsBaudrate->setCurrentIndex(5);
-            break;
-        case 4800:
-            ui->cbGpsBaudrate->setCurrentIndex(6);
-            break;
-    }
+    ui->cbGpsBaudrate->setCurrentText(QString::number(config.gps_baudrate));
+    ui->cbGpsRate->setCurrentText(QString::number(config.gps_rate));
+    ui->cbGpsProtocol->setCurrentIndex(config.gps_protocol);
 
     // Analog rate
 
@@ -625,6 +615,7 @@ void MainWindow::getConfigFromUi() {
         config.serial_monitor_parity = 2;
     config.serial_monitor_timeout_ms = ui->sbTimeout->value();
     config.serial_monitor_inverted = ui->cbInverted->isChecked();
+    config.serial_monitor_format = ui->cbSerialFormat->currentText() == "Hex" ? FORMAT_HEX : FORMAT_STRING;
 
     /* Sensors */
 
@@ -639,6 +630,8 @@ void MainWindow::getConfigFromUi() {
 
     config.enable_gps = ui->gbGps->isChecked();
     config.gps_baudrate = ui->cbGpsBaudrate->currentText().toInt();
+    config.gps_rate = ui->cbGpsRate->currentText().toInt();
+    config.gps_protocol = ui->cbGpsProtocol->currentIndex();
 
     // Voltage
 
@@ -909,6 +902,12 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->lbStopbits->setVisible(true);
         ui->lbParity->setVisible(true);
         ui->lbTimeout->setVisible(true);
+        ui->lbSerialFormat->setVisible(true);
+        ui->cbSerialFormat->setVisible(true);
+        ui->gbSensors->setVisible(false);
+        ui->gbAverage->setVisible(false);
+        ui->lbSerialMonitorGpio->setVisible(true);
+        ui->cbSerialMonitorGpio->setVisible(true);
     } else {
         ui->cbBaudrate->setVisible(false);
         ui->cbStopbits->setVisible(false);
@@ -919,17 +918,23 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->lbStopbits->setVisible(false);
         ui->lbParity->setVisible(false);
         ui->lbTimeout->setVisible(false);
+        ui->lbSerialFormat->setVisible(false);
+        ui->cbSerialFormat->setVisible(false);
+        ui->gbSensors->setVisible(true);
+        ui->gbAverage->setVisible(true);
+        ui->lbSerialMonitorGpio->setVisible(false);
+        ui->cbSerialMonitorGpio->setVisible(false);
     }
 
     // Fuel meter
-    if (arg1 == "Frsky Smartport"  || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS") {
         ui->gbFuelmeter->setVisible(true);
     } else {
         ui->gbFuelmeter->setVisible(false);
     }
 
     // Fuel pressure
-    if (arg1 == "Spektrum SRXL"  || arg1 == "Spektrum SRXL2" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS") {
+    if (arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS") {
         ui->gbFuelPressure->setVisible(true);
     } else {
         ui->gbFuelPressure->setVisible(false);
@@ -953,7 +958,6 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->gbCurrent->setVisible(true);
         ui->gbAirspeed->setVisible(true);
         ui->gbAltitude->setVisible(true);
-
     }
 
     // Average elements
@@ -1220,9 +1224,18 @@ void MainWindow::on_btScroll_clicked() {
         ui->btScroll->setText("Autoscroll");
 }
 
-void MainWindow::on_gbFuelPressure_toggled(bool enabled)
-{
+void MainWindow::on_gbFuelPressure_toggled(bool enabled) {
     enableWidgets(ui->gbFuelPressure, enabled);
     generateCircuit(ui->lbCircuit);
+}
+
+void MainWindow::on_cbGpsProtocol_currentTextChanged(const QString &arg1) {
+    if (arg1 == "NMEA") {
+        ui->lbGpsRate ->setVisible(false);
+        ui->cbGpsRate ->setVisible(false);
+    } else {
+        ui->lbGpsRate ->setVisible(true);
+        ui->cbGpsRate ->setVisible(true);
+    }
 }
 

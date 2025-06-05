@@ -18,8 +18,8 @@
 
 #define MSRC_DEBUG 0  // 0 = no debug, 1 = debug level 1, 2 = debug level 2
 
-// #define SIM_RX
-// #define SIM_SENSORS
+//#define SIM_RX
+//#define SIM_SENSORS
 
 // #define SIM_SMARTPORT_SEND_CONFIG_LUA
 // #define SIM_SMARTPORT_RECEIVE_CONFIG_LUA
@@ -45,7 +45,7 @@
 typedef struct context_t {
     TaskHandle_t pwm_out_task_handle, uart0_notify_task_handle, uart1_notify_task_handle, uart_pio_notify_task_handle,
         receiver_task_handle, led_task_handle, usb_task_handle;
-    QueueHandle_t uart0_queue_handle, uart1_queue_handle, uart_pio_queue_handle, tasks_queue_handle,
+    QueueHandle_t uart0_queue_handle, uart1_queue_handle, uart_rx_pio_queue_handle, uart_tx_pio_queue_handle, tasks_queue_handle,
         sensors_queue_handle;
     alarm_pool_t *uart_alarm_pool;
     uint8_t debug, led_cycles;

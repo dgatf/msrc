@@ -39,7 +39,7 @@ void sim_rx_task(void *parameters) {
 
 static void process(rx_protocol_t rx_protocol) {
 #ifdef SIM_RX
-    // printf("\nSim (%u) < ", uxTaskGetStackHighWaterMark(NULL));
+    // debug("\nSim Rx (%u) < ", uxTaskGetStackHighWaterMark(NULL));
     xQueueReset(uart_queue_handle);
     if (rx_protocol == RX_SMARTPORT) {
         vTaskResume(context.led_task_handle);
@@ -236,7 +236,7 @@ static void process(rx_protocol_t rx_protocol) {
 
     else if (rx_protocol == RX_SRXL) {
         static uint8_t data[] = {0xA5, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         for (uint8_t i = 0; i < sizeof(data); i++) {
             xQueueSendToBack(uart_queue_handle, &data[i], 0);
         }
@@ -303,7 +303,7 @@ static void process(rx_protocol_t rx_protocol) {
     }
 
     else if (rx_protocol == RX_HITEC) {
-        // hitec_i2c_handler();
+        hitec_i2c_handler();
     }
 
     else if (rx_protocol == RX_CRSF) {

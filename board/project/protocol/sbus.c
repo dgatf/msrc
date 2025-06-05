@@ -18,7 +18,7 @@
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
 #include "ms5611.h"
-#include "nmea.h"
+#include "gps.h"
 #include "ntc.h"
 #include "pwm_out.h"
 #include "uart.h"
@@ -85,6 +85,11 @@
 #define SBUS_GPS_LONGITUDE2 17
 #define SBUS_AIR_SPEED 18
 
+typedef struct sensor_sbus_t {
+    uint8_t data_id;
+    void *value;
+} sensor_sbus_t;
+
 /**
  * Slots sensor mapping for Futaba transmitters:
  *
@@ -115,7 +120,7 @@ static volatile bool slot_pending = false;
 static void process();
 static int64_t send_slot_callback(alarm_id_t id, void *parameters);
 static inline void send_slot(uint8_t slot);
-static uint16_t format(uint8_t data_id, float value);
+static uint16_t format(uint8_t data_id, void *value);
 static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor);
 static void set_config(void);
 static uint8_t get_slot_id(uint8_t slot);
@@ -183,7 +188,8 @@ static inline void send_slot(uint8_t slot) {
     debug(" (%u)", slot);
     uint16_t value = 0;
     if (sbus_sensor[slot]) {
-        if (sbus_sensor[slot]->value) value = format(sbus_sensor[slot]->data_id, *sbus_sensor[slot]->value);
+        void *a;
+        if (sbus_sensor[slot]->value) value = format(sbus_sensor[slot]->data_id, sbus_sensor[slot]->value);
         uint8_t data[3];
         data[0] = get_slot_id(slot);
         data[1] = value;
@@ -193,75 +199,75 @@ static inline void send_slot(uint8_t slot) {
     }
 }
 
-static uint16_t format(uint8_t data_id, float value) {
+static uint16_t format(uint8_t data_id, void *value) {
     if (data_id == SBUS_RPM) {
-        return (uint16_t)round(value / 6);
+        return (uint16_t)round(*(float *)value / 6);
     }
     if (data_id == SBUS_TEMP) {
-        return (uint16_t)round(value + 100) | 0X8000;
+        return (uint16_t)round(*(float *)value + 100) | 0X8000;
     }
     if (data_id == SBUS_VOLT_V1) {
-        return __builtin_bswap16((uint16_t)round(value * 10) | 0x8000);
+        return __builtin_bswap16((uint16_t)round(*(float *)value * 10) | 0x8000);
     }
     if (data_id == SBUS_VOLT_V2) {
-        return __builtin_bswap16((uint16_t)round(value * 10));
+        return __builtin_bswap16((uint16_t)round(*(float *)value * 10));
     }
     if (data_id == SBUS_VARIO_SPEED) {
-        return __builtin_bswap16((int16_t)round(value * 100));
+        return __builtin_bswap16((int16_t)round(*(float *)value * 100));
     }
     if (data_id == SBUS_VARIO_ALT) {
-        return __builtin_bswap16((int16_t)round(value) | 0x4000);
+        return __builtin_bswap16((int16_t)round(*(float *)value) | 0x4000);
     }
     if (data_id == SBUS_POWER_CURR) {
-        return __builtin_bswap16((uint16_t)round(value * 100) | 0x4000);
+        return __builtin_bswap16((uint16_t)round(*(float *)value * 100) | 0x4000);
     }
     if (data_id == SBUS_POWER_VOLT) {
-        return __builtin_bswap16((uint16_t)round((value)*100));
+        return __builtin_bswap16((uint16_t)round((*(float *)value)*100));
     }
     if (data_id == SBUS_AIR_SPEED) {
-        return __builtin_bswap16((uint16_t)round(value) | 0x4000);
+        return __builtin_bswap16((uint16_t)round(*(float *)value) | 0x4000);
     }
     if (data_id == SBUS_GPS_SPEED) {
-        return __builtin_bswap16((uint16_t)round(value * 1.852) | 0x4000);
+        return __builtin_bswap16((uint16_t)round(*(float *)value * 1.852) | 0x4000);
     }
     if (data_id == SBUS_GPS_VARIO_SPEED) {
-        return __builtin_bswap16((int16_t)round(value * 10));
+        return __builtin_bswap16((int16_t)round(*(float *)value * 10));
     }
     if (data_id == SBUS_GPS_ALTITUDE) {
-        return __builtin_bswap16((int16_t)round(value) | 0x4000);
+        return __builtin_bswap16((int16_t)round(*(float *)value) | 0x4000);
     }
     if (data_id == SBUS_GPS_LATITUDE1 || data_id == SBUS_GPS_LONGITUDE1) {
         // bits 1-4: bits 17-20 from minutes precision 4 (minutes*10000 = 20 bits)
         // bit 5: S/W bit
         // bits 9-16: degrees
+        double coord = *(double *)value;
         uint16_t lat_lon = 0;
-        if (value < 0) {
+        if (coord < 0) {
             lat_lon = 1 << SBUS_SOUTH_WEST_BIT;
-            value *= -1;
+            coord *= -1;
         }
-
-        uint8_t degrees = value / 60;
+        int8_t degrees = coord;
         lat_lon |= degrees << 8;
-        uint32_t minutes = fmod(value, 60) * 10000;  // minutes precision 4
+        int32_t minutes = (coord - degrees) * 60 * 10000;  // minutes precision 4
         lat_lon |= minutes >> 16;
         return __builtin_bswap16(lat_lon);
     }
     if (data_id == SBUS_GPS_LATITUDE2 || data_id == SBUS_GPS_LONGITUDE2) {
         // bits 1-16 from minutes precision 4 (minutes*10000 = 20 bits)
-        if (value < 0) {
-            value *= -1;
+        if (*(double *)value < 0) {
+            *(double *)value *= -1;
         }
-        uint32_t minutes = fmod(value, 60) * 10000;  // minutes precision 4
+        uint32_t minutes = (*(double *)value - (int)(*(double *)value)) * 60 * 10000;   // minutes precision 4
         return __builtin_bswap16(minutes);
     }
     if (data_id == SBUS_GPS_TIME) {
-        if (value > 120000) value -= 120000;
-        uint8_t hours = value / 10000;
-        uint8_t minutes = (uint8_t)(value / 100) - hours * 100;
-        uint8_t seconds = value - hours * 10000 - minutes * 100;
+        if (*(float *)value > 120000) *(float *)value -= 120000;
+        uint8_t hours = *(float *)value / 10000;
+        uint8_t minutes = (uint8_t)(*(float *)value / 100) - hours * 100;
+        uint8_t seconds = *(float *)value - hours * 10000 - minutes * 100;
         return __builtin_bswap16(hours * 3600 + minutes * 60 + seconds);
     }
-    return __builtin_bswap16(round(value));
+    return __builtin_bswap16(round(*(float *)value));
 }
 
 static uint8_t get_slot_id(uint8_t slot) {
@@ -647,12 +653,34 @@ static void set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
-        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float))};
-        xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
+        gps_parameters_t parameter;
+        parameter.protocol = config->gps_protocol;
+        parameter.baudrate = config->gps_baudrate;
+        parameter.rate = config->gps_rate;
+        parameter.lat = malloc(sizeof(double));
+        parameter.lon = malloc(sizeof(double));
+        parameter.alt = malloc(sizeof(float));
+        parameter.spd = malloc(sizeof(float));
+        parameter.cog = malloc(sizeof(float));
+        parameter.hdop = malloc(sizeof(float));
+        parameter.sat = malloc(sizeof(float));
+        parameter.time = malloc(sizeof(float));
+        parameter.date = malloc(sizeof(float));
+        parameter.vspeed = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        parameter.spd_kmh = malloc(sizeof(float));
+        parameter.fix = malloc(sizeof(float));
+        parameter.vdop = malloc(sizeof(float));
+        parameter.speed_acc = malloc(sizeof(float));
+        parameter.h_acc = malloc(sizeof(float));
+        parameter.v_acc = malloc(sizeof(float));
+        parameter.track_acc = malloc(sizeof(float));
+        parameter.n_vel = malloc(sizeof(float));
+        parameter.e_vel = malloc(sizeof(float));
+        parameter.v_vel = malloc(sizeof(float));
+        parameter.alt_elipsiod = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 

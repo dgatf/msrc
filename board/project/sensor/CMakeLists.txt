@@ -6,7 +6,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     esc_kontronik.c
     esc_apd_f.c
     esc_apd_hv.c
-    nmea.c
+    gps.c
     vspeed.c
     distance.c
     esc_pwm.c
@@ -20,7 +20,6 @@ target_sources(${PROJECT_NAME} PRIVATE
     pwm_out.c
     ntc.c
     current.c
-    serial_monitor.c
     fuel_meter.c
     xgzp68xxd.c
     gpio.c

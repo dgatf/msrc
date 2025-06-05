@@ -16,11 +16,13 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
 #include "esc_pwm.h"
+#include "esc_ztw.h"
 #include "fuel_meter.h"
 #include "gpio.h"
+#include "gps.h"
 #include "ms5611.h"
-#include "nmea.h"
 #include "ntc.h"
 #include "pwm_out.h"
 #include "smart_esc.h"
@@ -28,8 +30,6 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 #define AIRCR_Register (*((volatile uint32_t *)(PPB_BASE + 0x0ED0C)))
 // FrSky Smartport Data Id
@@ -132,6 +132,78 @@
 #define TIMEOUT_US 1000
 #define PACKET_LENGHT 2
 
+typedef enum coordinate_type_t {
+    SMARTPORT_LATITUDE,
+    SMARTPORT_LONGITUDE,
+} coordinate_type_t;
+
+typedef enum datetime_type_t {
+    SMARTPORT_DATE,
+    SMARTPORT_TIME,
+} datetime_type_t;
+
+typedef struct smartport_parameters_t {
+    uint8_t sensor_id;
+    uint16_t data_id;
+} smartport_parameters_t;
+
+typedef struct smartport_sensor_parameters_t {
+    uint16_t data_id;
+    float *value;
+    uint16_t rate;
+} smartport_sensor_parameters_t;
+
+typedef struct smartport_sensor_gpio_parameters_t {
+    uint16_t data_id;
+    uint8_t gpio_mask;
+    uint8_t *value;
+    uint16_t rate;
+} smartport_sensor_gpio_parameters_t;
+
+typedef struct smartport_sensor_double_parameters_t {
+    uint16_t data_id;
+    float *value_l;
+    float *value_h;
+    uint16_t rate;
+} smartport_sensor_double_parameters_t;
+
+typedef struct smartport_sensor_coordinate_parameters_t {
+    coordinate_type_t type;
+    double *latitude;
+    double *longitude;
+    uint16_t rate;
+} smartport_sensor_coordinate_parameters_t;
+
+typedef struct smartport_sensor_datetime_parameters_t {
+    datetime_type_t type;
+    float *date;
+    float *time;
+    uint16_t rate;
+} smartport_sensor_datetime_parameters_t;
+
+typedef struct smartport_sensor_cell_parameters_t {
+    uint8_t *cell_count;
+    float *cell_voltage;
+    uint16_t rate;
+} smartport_sensor_cell_parameters_t;
+
+typedef struct smartport_sensor_cell_individual_parameters_t {
+    uint8_t *cell_count;
+    float *cell_voltage[18];
+    uint16_t rate;
+} smartport_sensor_cell_individual_parameters_t;
+
+typedef struct smartport_packet_parameters_t {
+    uint16_t data_id;
+    QueueHandle_t queue_handle;
+} smartport_packet_parameters_t;
+
+typedef struct smartport_packet_t {
+    uint16_t type_id;
+    uint16_t data_id;
+    uint32_t data;
+} smartport_packet_t;
+
 static SemaphoreHandle_t semaphore_sensor = NULL;
 static bool is_maintenance_mode = false;
 static const uint8_t sensor_id_matrix[29] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x45, 0xC6, 0x67, 0x48, 0xE9,
@@ -151,7 +223,7 @@ static void process(smartport_parameters_t *parameter);
 static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, uint16_t data_id, uint32_t value);
 static int32_t format(uint16_t data_id, float value);
 static uint32_t format_double(uint16_t data_id, float value_l, float value_h);
-static uint32_t format_coordinate(coordinate_type_t type, float value);
+static uint32_t format_coordinate(coordinate_type_t type, double value);
 static uint32_t format_datetime(uint8_t type, uint32_t value);
 static uint32_t format_cell(uint8_t cell_index, float value);
 static void send_packet(uint8_t type_id, uint16_t data_id, uint32_t value);
@@ -390,12 +462,11 @@ static void sensor_gpio_task(void *parameters) {
                 cont++;
                 if (cont == 6) cont = 0;
             }
-            float value = *parameter.value & (1 << cont) ? 1 : 0;
+            uint32_t value = *parameter.value & (1 << cont) ? 1 : 0;
             uint16_t data_id = parameter.data_id + 17 + cont;
-            int32_t data_formatted = format(data_id, value);
             debug("\nSmartport. Sensor GPIO (%u) > GPIO: %u STATE: %u > ", uxTaskGetStackHighWaterMark(NULL), 17 + cont,
                   (uint)value);
-            send_packet(0x10, data_id, data_formatted);
+            send_packet(0x10, data_id, value);
             cont++;
             if (cont == 6) cont = 0;
         }
@@ -430,9 +501,9 @@ static void sensor_coordinates_task(void *parameters) {
         xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
         uint32_t data_formatted;
         if (parameter.type == SMARTPORT_LATITUDE)
-            data_formatted = format_coordinate(parameter.type, *parameter.latitude);
+            data_formatted = format_coordinate(parameter.type, *parameter.latitude * 60);
         else
-            data_formatted = format_coordinate(parameter.type, *parameter.longitude);
+            data_formatted = format_coordinate(parameter.type, *parameter.longitude * 60);
         parameter.type = !parameter.type;
         debug("\nSmartport. Sensor coordinates (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, GPS_LONG_LATI_FIRST_ID, data_formatted);
@@ -533,13 +604,13 @@ static uint32_t format_double(uint16_t data_id, float value_l, float value_h) {
     return (uint16_t)round(value_h * 500) << 8 | (uint16_t)value_l;
 }
 
-static uint32_t format_coordinate(coordinate_type_t type, float value) {
+static uint32_t format_coordinate(coordinate_type_t type, double value) {
     uint32_t data = 0;
     if (value < 0) data |= (uint32_t)1 << 30;
     if (type == SMARTPORT_LONGITUDE) {
         data |= (uint32_t)1 << 31;
     }
-    data |= (uint32_t)abs(round(value * 10000));
+    data |= (uint32_t)fabs(round(value * 10000));
     return data;
 }
 
@@ -1180,12 +1251,35 @@ static void set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
-        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float))};
-        xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
+        gps_parameters_t parameter;
+        parameter.protocol = config->gps_protocol;
+        parameter.baudrate = config->gps_baudrate;
+        parameter.rate = config->gps_rate;
+        parameter.lat = malloc(sizeof(double));
+        parameter.lon = malloc(sizeof(double));
+        parameter.alt = malloc(sizeof(float));
+        parameter.spd = malloc(sizeof(float));
+        parameter.cog = malloc(sizeof(float));
+        parameter.hdop = malloc(sizeof(float));
+        parameter.sat = malloc(sizeof(float));
+        parameter.time = malloc(sizeof(float));
+        parameter.date = malloc(sizeof(float));
+        parameter.vspeed = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        parameter.spd_kmh = malloc(sizeof(float));
+        parameter.fix = malloc(sizeof(float));
+        parameter.vdop = malloc(sizeof(float));
+        parameter.speed_acc = malloc(sizeof(float));
+        parameter.h_acc = malloc(sizeof(float));
+        parameter.v_acc = malloc(sizeof(float));
+        parameter.track_acc = malloc(sizeof(float));
+        parameter.n_vel = malloc(sizeof(float));
+        parameter.e_vel = malloc(sizeof(float));
+        parameter.v_vel = malloc(sizeof(float));
+        parameter.alt_elipsiod = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+
+        xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
