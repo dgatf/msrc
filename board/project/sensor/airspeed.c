@@ -18,6 +18,7 @@ void airspeed_task(void *parameters) {
     airspeed_parameters_t parameter = *(airspeed_parameters_t *)parameters;
     adc_init();
     adc_gpio_init(parameter.adc_num + 26);
+    gpio_pull_down(parameter.adc_num + 26);
     *parameter.airspeed = 0;
     xTaskNotifyGive(context.receiver_task_handle);
     float temperature, pressure, delta_pressure, air_density, airspeed;

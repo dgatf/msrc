@@ -18,6 +18,7 @@ void ntc_task(void *parameters) {
     ntc_parameters_t parameter = *(ntc_parameters_t *)parameters;
     adc_init();
     adc_gpio_init(parameter.adc_num + 26);
+    gpio_pull_down(parameter.adc_num + 26);
     *parameter.ntc = 0;
     xTaskNotifyGive(context.receiver_task_handle);
     while (1) {
