@@ -1,6 +1,7 @@
 #include "smart_esc.h"
 
 #include <stdio.h>
+#include<stdlib.h>
 
 #include "auto_offset.h"
 #include "capture_edge.h"
@@ -114,6 +115,8 @@ typedef struct srxl2_channel_data_t {
     uint16_t channel_data_ch7;  // reverse
 } __attribute__((packed)) srxl2_channel_data_t;
 
+#define SRXL2_CONTROL_LEN_CHANNEL (5 + sizeof(srxl2_channel_data_t) + 2)  // header + channel data + crc
+
 typedef struct srxl2_control_packet_t {
     uint8_t header;
     uint8_t type;
@@ -124,11 +127,13 @@ typedef struct srxl2_control_packet_t {
     uint16_t crc;
 } __attribute__((packed)) srxl2_control_packet_t;
 
-#define SRXL2_CONTROL_LEN_CHANNEL (5 + sizeof(srxl2_channel_data_t) + 2)  // header + channel data + crc
+typedef struct parameters_t {
+    volatile uint8_t esc_id, esc_priority;
+    volatile uint16_t throttle, reverse;
+    volatile bool packet_pending;
+} parameters_t;
 
-static volatile uint8_t esc_id = 0, esc_priority = 10;
-static volatile uint16_t throttle = 0, reverse = 0;
-static volatile bool packet_pending = false;
+static parameters_t *parameters_isr;
 
 static void process(smart_esc_parameters_t *parameter);
 static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter);
@@ -141,6 +146,8 @@ static int64_t alarm_packet(alarm_id_t id, void *user_data);
 
 void smart_esc_task(void *parameters) {
     smart_esc_parameters_t parameter = *(smart_esc_parameters_t *)parameters;
+    parameters_isr = calloc(1, sizeof(parameters_t));
+    parameters_isr->esc_priority = 10;
     *parameter.rpm = 0;
     *parameter.voltage = 0;
     *parameter.current = 0;
@@ -170,8 +177,8 @@ void smart_esc_task(void *parameters) {
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process(&parameter);
-        if (packet_pending) {
-            packet_pending = false;
+        if (parameters_isr->packet_pending) {
+            parameters_isr->packet_pending = false;
             send_packet();
         }
     }
@@ -199,9 +206,9 @@ static void process(smart_esc_parameters_t *parameter) {
         }
         // Handshake confirmation
         else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[3] == SRXL2_ESC_ID) {
-            esc_id = data[3];
-            esc_priority = data[5];
-            debug("\nSmart ESC. Handshake with 0x%X completed ", esc_id);
+            parameters_isr->esc_id = data[3];
+            parameters_isr->esc_priority = data[5];
+            debug("\nSmart ESC. Handshake with 0x%X completed ", parameters_isr->esc_id);
         }
         // Telemetry packet
         else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_TELEMETRY && data[3] == SRXL2_RECEIVER_ID) {
@@ -312,7 +319,7 @@ static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter) {
 
 static void send_packet(void) {
     static uint cont = 0;
-    if (!esc_id) {
+    if (!parameters_isr->esc_id) {
         srxl2_send_handshake(uart1, SRXL2_RECEIVER_ID, SRXL2_ESC_ID, SRXL2_RECEIVER_PRIORITY, SRXL2_RECEIVER_BAUDRATE,
                              SRXL2_RECEIVER_INFO, SRXL2_RECEIVER_UID);
     } else {
@@ -321,19 +328,19 @@ static void send_packet(void) {
         packet.type = SRXL2_PACKET_TYPE_CONTROL;
         packet.len = SRXL2_CONTROL_LEN_CHANNEL;
         packet.command = SRXL2_CONTROL_CMD_CHANNEL;
-        if (!(cont % 10)) packet.reply_id = esc_id;
+        if (!(cont % 10)) packet.reply_id = parameters_isr->esc_id;
         srxl2_channel_data_t channel_data;
         channel_data.rssi = 0x64;
         channel_data.frame_losses = 0;
         channel_data.channel_mask = 0B1000001;  // ch1 throttle, ch7 reverse
-        channel_data.channel_data_ch1 = throttle;
-        channel_data.channel_data_ch7 = reverse;
+        channel_data.channel_data_ch1 = parameters_isr->throttle;
+        channel_data.channel_data_ch7 = parameters_isr->reverse;
         packet.channel_data = channel_data;
         uint16_t crc = srxl_get_crc((uint8_t *)&packet, sizeof(packet) - 2);
         packet.crc = swap_16(crc);
         uart1_write_bytes((uint8_t *)&packet, sizeof(packet));
         cont++;
-        debug("\nSmart ESC (%u) Thr: %u Rev: %u > ", uxTaskGetStackHighWaterMark(NULL), throttle, reverse);
+        debug("\nSmart ESC (%u) Thr: %u Rev: %u > ", uxTaskGetStackHighWaterMark(NULL), parameters_isr->throttle, parameters_isr->reverse);
         debug_buffer((uint8_t *)&packet, sizeof(packet), " 0x%X");
     }
 }
@@ -353,7 +360,7 @@ static void capture_pwm_throttle_handler(uint counter, edge_type_t edge) {
             delta = 0;
         else if (delta > 1000)
             delta = 1000;
-        throttle = delta / 1000 * 65532;  // 1000us->0% 2000us->100%
+        parameters_isr->throttle = delta / 1000 * 65532;  // 1000us->0% 2000us->100%
         // debug("\nSmart Esc. Throttle (%u%%) %u", throttle / 65532 * 100, throttle);
     }
     timeout_throttle_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_throttle_callback, NULL, true);
@@ -374,27 +381,27 @@ static void capture_pwm_reverse_handler(uint counter, edge_type_t edge) {
             delta = 0;
         else if (delta > 1000)
             delta = 1000;
-        reverse = delta / 1000 * 65532;  // 1000us->0% 2000us->100%
+        parameters_isr->reverse = delta / 1000 * 65532;  // 1000us->0% 2000us->100%
         // debug("\nSmart Esc. Reverse (%u%%) %u", reverse / 65532 * 100, reverse);
     }
     timeout_reverse_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_reverse_callback, NULL, true);
 }
 
 static int64_t timeout_throttle_callback(alarm_id_t id, void *user_data) {
-    throttle = 0;
+    parameters_isr->throttle = 0;
     debug("\nSmart Esc. Signal timeout. Throttle 0");
     return 0;
 }
 
 static int64_t timeout_reverse_callback(alarm_id_t id, void *user_data) {
-    reverse = 0;
+    parameters_isr->reverse = 0;
     debug("\nSmart Esc. Signal timeout. Reverse 0");
     return 0;
 }
 
 static int64_t alarm_packet(alarm_id_t id, void *user_data) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    packet_pending = true;
+    parameters_isr->packet_pending = true;
     vTaskNotifyGiveIndexedFromISR(context.uart1_notify_task_handle, 1, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return SRXL2_INTERVAL_MS * 1000;

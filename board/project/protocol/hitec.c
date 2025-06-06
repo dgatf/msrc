@@ -193,7 +193,7 @@ typedef struct hitec_sensors_t {
     hitec_sensor_frame_0x1B_t frame_0x1B;
 } hitec_sensors_t;
 
-static hitec_sensors_t *sensors;
+static volatile hitec_sensors_t *sensors;
 
 static void i2c_request_handler(uint8_t address);
 static void i2c_stop_handler(uint8_t length);

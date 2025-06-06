@@ -372,8 +372,12 @@ typedef struct vario_alarm_parameters_t {
     uint16_t m10s;
 } vario_alarm_parameters_t;
 
-vario_alarm_parameters_t vario_alarm_parameters;
-float *baro_temp = NULL, *baro_pressure = NULL;
+typedef struct hott_parameters_t {
+    vario_alarm_parameters_t vario_alarm_parameters;
+    float *baro_temp, *baro_pressure;
+} hott_parameters_t;
+
+vario_alarm_parameters_t *vario_alarm_parameters;
 
 static void process(hott_sensors_t *sensors);
 static void send_packet(hott_sensors_t *sensors, uint8_t address);
@@ -422,9 +426,9 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             if (min_altitude > packet.altitude) min_altitude = packet.altitude;
             packet.maxAltitude = max_altitude;
             packet.minAltitude = min_altitude;
-            packet.m1s = vario_alarm_parameters.m1s;
-            packet.m3s = vario_alarm_parameters.m3s;
-            packet.m10s = vario_alarm_parameters.m10s;
+            packet.m1s = vario_alarm_parameters->m1s;
+            packet.m3s = vario_alarm_parameters->m3s;
+            packet.m10s = vario_alarm_parameters->m10s;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
@@ -585,6 +589,8 @@ static uint8_t get_crc(const uint8_t *buffer, uint len) {
 static void set_config(hott_sensors_t *sensors) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
+    float *baro_temp = NULL, *baro_pressure = NULL;
+    vario_alarm_parameters = calloc(1, sizeof(vario_alarm_parameters_t));
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
@@ -948,9 +954,9 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario.altitude = parameter.altitude;
 
-        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1000, interval_1000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(10000, interval_10000_callback, vario_alarm_parameters, false);
     }
     if (config->i2c_module == I2C_MS5611) {
         ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
@@ -968,9 +974,9 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario.altitude = parameter.altitude;
 
-        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1000, interval_1000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(10000, interval_10000_callback, vario_alarm_parameters, false);
     }
     if (config->i2c_module == I2C_BMP180) {
         bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
@@ -988,9 +994,9 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario.altitude = parameter.altitude;
 
-        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1000, interval_1000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(10000, interval_10000_callback, vario_alarm_parameters, false);
     }
 }
 

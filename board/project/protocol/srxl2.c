@@ -40,18 +40,23 @@
 #define SRXL2_DEVICE_INFO 0
 #define SRXL2_DEVICE_UID 0x12345678
 
-static volatile uint8_t dest_id = 0xFF;
-static alarm_id_t alarm_id;
-static volatile bool send_handshake = false;
+typedef struct srxl2_parameters_t {
+    volatile uint8_t dest_id;
+    alarm_id_t alarm_id;
+    volatile bool send_handshake;
+} srxl2_parameters_t;
+
+srxl2_parameters_t *srxl2_parameters;
 
 static void process(void);
 static void send_packet(void);
-// static void set_config(void);
 static int64_t alarm_50ms(alarm_id_t id, void *user_data);
 
 void srxl2_task(void *parameters) {
+    srxl2_parameters = calloc(1, sizeof(srxl2_parameters_t));
+    srxl2_parameters->dest_id = 0xFF;
     sensors = malloc(sizeof(xbus_sensors_t));
-    alarm_id = add_alarm_in_us(50000, alarm_50ms, NULL, true);
+    srxl2_parameters->alarm_id = add_alarm_in_us(50000, alarm_50ms, NULL, true);
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
 
@@ -61,8 +66,8 @@ void srxl2_task(void *parameters) {
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process();
-        if (send_handshake) {
-            send_handshake = false;
+        if (srxl2_parameters->send_handshake) {
+            srxl2_parameters->send_handshake = false;
             srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, 0, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE,
                                  SRXL2_DEVICE_INFO, SRXL2_DEVICE_UID);
         }
@@ -94,8 +99,8 @@ void srxl2_send_handshake(uart_inst_t *uart, uint8_t source_id, uint8_t dest_id,
 static void process(void) {
     uint8_t length = uart0_available();
     if (length) {
-        cancel_alarm(alarm_id);
-        alarm_id = add_alarm_in_us(50000, alarm_50ms, NULL, true);
+        cancel_alarm(srxl2_parameters->alarm_id);
+        srxl2_parameters->alarm_id = add_alarm_in_us(50000, alarm_50ms, NULL, true);
         if (length < 3 || length > 128) return;
         uint8_t data[length];
         uint16_t crc;
@@ -108,12 +113,12 @@ static void process(void) {
         } else {
             debug(" -> BAD CRC");
             debug(" %X", crc);
-            if (dest_id != 0xFF) return;  // allow packets with wrong crc for handshake
+            if (srxl2_parameters->dest_id != 0xFF) return;  // allow packets with wrong crc for handshake
         }
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID) {
-            dest_id = data[3];
-            debug("\nSRXL2. Set dest_id 0x%X", dest_id);
-            srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, dest_id, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE,
+            srxl2_parameters->dest_id = data[3];
+            debug("\nSRXL2. Set dest_id 0x%X", srxl2_parameters->dest_id);
+            srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, srxl2_parameters->dest_id, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE,
                                  SRXL2_DEVICE_INFO, SRXL2_DEVICE_UID);
         } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE_ID) {
             send_packet();
@@ -132,7 +137,7 @@ static void send_packet(void) {
     packet.header = SRXL2_HEADER;
     packet.type = SRXL2_PACKET_TYPE_TELEMETRY;
     packet.len = SRXL2_TELEMETRY_LEN;
-    packet.dest_id = dest_id;
+    packet.dest_id = srxl2_parameters->dest_id;
     uint8_t buffer[16] = {0};
     switch (cont) {
         case XBUS_AIRSPEED:
@@ -179,7 +184,7 @@ static void send_packet(void) {
 
 static int64_t alarm_50ms(alarm_id_t id, void *user_data) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    send_handshake = true;
+    srxl2_parameters->send_handshake = true;
     vTaskNotifyGiveIndexedFromISR(context.uart0_notify_task_handle, 1, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return 50000;

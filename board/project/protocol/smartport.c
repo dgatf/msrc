@@ -265,10 +265,11 @@ static void process(smartport_parameters_t *parameter) {
             debug_buffer2(data, lenght, "0x%X ");
         }
         uart0_read_bytes(data, lenght);
+        debug("\nSmartport (%u) %u < ", uxTaskGetStackHighWaterMark(NULL), parameter->sensor_id);
+        debug_buffer(data, PACKET_LENGHT, "0x%X ");
         if (data[0] == 0x7E && data[1] == sensor_id_to_crc(parameter->sensor_id)) {
             if (lenght == PACKET_LENGHT) {
-                debug("\nSmartport (%u) < ", uxTaskGetStackHighWaterMark(NULL));
-                debug_buffer(data, PACKET_LENGHT, "0x%X ");
+                
                 if (is_maintenance_mode && uxQueueMessagesWaiting(packet_queue_handle)) {
                     xTaskNotifyGive(packet_task_handle);
                 } else if (!is_maintenance_mode) {

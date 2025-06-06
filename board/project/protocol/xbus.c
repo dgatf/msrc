@@ -34,7 +34,7 @@
 #include "voltage.h"
 #include "xgzp68xxd.h"
 
-xbus_sensors_t *sensors;
+volatile xbus_sensors_t *sensors;
 
 static void i2c_request_handler(uint8_t address);
 static uint8_t bcd8(float value, uint8_t precision);

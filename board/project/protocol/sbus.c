@@ -16,17 +16,17 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
 #include "esc_pwm.h"
-#include "ms5611.h"
+#include "esc_ztw.h"
 #include "gps.h"
+#include "ms5611.h"
 #include "ntc.h"
 #include "pwm_out.h"
+#include "smart_esc.h"
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
-#include "smart_esc.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 #define SLOT_TEMP1 1
 #define SLOT_RPM 2
@@ -90,6 +90,13 @@ typedef struct sensor_sbus_t {
     void *value;
 } sensor_sbus_t;
 
+typedef struct sbus_parameters_t {
+    sensor_sbus_t *sbus_sensor[32];
+    uint packet_id;
+    volatile uint slot;
+    volatile bool slot_pending;
+} sbus_parameters_t;
+
 /**
  * Slots sensor mapping for Futaba transmitters:
  *
@@ -112,12 +119,9 @@ typedef struct sensor_sbus_t {
  * (+) Non default slots
  */
 
-static sensor_sbus_t *sbus_sensor[32] = {NULL};
-static uint packet_id;
-static volatile uint slot = 0;
-static volatile bool slot_pending = false;
+static sbus_parameters_t *sbus_parameters;
 
-static void process();
+static void process(void);
 static int64_t send_slot_callback(alarm_id_t id, void *parameters);
 static inline void send_slot(uint8_t slot);
 static uint16_t format(uint8_t data_id, void *value);
@@ -126,6 +130,7 @@ static void set_config(void);
 static uint8_t get_slot_id(uint8_t slot);
 
 void sbus_task(void *parameters) {
+    sbus_parameters = calloc(1, sizeof(sbus_parameters_t));
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
     set_config();
@@ -134,14 +139,14 @@ void sbus_task(void *parameters) {
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process();
-        if (slot_pending) {
-            send_slot(slot);
-            slot_pending = false;
+        if (sbus_parameters->slot_pending) {
+            send_slot(sbus_parameters->slot);
+            sbus_parameters->slot_pending = false;
         }
     }
 }
 
-static void process() {
+static void process(void) {
     if (uart0_available() == PACKET_LENGHT) {
         uint8_t data[PACKET_LENGHT];
         uart0_read_bytes(data, PACKET_LENGHT);
@@ -149,8 +154,8 @@ static void process() {
         debug_buffer(data, PACKET_LENGHT, "0x%X ");
         if (data[0] == 0x0F) {
             if (data[24] == 0x04 || data[24] == 0x14 || data[24] == 0x24 || data[24] == 0x34) {
-                packet_id = data[24] >> 4;
-                add_alarm_in_us(SLOT_0_DELAY - uart0_get_time_elapsed(), send_slot_callback, NULL, true);
+                sbus_parameters->packet_id = data[24] >> 4;
+                add_alarm_in_us(SLOT_0_DELAY - uart0_get_time_elapsed(), send_slot_callback, sbus_parameters, true);
                 debug("\nSbus (%u) > ", uxTaskGetStackHighWaterMark(NULL));
             }
         }
@@ -162,9 +167,9 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters) {
     static uint timestamp;
     static uint8_t index = 0;
     uint next_alarm;
-    slot = index + packet_id * 8;
+    sbus_parameters->slot = index + sbus_parameters->packet_id * 8;
     if (context.debug == 2) {
-        if (slot == 0 || slot == 8 || slot == 16 || slot == 24)
+        if (sbus_parameters->slot == 0 || sbus_parameters->slot == 8 || sbus_parameters->slot == 16 || sbus_parameters->slot == 24)
             printf("\nT:%u\n", uart0_get_time_elapsed());
         else
             printf("\nT:%u\n", time_us_32() - timestamp);
@@ -178,7 +183,7 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters) {
         next_alarm = 0;
     }
     vTaskResume(context.led_task_handle);
-    slot_pending = true;
+    sbus_parameters->slot_pending = true;
     vTaskNotifyGiveIndexedFromISR(context.uart0_notify_task_handle, 1, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return next_alarm;
@@ -187,9 +192,9 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters) {
 static inline void send_slot(uint8_t slot) {
     debug(" (%u)", slot);
     uint16_t value = 0;
-    if (sbus_sensor[slot]) {
+    if (sbus_parameters->sbus_sensor[slot]) {
         void *a;
-        if (sbus_sensor[slot]->value) value = format(sbus_sensor[slot]->data_id, sbus_sensor[slot]->value);
+        if (sbus_parameters->sbus_sensor[slot]->value) value = format(sbus_parameters->sbus_sensor[slot]->data_id, sbus_parameters->sbus_sensor[slot]->value);
         uint8_t data[3];
         data[0] = get_slot_id(slot);
         data[1] = value;
@@ -222,7 +227,7 @@ static uint16_t format(uint8_t data_id, void *value) {
         return __builtin_bswap16((uint16_t)round(*(float *)value * 100) | 0x4000);
     }
     if (data_id == SBUS_POWER_VOLT) {
-        return __builtin_bswap16((uint16_t)round((*(float *)value)*100));
+        return __builtin_bswap16((uint16_t)round((*(float *)value) * 100));
     }
     if (data_id == SBUS_AIR_SPEED) {
         return __builtin_bswap16((uint16_t)round(*(float *)value) | 0x4000);
@@ -257,7 +262,7 @@ static uint16_t format(uint8_t data_id, void *value) {
         if (*(double *)value < 0) {
             *(double *)value *= -1;
         }
-        uint32_t minutes = (*(double *)value - (int)(*(double *)value)) * 60 * 10000;   // minutes precision 4
+        uint32_t minutes = (*(double *)value - (int)(*(double *)value)) * 60 * 10000;  // minutes precision 4
         return __builtin_bswap16(minutes);
     }
     if (data_id == SBUS_GPS_TIME) {
@@ -277,7 +282,7 @@ static uint8_t get_slot_id(uint8_t slot) {
     return slot_id[slot];
 }
 
-static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor) { sbus_sensor[slot] = new_sensor; }
+static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor) { sbus_parameters->sbus_sensor[slot] = new_sensor; }
 
 static void set_config(void) {
     config_t *config = config_read();
