@@ -19,7 +19,7 @@
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
 #include "ms5611.h"
-#include "nmea.h"
+#include "gps.h"
 #include "ntc.h"
 #include "pwm_out.h"
 #include "uart.h"
@@ -67,6 +67,20 @@
 #define FRSKY_D_D_A2_ID 0xF2
 
 #define FRSKY_D_INTERVAL 10
+
+typedef struct frsky_d_sensor_parameters_t {
+    uint8_t data_id;
+    float *value;
+    uint16_t rate;
+
+} frsky_d_sensor_parameters_t;
+
+typedef struct frsky_d_sensor_cell_parameters_t {
+    float *voltage;
+    uint8_t *count;
+    uint16_t rate;
+
+} frsky_d_sensor_cell_parameters_t;
 
 static SemaphoreHandle_t semaphore = NULL;
 
@@ -123,17 +137,22 @@ static uint16_t format(uint8_t data_id, float value) {
         return (int16_t)value;
 
     if (data_id == FRSKY_D_GPS_ALT_AP_ID || data_id == FRSKY_D_BARO_ALT_AP_ID || data_id == FRSKY_D_GPS_SPEED_AP_ID ||
-        data_id == FRSKY_D_GPS_LONG_AP_ID || data_id == FRSKY_D_GPS_LAT_AP_ID || data_id == FRSKY_D_GPS_COURS_AP_ID)
+        data_id == FRSKY_D_GPS_COURS_AP_ID)
         return (abs(value) - (int16_t)abs(value)) * 10000;
+
+    if (data_id == FRSKY_D_GPS_LONG_AP_ID || data_id == FRSKY_D_GPS_LAT_AP_ID) {
+        float min = fabs(value) * 60;
+        return (min - (uint)min) * 10000;
+    }
 
     if (data_id == FRSKY_D_VOLTS_BP_ID) return value * 2;
 
     if (data_id == FRSKY_D_VOLTS_AP_ID) return ((value * 2) - (int16_t)(value * 2)) * 10000;
 
     if (data_id == FRSKY_D_GPS_LONG_BP_ID || data_id == FRSKY_D_GPS_LAT_BP_ID) {
-        value = abs(value);
-        uint8_t deg = value / 60;
-        uint8_t min = (int)value % 60;
+        float coord = fabs(value);
+        uint8_t deg = coord;
+        uint8_t min = (coord - deg) * 60;
         char buf[7];
         sprintf(buf, "%d%d", deg, min);
         return atoi(buf);
@@ -811,12 +830,34 @@ static void set_config() {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
-        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float))};
-        xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
+        gps_parameters_t parameter;
+        parameter.protocol = config->gps_protocol;
+        parameter.baudrate = config->gps_baudrate;
+        parameter.rate = config->gps_rate;
+        parameter.lat = malloc(sizeof(double));
+        parameter.lon = malloc(sizeof(double));
+        parameter.alt = malloc(sizeof(float));
+        parameter.spd = malloc(sizeof(float));
+        parameter.cog = malloc(sizeof(float));
+        parameter.hdop = malloc(sizeof(float));
+        parameter.sat = malloc(sizeof(float));
+        parameter.time = malloc(sizeof(float));
+        parameter.date = malloc(sizeof(float));
+        parameter.vspeed = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        parameter.spd_kmh = malloc(sizeof(float));
+        parameter.fix = malloc(sizeof(float));
+        parameter.vdop = malloc(sizeof(float));
+        parameter.speed_acc = malloc(sizeof(float));
+        parameter.h_acc = malloc(sizeof(float));
+        parameter.v_acc = malloc(sizeof(float));
+        parameter.track_acc = malloc(sizeof(float));
+        parameter.n_vel = malloc(sizeof(float));
+        parameter.e_vel = malloc(sizeof(float));
+        parameter.v_vel = malloc(sizeof(float));
+        parameter.alt_elipsiod = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 

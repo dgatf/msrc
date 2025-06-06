@@ -6,7 +6,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     esc_kontronik.c
     esc_apd_f.c
     esc_apd_hv.c
-    nmea.c
+    gps.c
     vspeed.c
     distance.c
     esc_pwm.c

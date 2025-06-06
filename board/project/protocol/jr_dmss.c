@@ -17,7 +17,6 @@
 #include "esc_kontronik.h"
 #include "esc_pwm.h"
 #include "ms5611.h"
-#include "nmea.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"

@@ -10,9 +10,9 @@ static PIO pio_;
 uint uart_tx_init(PIO pio, uint pin, uint baudrate) {
     pio_ = pio;
     sm_ = pio_claim_unused_sm(pio_, true);
-    pio_sm_set_consecutive_pindirs(pio_, sm_, pin, 1, true);
     pio_gpio_init(pio_, pin);
-    gpio_pull_up(pin);
+    pio_sm_set_consecutive_pindirs(pio_, sm_, pin, 1, true);
+    pio_sm_set_pins (pio, sm_, 0xFFFF);
     offset_ = pio_add_program(pio_, &uart_tx_program);
     pio_sm_config c = uart_tx_program_get_default_config(offset_);
     sm_config_set_out_pins(&c, pin, 1);

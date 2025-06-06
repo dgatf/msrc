@@ -23,7 +23,7 @@
 #include "hardware/irq.h"
 #include "ibus.h"
 #include "ms5611.h"
-#include "nmea.h"
+#include "gps.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"
@@ -551,13 +551,13 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.flightDirection = *sensors->gps[HOTT_GPS_DIRECTION] / 2;  // 0.5°
             packet.GPSSpeed = *sensors->gps[HOTT_GPS_SPEED];                 // km/h
             packet.LatitudeNS = sensors->gps[HOTT_GPS_LATITUDE] > 0 ? 0 : 1;
-            packet.LatitudeDegMin = *sensors->gps[HOTT_GPS_LATITUDE] / 60 * 100 + *sensors->gps[HOTT_GPS_LATITUDE] +
-                                    (int)(*sensors->gps[HOTT_GPS_LATITUDE]) % 60;
-            packet.LatitudeSec = *sensors->gps[HOTT_GPS_LATITUDE] * 60 - (int)(*sensors->gps[HOTT_GPS_LATITUDE] * 60);
+            float latitude = fabs(*sensors->gps[HOTT_GPS_LATITUDE]);
+            packet.LatitudeDegMin = (uint)latitude * 100 + (latitude - (uint)latitude) * 60;
+            packet.LatitudeSec = (latitude * 60 - (uint)(latitude * 60)) * 60;
             packet.longitudeEW = sensors->gps[HOTT_GPS_LATITUDE] > 0 ? 0 : 1;
-            packet.longitudeDegMin = *sensors->gps[HOTT_GPS_LATITUDE] / 60 * 100 + *sensors->gps[HOTT_GPS_LATITUDE] +
-                                     (int)(*sensors->gps[HOTT_GPS_LATITUDE]) % 60;
-            packet.longitudeSec = *sensors->gps[HOTT_GPS_LATITUDE] * 60 - (int)(*sensors->gps[HOTT_GPS_LATITUDE] * 60);
+            float longitude = fabs(*sensors->gps[HOTT_GPS_LONGITUDE]);
+            packet.longitudeDegMin = (uint)longitude * 100 + (longitude - (uint)longitude) * 60;
+            packet.longitudeSec = (longitude * 60 - (uint)(longitude * 60)) * 60;
             //packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
             packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
             // packet.climbrate = *sensors->gps[HOTT_GPS_ALTITUDE];    // 30000, 0.00
@@ -855,12 +855,34 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.temp_motor;
     }
     if (config->enable_gps) {
-        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float))};
-        xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
+        gps_parameters_t parameter;
+        parameter.protocol = config->gps_protocol;
+        parameter.baudrate = config->gps_baudrate;
+        parameter.rate = config->gps_rate;
+        parameter.lat = malloc(sizeof(double));
+        parameter.lon = malloc(sizeof(double));
+        parameter.alt = malloc(sizeof(float));
+        parameter.spd = malloc(sizeof(float));
+        parameter.cog = malloc(sizeof(float));
+        parameter.hdop = malloc(sizeof(float));
+        parameter.sat = malloc(sizeof(float));
+        parameter.time = malloc(sizeof(float));
+        parameter.date = malloc(sizeof(float));
+        parameter.vspeed = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        parameter.spd_kmh = malloc(sizeof(float));
+        parameter.fix = malloc(sizeof(float));
+        parameter.vdop = malloc(sizeof(float));
+        parameter.speed_acc = malloc(sizeof(float));
+        parameter.h_acc = malloc(sizeof(float));
+        parameter.v_acc = malloc(sizeof(float));
+        parameter.track_acc = malloc(sizeof(float));
+        parameter.n_vel = malloc(sizeof(float));
+        parameter.e_vel = malloc(sizeof(float));
+        parameter.v_vel = malloc(sizeof(float));
+        parameter.alt_elipsiod = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 

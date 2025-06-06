@@ -16,17 +16,17 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
 #include "esc_pwm.h"
+#include "esc_ztw.h"
+#include "gps.h"
 #include "ms5611.h"
-#include "nmea.h"
 #include "ntc.h"
 #include "pwm_out.h"
+#include "smart_esc.h"
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
-#include "smart_esc.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 #define SLOT_TEMP1 1
 #define SLOT_RPM 2
@@ -106,6 +106,11 @@
  *
  * (+) Non default slots
  */
+
+typedef struct sensor_sbus_t {
+    uint8_t data_id;
+    float *value;
+} sensor_sbus_t;
 
 static sensor_sbus_t *sbus_sensor[32] = {NULL};
 static uint packet_id;
@@ -234,15 +239,15 @@ static uint16_t format(uint8_t data_id, float value) {
         // bits 1-4: bits 17-20 from minutes precision 4 (minutes*10000 = 20 bits)
         // bit 5: S/W bit
         // bits 9-16: degrees
+        float coord = value;
         uint16_t lat_lon = 0;
-        if (value < 0) {
+        if (coord < 0) {
             lat_lon = 1 << SBUS_SOUTH_WEST_BIT;
-            value *= -1;
+            coord *= -1;
         }
-
-        uint8_t degrees = value / 60;
+        int8_t degrees = coord;
         lat_lon |= degrees << 8;
-        uint32_t minutes = fmod(value, 60) * 10000;  // minutes precision 4
+        int32_t minutes = (coord - degrees) * 60 * 10000;  // minutes precision 4
         lat_lon |= minutes >> 16;
         return __builtin_bswap16(lat_lon);
     }
@@ -251,7 +256,7 @@ static uint16_t format(uint8_t data_id, float value) {
         if (value < 0) {
             value *= -1;
         }
-        uint32_t minutes = fmod(value, 60) * 10000;  // minutes precision 4
+        uint32_t minutes = (value - (int)value) * 60 * 10000;  // minutes precision 4
         return __builtin_bswap16(minutes);
     }
     if (data_id == SBUS_GPS_TIME) {
@@ -647,12 +652,34 @@ static void set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
-        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float))};
-        xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
+        gps_parameters_t parameter;
+        parameter.protocol = config->gps_protocol;
+        parameter.baudrate = config->gps_baudrate;
+        parameter.rate = config->gps_rate;
+        parameter.lat = malloc(sizeof(double));
+        parameter.lon = malloc(sizeof(double));
+        parameter.alt = malloc(sizeof(float));
+        parameter.spd = malloc(sizeof(float));
+        parameter.cog = malloc(sizeof(float));
+        parameter.hdop = malloc(sizeof(float));
+        parameter.sat = malloc(sizeof(float));
+        parameter.time = malloc(sizeof(float));
+        parameter.date = malloc(sizeof(float));
+        parameter.vspeed = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        parameter.spd_kmh = malloc(sizeof(float));
+        parameter.fix = malloc(sizeof(float));
+        parameter.vdop = malloc(sizeof(float));
+        parameter.speed_acc = malloc(sizeof(float));
+        parameter.h_acc = malloc(sizeof(float));
+        parameter.v_acc = malloc(sizeof(float));
+        parameter.track_acc = malloc(sizeof(float));
+        parameter.n_vel = malloc(sizeof(float));
+        parameter.e_vel = malloc(sizeof(float));
+        parameter.v_vel = malloc(sizeof(float));
+        parameter.alt_elipsiod = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 

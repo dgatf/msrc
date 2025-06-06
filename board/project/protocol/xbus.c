@@ -21,7 +21,7 @@
 #include "hardware/irq.h"
 #include "i2c_multi.h"
 #include "ms5611.h"
-#include "nmea.h"
+#include "gps.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"
@@ -86,14 +86,15 @@ void xbus_format_sensor(uint8_t address) {
             break;
         }
         case XBUS_GPS_LOC_ID: {
+            
             uint8_t gps_flags = 0;
             float lat = *sensor->gps_loc[XBUS_GPS_LOC_LATITUDE];
             if (lat < 0)  // N=1,+, S=0,-
                 lat *= -1;
             else
                 gps_flags |= 1 << XBUS_GPS_INFO_FLAGS_IS_NORTH_BIT;
-            uint deg = lat / 60;
-            float min = lat - deg * 60;
+            uint deg = lat;
+            float min = (lat - deg) * 60;
             sensor_formatted->gps_loc->latitude = ((uint32_t)bcd8(deg, 0) << 24) | bcd32(min, 4);
             float lon = *sensor->gps_loc[XBUS_GPS_LOC_LONGITUDE];
             if (lon < 0)  // E=1,+, W=0,-
@@ -104,8 +105,8 @@ void xbus_format_sensor(uint8_t address) {
                 gps_flags |= 1 << XBUS_GPS_INFO_FLAGS_LONG_GREATER_99_BIT;
                 lon -= 6000;
             }
-            deg = lon / 60;
-            min = lon - deg * 60;
+            deg = lon;
+            min = (lon - deg) * 60;
             sensor_formatted->gps_loc->longitude = ((uint32_t)bcd8(deg, 0) << 24) | bcd32(min, 4);
             sensor_formatted->gps_loc->course = bcd16(*sensor->gps_loc[XBUS_GPS_LOC_COURSE], 1);
             sensor_formatted->gps_loc->hdop = bcd8(*sensor->gps_loc[XBUS_GPS_LOC_HDOP], 1);
@@ -583,12 +584,34 @@ static void set_config() {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
-        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float))};
-        xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
+        gps_parameters_t parameter;
+        parameter.protocol = config->gps_protocol;
+        parameter.baudrate = config->gps_baudrate;
+        parameter.rate = config->gps_rate;
+        parameter.lat = malloc(sizeof(double));
+        parameter.lon = malloc(sizeof(double));
+        parameter.alt = malloc(sizeof(float));
+        parameter.spd = malloc(sizeof(float));
+        parameter.cog = malloc(sizeof(float));
+        parameter.hdop = malloc(sizeof(float));
+        parameter.sat = malloc(sizeof(float));
+        parameter.time = malloc(sizeof(float));
+        parameter.date = malloc(sizeof(float));
+        parameter.vspeed = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        parameter.spd_kmh = malloc(sizeof(float));
+        parameter.fix = malloc(sizeof(float));
+        parameter.vdop = malloc(sizeof(float));
+        parameter.speed_acc = malloc(sizeof(float));
+        parameter.h_acc = malloc(sizeof(float));
+        parameter.v_acc = malloc(sizeof(float));
+        parameter.track_acc = malloc(sizeof(float));
+        parameter.n_vel = malloc(sizeof(float));
+        parameter.e_vel = malloc(sizeof(float));
+        parameter.v_vel = malloc(sizeof(float));
+        parameter.alt_elipsiod = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
 
         sensor->gps_loc[XBUS_GPS_LOC_ALTITUDE] = parameter.alt;

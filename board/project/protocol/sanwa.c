@@ -21,7 +21,6 @@
 #include "hardware/pwm.h"
 #include "ibus.h"
 #include "ms5611.h"
-#include "nmea.h"
 #include "ntc.h"
 #include "pwm_out.h"
 #include "uart.h"

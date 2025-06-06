@@ -15,22 +15,22 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
 #include "esc_pwm.h"
+#include "esc_ztw.h"
+#include "gps.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
 #include "ms5611.h"
-#include "nmea.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"
+#include "smart_esc.h"
 #include "stdlib.h"
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
-#include "smart_esc.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 #define I2C_INTR_MASK_RD_REQ 0x00000020
 
@@ -75,6 +75,21 @@
 #define FRAME_0X1A_ASPD 0
 #define FRAME_0X1B_ALTU 0
 #define FRAME_0X1B_ALTF 1
+
+typedef struct sensor_hitec_t {
+    bool is_enabled_frame[11];
+    float *frame_0x11[1];
+    float *frame_0x12[2];
+    float *frame_0x13[2];
+    float *frame_0x14[3];
+    float *frame_0x15[3];
+    float *frame_0x16[2];
+    float *frame_0x17[4];
+    float *frame_0x18[2];
+    float *frame_0x19[4];
+    float *frame_0x1A[1];
+    float *frame_0x1B[2];
+} sensor_hitec_t;
 
 static sensor_hitec_t *sensor;
 
@@ -164,10 +179,10 @@ static void format_packet(uint8_t frame, uint8_t *buffer) {
             break;
         case FRAME_0X12:
             if (sensor->frame_0x12[FRAME_0X12_GPS_LAT]) {
-                float degF = *sensor->frame_0x12[FRAME_0X12_GPS_LAT] / 60;
-                int8_t deg = degF;
-                int8_t min = (degF - deg) * 60;
-                float sec = ((degF - deg) * 60 - min) * 60;
+                double degrees = *sensor->frame_0x12[FRAME_0X12_GPS_LAT];
+                int8_t deg = degrees;
+                int8_t min = (degrees - deg) * 60;
+                double sec = ((degrees - deg) * 60 - min) * 60;
                 int16_t sec_x_100 = sec * 100;
                 int16_t deg_min = deg * 100 + min;
                 buffer[1] = sec_x_100 >> 8;
@@ -181,10 +196,10 @@ static void format_packet(uint8_t frame, uint8_t *buffer) {
             break;
         case FRAME_0X13:
             if (sensor->frame_0x13[FRAME_0X13_GPS_LON]) {
-                float degF = *sensor->frame_0x13[FRAME_0X13_GPS_LON] / 60;
-                int8_t deg = degF;
-                int8_t min = (degF - deg) * 60;
-                float sec = ((degF - deg) * 60 - min) * 60;
+                float degrees = *sensor->frame_0x13[FRAME_0X13_GPS_LON];
+                int8_t deg = degrees;
+                int8_t min = (degrees - deg) * 60;
+                float sec = ((degrees - deg) * 60 - min) * 60;
                 int16_t sec_x_100 = sec * 100;
                 int16_t deg_min = deg * 100 + min;
                 buffer[1] = sec_x_100 >> 8;
@@ -575,12 +590,34 @@ static void set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
-        nmea_parameters_t parameter = {config->gps_baudrate,  malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                       malloc(sizeof(float))};
-        xTaskCreate(nmea_task, "nmea_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
+        gps_parameters_t parameter;
+        parameter.protocol = config->gps_protocol;
+        parameter.baudrate = config->gps_baudrate;
+        parameter.rate = config->gps_rate;
+        parameter.lat = malloc(sizeof(double));
+        parameter.lon = malloc(sizeof(double));
+        parameter.alt = malloc(sizeof(float));
+        parameter.spd = malloc(sizeof(float));
+        parameter.cog = malloc(sizeof(float));
+        parameter.hdop = malloc(sizeof(float));
+        parameter.sat = malloc(sizeof(float));
+        parameter.time = malloc(sizeof(float));
+        parameter.date = malloc(sizeof(float));
+        parameter.vspeed = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        parameter.spd_kmh = malloc(sizeof(float));
+        parameter.fix = malloc(sizeof(float));
+        parameter.vdop = malloc(sizeof(float));
+        parameter.speed_acc = malloc(sizeof(float));
+        parameter.h_acc = malloc(sizeof(float));
+        parameter.v_acc = malloc(sizeof(float));
+        parameter.track_acc = malloc(sizeof(float));
+        parameter.n_vel = malloc(sizeof(float));
+        parameter.e_vel = malloc(sizeof(float));
+        parameter.v_vel = malloc(sizeof(float));
+        parameter.alt_elipsiod = malloc(sizeof(float));
+        parameter.dist = malloc(sizeof(float));
+        xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
 
         sensor->frame_0x17[FRAME_0X17_SATS] = parameter.sat;
