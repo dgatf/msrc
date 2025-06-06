@@ -245,18 +245,18 @@ void MainWindow::buttonSerialPort() {
 }
 
 void MainWindow::buttonDebug() {
-    if (ui->btDebug->text() == "Enable Debug") {
+    if (ui->btDebug->text() == "Enable Log") {
         if (!isConnected) return;
-        ui->btDebug->setText("Disable Debug");
+        ui->btDebug->setText("Disable Log");
         serial->readAll();
         char header = 0x30;
         serial->write(&header, 1);
         char command = 0x33;
         serial->write(&command, 1);
         isDebug = true;
-    } else if (ui->btDebug->text() == "Disable Debug") {
+    } else if (ui->btDebug->text() == "Disable Log") {
         if (!isConnected) return;
-        ui->btDebug->setText("Enable Debug");
+        ui->btDebug->setText("Enable Log");
         char header = 0x30;
         serial->write(&header, 1);
         char command = 0x34;
@@ -287,7 +287,7 @@ void MainWindow::openSerialPort() {
         ui->saScroll->setEnabled(true);
         ui->cbPortList->setDisabled(true);
         ui->btDebug->setEnabled(true);
-        ui->btDebug->setText("Enable Debug");
+        ui->btDebug->setText("Enable Log");
     } else {
         statusBar()->showMessage("Not connected: " + serial->errorString());
         isConnected = false;
@@ -297,7 +297,7 @@ void MainWindow::openSerialPort() {
         ui->actionDefaultConfig->setEnabled(false);
         ui->saScroll->setEnabled(false);
         ui->btDebug->setEnabled(false);
-        ui->btDebug->setText("Enable Debug");
+        ui->btDebug->setText("Enable Log");
     }
 }
 
@@ -312,7 +312,7 @@ void MainWindow::closeSerialPort() {
     ui->saScroll->setEnabled(false);
     ui->cbPortList->setDisabled(false);
     ui->btDebug->setDisabled(true);
-    ui->btDebug->setText("Enable Debug");
+    ui->btDebug->setText("Enable Log");
 }
 
 void MainWindow::readSerial() {
@@ -797,7 +797,7 @@ void MainWindow::getConfigFromUi() {
     config.gpio_mask |= ui->cbGpio22->isChecked() << 5;
     config.gpio_interval = ui->sbGpioInterval->value();
 
-    // Debug
+    // Log
 
     config.debug = 0;  // disabled from msrc_gui
 }

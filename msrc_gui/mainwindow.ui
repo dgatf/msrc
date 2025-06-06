@@ -1605,7 +1605,7 @@
           </widget>
           <widget class="QWidget" name="tab_2">
            <attribute name="title">
-            <string>Debug</string>
+            <string>Log</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
@@ -1620,14 +1620,14 @@
               <item>
                <widget class="QPushButton" name="btDebug">
                 <property name="text">
-                 <string>Enable Debug</string>
+                 <string>Enable Log</string>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="QPushButton" name="btClearDebug">
                 <property name="text">
-                 <string>Clear Debug</string>
+                 <string>Clear Log</string>
                 </property>
                </widget>
               </item>
