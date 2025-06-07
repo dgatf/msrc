@@ -134,8 +134,8 @@ typedef struct crsf_sensor_gps_extended_formatted_t {
 } __attribute__((packed)) crsf_sensor_gps_extended_formatted_t;
 
 typedef struct crsf_sensor_gps_t {
-    float *latitude;     // degree / 10,000,000 big endian
-    float *longitude;    // degree / 10,000,000 big endian
+    double *latitude;    // degree / 10,000,000 big endian
+    double *longitude;   // degree / 10,000,000 big endian
     float *groundspeed;  // km/h / 10 big endian
     float *heading;      // GPS heading, degree/100 big endian
     float *altitude;     // meters, +1000m big endian

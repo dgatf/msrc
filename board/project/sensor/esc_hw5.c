@@ -12,6 +12,7 @@
 #define PACKET_LENGHT 32
 
 static uint8_t *CRCH_, *CRCL_;
+
 static void process(esc_hw5_parameters_t *parameter);
 static uint16_t calculate_crc16(uint8_t const *buffer, uint lenght);
 

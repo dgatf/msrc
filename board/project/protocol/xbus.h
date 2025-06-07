@@ -20,7 +20,7 @@
 #define XBUS_GPS_INFO_FLAGS_LONG_GREATER_99_BIT 2
 #define XBUS_GPS_INFO_FLAGS_NEGATIVE_ALT_BIT 7
 
-typedef enum xbus_sensors_t {
+typedef enum xbus_sensors_enabled_t {
     XBUS_AIRSPEED,
     XBUS_ALTIMETER,
     XBUS_GPS_LOC,
@@ -32,66 +32,7 @@ typedef enum xbus_sensors_t {
     XBUS_ENERGY,
     XBUS_FUEL_FLOW,
     XBUS_STRU_TELE_DIGITAL_AIR
-} xbus_sensors_t;
-
-typedef enum xbus_airspeed_enum_t { XBUS_AIRSPEED_AIRSPEED } xbus_airspeed_enum_t;
-
-typedef enum xbus_altitude_enum_t { XBUS_ALTITUDE } xbus_altitude_enum_t;
-
-typedef enum xbus_gps_loc_enum_t {
-    XBUS_GPS_LOC_ALTITUDE,
-    XBUS_GPS_LOC_LATITUDE,
-    XBUS_GPS_LOC_LONGITUDE,
-    XBUS_GPS_LOC_COURSE,
-    XBUS_GPS_LOC_HDOP
-} xbus_gps_loc_enum_t;
-
-typedef enum xbus_gps_stat_enum_t {
-    XBUS_GPS_STAT_SPEED,
-    XBUS_GPS_STAT_TIME,
-    XBUS_GPS_STAT_SATS,
-    XBUS_GPS_STAT_ALTITUDE
-} xbus_gps_stat_enum_t;
-
-typedef enum xbus_energy_enum_t {
-    XBUS_ENERGY_CURRENT1,
-    XBUS_ENERGY_CONSUMPTION1,
-    XBUS_ENERGY_VOLTAGE1,
-    XBUS_ENERGY_CURRENT2,
-    XBUS_ENERGY_CONSUMPTION2,
-    XBUS_ENERGY_VOLTAGE2
-} xbus_energy_enum_t;
-
-typedef enum xbus_esc_enum_t {
-    XBUS_ESC_RPM,
-    XBUS_ESC_VOLTAGE,
-    XBUS_ESC_CURRENT,
-    XBUS_ESC_TEMPERATURE_FET,
-    XBUS_ESC_TEMPERATURE_BEC,
-    XBUS_ESC_VOLTAGE_BEC,
-    XBUS_ESC_CURRENT_BEC
-} xbus_esc_enum_t;
-
-typedef enum xbus_battery_enum_t {
-    XBUS_BATTERY_CURRENT1,
-    XBUS_BATTERY_CONSUMPTION1,
-    XBUS_BATTERY_TEMP1,
-    XBUS_BATTERY_CURRENT2,
-    XBUS_BATTERY_CONSUMPTION2,
-    XBUS_BATTERY_TEMP2
-} xbus_battery_enum_t;
-
-typedef enum xbus_vario_enum_t { XBUS_VARIO_ALTITUDE } xbus_vario_enum_t;
-
-typedef enum xbus_rpm_volt_temp_enum_t {
-    XBUS_RPMVOLTTEMP_MS,
-    XBUS_RPMVOLTTEMP_VOLT,
-    XBUS_RPMVOLTTEMP_TEMP
-} xbus_rpm_volt_temp_enum_t;
-
-typedef enum xbus_fuel_flow_enum_t { XBUS_FUEL_FLOW_CONSUMED, XBUS_FUEL_FLOW_RATE } xbus_fuel_flow_enum_t;
-
-typedef enum xbus_stru_tele_digital_air_enum_t { XBUS_FUEL_PRESSURE } xbus_stru_tele_digital_air_enum_t;
+} xbus_sensors_enabled_t;
 
 typedef struct xbus_airspeed_t {
     uint8_t identifier;     // Source device 0x11
@@ -184,7 +125,7 @@ typedef struct xbus_rpm_volt_temp_t {
 } xbus_rpm_volt_temp_t;
 
 typedef struct xbus_fuel_flow_t {
-    uint8_t id;                // Source device = 0x22
+    uint8_t identifier;        // Source device = 0x22
     uint8_t s_id;              // Secondary ID
     uint16_t fuel_consumed_A;  // Integrated fuel consumption, 0.1mL
     uint16_t flow_rate_A;      // Instantaneous consumption, 0.01mL/min
@@ -196,45 +137,108 @@ typedef struct xbus_fuel_flow_t {
 } xbus_fuel_flow_t;
 
 typedef struct xbus_stru_tele_digital_air_t {
-    uint8_t id;         // Source device = 0x36
-    uint8_t sID;        // Secondary ID
-    uint16_t digital;   // Digital inputs (bit per input)
-    uint16_t pressure;  // Tank pressure, 0.1PSI (0-6553.4PSI)
+    uint8_t identifier;  // Source device = 0x36
+    uint8_t sID;         // Secondary ID
+    uint16_t digital;    // Digital inputs (bit per input)
+    uint16_t pressure;   // Tank pressure, 0.1PSI (0-6553.4PSI)
 } xbus_stru_tele_digital_air_t;
 
-typedef struct xbus_sensor_formatted_t {
-    xbus_airspeed_t *airspeed;
-    xbus_altitude_t *altitude;
-    xbus_gps_loc_t *gps_loc;
-    xbus_gps_stat_t *gps_stat;
-    xbus_esc_t *esc;
-    xbus_battery_t *battery;
-    xbus_vario_t *vario;
-    xbus_rpm_volt_temp_t *rpm_volt_temp;
-    xbus_energy_t *energy;
-    xbus_fuel_flow_t *fuel_flow;
-    xbus_stru_tele_digital_air_t *stru_tele_digital_air;
-} xbus_sensor_formatted_t;
+typedef struct xbus_sensor_airspeed_t {
+    float *speed;
+} xbus_sensor_airspeed_t;
 
-typedef struct xbus_sensor_t {
+typedef struct xbus_sensor_altimeter_t {
+    float *altitude;
+} xbus_sensor_altimeter_t;
+
+typedef struct xbus_sensor_gps_loc_t {
+    float *altitude;
+    double *latitude;
+    double *longitude;
+    float *course;
+    float *hdop;
+} xbus_sensor_gps_loc_t;
+
+typedef struct xbus_sensor_gps_stat_t {
+    float *speed;
+    float *time;
+    float *sats;
+    float *altitude;
+} xbus_sensor_gps_stat_t;
+
+typedef struct xbus_sensor_esc_t {
+    float *rpm;
+    float *voltage;
+    float *current;
+    float *temp_fet;
+    float *temp_bec;
+    float *voltage_bec;
+    float *current_bec;
+} xbus_sensor_esc_t;
+
+typedef struct xbus_sensor_battery_t {
+    float *current1;
+    float *consumption1;
+    float *temp1;
+    float *current2;
+    float *consumption2;
+    float *temp2;
+} xbus_sensor_battery_t;
+
+typedef struct xbus_sensor_vario_t {
+    float *altitude;
+    float delta_0250ms;
+    float delta_0500ms;
+    float delta_1000ms;
+    float delta_1500ms;
+    float delta_2000ms;
+    float delta_3000ms;
+} xbus_sensor_vario_t;
+
+typedef struct xbus_sensor_rpmvolttemp_t {
+    float *rpm;
+    float *volt;
+    float *temp;
+} xbus_sensor_rpmvolttemp_t;
+
+typedef struct xbus_sensor_energy_t {
+    float *current1;
+    float *consumption1;
+    float *voltage1;
+    float *current2;
+    float *consumption2;
+    float *voltage2;
+} xbus_sensor_energy_t;
+
+typedef struct xbus_sensor_fuelflow_t {
+    float *consumed;
+    float *flow_rate;
+} xbus_sensor_fuelflow_t;
+
+typedef struct xbus_sensor_stru_tele_digital_air_t {
+    float *fuel_pressure;
+} xbus_sensor_stru_tele_digital_air_t;
+
+typedef struct xbus_sensors_t {
     bool is_enabled[11];
-    float *airspeed[1];
-    float *altimeter[1];
-    float *gps_loc[5];
-    float *gps_stat[4];
-    float *esc[7];
-    float *battery[6];
-    float *vario[1];
-    float *rpm_volt_temp[3];
-    float *energy[6];
-    float *fuel_flow[2];
-    float *stru_tele_digital_air[1];
-} xbus_sensor_t;
+    xbus_sensor_airspeed_t airspeed;
+    xbus_sensor_altimeter_t altimeter;
+    xbus_sensor_gps_loc_t gps_loc;
+    xbus_sensor_gps_stat_t gps_stat;
+    xbus_sensor_esc_t esc;
+    xbus_sensor_battery_t battery;
+    xbus_sensor_vario_t vario;
+    xbus_sensor_rpmvolttemp_t rpm_volt_temp;
+    xbus_sensor_energy_t energy;
+    xbus_sensor_fuelflow_t fuel_flow;
+    xbus_sensor_stru_tele_digital_air_t stru_tele_digital_air;
+} xbus_sensors_t;
 
 extern context_t context;
 
 void xbus_task(void *parameters);
-void xbus_format_sensor(uint8_t address);
+void xbus_format_sensor(uint8_t address, uint8_t *buffer);
+void xbus_set_config(void);
 
 #ifdef SIM_RX
 void xbus_i2c_handler(uint8_t address);

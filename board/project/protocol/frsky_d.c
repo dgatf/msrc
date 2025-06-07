@@ -17,17 +17,17 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
 #include "esc_pwm.h"
-#include "ms5611.h"
+#include "esc_ztw.h"
 #include "gps.h"
+#include "ms5611.h"
 #include "ntc.h"
 #include "pwm_out.h"
+#include "smart_esc.h"
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
-#include "smart_esc.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 /* FrSky D Data Id */
 #define FRSKY_D_GPS_ALT_BP_ID 0x01
@@ -70,7 +70,7 @@
 
 typedef struct frsky_d_sensor_parameters_t {
     uint8_t data_id;
-    float *value;
+    void *value;
     uint16_t rate;
 
 } frsky_d_sensor_parameters_t;
@@ -87,8 +87,8 @@ static SemaphoreHandle_t semaphore = NULL;
 static void sensor_task(void *parameters);
 static void send_packet(uint8_t dataId, uint16_t value);
 static void send_byte(uint8_t c, bool header);
-static uint16_t format(uint8_t data_id, float value);
-static void set_config();
+static uint16_t format(uint8_t data_id, void *value);
+static void set_config(void);
 
 void frsky_d_task(void *parameters) {
     context.led_cycle_duration = 6;
@@ -107,7 +107,7 @@ static void sensor_task(void *parameters) {
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
         xSemaphoreTake(semaphore, portMAX_DELAY);
-        uint16_t data_formatted = format(parameter.data_id, *parameter.value);
+        uint16_t data_formatted = format(parameter.data_id, parameter.value);
         debug("\nFrSky D. Sensor (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(parameter.data_id, data_formatted);
         xSemaphoreGive(semaphore);
@@ -131,26 +131,26 @@ static void sensor_cell_task(void *parameters) {
     }
 }
 
-static uint16_t format(uint8_t data_id, float value) {
+static uint16_t format(uint8_t data_id, void *value) {
     if (data_id == FRSKY_D_GPS_ALT_BP_ID || data_id == FRSKY_D_BARO_ALT_BP_ID || data_id == FRSKY_D_GPS_SPEED_BP_ID ||
         data_id == FRSKY_D_GPS_COURS_BP_ID)
-        return (int16_t)value;
+        return *(float *)value;
 
     if (data_id == FRSKY_D_GPS_ALT_AP_ID || data_id == FRSKY_D_BARO_ALT_AP_ID || data_id == FRSKY_D_GPS_SPEED_AP_ID ||
         data_id == FRSKY_D_GPS_COURS_AP_ID)
-        return (abs(value) - (int16_t)abs(value)) * 10000;
+        return (*(float *)value) - (int)(*(float *)value) * 10000;
 
     if (data_id == FRSKY_D_GPS_LONG_AP_ID || data_id == FRSKY_D_GPS_LAT_AP_ID) {
-        float min = fabs(value) * 60;
+        double min = fabs(*(double *)value) * 60;
         return (min - (uint)min) * 10000;
     }
 
-    if (data_id == FRSKY_D_VOLTS_BP_ID) return value * 2;
+    if (data_id == FRSKY_D_VOLTS_BP_ID) return *(float *)value * 2;
 
-    if (data_id == FRSKY_D_VOLTS_AP_ID) return ((value * 2) - (int16_t)(value * 2)) * 10000;
+    if (data_id == FRSKY_D_VOLTS_AP_ID) return ((*(float *)value * 2) - (int)(*(float *)value * 2)) * 10000;
 
     if (data_id == FRSKY_D_GPS_LONG_BP_ID || data_id == FRSKY_D_GPS_LAT_BP_ID) {
-        float coord = fabs(value);
+        double coord = fabs(*(double *)value);
         uint8_t deg = coord;
         uint8_t min = (coord - deg) * 60;
         char buf[7];
@@ -159,36 +159,36 @@ static uint16_t format(uint8_t data_id, float value) {
     }
 
     if (data_id == FRSKY_D_GPS_LONG_EW_ID) {
-        if (value >= 0) return 'E';
+        if (*(double *)value >= 0) return 'E';
         return 'O';
     }
 
     if (data_id == FRSKY_D_GPS_LAT_NS_ID) {
-        if (value >= 0) return 'N';
+        if (*(double *)value >= 0) return 'N';
         return 'S';
     }
 
     if (data_id == FRSKY_D_GPS_YEAR_ID) {
-        return value / 10000;
+        return *(float *)value / 10000;
     }
 
     if (data_id == FRSKY_D_GPS_DAY_MONTH_ID) {
-        return value - (uint32_t)(value / 10000) * 10000;
+        return *(float *)value - (uint32_t)(*(float *)value / 10000) * 10000;
     }
 
     if (data_id == FRSKY_D_GPS_HOUR_MIN_ID) {
-        return value / 100;
+        return *(float *)value / 100;
     }
 
     if (data_id == FRSKY_D_GPS_SEC_ID) {
-        return value - (uint32_t)(value / 100) * 100;
+        return *(float *)value - (uint32_t)(*(float *)value / 100) * 100;
     }
 
-    if (data_id == FRSKY_D_CURRENT_ID || data_id == FRSKY_D_VFAS_ID) return round(value * 10);
+    if (data_id == FRSKY_D_CURRENT_ID || data_id == FRSKY_D_VFAS_ID) return round(*(float *)value * 10);
 
-    if (data_id == FRSKY_D_RPM_ID) return value / 60;
+    if (data_id == FRSKY_D_RPM_ID) return *(float *)value / 60;
 
-    return round(value);
+    return round(*(float *)value);
 }
 
 static void send_byte(uint8_t c, bool header) {
@@ -217,7 +217,7 @@ static void send_packet(uint8_t data_id, uint16_t value) {
     vTaskResume(context.led_task_handle);
 }
 
-static void set_config() {
+static void set_config(void) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
     frsky_d_sensor_parameters_t parameter_sensor;

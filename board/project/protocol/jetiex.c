@@ -65,7 +65,7 @@ typedef struct sensor_jetiex_t {
     uint8_t format;
     char text[32];
     char unit[8];
-    float *value;
+    void *value;
 
 } sensor_jetiex_t;
 
@@ -188,7 +188,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
             if (*buffer_index > 25)  // 29 bytes max:  25+2=pos27=byte28 +1crc=byte29
                 return false;
             else {
-                int8_t value = *sensor->value * pow(10, sensor->format);
+                int8_t value = *(float *)sensor->value * pow(10, sensor->format);
                 if (value > 0x1F)
                     value = 0x1F;
                 else if (value < -0x1F)
@@ -203,7 +203,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
             if (*buffer_index > 24)
                 return false;
             else {
-                int16_t value = *sensor->value * pow(10, sensor->format);
+                int16_t value = *(float *)sensor->value * pow(10, sensor->format);
                 if (value > 0x1FFF) value = 0x1FFF;
                 if (value < -0x1FFF) value = -0x1FFF;
                 value &= ~((uint16_t)3 << (5 + 8));
@@ -217,7 +217,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
             if (*buffer_index > 23)
                 return false;
             else {
-                int32_t value = *sensor->value * pow(10, sensor->format);
+                int32_t value = *(float *)sensor->value * pow(10, sensor->format);
                 if (value > 0x1FFFFF)
                     value = 0x1FFFFF;
                 else if (value < -0x1FFFFF)
@@ -234,7 +234,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
             if (*buffer_index > 22)
                 return false;
             else {
-                int32_t value = *sensor->value * pow(10, sensor->format);
+                int32_t value = *(float *)sensor->value * pow(10, sensor->format);
                 if (value > 0x1FFFFFFF)
                     value = 0x1FFFFFFF;
                 else if (value < -0x1FFFFFFF)
@@ -257,7 +257,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 // byte 2: month/minute
                 // byte 3(bits 1-5): year/hour
                 // byte 3(bit 6): 0=time 1=date
-                uint32_t value = *sensor->value;
+                uint32_t value = *(float *)sensor->value;
                 uint8_t hourYearFormat = format;
                 hourYearFormat |= value / 10000;                              // hour, year
                 uint8_t minuteMonth = (value / 100 - (value / 10000) * 100);  // minute, month
@@ -277,7 +277,7 @@ static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sen
                 // byte 3: DD
                 // byte 4(bit 6): 0=lat 1=lon
                 // byte 4(bit 7): 0=+(N,E), 1=-(S,W)
-                float value = *sensor->value;
+                double value = *(double *)sensor->value;
                 if (value < 0) {
                     format |= 1 << 6;
                     value *= -1;
@@ -310,7 +310,6 @@ static bool add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sens
             *buffer_index += lenText;
             strcpy((char *)buffer + *buffer_index, sensor->unit);
             *buffer_index += lenUnit;
-            // printf("[%i %s]", sensor_index, sensor->text);
             return true;
         }
     }

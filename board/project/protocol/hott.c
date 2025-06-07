@@ -67,72 +67,8 @@
 #define HOTT_TYPE_ELECTRIC 2
 #define HOTT_TYPE_GPS 3
 
-// VARIO
-#define HOTT_VARIO_ALTITUDE 0
-#define HOTT_VARIO_M1S 1
-#define HOTT_VARIO_M3S 2
-#define HOTT_VARIO_M10S 3
-
-//  ESC
-#define HOTT_ESC_VOLTAGE 0
-#define HOTT_ESC_CAPACITY 1
-#define HOTT_ESC_TEMPERATURE 2
-#define HOTT_ESC_CURRENT 3
-#define HOTT_ESC_RPM 4
-#define HOTT_ESC_THROTTLE 5  // 0-100%
-#define HOTT_ESC_SPEED 6
-#define HOTT_ESC_BEC_VOLTAGE 7
-#define HOTT_ESC_BEC_CURRENT 8
-#define HOTT_ESC_BEC_TEMPERATURE 9
-#define HOTT_ESC_EXT_TEMPERATURE 10
-
-// ELECTRIC (BATTERY)
-#define HOTT_ELECTRIC_EXT_TEMPERATURE 0
-#define HOTT_ELECTRIC_CELL_BAT_1_VOLTAGE 1
-#define HOTT_ELECTRIC_CELL_BAT_2_VOLTAGE 2
-#define HOTT_ELECTRIC_BAT_1_VOLTAGE 3
-#define HOTT_ELECTRIC_BAT_2_VOLTAGE 4
-#define HOTT_ELECTRIC_TEMPERATURE_1 5
-#define HOTT_ELECTRIC_TEMPERATURE_2 6
-#define HOTT_ELECTRIC_HEIGHT 7
-#define HOTT_ELECTRIC_CURRENT 8
-#define HOTT_ELECTRIC_CAPACITY 9
-#define HOTT_ELECTRIC_M2S 10
-#define HOTT_ELECTRIC_M3S 11
-#define HOTT_ELECTRIC_RPM 12
-#define HOTT_ELECTRIC_MINUTES 13
-#define HOTT_ELECTRIC_SECONDS 14
-#define HOTT_ELECTRIC_SPEED 15
-
-// GPS
-#define HOTT_GPS_DIRECTION 0
-#define HOTT_GPS_SPEED 1
-#define HOTT_GPS_LATITUDE 2
-#define HOTT_GPS_LONGITUDE 3
-#define HOTT_GPS_DISTANCE 4
-#define HOTT_GPS_ALTITUDE 5
-#define HOTT_GPS_CLIMBRATE 6
-#define HOTT_GPS_CLIMBRATE3S 7
-#define HOTT_GPS_SATS 8
-
-// GENERAL (FUEL) - not used by msrc
-#define HOTT_GENERAL_CELL 0
-#define HOTT_GENERAL_BATTERY_1 1
-#define HOTT_GENERAL_BATTERY_2 2
-#define HOTT_GENERAL_TEMP_1 3
-#define HOTT_GENERAL_TEMP_2 4
-#define HOTT_GENERAL_RPM_1 5
-#define HOTT_GENERAL_ALTITUDE 6
-#define HOTT_GENERAL_CLIMBRATE 7
-#define HOTT_GENERAL_CLIMBRATE3S 8
-#define HOTT_GENERAL_CURRENT 9
-#define HOTT_GENERAL_VOLTAGE 10
-#define HOTT_GENERAL_CAPACITY 11
-#define HOTT_GENERAL_SPEED 12
-#define HOTT_GENERAL_RPM_2 13
-#define HOTT_GENERAL_PRESSURE 14
-
-typedef struct hott_sensor_vario_t {
+typedef struct hott_vario_t {
+    uint8_t startByte;
     uint8_t sensorID;
     uint8_t warningId;
     uint8_t sensorTextID;
@@ -144,12 +80,13 @@ typedef struct hott_sensor_vario_t {
     uint16_t m3s;   // ?? idem
     uint16_t m10s;  // ?? idem
     uint8_t text[24];
+    uint8_t empty;
     uint8_t version;
     uint8_t endByte;
     uint8_t checksum;
-} __attribute__((packed)) hott_sensor_vario_t;
+} __attribute__((packed)) hott_vario_t;
 
-typedef struct hott_sensor_airesc_t {
+typedef struct hott_airesc_t {
     uint8_t startByte;                  // 1
     uint8_t sensorID;                   // 2
     uint8_t warningId;                  // 3
@@ -185,9 +122,9 @@ typedef struct hott_sensor_airesc_t {
     uint8_t version;                    /* Byte 43: 00 version number */
     uint8_t endByte;                    /* Byte 44: 0x7D Ende byte */
     uint8_t checksum;                   /* Byte 45: Parity Byte */
-} __attribute__((packed)) hott_sensor_airesc_t;
+} __attribute__((packed)) hott_airesc_t;
 
-typedef struct hott_sensor_electric_air_t {
+typedef struct hott_electric_air_t {
     uint8_t startByte;      // 1
     uint8_t sensorID;       // 2
     uint8_t alarmTone;      // 3: Alarm
@@ -225,9 +162,10 @@ typedef struct hott_sensor_electric_air_t {
     uint8_t version;        // 43
     uint8_t endByte;        // 44
     uint8_t checksum;       // 45
-} __attribute__((packed)) hott_sensor_electric_air_t;
+} __attribute__((packed)) hott_electric_air_t;
 
-typedef struct hott_sensor_general_air_t {
+// general air not used
+typedef struct hott_general_air_t {
     uint8_t startByte;             //#01 start byte constant value 0x7c
     uint8_t sensorID;              //#02 EAM sensort id. constat value 0x8d=GENRAL AIR MODULE
     uint8_t alarmTone;             //#03 1=A 2=B ... 0x1a=Z 0 = no alarm
@@ -323,9 +261,9 @@ typedef struct hott_sensor_general_air_t {
     uint8_t version;               //#43 version number (Bytes 35 .43 new but not yet in the record in the display!)
     uint8_t endByte;               //#44 stop byte 0x7D
     uint8_t parity;                //#45 CHECKSUM CRC/Parity (calculated dynamicaly)
-} __attribute__((packed)) hott_sensor_general_air_t;
+} __attribute__((packed)) hott_general_air_t;
 
-typedef struct hott_sensor_gps_t {
+typedef struct hott_gps_t {
     uint8_t startByte;    /* Byte 1: 0x7C = Start byte data */
     uint8_t sensorID;     /* Byte 2: 0x8A = GPS Sensor */
     uint8_t alarmTone;    /* Byte 3: 0…= warning beeps */
@@ -370,14 +308,61 @@ typedef struct hott_sensor_gps_t {
     uint8_t version;   /* Byte 43: 00 version number */
     uint8_t endByte;   /* Byte 44: 0x7D Ende byte */
     uint8_t checksum;  /* Byte 45: Parity Byte */
-} __attribute__((packed)) hott_sensor_gps_t;
+} __attribute__((packed)) hott_gps_t;
+
+typedef struct hott_sensor_vario_t {
+    float *altitude;
+    float *m1s;
+    float *m3s;
+    float *m10s;
+} hott_sensor_vario_t;
+
+typedef struct hott_sensor_airesc_t {
+    float *voltage;
+    float *consumption;
+    float *temperature;
+    float *current;
+    float *rpm;
+    float *speed;
+    float *voltage_bec;
+    float *current_bec;
+    float *temperature_bec;
+    float *temperature_ext;
+} hott_sensor_airesc_t;
+
+typedef struct hott_sensor_electric_air_t {
+    float *temperature_ext;
+    float *bat1_cell;
+    float *bat2_cell;
+    float *bat1_volt;
+    float *bat2_volt;
+    float *bat1_temp;
+    float *bat2_temp;
+    float *height;
+    float *current;
+    float *consumption;
+    float *rpm;
+    float *speed;
+} hott_sensor_electric_air_t;
+
+typedef struct hott_sensor_gps_t {
+    float *direction;
+    float *speed;
+    double *latitude;
+    double *longitude;
+    float *distance;
+    float *altitude;
+    float *climbrate;
+    float *climbrate3s;
+    float *sats;
+} hott_sensor_gps_t;
 
 typedef struct hott_sensors_t {
     bool is_enabled[4];
-    float *gps[9];
-    float *vario[4];
-    float *esc[11];
-    float *electric_air[16];
+    hott_sensor_vario_t vario;
+    hott_sensor_airesc_t esc;
+    hott_sensor_electric_air_t electric_air;
+    hott_sensor_gps_t gps;
 } hott_sensors_t;
 
 typedef struct vario_alarm_parameters_t {
@@ -387,8 +372,12 @@ typedef struct vario_alarm_parameters_t {
     uint16_t m10s;
 } vario_alarm_parameters_t;
 
-vario_alarm_parameters_t vario_alarm_parameters;
-float *baro_temp = NULL, *baro_pressure = NULL;
+typedef struct hott_parameters_t {
+    vario_alarm_parameters_t vario_alarm_parameters;
+    float *baro_temp, *baro_pressure;
+} hott_parameters_t;
+
+vario_alarm_parameters_t *vario_alarm_parameters;
 
 static void process(hott_sensors_t *sensors);
 static void send_packet(hott_sensors_t *sensors, uint8_t address);
@@ -428,17 +417,18 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
         case HOTT_VARIO_MODULE_ID: {
             static uint16_t max_altitude = 0, min_altitude = 0;
             if (!sensors->is_enabled[HOTT_TYPE_VARIO]) return;
-            hott_sensor_vario_t packet = {0};
+            hott_vario_t packet = {0};
+            packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_VARIO_MODULE_ID;
             packet.sensorTextID = HOTT_VARIO_SENSOR_ID;
-            packet.altitude = *sensors->vario[HOTT_VARIO_ALTITUDE] + 500;
+            packet.altitude = *sensors->vario.altitude + 500;
             if (max_altitude < packet.altitude) max_altitude = packet.altitude;
             if (min_altitude > packet.altitude) min_altitude = packet.altitude;
             packet.maxAltitude = max_altitude;
             packet.minAltitude = min_altitude;
-            packet.m1s = vario_alarm_parameters.m1s;
-            packet.m3s = vario_alarm_parameters.m3s;
-            packet.m10s = vario_alarm_parameters.m10s;
+            packet.m1s = vario_alarm_parameters->m1s;
+            packet.m3s = vario_alarm_parameters->m3s;
+            packet.m10s = vario_alarm_parameters->m10s;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
@@ -451,7 +441,7 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
         }
         case HOTT_ESC_MODULE_ID: {
             if (!sensors->is_enabled[HOTT_TYPE_ESC]) return;
-            hott_sensor_airesc_t packet = {0};
+            hott_airesc_t packet = {0};
             static uint16_t minInputVolt = 0xFFFF;
             static uint8_t maxEscTemperature = 0;
             static uint16_t maxCurrent = 0;
@@ -465,44 +455,44 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_ESC_MODULE_ID;
             packet.sensorTextID = HOTT_ESC_SENSOR_ID;
-            if (sensors->esc[HOTT_ESC_VOLTAGE]) {
-                packet.inputVolt = *sensors->esc[HOTT_ESC_VOLTAGE] * 10;
+            if (sensors->esc.voltage_bec) {
+                packet.inputVolt = *sensors->esc.voltage_bec * 10;
                 if (packet.inputVolt > minInputVolt) packet.minInputVolt = packet.inputVolt;
             }
-            if (sensors->esc[HOTT_ESC_TEMPERATURE]) {
-                packet.escTemperature = *sensors->esc[HOTT_ESC_TEMPERATURE] + 20;
+            if (sensors->esc.temperature) {
+                packet.escTemperature = *sensors->esc.temperature + 20;
                 if (packet.escTemperature > maxEscTemperature) packet.maxEscTemperature = packet.escTemperature;
             }
-            if (sensors->esc[HOTT_ESC_CURRENT]) {
-                packet.current = *sensors->esc[HOTT_ESC_CURRENT] * 10;
+            if (sensors->esc.current_bec) {
+                packet.current = *sensors->esc.current_bec * 10;
                 if (packet.current > maxCurrent) packet.maxCurrent = packet.current;
-                packet.capacity = *sensors->esc[HOTT_ESC_CAPACITY] / 10;
+                packet.capacity = *sensors->esc.consumption / 10;
             }
-            if (sensors->esc[HOTT_ESC_RPM]) {
-                packet.RPM = *sensors->esc[HOTT_ESC_RPM] / 10;
+            if (sensors->esc.rpm) {
+                packet.RPM = *sensors->esc.rpm / 10;
                 if (packet.RPM > maxRPM) packet.maxRPM = packet.RPM;
             }
             // uint8_t throttlePercent;            // Byte 22
-            if (sensors->esc[HOTT_ESC_SPEED]) {
-                packet.speed = *sensors->esc[HOTT_ESC_SPEED];
+            if (sensors->esc.speed) {
+                packet.speed = *sensors->esc.speed;
                 if (packet.speed > maxSpeed) packet.maxSpeed = packet.speed;
             }
-            if (sensors->esc[HOTT_ESC_BEC_VOLTAGE]) {
-                packet.BECVoltage = *sensors->esc[HOTT_ESC_BEC_VOLTAGE] * 10;
+            if (sensors->esc.voltage_bec) {
+                packet.BECVoltage = *sensors->esc.voltage_bec * 10;
                 if (packet.minBECVoltage < minBECVoltage) packet.minBECVoltage = packet.BECVoltage;
             }
-            if (sensors->esc[HOTT_ESC_BEC_CURRENT]) {
-                packet.BECCurrent = *sensors->esc[HOTT_ESC_BEC_CURRENT] * 10;
+            if (sensors->esc.current_bec) {
+                packet.BECCurrent = *sensors->esc.current_bec * 10;
                 if (packet.BECCurrent < minBECCurrent) packet.minBECCurrent = packet.BECCurrent;
                 if (packet.BECCurrent > maxBECCurrent) packet.maxBECCurrent = packet.BECCurrent;
             }
             // uint8_t PWM;                        // Byte 32
-            if (sensors->esc[HOTT_ESC_BEC_TEMPERATURE]) {
-                packet.BECTemperature = *sensors->esc[HOTT_ESC_BEC_TEMPERATURE] + 20;
+            if (sensors->esc.temperature_bec) {
+                packet.BECTemperature = *sensors->esc.temperature_bec + 20;
                 if (packet.BECTemperature > maxBECTemperature) packet.maxBECTemperature = packet.BECTemperature;
             }
-            if (sensors->esc[HOTT_ESC_EXT_TEMPERATURE]) {
-                packet.motorOrExtTemperature = *sensors->esc[HOTT_ESC_EXT_TEMPERATURE] + 20;
+            if (sensors->esc.temperature_ext) {
+                packet.motorOrExtTemperature = *sensors->esc.temperature_ext + 20;
                 if (packet.motorOrExtTemperature > maxMotorOrExtTemperature)
                     packet.maxMotorOrExtTemperature = packet.motorOrExtTemperature;
             }
@@ -522,16 +512,16 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
         }
         case HOTT_ELECTRIC_AIR_MODULE_ID: {
             if (!sensors->is_enabled[HOTT_TYPE_ELECTRIC]) return;
-            hott_sensor_electric_air_t packet = {0};
+            hott_electric_air_t packet = {0};
             packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_ELECTRIC_AIR_MODULE_ID;
             packet.sensorTextID = HOTT_ELECTRIC_AIR_SENSOR_ID;
-            if (sensors->electric_air[HOTT_ELECTRIC_BAT_1_VOLTAGE])
-                packet.battery1 = *sensors->electric_air[HOTT_ELECTRIC_BAT_1_VOLTAGE] * 10;
-            if (sensors->electric_air[HOTT_ELECTRIC_CURRENT])
-                packet.current = *sensors->electric_air[HOTT_ELECTRIC_CURRENT] * 10;
-            if (sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1])
-                packet.temp1 = *sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] + 20;
+            if (sensors->electric_air.bat1_volt)
+                packet.battery1 = *sensors->electric_air.bat1_volt * 10;
+            if (sensors->electric_air.current)
+                packet.current = *sensors->electric_air.current * 10;
+            if (sensors->electric_air.bat1_temp)
+                packet.temp1 = *sensors->electric_air.bat1_temp + 20;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
@@ -544,25 +534,25 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
         }
         case HOTT_GPS_MODULE_ID: {
             if (!sensors->is_enabled[HOTT_TYPE_GPS]) return;
-            hott_sensor_gps_t packet = {0};
+            hott_gps_t packet = {0};
             packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_GPS_MODULE_ID;
             packet.sensorTextID = HOTT_GPS_SENSOR_ID;
-            packet.flightDirection = *sensors->gps[HOTT_GPS_DIRECTION] / 2;  // 0.5°
-            packet.GPSSpeed = *sensors->gps[HOTT_GPS_SPEED];                 // km/h
-            packet.LatitudeNS = sensors->gps[HOTT_GPS_LATITUDE] > 0 ? 0 : 1;
-            float latitude = fabs(*sensors->gps[HOTT_GPS_LATITUDE]);
+            packet.flightDirection = *sensors->gps.direction / 2;  // 0.5°
+            packet.GPSSpeed = *sensors->gps.speed;                 // km/h
+            packet.LatitudeNS = sensors->gps.latitude > 0 ? 0 : 1;
+            double latitude = fabs(*sensors->gps.latitude);
             packet.LatitudeDegMin = (uint)latitude * 100 + (latitude - (uint)latitude) * 60;
             packet.LatitudeSec = (latitude * 60 - (uint)(latitude * 60)) * 60;
-            packet.longitudeEW = sensors->gps[HOTT_GPS_LATITUDE] > 0 ? 0 : 1;
-            float longitude = fabs(*sensors->gps[HOTT_GPS_LONGITUDE]);
-            packet.longitudeDegMin = (uint)longitude * 100 + (longitude - (uint)longitude) * 60;
+            packet.longitudeEW = sensors->gps.longitude > 0 ? 0 : 1;
+            double longitude = fabs(*sensors->gps.longitude);
+            packet.longitudeDegMin = (uint)latitude * 100 + (latitude - (uint)latitude) * 60;
             packet.longitudeSec = (longitude * 60 - (uint)(longitude * 60)) * 60;
-            //packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
-            packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
-            // packet.climbrate = *sensors->gps[HOTT_GPS_ALTITUDE];    // 30000, 0.00
-            // packet.climbrate3s = *sensors->gps[HOTT_GPS_ALTITUDE];  // 120, 0
-            packet.GPSNumSat = *sensors->gps[HOTT_GPS_SATS];
+            //packet.distance = *sensors->gps.distance;
+            packet.altitude = *sensors->gps.altitude + 500;
+            // packet.climbrate = *sensors->gps.altitude;    // 30000, 0.00
+            // packet.climbrate3s = *sensors->gps.altitude;  // 120, 0
+            packet.GPSNumSat = *sensors->gps.sats;
             // uint8_t GPSFixChar;      // Byte 28: GPS.FixChar. (GPS fix character. display, if DGPS, 2D oder 3D) (1 byte)
             // uint8_t homeDirection;   // Byte 29: HomeDirection (direction from starting point to Model position) (1 byte)
             // uint8_t gps_time_h;  //#33 UTC time hours int8_t gps_time_m;  //#34 UTC time minutes
@@ -599,6 +589,8 @@ static uint8_t get_crc(const uint8_t *buffer, uint len) {
 static void set_config(hott_sensors_t *sensors) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
+    float *baro_temp = NULL, *baro_pressure = NULL;
+    vario_alarm_parameters = calloc(1, sizeof(vario_alarm_parameters_t));
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
@@ -606,7 +598,7 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc.rpm = parameter.rpm;
     }
     if (config->esc_protocol == ESC_HW3) {
         esc_hw3_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
@@ -616,7 +608,7 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
+        sensors->esc.rpm = parameter.rpm;
     }
     if (config->esc_protocol == ESC_HW4) {
         esc_hw4_parameters_t parameter = {config->rpm_multiplier,
@@ -652,12 +644,12 @@ static void set_config(hott_sensors_t *sensors) {
         }
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
-        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature_fet;
-        sensors->esc[HOTT_ESC_BEC_TEMPERATURE] = parameter.temperature_bec;
-        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
-        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
-        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+        sensors->esc.rpm = parameter.rpm;
+        sensors->esc.temperature = parameter.temperature_fet;
+        sensors->esc.temperature_bec = parameter.temperature_bec;
+        sensors->esc.voltage_bec = parameter.voltage;
+        sensors->esc.current_bec = parameter.current;
+        sensors->esc.consumption = parameter.consumption;
     }
     if (config->esc_protocol == ESC_HW5) {
         esc_hw5_parameters_t parameter = {
@@ -671,15 +663,15 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
-        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature_fet;
-        sensors->esc[HOTT_ESC_BEC_TEMPERATURE] = parameter.temperature_bec;
-        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
-        sensors->esc[HOTT_ESC_BEC_VOLTAGE] = parameter.voltage_bec;
-        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
-        sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
-        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
-        sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.temperature_motor;
+        sensors->esc.rpm = parameter.rpm;
+        sensors->esc.temperature = parameter.temperature_fet;
+        sensors->esc.temperature_bec = parameter.temperature_bec;
+        sensors->esc.voltage_bec = parameter.voltage;
+        sensors->esc.voltage_bec = parameter.voltage_bec;
+        sensors->esc.current_bec = parameter.current;
+        sensors->esc.current_bec = parameter.current_bec;
+        sensors->esc.consumption = parameter.consumption;
+        sensors->esc.temperature_ext = parameter.temperature_motor;
     }
     if (config->esc_protocol == ESC_CASTLE) {
         esc_castle_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm,         config->alpha_voltage,
@@ -693,14 +685,14 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
-        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature;
-        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
-        sensors->esc[HOTT_ESC_BEC_VOLTAGE] = parameter.voltage_bec;
-        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
-        sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
-        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
-        sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.consumption;
+        sensors->esc.rpm = parameter.rpm;
+        sensors->esc.temperature = parameter.temperature;
+        sensors->esc.voltage_bec = parameter.voltage;
+        sensors->esc.voltage_bec = parameter.voltage_bec;
+        sensors->esc.current_bec = parameter.current;
+        sensors->esc.current_bec = parameter.current_bec;
+        sensors->esc.consumption = parameter.consumption;
+        sensors->esc.temperature_ext = parameter.consumption;
     }
     if (config->esc_protocol == ESC_KONTRONIK) {
         esc_kontronik_parameters_t parameter = {
@@ -714,14 +706,14 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
-        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature_fet;
-        sensors->esc[HOTT_ESC_BEC_TEMPERATURE] = parameter.temperature_bec;
-        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
-        sensors->esc[HOTT_ESC_BEC_VOLTAGE] = parameter.voltage_bec;
-        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
-        sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
-        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+        sensors->esc.rpm = parameter.rpm;
+        sensors->esc.temperature = parameter.temperature_fet;
+        sensors->esc.temperature_bec = parameter.temperature_bec;
+        sensors->esc.voltage_bec = parameter.voltage;
+        sensors->esc.voltage_bec = parameter.voltage_bec;
+        sensors->esc.current_bec = parameter.current;
+        sensors->esc.current_bec = parameter.current_bec;
+        sensors->esc.consumption = parameter.consumption;
     }
     if (config->esc_protocol == ESC_APD_F) {
         esc_apd_f_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm,         config->alpha_voltage,
@@ -734,11 +726,11 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
-        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature;
-        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
-        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
-        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+        sensors->esc.rpm = parameter.rpm;
+        sensors->esc.temperature = parameter.temperature;
+        sensors->esc.voltage_bec = parameter.voltage;
+        sensors->esc.current_bec = parameter.current;
+        sensors->esc.consumption = parameter.consumption;
     }
     if (config->esc_protocol == ESC_APD_HV) {
         esc_apd_hv_parameters_t parameter = {
@@ -751,11 +743,11 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
-        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature;
-        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
-        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
-        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
+        sensors->esc.rpm = parameter.rpm;
+        sensors->esc.temperature = parameter.temperature;
+        sensors->esc.voltage_bec = parameter.voltage;
+        sensors->esc.current_bec = parameter.current;
+        sensors->esc.consumption = parameter.consumption;
     }
     if (config->esc_protocol == ESC_SMART) {
         smart_esc_parameters_t parameter;
@@ -783,18 +775,18 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
-        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temperature_fet;
-        sensors->esc[HOTT_ESC_BEC_TEMPERATURE] = parameter.temperature_bec;
-        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
-        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
-        sensors->esc[HOTT_ESC_BEC_VOLTAGE] = parameter.voltage_bec;
-        sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
+        sensors->esc.rpm = parameter.rpm;
+        sensors->esc.temperature = parameter.temperature_fet;
+        sensors->esc.temperature_bec = parameter.temperature_bec;
+        sensors->esc.voltage_bec = parameter.voltage;
+        sensors->esc.current_bec = parameter.current;
+        sensors->esc.voltage_bec = parameter.voltage_bec;
+        sensors->esc.current_bec = parameter.current_bec;
 
         sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
-        sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] = parameter.temperature_bat;
-        sensors->electric_air[HOTT_ELECTRIC_CURRENT] = parameter.current_bat;
-        sensors->electric_air[HOTT_ELECTRIC_CAPACITY] = parameter.consumption;
+        sensors->electric_air.bat1_temp = parameter.temperature_bat;
+        sensors->electric_air.current = parameter.current_bat;
+        sensors->electric_air.consumption = parameter.consumption;
     }
     if (config->esc_protocol == ESC_OMP_M4) {
         esc_omp_m4_parameters_t parameter;
@@ -817,12 +809,12 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
-        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temp_esc;
-        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
-        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
-        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
-        sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.temp_motor;
+        sensors->esc.rpm = parameter.rpm;
+        sensors->esc.temperature = parameter.temp_esc;
+        sensors->esc.voltage_bec = parameter.voltage;
+        sensors->esc.current_bec = parameter.current;
+        sensors->esc.consumption = parameter.consumption;
+        sensors->esc.temperature_ext = parameter.temp_motor;
 
     }
     if (config->esc_protocol == ESC_ZTW) {
@@ -847,12 +839,12 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_RPM] = parameter.rpm;
-        sensors->esc[HOTT_ESC_TEMPERATURE] = parameter.temp_esc;
-        sensors->esc[HOTT_ESC_VOLTAGE] = parameter.voltage;
-        sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
-        sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
-        sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.temp_motor;
+        sensors->esc.rpm = parameter.rpm;
+        sensors->esc.temperature = parameter.temp_esc;
+        sensors->esc.voltage_bec = parameter.voltage;
+        sensors->esc.current_bec = parameter.current;
+        sensors->esc.consumption = parameter.consumption;
+        sensors->esc.temperature_ext = parameter.temp_motor;
     }
     if (config->enable_gps) {
         gps_parameters_t parameter;
@@ -887,12 +879,12 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_GPS] = true;
-        sensors->gps[HOTT_GPS_LATITUDE] = parameter.lat;
-        sensors->gps[HOTT_GPS_LONGITUDE] = parameter.lon;
-        sensors->gps[HOTT_GPS_SATS] = parameter.sat;
-        sensors->gps[HOTT_GPS_ALTITUDE] = parameter.alt;
-        sensors->gps[HOTT_GPS_SPEED] = parameter.spd_kmh;
-        sensors->gps[HOTT_GPS_DIRECTION] = parameter.cog;
+        sensors->gps.latitude = parameter.lat;
+        sensors->gps.longitude = parameter.lon;
+        sensors->gps.sats = parameter.sat;
+        sensors->gps.altitude = parameter.alt;
+        sensors->gps.speed = parameter.spd_kmh;
+        sensors->gps.direction = parameter.cog;
     }
     if (config->enable_analog_voltage) {
         voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage,
@@ -902,7 +894,7 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
-        sensors->electric_air[HOTT_ELECTRIC_BAT_1_VOLTAGE] = parameter.voltage;
+        sensors->electric_air.bat1_volt = parameter.voltage;
     }
     if (config->enable_analog_current) {
         current_parameters_t parameter = {1,
@@ -919,7 +911,7 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
-        sensors->electric_air[HOTT_ELECTRIC_CURRENT] = parameter.current;
+        sensors->electric_air.current = parameter.current;
     }
     if (config->enable_analog_ntc) {
         ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
@@ -928,7 +920,7 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
-        sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] = parameter.ntc;
+        sensors->electric_air.bat1_temp = parameter.ntc;
     }
     if (config->enable_analog_airspeed) {
         airspeed_parameters_t parameter = {3,
@@ -944,7 +936,7 @@ static void set_config(hott_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         sensors->is_enabled[HOTT_TYPE_ESC] = true;
-        sensors->esc[HOTT_ESC_SPEED] = parameter.airspeed;
+        sensors->esc.speed = parameter.airspeed;
     }
     if (config->i2c_module == I2C_BMP280) {
         bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
@@ -960,11 +952,11 @@ static void set_config(hott_sensors_t *sensors) {
         }
 
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
-        sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
+        sensors->vario.altitude = parameter.altitude;
 
-        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1000, interval_1000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(10000, interval_10000_callback, vario_alarm_parameters, false);
     }
     if (config->i2c_module == I2C_MS5611) {
         ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
@@ -980,11 +972,11 @@ static void set_config(hott_sensors_t *sensors) {
         }
 
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
-        sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
+        sensors->vario.altitude = parameter.altitude;
 
-        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1000, interval_1000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(10000, interval_10000_callback, vario_alarm_parameters, false);
     }
     if (config->i2c_module == I2C_BMP180) {
         bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
@@ -1000,11 +992,11 @@ static void set_config(hott_sensors_t *sensors) {
         }
 
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
-        sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
+        sensors->vario.altitude = parameter.altitude;
 
-        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
-        add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1000, interval_1000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, vario_alarm_parameters, false);
+        add_alarm_in_ms(10000, interval_10000_callback, vario_alarm_parameters, false);
     }
 }
 
@@ -1013,7 +1005,7 @@ static int64_t interval_1000_callback(alarm_id_t id, void *parameters) {
     static float prev = 0;
     parameter->m1s = (*parameter->altitude - prev) * 100 + 30000;
 #ifdef SIM_SENSORS
-    vario_alarm_parameters.m1s = 12 * 100 + 30000;
+    //vario_alarm_parameters.m1s = 12 * 100 + 30000;
 #endif
     prev = *parameter->altitude;
     return 1000000L;
@@ -1024,7 +1016,7 @@ static int64_t interval_3000_callback(alarm_id_t id, void *parameters) {
     static float prev = 0;
     parameter->m3s = (*parameter->altitude - prev) * 100 + 30000;
 #ifdef SIM_SENSORS
-    vario_alarm_parameters.m3s = 34 * 100 + 30000;
+    //vario_alarm_parameters.m3s = 34 * 100 + 30000;
 #endif
     prev = *parameter->altitude;
     return 3000000L;
@@ -1035,7 +1027,7 @@ static int64_t interval_10000_callback(alarm_id_t id, void *parameters) {
     static float prev = 0;
     parameter->m10s = (*parameter->altitude - prev) * 100 + 30000;
 #ifdef SIM_SENSORS
-    vario_alarm_parameters.m10s = 56 * 100 + 30000;
+    //vario_alarm_parameters.m10s = 56 * 100 + 30000;
 #endif
     prev = *parameter->altitude;
     return 10000000L;

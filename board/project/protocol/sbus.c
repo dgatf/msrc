@@ -85,6 +85,18 @@
 #define SBUS_GPS_LONGITUDE2 17
 #define SBUS_AIR_SPEED 18
 
+typedef struct sensor_sbus_t {
+    uint8_t data_id;
+    void *value;
+} sensor_sbus_t;
+
+typedef struct sbus_parameters_t {
+    sensor_sbus_t *sbus_sensor[32];
+    uint packet_id;
+    volatile uint slot;
+    volatile bool slot_pending;
+} sbus_parameters_t;
+
 /**
  * Slots sensor mapping for Futaba transmitters:
  *
@@ -107,25 +119,18 @@
  * (+) Non default slots
  */
 
-typedef struct sensor_sbus_t {
-    uint8_t data_id;
-    float *value;
-} sensor_sbus_t;
+static sbus_parameters_t *sbus_parameters;
 
-static sensor_sbus_t *sbus_sensor[32] = {NULL};
-static uint packet_id;
-static volatile uint slot = 0;
-static volatile bool slot_pending = false;
-
-static void process();
+static void process(void);
 static int64_t send_slot_callback(alarm_id_t id, void *parameters);
 static inline void send_slot(uint8_t slot);
-static uint16_t format(uint8_t data_id, float value);
+static uint16_t format(uint8_t data_id, void *value);
 static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor);
 static void set_config(void);
 static uint8_t get_slot_id(uint8_t slot);
 
 void sbus_task(void *parameters) {
+    sbus_parameters = calloc(1, sizeof(sbus_parameters_t));
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
     set_config();
@@ -134,14 +139,14 @@ void sbus_task(void *parameters) {
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process();
-        if (slot_pending) {
-            send_slot(slot);
-            slot_pending = false;
+        if (sbus_parameters->slot_pending) {
+            send_slot(sbus_parameters->slot);
+            sbus_parameters->slot_pending = false;
         }
     }
 }
 
-static void process() {
+static void process(void) {
     if (uart0_available() == PACKET_LENGHT) {
         uint8_t data[PACKET_LENGHT];
         uart0_read_bytes(data, PACKET_LENGHT);
@@ -149,8 +154,8 @@ static void process() {
         debug_buffer(data, PACKET_LENGHT, "0x%X ");
         if (data[0] == 0x0F) {
             if (data[24] == 0x04 || data[24] == 0x14 || data[24] == 0x24 || data[24] == 0x34) {
-                packet_id = data[24] >> 4;
-                add_alarm_in_us(SLOT_0_DELAY - uart0_get_time_elapsed(), send_slot_callback, NULL, true);
+                sbus_parameters->packet_id = data[24] >> 4;
+                add_alarm_in_us(SLOT_0_DELAY - uart0_get_time_elapsed(), send_slot_callback, sbus_parameters, true);
                 debug("\nSbus (%u) > ", uxTaskGetStackHighWaterMark(NULL));
             }
         }
@@ -162,9 +167,9 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters) {
     static uint timestamp;
     static uint8_t index = 0;
     uint next_alarm;
-    slot = index + packet_id * 8;
+    sbus_parameters->slot = index + sbus_parameters->packet_id * 8;
     if (context.debug == 2) {
-        if (slot == 0 || slot == 8 || slot == 16 || slot == 24)
+        if (sbus_parameters->slot == 0 || sbus_parameters->slot == 8 || sbus_parameters->slot == 16 || sbus_parameters->slot == 24)
             printf("\nT:%u\n", uart0_get_time_elapsed());
         else
             printf("\nT:%u\n", time_us_32() - timestamp);
@@ -178,7 +183,7 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters) {
         next_alarm = 0;
     }
     vTaskResume(context.led_task_handle);
-    slot_pending = true;
+    sbus_parameters->slot_pending = true;
     vTaskNotifyGiveIndexedFromISR(context.uart0_notify_task_handle, 1, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return next_alarm;
@@ -187,8 +192,9 @@ static int64_t send_slot_callback(alarm_id_t id, void *parameters) {
 static inline void send_slot(uint8_t slot) {
     debug(" (%u)", slot);
     uint16_t value = 0;
-    if (sbus_sensor[slot]) {
-        if (sbus_sensor[slot]->value) value = format(sbus_sensor[slot]->data_id, *sbus_sensor[slot]->value);
+    if (sbus_parameters->sbus_sensor[slot]) {
+        void *a;
+        if (sbus_parameters->sbus_sensor[slot]->value) value = format(sbus_parameters->sbus_sensor[slot]->data_id, sbus_parameters->sbus_sensor[slot]->value);
         uint8_t data[3];
         data[0] = get_slot_id(slot);
         data[1] = value;
@@ -198,48 +204,48 @@ static inline void send_slot(uint8_t slot) {
     }
 }
 
-static uint16_t format(uint8_t data_id, float value) {
+static uint16_t format(uint8_t data_id, void *value) {
     if (data_id == SBUS_RPM) {
-        return (uint16_t)round(value / 6);
+        return (uint16_t)round(*(float *)value / 6);
     }
     if (data_id == SBUS_TEMP) {
-        return (uint16_t)round(value + 100) | 0X8000;
+        return (uint16_t)round(*(float *)value + 100) | 0X8000;
     }
     if (data_id == SBUS_VOLT_V1) {
-        return __builtin_bswap16((uint16_t)round(value * 10) | 0x8000);
+        return __builtin_bswap16((uint16_t)round(*(float *)value * 10) | 0x8000);
     }
     if (data_id == SBUS_VOLT_V2) {
-        return __builtin_bswap16((uint16_t)round(value * 10));
+        return __builtin_bswap16((uint16_t)round(*(float *)value * 10));
     }
     if (data_id == SBUS_VARIO_SPEED) {
-        return __builtin_bswap16((int16_t)round(value * 100));
+        return __builtin_bswap16((int16_t)round(*(float *)value * 100));
     }
     if (data_id == SBUS_VARIO_ALT) {
-        return __builtin_bswap16((int16_t)round(value) | 0x4000);
+        return __builtin_bswap16((int16_t)round(*(float *)value) | 0x4000);
     }
     if (data_id == SBUS_POWER_CURR) {
-        return __builtin_bswap16((uint16_t)round(value * 100) | 0x4000);
+        return __builtin_bswap16((uint16_t)round(*(float *)value * 100) | 0x4000);
     }
     if (data_id == SBUS_POWER_VOLT) {
-        return __builtin_bswap16((uint16_t)round((value)*100));
+        return __builtin_bswap16((uint16_t)round((*(float *)value) * 100));
     }
     if (data_id == SBUS_AIR_SPEED) {
-        return __builtin_bswap16((uint16_t)round(value) | 0x4000);
+        return __builtin_bswap16((uint16_t)round(*(float *)value) | 0x4000);
     }
     if (data_id == SBUS_GPS_SPEED) {
-        return __builtin_bswap16((uint16_t)round(value * 1.852) | 0x4000);
+        return __builtin_bswap16((uint16_t)round(*(float *)value * 1.852) | 0x4000);
     }
     if (data_id == SBUS_GPS_VARIO_SPEED) {
-        return __builtin_bswap16((int16_t)round(value * 10));
+        return __builtin_bswap16((int16_t)round(*(float *)value * 10));
     }
     if (data_id == SBUS_GPS_ALTITUDE) {
-        return __builtin_bswap16((int16_t)round(value) | 0x4000);
+        return __builtin_bswap16((int16_t)round(*(float *)value) | 0x4000);
     }
     if (data_id == SBUS_GPS_LATITUDE1 || data_id == SBUS_GPS_LONGITUDE1) {
         // bits 1-4: bits 17-20 from minutes precision 4 (minutes*10000 = 20 bits)
         // bit 5: S/W bit
         // bits 9-16: degrees
-        float coord = value;
+        double coord = *(double *)value;
         uint16_t lat_lon = 0;
         if (coord < 0) {
             lat_lon = 1 << SBUS_SOUTH_WEST_BIT;
@@ -253,20 +259,20 @@ static uint16_t format(uint8_t data_id, float value) {
     }
     if (data_id == SBUS_GPS_LATITUDE2 || data_id == SBUS_GPS_LONGITUDE2) {
         // bits 1-16 from minutes precision 4 (minutes*10000 = 20 bits)
-        if (value < 0) {
-            value *= -1;
+        if (*(double *)value < 0) {
+            *(double *)value *= -1;
         }
-        uint32_t minutes = (value - (int)value) * 60 * 10000;  // minutes precision 4
+        uint32_t minutes = (*(double *)value - (int)(*(double *)value)) * 60 * 10000;  // minutes precision 4
         return __builtin_bswap16(minutes);
     }
     if (data_id == SBUS_GPS_TIME) {
-        if (value > 120000) value -= 120000;
-        uint8_t hours = value / 10000;
-        uint8_t minutes = (uint8_t)(value / 100) - hours * 100;
-        uint8_t seconds = value - hours * 10000 - minutes * 100;
+        if (*(float *)value > 120000) *(float *)value -= 120000;
+        uint8_t hours = *(float *)value / 10000;
+        uint8_t minutes = (uint8_t)(*(float *)value / 100) - hours * 100;
+        uint8_t seconds = *(float *)value - hours * 10000 - minutes * 100;
         return __builtin_bswap16(hours * 3600 + minutes * 60 + seconds);
     }
-    return __builtin_bswap16(round(value));
+    return __builtin_bswap16(round(*(float *)value));
 }
 
 static uint8_t get_slot_id(uint8_t slot) {
@@ -276,7 +282,7 @@ static uint8_t get_slot_id(uint8_t slot) {
     return slot_id[slot];
 }
 
-static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor) { sbus_sensor[slot] = new_sensor; }
+static void add_sensor(uint8_t slot, sensor_sbus_t *new_sensor) { sbus_parameters->sbus_sensor[slot] = new_sensor; }
 
 static void set_config(void) {
     config_t *config = config_read();

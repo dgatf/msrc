@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "airspeed.h"
 #include "bmp180.h"
@@ -18,11 +19,11 @@
 #include "esc_omp_m4.h"
 #include "esc_pwm.h"
 #include "esc_ztw.h"
-#include "gps.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
 #include "ms5611.h"
+#include "gps.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"
@@ -49,49 +50,150 @@
 #define FRAME_0X19 8
 #define FRAME_0X1A 9
 #define FRAME_0X1B 10
-#define FRAME_0X11_RX_BATT 0
-#define FRAME_0X12_GPS_LAT 0
-#define FRAME_0X12_TIME 1
-#define FRAME_0X13_GPS_LON 0
-#define FRAME_0X13_TEMP2 1
-#define FRAME_0X14_GPS_SPD 0
-#define FRAME_0X14_GPS_ALT 1
-#define FRAME_0X14_TEMP1 2
-#define FRAME_0X15_FUEL 0
-#define FRAME_0X15_RPM1 1
-#define FRAME_0X15_RPM2 2
-#define FRAME_0X16_DATE 0
-#define FRAME_0X16_TIME 1
-#define FRAME_0X17_COG 0
-#define FRAME_0X17_SATS 1
-#define FRAME_0X17_TEMP3 2
-#define FRAME_0X17_TEMP4 3
-#define FRAME_0X18_VOLT 0
-#define FRAME_0X18_AMP 1
-#define FRAME_0X19_AMP1 0
-#define FRAME_0X19_AMP2 1
-#define FRAME_0X19_AMP3 2
-#define FRAME_0X19_AMP4 3
-#define FRAME_0X1A_ASPD 0
-#define FRAME_0X1B_ALTU 0
-#define FRAME_0X1B_ALTF 1
 
-typedef struct sensor_hitec_t {
+// Frame 7 bytes: <frame id> <5 bytes payload> <frame id>
+
+// hitec_frame_0x11_t internal telemetry rx batt
+typedef struct hitec_frame_0x11_t {
+    uint8_t b1;        // 0xAF
+    uint8_t b2;        // 0x0
+    uint8_t b3;        // 0x0
+    uint16_t rx_batt;  // v * 28
+} __attribute__((packed)) hitec_frame_0x11_t;
+
+typedef struct hitec_frame_0x12_t {  // lat, time
+    uint16_t sec;                    // s * 100
+    uint16_t deg_min;                // ddmm
+    uint8_t seconds;                 // time seconds
+} __attribute__((packed)) hitec_frame_0x12_t;
+
+typedef struct hitec_frame_0x13_t {  // lon, temp2
+    uint16_t sec;                    // s * 100
+    uint16_t deg_min;                // ddmm
+    uint8_t temp2;                   // t + 40 C
+} __attribute__((packed)) hitec_frame_0x13_t;
+
+typedef struct hitec_frame_0x14_t {  // spd, alt, temp1
+    uint16_t spd;                    // kmh
+    int16_t alt;                     //
+    uint8_t temp1;                   // t + 40 C
+} __attribute__((packed)) hitec_frame_0x14_t;
+
+typedef struct hitec_frame_0x15_t {  // rpm
+    uint8_t unused;
+    uint16_t rpm1;
+    uint16_t rpm2;
+} __attribute__((packed)) hitec_frame_0x15_t;
+
+typedef struct hitec_frame_0x16_t {  // date, time
+    uint8_t day;
+    uint8_t month;
+    uint8_t year;
+    uint8_t hour;
+    uint8_t min;
+} __attribute__((packed)) hitec_frame_0x16_t;
+
+typedef struct hitec_frame_0x17_t {  // cog, sats, tem3, temp4
+    uint16_t cog;
+    uint8_t sats;
+    uint8_t temp3;
+    uint8_t temp4;
+} __attribute__((packed)) hitec_frame_0x17_t;
+
+typedef struct hitec_frame_0x18_t {  // volt, amp
+    uint16_t volt;
+    uint16_t amp;
+    uint8_t unused;
+} __attribute__((packed)) hitec_frame_0x18_t;
+
+typedef struct hitec_frame_0x19_t {  // amp
+    uint8_t amp1;
+    uint8_t amp2;
+    uint8_t amp3;
+    uint8_t amp4;
+} __attribute__((packed)) hitec_frame_0x19_t;
+
+typedef struct hitec_frame_0x1A_t {  // airspeed
+    uint16_t airspeed;
+    uint16_t unused1;
+    uint8_t unused2;
+} __attribute__((packed)) hitec_frame_0x1A_t;
+
+typedef struct hitec_frame_0x1B_t {  // altitude
+    uint16_t alt_u;
+    uint16_t alt_f;  // unused
+    uint8_t unused;
+} __attribute__((packed)) hitec_frame_0x1B_t;
+
+
+typedef struct hitec_sensor_frame_0x12_t {  // lat, time
+    double *lat;
+    float *time;                  
+} hitec_sensor_frame_0x12_t;
+
+typedef struct hitec_sensor_frame_0x13_t {  // lon, temp2
+    double *lon;            
+    float *temp2;                 
+} hitec_sensor_frame_0x13_t;
+
+typedef struct hitec_sensor_frame_0x14_t {  // spd, alt, temp1
+    float *spd;                   
+    float *alt;                     
+    float *temp1;                  
+} hitec_sensor_frame_0x14_t;
+
+typedef struct hitec_sensor_frame_0x15_t {  // rpm
+    float *rpm1;
+    float *rpm2;
+} hitec_sensor_frame_0x15_t;
+
+typedef struct hitec_sensor_frame_0x16_t {  // date, time
+    float *date;
+    float *time;
+} hitec_sensor_frame_0x16_t;
+
+typedef struct hitec_sensor_frame_0x17_t {  // cog, sats, tem3, temp4
+    float *cog;
+    float *sats;
+    float *temp3;
+    float *temp4;
+} hitec_sensor_frame_0x17_t;
+
+typedef struct hitec_sensor_frame_0x18_t {  // volt, amp
+    float *volt;
+    float *amp;
+} hitec_sensor_frame_0x18_t;
+
+typedef struct hitec_sensor_frame_0x19_t {  // amp
+    float *amp1;
+    float *amp2;
+    float *amp3;
+    float *amp4;
+} hitec_sensor_frame_0x19_t;
+
+typedef struct hitec_sensor_frame_0x1A_t {  // airspeed
+    float *airspeed;
+} hitec_sensor_frame_0x1A_t;
+
+typedef struct hitec_sensor_frame_0x1B_t {  // altitude
+    float *alt_u;
+} hitec_sensor_frame_0x1B_t;
+
+typedef struct hitec_sensors_t {
     bool is_enabled_frame[11];
-    float *frame_0x11[1];
-    float *frame_0x12[2];
-    float *frame_0x13[2];
-    float *frame_0x14[3];
-    float *frame_0x15[3];
-    float *frame_0x16[2];
-    float *frame_0x17[4];
-    float *frame_0x18[2];
-    float *frame_0x19[4];
-    float *frame_0x1A[1];
-    float *frame_0x1B[2];
-} sensor_hitec_t;
+    hitec_sensor_frame_0x12_t frame_0x12;
+    hitec_sensor_frame_0x13_t frame_0x13;
+    hitec_sensor_frame_0x14_t frame_0x14;
+    hitec_sensor_frame_0x15_t frame_0x15;
+    hitec_sensor_frame_0x16_t frame_0x16;
+    hitec_sensor_frame_0x17_t frame_0x17;
+    hitec_sensor_frame_0x18_t frame_0x18;
+    hitec_sensor_frame_0x19_t frame_0x19;
+    hitec_sensor_frame_0x1A_t frame_0x1A;
+    hitec_sensor_frame_0x1B_t frame_0x1B;
+} hitec_sensors_t;
 
-static sensor_hitec_t *sensor;
+static volatile hitec_sensors_t *sensors;
 
 static void i2c_request_handler(uint8_t address);
 static void i2c_stop_handler(uint8_t length);
@@ -102,9 +204,7 @@ static void format_packet(uint8_t frame, uint8_t *buffer);
 void hitec_i2c_handler(void) { i2c_request_handler(I2C_ADDRESS); }
 
 void hitec_task(void *parameters) {
-    sensor = malloc(sizeof(sensor_hitec_t));
-    *sensor =
-        (sensor_hitec_t){{0}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}};
+    sensors = calloc(1, sizeof(hitec_sensors_t));
 
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
@@ -132,7 +232,7 @@ static void i2c_request_handler(uint8_t address) {
     uint8_t frame = next_frame();
     if (frame < 0) return;
     format_packet(frame, buffer);
-    i2c_multi_set_write_buffer(buffer);
+    //i2c_multi_set_write_buffer(buffer);
 
     // blink led
     vTaskResume(context.led_task_handle);
@@ -146,7 +246,7 @@ static int next_frame(void) {
     uint cont = 0;
     frame++;
     frame %= 11;
-    while (!sensor->is_enabled_frame[frame] && cont < 12) {
+    while (!sensors->is_enabled_frame[frame] && cont < 12) {
         frame++;
         frame %= 11;
         cont++;
@@ -156,191 +256,124 @@ static int next_frame(void) {
 }
 
 static void format_packet(uint8_t frame, uint8_t *buffer) {
-    int32_t valueS32;
-    uint16_t valueU16;
-    uint16_t valueS16;
-    uint8_t valueU8;
+    // big endian packets
     buffer[0] = frame + 0x11;
-    buffer[1] = 0;
-    buffer[2] = 0;
-    buffer[3] = 0;
-    buffer[4] = 0;
-    buffer[5] = 0;
     buffer[6] = frame + 0x11;
     switch (frame) {
-        case FRAME_0X11:
-            buffer[1] = 0xAF;
-            buffer[3] = 0x2D;
-            if (sensor->frame_0x11[FRAME_0X11_RX_BATT]) {
-                valueU16 = *sensor->frame_0x11[FRAME_0X11_RX_BATT] * 28;
-                buffer[4] = valueU16 >> 8;
-                buffer[5] = valueU16;
-            }
+        case FRAME_0X12: {
+            hitec_frame_0x12_t msg = {0};
+            double degrees = *sensors->frame_0x12.lat;
+            int8_t deg = degrees;
+            int8_t min = (degrees - deg) * 60;
+            double sec = ((degrees - deg) * 60 - min) * 60;
+            int16_t sec_x_100 = sec * 100;
+            int16_t deg_min = deg * 100 + min;
+            msg.sec = swap_16(sec_x_100);
+            msg.deg_min = swap_16(deg_min);
+            msg.seconds = *sensors->frame_0x12.time;
+            memcpy(buffer + 1, &msg, sizeof(msg));
             break;
-        case FRAME_0X12:
-            if (sensor->frame_0x12[FRAME_0X12_GPS_LAT]) {
-                double degrees = *sensor->frame_0x12[FRAME_0X12_GPS_LAT];
-                int8_t deg = degrees;
-                int8_t min = (degrees - deg) * 60;
-                double sec = ((degrees - deg) * 60 - min) * 60;
-                int16_t sec_x_100 = sec * 100;
-                int16_t deg_min = deg * 100 + min;
-                buffer[1] = sec_x_100 >> 8;
-                buffer[2] = sec_x_100;
-                buffer[3] = deg_min >> 8;
-                buffer[4] = deg_min;
-            }
-            if (sensor->frame_0x12[FRAME_0X12_TIME]) {
-                valueU8 = *sensor->frame_0x12[FRAME_0X12_TIME];
-            }
+        }
+        case FRAME_0X13: {
+            hitec_frame_0x13_t msg = {0};
+            double degrees = *sensors->frame_0x13.lon;
+            int8_t deg = degrees;
+            int8_t min = (degrees - deg) * 60;
+            double sec = ((degrees - deg) * 60 - min) * 60;
+            int16_t sec_x_100 = sec * 100;
+            int16_t deg_min = deg * 100 + min;
+            msg.sec = swap_16(sec_x_100);
+            msg.deg_min = swap_16(deg_min);
+            msg.temp2 = round(*sensors->frame_0x13.temp2 + 40);
+            memcpy(buffer + 1, &msg, sizeof(msg));
             break;
-        case FRAME_0X13:
-            if (sensor->frame_0x13[FRAME_0X13_GPS_LON]) {
-                float degrees = *sensor->frame_0x13[FRAME_0X13_GPS_LON];
-                int8_t deg = degrees;
-                int8_t min = (degrees - deg) * 60;
-                float sec = ((degrees - deg) * 60 - min) * 60;
-                int16_t sec_x_100 = sec * 100;
-                int16_t deg_min = deg * 100 + min;
-                buffer[1] = sec_x_100 >> 8;
-                buffer[2] = sec_x_100;
-                buffer[3] = deg_min >> 8;
-                buffer[4] = deg_min;
-            }
-            if (sensor->frame_0x13[FRAME_0X13_TEMP2]) {
-                valueU8 = round(*sensor->frame_0x13[FRAME_0X13_TEMP2] + 40);
-                buffer[5] = valueU8;
-            }
+        }
+        case FRAME_0X14: {
+            hitec_frame_0x14_t msg = {0};
+            msg.spd = swap_16((uint16_t)round(*sensors->frame_0x14.spd * 1.852));
+            msg.alt = round(*sensors->frame_0x14.alt);
+            msg.temp1 = round(*sensors->frame_0x14.temp1 + 40);
+            memcpy(buffer + 1, &msg, sizeof(msg));
             break;
-        case FRAME_0X14:
-            if (sensor->frame_0x14[FRAME_0X14_GPS_SPD]) {
-                valueU16 = round(*sensor->frame_0x14[FRAME_0X14_GPS_SPD] * 1.852);
-                buffer[1] = valueU16 >> 8;
-                buffer[2] = valueU16;
-            }
-            if (sensor->frame_0x14[FRAME_0X14_GPS_ALT]) {
-                valueS16 = round(*sensor->frame_0x14[FRAME_0X14_GPS_ALT]);
-                buffer[3] = valueS16 >> 8;
-                buffer[4] = valueS16;
-            }
-            if (sensor->frame_0x14[FRAME_0X14_TEMP1]) {
-                valueU8 = round(*sensor->frame_0x14[FRAME_0X14_TEMP1] + 40);
-                buffer[5] = valueU8;
-            }
+        }
+        case FRAME_0X15: {
+            hitec_frame_0x15_t msg = {0};
+            msg.rpm1 = swap_16((uint16_t)round(*sensors->frame_0x15.rpm1));
+            msg.rpm2 = swap_16((uint16_t)round(*sensors->frame_0x15.rpm2));
+            memcpy(buffer + 1, &msg, sizeof(msg));
             break;
-        case FRAME_0X15:
-            if (sensor->frame_0x15[FRAME_0X15_RPM1]) {
-                valueU16 = round(*sensor->frame_0x15[FRAME_0X15_RPM1]);
-                buffer[2] = valueU16;
-                buffer[3] = valueU16 >> 8;
-            }
-            if (sensor->frame_0x15[FRAME_0X15_RPM2]) {
-                valueU16 = round(*sensor->frame_0x15[FRAME_0X15_RPM2]);
-                buffer[4] = valueU16;
-                buffer[5] = valueU16 >> 8;
-            }
+        }
+        case FRAME_0X16: {
+            hitec_frame_0x16_t msg = {0};
+            int32_t value = *sensors->frame_0x16.date;
+            msg.year = value / 10000;                                 // year
+            msg.month = (value - buffer[3] * 10000UL) / 100;          // month
+            msg.day = value - buffer[3] * 10000UL - buffer[2] * 100;  // day
+            value = *sensors->frame_0x16.time;
+            msg.hour = value / 10000;                       // hour
+            msg.min = (value - buffer[4] * 10000UL) / 100;  // minute
+            memcpy(buffer + 1, &msg, sizeof(msg));
+            debug("\nDT: %f", *sensors->frame_0x16.date);
             break;
-        case FRAME_0X16:
-            if (sensor->frame_0x16[FRAME_0X16_DATE]) {
-                valueS32 = *sensor->frame_0x16[FRAME_0X16_DATE];
-                buffer[3] = valueS32 / 10000;                                  // year
-                buffer[2] = (valueS32 - buffer[3] * 10000UL) / 100;            // month
-                buffer[1] = valueS32 - buffer[3] * 10000UL - buffer[2] * 100;  // day
-            }
-            if (sensor->frame_0x16[FRAME_0X16_TIME]) {
-                valueS32 = *sensor->frame_0x16[FRAME_0X16_TIME];
-                buffer[4] = valueS32 / 10000;                        // hour
-                buffer[5] = (valueS32 - buffer[4] * 10000UL) / 100;  // minute
-            }
+        }
+        case FRAME_0X17: {
+            hitec_frame_0x17_t msg = {0};
+            msg.cog = swap_16((uint16_t)round(*sensors->frame_0x17.cog));
+            msg.sats = *sensors->frame_0x17.sats;
+            msg.temp3 = round(*sensors->frame_0x17.temp3 + 40);
+            msg.temp4 = round(*sensors->frame_0x17.temp4 + 40);
+            memcpy(buffer + 1, &msg, sizeof(msg));
             break;
-        case FRAME_0X17:
-            if (sensor->frame_0x17[FRAME_0X17_COG]) {
-                valueU16 = round(*sensor->frame_0x17[FRAME_0X17_COG]);
-                buffer[1] = valueU16 >> 8;
-                buffer[2] = valueU16;
-            }
-            if (sensor->frame_0x17[FRAME_0X17_SATS]) {
-                valueU8 = *sensor->frame_0x17[FRAME_0X17_SATS];
-                buffer[3] = valueU8;
-            }
-            if (sensor->frame_0x17[FRAME_0X17_TEMP3]) {
-                valueU8 = round(*sensor->frame_0x17[FRAME_0X17_TEMP3] + 40);
-                buffer[4] = valueU8;
-            }
-            if (sensor->frame_0x17[FRAME_0X17_TEMP4]) {
-                valueU8 = round(*sensor->frame_0x17[FRAME_0X17_TEMP4] + 40);
-                buffer[5] = valueU8;
-            }
-            break;
-        case FRAME_0X18:
-            if (sensor->frame_0x18[FRAME_0X18_VOLT]) {
-                valueU16 = round((*sensor->frame_0x18[FRAME_0X18_VOLT] - 0.2) * 10);
-                buffer[1] = valueU16;
-                buffer[2] = valueU16 >> 8;
-            }
-            if (sensor->frame_0x18[FRAME_0X18_AMP]) {
-                /* value for stock transmitter (tbc) */
-                // valueU16 = (*sensor->frame_0x18[FRAME_0X18_AMP] + 114.875) * 1.441;
+        }
+        case FRAME_0X18: {
+            hitec_frame_0x18_t msg = {0};
+            msg.volt = swap_16((uint16_t)round((*sensors->frame_0x18.volt - 0.2) * 10));
 
-                /* value for opentx transmitter  */
-                valueU16 = round(*sensor->frame_0x18[FRAME_0X18_AMP]);
+            /* value for stock transmitter (tbc) */
+            msg.amp = swap_16((uint16_t)((*sensors->frame_0x18.amp + 114.875) * 1.441));
 
-                buffer[3] = valueU16;
-                buffer[4] = valueU16 >> 8;
-            }
+            /* value for opentx transmitter  */
+            // msg.amp = round(*sensors->frame_0x18.amp);
+            
+            memcpy(buffer + 1, &msg, sizeof(msg));
             break;
-        case FRAME_0X19:
-            if (sensor->frame_0x19[FRAME_0X19_AMP1]) {
-                valueU8 = round(*sensor->frame_0x19[FRAME_0X19_AMP1] * 10);
-                buffer[5] = valueU8;
-            }
-            if (sensor->frame_0x19[FRAME_0X19_AMP2]) {
-                valueU8 = round(*sensor->frame_0x19[FRAME_0X19_AMP2] * 10);
-                buffer[5] = valueU8;
-            }
-            if (sensor->frame_0x19[FRAME_0X19_AMP3]) {
-                valueU8 = round(*sensor->frame_0x19[FRAME_0X19_AMP3] * 10);
-                buffer[5] = valueU8;
-            }
-            if (sensor->frame_0x19[FRAME_0X19_AMP4]) {
-                valueU8 = round(*sensor->frame_0x19[FRAME_0X19_AMP4] * 10);
-                buffer[5] = valueU8;
-            }
+        }
+        case FRAME_0X19: {
+            hitec_frame_0x19_t msg = {0};
+            msg.amp1 = round(*sensors->frame_0x19.amp1 * 10);
+            msg.amp2 = round(*sensors->frame_0x19.amp2 * 10);
+            msg.amp3 = round(*sensors->frame_0x19.amp3 * 10);
+            msg.amp4 = round(*sensors->frame_0x19.amp4 * 10);
+            memcpy(buffer + 1, &msg, sizeof(msg));
             break;
-        case FRAME_0X1A:
-            if (sensor->frame_0x1A[FRAME_0X1A_ASPD]) {
-                valueU16 = round(*sensor->frame_0x1A[FRAME_0X1A_ASPD]);
-                buffer[3] = valueU16 >> 8;
-                buffer[4] = valueU16;
-            }
+        }
+        case FRAME_0X1A: {
+            hitec_frame_0x1A_t msg = {0};
+            msg.airspeed = swap_16((uint16_t)round(*sensors->frame_0x1A.airspeed));
+            memcpy(buffer + 1, &msg, sizeof(msg));
             break;
-        case FRAME_0X1B:
-            if (sensor->frame_0x1B[FRAME_0X1B_ALTU]) {
-                valueU16 = round(*sensor->frame_0x1B[FRAME_0X1B_ALTU]);
-                buffer[1] = valueU16 >> 8;
-                buffer[2] = valueU16;
-            }
-            if (sensor->frame_0x1B[FRAME_0X1B_ALTF]) {
-                valueU16 = round(*sensor->frame_0x1B[FRAME_0X1B_ALTF]);
-                buffer[3] = valueU16 >> 8;
-                buffer[4] = valueU16;
-            }
+        }
+        case FRAME_0X1B: {
+            hitec_frame_0x1B_t msg = {0};
+            msg.alt_u = round(*sensors->frame_0x1B.alt_u);
+            memcpy(buffer + 1, &msg, sizeof(msg));
             break;
+        }
     }
 }
 
 static void set_config(void) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
-    sensor_hitec_t *new_sensor;
+    hitec_sensors_t *new_sensor;
     float *baro_temp = NULL, *baro_pressure = NULL;
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -349,8 +382,8 @@ static void set_config(void) {
         xTaskCreate(esc_hw3_task, "esc_hw3_task", STACK_ESC_HW3, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -386,15 +419,15 @@ static void set_config(void) {
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
-        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
-        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temperature_fet;
-        sensor->frame_0x13[FRAME_0X13_TEMP2] = parameter.temperature_bec;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
-        sensor->is_enabled_frame[FRAME_0X13] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->frame_0x18.volt = parameter.voltage;
+        sensors->frame_0x18.amp = parameter.current;
+        sensors->frame_0x14.temp1 = parameter.temperature_fet;
+        sensors->frame_0x13.temp2 = parameter.temperature_bec;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
+        sensors->is_enabled_frame[FRAME_0X13] = true;
     }
     if (config->esc_protocol == ESC_HW5) {
         esc_hw5_parameters_t parameter = {
@@ -406,15 +439,15 @@ static void set_config(void) {
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
-        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
-        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temperature_fet;
-        sensor->frame_0x13[FRAME_0X13_TEMP2] = parameter.temperature_bec;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
-        sensor->is_enabled_frame[FRAME_0X13] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->frame_0x18.volt = parameter.voltage;
+        sensors->frame_0x18.amp = parameter.current;
+        sensors->frame_0x14.temp1 = parameter.temperature_fet;
+        sensors->frame_0x13.temp2 = parameter.temperature_bec;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
+        sensors->is_enabled_frame[FRAME_0X13] = true;
     }
     if (config->esc_protocol == ESC_CASTLE) {
         esc_castle_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm,         config->alpha_voltage,
@@ -425,14 +458,14 @@ static void set_config(void) {
                                              malloc(sizeof(float)),  malloc(sizeof(uint8_t))};
         xTaskCreate(esc_castle_task, "esc_castle_task", STACK_ESC_CASTLE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
-        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
-        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temperature;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
-        sensor->is_enabled_frame[FRAME_0X13] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->frame_0x18.volt = parameter.voltage;
+        sensors->frame_0x18.amp = parameter.current;
+        sensors->frame_0x14.temp1 = parameter.temperature;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
+        sensors->is_enabled_frame[FRAME_0X13] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -446,15 +479,15 @@ static void set_config(void) {
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
-        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
-        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temperature_fet;
-        sensor->frame_0x13[FRAME_0X13_TEMP2] = parameter.temperature_bec;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
-        sensor->is_enabled_frame[FRAME_0X13] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->frame_0x18.volt = parameter.voltage;
+        sensors->frame_0x18.amp = parameter.current;
+        sensors->frame_0x14.temp1 = parameter.temperature_fet;
+        sensors->frame_0x13.temp2 = parameter.temperature_bec;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
+        sensors->is_enabled_frame[FRAME_0X13] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -467,13 +500,13 @@ static void set_config(void) {
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
-        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
-        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temperature;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->frame_0x18.volt = parameter.voltage;
+        sensors->frame_0x18.amp = parameter.current;
+        sensors->frame_0x14.temp1 = parameter.temperature;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -486,13 +519,13 @@ static void set_config(void) {
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
-        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
-        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temperature;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->frame_0x18.volt = parameter.voltage;
+        sensors->frame_0x18.amp = parameter.current;
+        sensors->frame_0x14.temp1 = parameter.temperature;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -520,13 +553,13 @@ static void set_config(void) {
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
-        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
-        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temperature_fet;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->frame_0x18.volt = parameter.voltage;
+        sensors->frame_0x18.amp = parameter.current;
+        sensors->frame_0x14.temp1 = parameter.temperature_fet;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -549,13 +582,13 @@ static void set_config(void) {
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
-        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
-        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temp_esc;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->frame_0x18.volt = parameter.voltage;
+        sensors->frame_0x18.amp = parameter.current;
+        sensors->frame_0x14.temp1 = parameter.temp_esc;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -579,13 +612,13 @@ static void set_config(void) {
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x15[FRAME_0X15_RPM1] = parameter.rpm;
-        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
-        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
-        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.temp_esc;
-        sensor->is_enabled_frame[FRAME_0X15] = true;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
+        sensors->frame_0x15.rpm1 = parameter.rpm;
+        sensors->frame_0x18.volt = parameter.voltage;
+        sensors->frame_0x18.amp = parameter.current;
+        sensors->frame_0x14.temp1 = parameter.temp_esc;
+        sensors->is_enabled_frame[FRAME_0X15] = true;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -619,20 +652,20 @@ static void set_config(void) {
         parameter.dist = malloc(sizeof(float));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
-
-        sensor->frame_0x17[FRAME_0X17_SATS] = parameter.sat;
-        sensor->frame_0x12[FRAME_0X12_GPS_LAT] = parameter.lat;
-        sensor->frame_0x13[FRAME_0X13_GPS_LON] = parameter.lon;
-        sensor->frame_0x14[FRAME_0X14_GPS_ALT] = parameter.alt;
-        sensor->frame_0x14[FRAME_0X14_GPS_SPD] = parameter.spd;
-        sensor->frame_0x17[FRAME_0X17_COG] = parameter.cog;
-        sensor->frame_0x16[FRAME_0X16_DATE] = parameter.date;
-        sensor->frame_0x16[FRAME_0X16_TIME] = parameter.time;
-        sensor->is_enabled_frame[FRAME_0X17] = true;
-        sensor->is_enabled_frame[FRAME_0X12] = true;
-        sensor->is_enabled_frame[FRAME_0X13] = true;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
-        sensor->is_enabled_frame[FRAME_0X16] = true;
+        
+        sensors->frame_0x17.sats = parameter.sat;
+        sensors->frame_0x12.lat = parameter.lat;
+        sensors->frame_0x13.lon = parameter.lon;
+        sensors->frame_0x14.alt = parameter.alt;
+        sensors->frame_0x14.spd = parameter.spd;
+        sensors->frame_0x17.cog = parameter.cog;
+        sensors->frame_0x16.date = parameter.date;
+        sensors->frame_0x16.date = parameter.time;
+        sensors->is_enabled_frame[FRAME_0X17] = true;
+        sensors->is_enabled_frame[FRAME_0X12] = true;
+        sensors->is_enabled_frame[FRAME_0X13] = true;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
+        sensors->is_enabled_frame[FRAME_0X16] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -642,8 +675,8 @@ static void set_config(void) {
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x18[FRAME_0X18_VOLT] = parameter.voltage;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
+        sensors->frame_0x18.volt = parameter.voltage;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -660,8 +693,8 @@ static void set_config(void) {
         xTaskCreate(current_task, "current_task", STACK_CURRENT, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x18[FRAME_0X18_AMP] = parameter.current;
-        sensor->is_enabled_frame[FRAME_0X18] = true;
+        sensors->frame_0x18.amp = parameter.current;
+        sensors->is_enabled_frame[FRAME_0X18] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -670,8 +703,8 @@ static void set_config(void) {
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x14[FRAME_0X14_TEMP1] = parameter.ntc;
-        sensor->is_enabled_frame[FRAME_0X14] = true;
+        sensors->frame_0x14.temp1 = parameter.ntc;
+        sensors->is_enabled_frame[FRAME_0X14] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -687,8 +720,8 @@ static void set_config(void) {
             baro_pressure = parameter.pressure;
         }
 
-        sensor->frame_0x1B[FRAME_0X1B_ALTU] = parameter.altitude;
-        sensor->is_enabled_frame[FRAME_0X1B] = true;
+        sensors->frame_0x1B.alt_u = parameter.altitude;
+        sensors->is_enabled_frame[FRAME_0X1B] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -704,8 +737,8 @@ static void set_config(void) {
             baro_pressure = parameter.pressure;
         }
 
-        sensor->frame_0x1B[FRAME_0X1B_ALTU] = parameter.altitude;
-        sensor->is_enabled_frame[FRAME_0X1B] = true;
+        sensors->frame_0x1B.alt_u = parameter.altitude;
+        sensors->is_enabled_frame[FRAME_0X1B] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -721,8 +754,8 @@ static void set_config(void) {
             baro_pressure = parameter.pressure;
         }
 
-        sensor->frame_0x1B[FRAME_0X1B_ALTU] = parameter.altitude;
-        sensor->is_enabled_frame[FRAME_0X1B] = true;
+        sensors->frame_0x1B.alt_u = parameter.altitude;
+        sensors->is_enabled_frame[FRAME_0X1B] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -738,8 +771,8 @@ static void set_config(void) {
         xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->frame_0x1A[FRAME_0X1A_ASPD] = parameter.airspeed;
-        sensor->is_enabled_frame[FRAME_0X1A] = true;
+        sensors->frame_0x1A.airspeed = parameter.airspeed;
+        sensors->is_enabled_frame[FRAME_0X1A] = true;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

@@ -6,5 +6,6 @@
 extern context_t context;
 
 void hitec_task(void *parameters);
+void hitec_i2c_handler(void);
 
 #endif

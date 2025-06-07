@@ -103,13 +103,13 @@
 typedef struct sensor_ibus_t {
     uint8_t data_id;
     uint8_t type;
-    float *value;
+    void *value;
 } sensor_ibus_t;
 
 static void process(sensor_ibus_t **sensor);
 static void send_packet(uint8_t command, uint8_t address, sensor_ibus_t *sensor_ibus);
 static void send_byte(uint8_t c, uint16_t *crc_p);
-static int32_t format(uint8_t data_id, float value);
+static int32_t format(uint8_t data_id, void *value);
 static bool check_crc(uint8_t *data);
 static void add_sensor(sensor_ibus_t *new_sensor, sensor_ibus_t **sensor, uint16_t sensormask);
 static void set_config(sensor_ibus_t **sensor, uint16_t sensormask);
@@ -179,7 +179,7 @@ static void send_packet(uint8_t command, uint8_t address, sensor_ibus_t *sensor)
             break;
         case IBUS_COMMAND_MEASURE:
             if (sensor->value) {
-                value_formatted = format(sensor->data_id, *sensor->value);
+                value_formatted = format(sensor->data_id, sensor->value);
             }
             u8_p = (uint8_t *)&value_formatted;
             break;
@@ -233,24 +233,26 @@ static void add_sensor(sensor_ibus_t *new_sensor, sensor_ibus_t **sensor, uint16
     }
 }
 
-static int32_t format(uint8_t data_id, float value) {
-    if (data_id == IBUS_ID_TEMPERATURE) return round((value + 40) * 10);
+static int32_t format(uint8_t data_id, void *value) {
+    if (data_id == IBUS_ID_TEMPERATURE) return round((*(float *)value + 40) * 10);
 
     if (data_id == IBUS_ID_EXTV || data_id == IBUS_ID_CELL_VOLTAGE || data_id == IBUS_ID_BAT_CURR ||
         data_id == IBUS_ID_CLIMB_RATE || data_id == IBUS_ID_COG || data_id == IBUS_ID_VERTICAL_SPEED ||
         data_id == IBUS_ID_GROUND_SPEED || data_id == IBUS_ID_GPS_ALT || data_id == IBUS_ID_PRES ||
         data_id == IBUS_ID_ALT)
-        return round(value * 100);
+        return round(*(float *)value * 100);
 
-    if (data_id == IBUS_ID_GPS_LAT || data_id == IBUS_ID_GPS_LON) return round(value * 1e7);
+    if (data_id == IBUS_ID_GPS_LAT || data_id == IBUS_ID_GPS_LON) return round(*(double *)value * 1e7);
 
-    if (data_id == IBUS_ID_SPE) return round(value * 100 * 1.852);
+    if (data_id == IBUS_ID_SPE) return round(*(float *)value * 100 * 1.852);
 
-    if (data_id == IBUS_ID_GPS_STATUS) return value * 256;
+    if (data_id == IBUS_ID_GPS_STATUS) return *(float *)value * 256;
 
-    if (data_id == IBUS_ID_S84 || data_id == IBUS_ID_S85) return value / 60 * 1e5;
+    if (data_id == IBUS_ID_S84 || data_id == IBUS_ID_S85) return *(float *)value * 1e5;
 
-    return round(value);
+    if (data_id == IBUS_ID_GPS_STATUS) return round(*(float *)value);
+
+    return round(*(float *)value);
 }
 
 static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {

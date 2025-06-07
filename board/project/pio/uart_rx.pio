@@ -11,8 +11,8 @@
 
 .program uart_rx  // 1 bit every 16 cycles
 start:
-    wait 0 pin 0
-    set x 7 [16+16/2-2]
+    set x 7 
+    wait 0 pin 0 [16+16/2-1]
 bit_loop:
     in pins 1
     jmp x-- bit_loop [16-2]

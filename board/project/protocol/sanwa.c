@@ -22,7 +22,6 @@
 #include "ibus.h"
 #include "ms5611.h"
 #include "ntc.h"
-#include "pwm_out.h"
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
@@ -61,18 +60,6 @@ static uint8_t get_crc(const uint8_t *buffer, uint len);
 static void set_config(float **sensors);
 
 void sanwa_task(void *parameters) {
-    /*gpio_set_function(GPIO_PWM_CH1, GPIO_FUNC_PWM);
-    gpio_set_function(GPIO_PWM_CH2, GPIO_FUNC_PWM);
-    uint slice_num_ch1 = pwm_gpio_to_slice_num(GPIO_PWM_CH1);
-    uint slice_num_ch2 = pwm_gpio_to_slice_num(GPIO_PWM_CH2);
-    pwm_config config_ch1 = pwm_get_default_config();
-    pwm_config config_ch2 = pwm_get_default_config();
-    uint clk_div =
-        PWM_FREQ * clock_get_hz(clk_sys) / 1000 / 65536.0;  // clk_div = pulse_freq * clk_sys_hz / (1000 * 65536)
-    pwm_config_set_wrap(&config_ch1, 0xFFFF);
-    pwm_set_gpio_level(GPIO_PWM_CH1, 65536 / 20);  // set ch1 to lowest position
-    pwm_set_gpio_level(GPIO_PWM_CH2, 65536 / 20);  // set ch2 to lowest position*/
-
     float *sensors[6] = {0};
     set_config(sensors);
     context.led_cycle_duration = 6;
@@ -216,12 +203,6 @@ static void set_config(float **sensors) {
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        /*if (config->enable_pwm_out) {
-            xTaskCreate(pwm_out_task, "pwm_out", STACK_PWM_OUT, (void *)parameter.rpm, 2, &task_handle);
-            context.pwm_out_task_handle = task_handle;
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        }*/
         sensors[TYPE_TEMP_ESC] = parameter.temperature_fet;
         sensors[TYPE_TEMP_MOTOR] = parameter.temperature_bec;  // note this is bec temp, not motor temp
         sensors[TYPE_VOLT] = parameter.voltage;

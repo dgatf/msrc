@@ -145,6 +145,11 @@ typedef enum datetime_type_t {
 typedef struct smartport_parameters_t {
     uint8_t sensor_id;
     uint16_t data_id;
+    SemaphoreHandle_t semaphore_sensor;
+    bool is_maintenance_mode;
+    uint8_t *sensor_id_matrix;
+    TaskHandle_t packet_task_handle;
+    QueueHandle_t packet_queue_handle;
 } smartport_parameters_t;
 
 typedef struct smartport_sensor_parameters_t {
@@ -169,8 +174,8 @@ typedef struct smartport_sensor_double_parameters_t {
 
 typedef struct smartport_sensor_coordinate_parameters_t {
     coordinate_type_t type;
-    float *latitude;
-    float *longitude;
+    double *latitude;
+    double *longitude;
     uint16_t rate;
 } smartport_sensor_coordinate_parameters_t;
 
@@ -204,13 +209,7 @@ typedef struct smartport_packet_t {
     uint32_t data;
 } smartport_packet_t;
 
-static SemaphoreHandle_t semaphore_sensor = NULL;
-static bool is_maintenance_mode = false;
-static const uint8_t sensor_id_matrix[29] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x45, 0xC6, 0x67, 0x48, 0xE9,
-                                             0x6A, 0xCB, 0xAC, 0xD,  0x8E, 0x2F, 0xD0, 0x71, 0xF2, 0x53,
-                                             0x34, 0x95, 0x16, 0xB7, 0x98, 0x39, 0xBA, 0x1B, 0x0};
-static TaskHandle_t packet_task_handle;
-static QueueHandle_t packet_queue_handle;
+smartport_parameters_t *smartport_parameters;
 
 static void sensor_task(void *parameters);
 static void sensor_void_task(void *parameters);
@@ -223,7 +222,7 @@ static void process(smartport_parameters_t *parameter);
 static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, uint16_t data_id, uint32_t value);
 static int32_t format(uint16_t data_id, float value);
 static uint32_t format_double(uint16_t data_id, float value_l, float value_h);
-static uint32_t format_coordinate(coordinate_type_t type, float value);
+static uint32_t format_coordinate(coordinate_type_t type, double value);
 static uint32_t format_datetime(uint8_t type, uint32_t value);
 static uint32_t format_cell(uint8_t cell_index, float value);
 static void send_packet(uint8_t type_id, uint16_t data_id, uint32_t value);
@@ -235,24 +234,28 @@ static uint8_t get_crc(uint8_t *data);
 static int64_t reboot_callback(alarm_id_t id, void *user_data);
 
 void smartport_task(void *parameters) {
-    smartport_parameters_t parameter;
+    smartport_parameters = calloc(1, sizeof(smartport_parameters_t));
+    uint8_t matrix[29] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x45, 0xC6, 0x67, 0x48, 0xE9,
+                                       0x6A, 0xCB, 0xAC, 0xD,  0x8E, 0x2F, 0xD0, 0x71, 0xF2, 0x53,
+                                       0x34, 0x95, 0x16, 0xB7, 0x98, 0x39, 0xBA, 0x1B, 0x0};
+    smartport_parameters->sensor_id_matrix = matrix;
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
     uart0_begin(57600, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, true, true);
-    semaphore_sensor = xSemaphoreCreateBinary();
-    xSemaphoreTake(semaphore_sensor, 0);
-    set_config(&parameter);
-    packet_queue_handle = xQueueCreate(32, sizeof(smartport_packet_t));
-    xTaskCreate(packet_task, "packet_task", STACK_SMARTPORT_PACKET_TASK, (void *)&parameter.data_id, 3,
-                &packet_task_handle);
-    xQueueSendToBack(context.tasks_queue_handle, packet_task_handle, 0);
+    smartport_parameters->semaphore_sensor = xSemaphoreCreateBinary();
+    xSemaphoreTake(smartport_parameters->semaphore_sensor, 0);
+    set_config(smartport_parameters);
+    smartport_parameters->packet_queue_handle = xQueueCreate(32, sizeof(smartport_packet_t));
+    xTaskCreate(packet_task, "packet_task", STACK_SMARTPORT_PACKET_TASK, (void *)smartport_parameters, 3,
+                &smartport_parameters->packet_task_handle);
+    xQueueSendToBack(context.tasks_queue_handle, smartport_parameters->packet_task_handle, 0);
     // TaskHandle_t task_handle;
     // xTaskCreate(sensor_void_task, "sensor_void_task", STACK_SMARTPORT_SENSOR_VOID_TASK, NULL, 2, &task_handle);
     // xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
     debug("\nSmartport init");
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
-        process(&parameter);
+        process(smartport_parameters);
     }
 }
 
@@ -269,12 +272,13 @@ static void process(smartport_parameters_t *parameter) {
             if (lenght == PACKET_LENGHT) {
                 debug("\nSmartport (%u) < ", uxTaskGetStackHighWaterMark(NULL));
                 debug_buffer(data, PACKET_LENGHT, "0x%X ");
-                if (is_maintenance_mode && uxQueueMessagesWaiting(packet_queue_handle)) {
-                    xTaskNotifyGive(packet_task_handle);
-                } else if (!is_maintenance_mode) {
-                    xSemaphoreGive(semaphore_sensor);
+                if (smartport_parameters->is_maintenance_mode &&
+                    uxQueueMessagesWaiting(smartport_parameters->packet_queue_handle)) {
+                    xTaskNotifyGive(smartport_parameters->packet_task_handle);
+                } else if (!smartport_parameters->is_maintenance_mode) {
+                    xSemaphoreGive(smartport_parameters->semaphore_sensor);
                     vTaskDelay(4 / portTICK_PERIOD_MS);
-                    xSemaphoreTake(semaphore_sensor, 0);
+                    xSemaphoreTake(smartport_parameters->semaphore_sensor, 0);
                 }
             } else if (lenght >= 10) {
                 uint8_t i;
@@ -306,32 +310,34 @@ static void process(smartport_parameters_t *parameter) {
 static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, uint16_t data_id, uint32_t value) {
     // set maintenance mode on
     if (type_id == 0x21 && data_id == 0xFFFF && value == 0x80) {
-        is_maintenance_mode = true;
+        smartport_parameters->is_maintenance_mode = true;
         debug("\nSmartport (%u). Maintenance mode ON ", uxTaskGetStackHighWaterMark(NULL));
         return;
     }
 
     // set maintenance mode off
     if (type_id == 0x20 && data_id == 0xFFFF && value == 0x80) {
-        is_maintenance_mode = false;
+        smartport_parameters->is_maintenance_mode = false;
         debug("\nSmartport (%u). Maintenance mode OFF ", uxTaskGetStackHighWaterMark(NULL));
         return;
     }
 
     // send sensor id
-    if (is_maintenance_mode && type_id == 0x30 && data_id == parameter->data_id && value == 0x01) {
+    if (smartport_parameters->is_maintenance_mode && type_id == 0x30 && data_id == parameter->data_id &&
+        value == 0x01) {
         smartport_packet_t packet;
         packet.data = (parameter->sensor_id - 1) << 8 | 0x01;
         packet.type_id = 0x32;
         packet.data_id = parameter->data_id;
-        xQueueSendToBack(packet_queue_handle, &packet, 0);
+        xQueueSendToBack(smartport_parameters->packet_queue_handle, &packet, 0);
         debug("\nSmartport (%u). Send sensor Id %i (0x%X)", uxTaskGetStackHighWaterMark(NULL), parameter->sensor_id,
               sensor_id_to_crc(parameter->sensor_id));
         return;
     }
 
     // change sensor id
-    if (is_maintenance_mode && type_id == 0x31 && data_id == parameter->data_id && (uint8_t)value == 0x01) {
+    if (smartport_parameters->is_maintenance_mode && type_id == 0x31 && data_id == parameter->data_id &&
+        (uint8_t)value == 0x01) {
         uint8_t sensor_id = (value >> 8) + 1;
         config_t *config = config_read();
         config->smartport_sensor_id = sensor_id;
@@ -342,7 +348,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
     }
 
     // send config
-    if (is_maintenance_mode && type_id == 0x30 && data_id == parameter->data_id && value == 0) {
+    if (smartport_parameters->is_maintenance_mode && type_id == 0x30 && data_id == parameter->data_id && value == 0) {
         uint32_t value = 0;
         smartport_packet_t packet;
         config_t *config = config_read();
@@ -354,7 +360,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
         packet.type_id = 0x32;
         packet.data_id = parameter->data_id;
         packet.data = value;
-        xQueueSendToBack(packet_queue_handle, &packet, 0);
+        xQueueSendToBack(smartport_parameters->packet_queue_handle, &packet, 0);
         // packet 2
         value = 0xF2;
         value |= config->enable_analog_airspeed << 8;
@@ -370,7 +376,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
         packet.type_id = 0x32;
         packet.data_id = parameter->data_id;
         packet.data = value;
-        xQueueSendToBack(packet_queue_handle, &packet, 0);
+        xQueueSendToBack(smartport_parameters->packet_queue_handle, &packet, 0);
         // packet 3
         value = 0xF3;
         value |= (ELEMENTS(config->alpha_rpm) & 0b1111) << 8;
@@ -381,7 +387,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
         packet.type_id = 0x32;
         packet.data_id = parameter->data_id;
         packet.data = value;
-        xQueueSendToBack(packet_queue_handle, &packet, 0);
+        xQueueSendToBack(smartport_parameters->packet_queue_handle, &packet, 0);
         // packet 4
         value = 0xF4;
         value |= config->i2c_module << 8;
@@ -389,13 +395,13 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
         packet.type_id = 0x32;
         packet.data_id = parameter->data_id;
         packet.data = value;
-        xQueueSendToBack(packet_queue_handle, &packet, 0);
+        xQueueSendToBack(smartport_parameters->packet_queue_handle, &packet, 0);
         debug("\nSmartport (%u). Send config...", uxTaskGetStackHighWaterMark(NULL));
         return;
     }
 
     // receive config
-    if (is_maintenance_mode && type_id == 0x31 && data_id == parameter->data_id &&
+    if (smartport_parameters->is_maintenance_mode && type_id == 0x31 && data_id == parameter->data_id &&
         ((uint8_t)(value) == 0xF1 || (uint8_t)(value) == 0xF2 || (uint8_t)(value) == 0xF3)) {
         static config_t config;
 
@@ -428,7 +434,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
             packet.type_id = 0x32;
             packet.data_id = parameter->data_id;
             packet.data = 0xFF;
-            xQueueSendToBack(packet_queue_handle, &packet, 0);
+            xQueueSendToBack(smartport_parameters->packet_queue_handle, &packet, 0);
             add_alarm_in_ms(6000, reboot_callback, NULL, true);
             debug("\nSmartport (%u). Received config 3/3. Write config. Reboot...\n",
                   uxTaskGetStackHighWaterMark(NULL));
@@ -443,7 +449,7 @@ static void sensor_task(void *parameters) {
     xTaskNotifyGive(context.receiver_task_handle);
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
-        xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
+        xSemaphoreTake(smartport_parameters->semaphore_sensor, portMAX_DELAY);
         int32_t data_formatted = format(parameter.data_id, *parameter.value);
         debug("\nSmartport. Sensor (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, parameter.data_id, data_formatted);
@@ -456,18 +462,17 @@ static void sensor_gpio_task(void *parameters) {
     uint cont = 0;
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
-        xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
+        xSemaphoreTake(smartport_parameters->semaphore_sensor, portMAX_DELAY);
         if (parameter.gpio_mask) {
             while (!(parameter.gpio_mask & (1 << cont))) {
                 cont++;
                 if (cont == 6) cont = 0;
             }
-            float value = *parameter.value & (1 << cont) ? 1 : 0;
+            uint32_t value = *parameter.value & (1 << cont) ? 1 : 0;
             uint16_t data_id = parameter.data_id + 17 + cont;
-            int32_t data_formatted = format(data_id, value);
             debug("\nSmartport. Sensor GPIO (%u) > GPIO: %u STATE: %u > ", uxTaskGetStackHighWaterMark(NULL), 17 + cont,
                   (uint)value);
-            send_packet(0x10, data_id, data_formatted);
+            send_packet(0x10, data_id, value);
             cont++;
             if (cont == 6) cont = 0;
         }
@@ -476,7 +481,7 @@ static void sensor_gpio_task(void *parameters) {
 
 static void sensor_void_task(void *parameters) {
     while (1) {
-        xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
+        xSemaphoreTake(smartport_parameters->semaphore_sensor, portMAX_DELAY);
         if (context.debug == 2) printf("\nSmartport. Sensor void (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0, 0, 0);
     }
@@ -487,7 +492,7 @@ static void sensor_double_task(void *parameters) {
     xTaskNotifyGive(context.receiver_task_handle);
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
-        xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
+        xSemaphoreTake(smartport_parameters->semaphore_sensor, portMAX_DELAY);
         uint32_t data_formatted = format_double(parameter.data_id, *parameter.value_l, *parameter.value_h);
         debug("\nSmartport. Sensor double (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, parameter.data_id, data_formatted);
@@ -499,14 +504,14 @@ static void sensor_coordinates_task(void *parameters) {
     xTaskNotifyGive(context.receiver_task_handle);
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
-        xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
+        xSemaphoreTake(smartport_parameters->semaphore_sensor, portMAX_DELAY);
         uint32_t data_formatted;
         if (parameter.type == SMARTPORT_LATITUDE)
             data_formatted = format_coordinate(parameter.type, *parameter.latitude);
         else
             data_formatted = format_coordinate(parameter.type, *parameter.longitude);
         parameter.type = !parameter.type;
-        debug("\nSmartport. Sensor coordinates (%u) > ", uxTaskGetStackHighWaterMark(NULL));
+        debug("\nSmartport. Sensor coordinates (%u) %f %f > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, GPS_LONG_LATI_FIRST_ID, data_formatted);
     }
 }
@@ -516,7 +521,7 @@ static void sensor_datetime_task(void *parameters) {
     xTaskNotifyGive(context.receiver_task_handle);
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
-        xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
+        xSemaphoreTake(smartport_parameters->semaphore_sensor, portMAX_DELAY);
         uint32_t data_formatted;
         if (parameter.type == SMARTPORT_DATE)
             data_formatted = format_datetime(parameter.type, *parameter.date);
@@ -534,7 +539,7 @@ static void sensor_cell_task(void *parameters) {
     uint8_t cell_index = 0;
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
-        xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
+        xSemaphoreTake(smartport_parameters->semaphore_sensor, portMAX_DELAY);
         if (!*parameter.cell_count) return;
         uint32_t data_formatted = format_cell(cell_index, *parameter.cell_voltage);
         cell_index++;
@@ -551,7 +556,7 @@ static void sensor_cell_individual_task(void *parameters) {
     uint8_t cell_index = 0;
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
-        xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
+        xSemaphoreTake(smartport_parameters->semaphore_sensor, portMAX_DELAY);
         if (!*parameter.cell_count) return;
         uint32_t data_formatted = format_cell(cell_index, *parameter.cell_voltage[cell_index]);
         cell_index++;
@@ -562,11 +567,11 @@ static void sensor_cell_individual_task(void *parameters) {
 }
 
 static void packet_task(void *parameters) {
-    uint16_t data_id = *(uint16_t *)parameters;
+    // smartport_parameters_t parameter = *(smartport_parameters_t *)parameters;
     smartport_packet_t packet;
     while (1) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        xQueueReceive(packet_queue_handle, &packet, 0);
+        xQueueReceive(smartport_parameters->packet_queue_handle, &packet, 0);
         debug("\nSmartport. Packet (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(packet.type_id, packet.data_id, packet.data);
         vTaskDelay(1500 / portTICK_PERIOD_MS);
@@ -605,7 +610,8 @@ static uint32_t format_double(uint16_t data_id, float value_l, float value_h) {
     return (uint16_t)round(value_h * 500) << 8 | (uint16_t)value_l;
 }
 
-static uint32_t format_coordinate(coordinate_type_t type, float value) {
+static uint32_t format_coordinate(coordinate_type_t type, double value) {
+    debug("\nCOORD: %f", value);
     uint32_t data = 0;
     if (value < 0) {
         data |= (uint32_t)1 << 30;
@@ -614,7 +620,7 @@ static uint32_t format_coordinate(coordinate_type_t type, float value) {
     if (type == SMARTPORT_LONGITUDE) {
         data |= (uint32_t)1 << 31;
     }
-    data |= (uint32_t)(value * 60 * 10000); // deg to min * 10000
+    data |= (uint32_t)(value * 60 * 10000);  // deg to min * 10000
     return data;
 }
 
@@ -1548,12 +1554,12 @@ static uint8_t sensor_id_to_crc(uint8_t sensor_id) {
     if (sensor_id < 1 || sensor_id > 28) {
         return 0;
     }
-    return sensor_id_matrix[sensor_id - 1];
+    return smartport_parameters->sensor_id_matrix[sensor_id - 1];
 }
 
 static uint8_t sensor_crc_to_id(uint8_t sensor_id_crc) {
     uint8_t cont = 0;
-    while (sensor_id_crc != sensor_id_matrix[cont] && cont < 28) {
+    while (sensor_id_crc != smartport_parameters->sensor_id_matrix[cont] && cont < 28) {
         cont++;
     }
     if (cont == 28) return 0;

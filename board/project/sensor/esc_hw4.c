@@ -20,8 +20,6 @@
 #define V_REF 3.3
 #define ADC_RES 4096.0
 
-float current_offset_ = -1;
-
 static void process(esc_hw4_parameters_t *parameter, int current_raw_offset, uint *current_raw);
 float get_voltage(uint16_t voltage_raw, esc_hw4_parameters_t *parameter);
 float get_temperature(uint16_t temperature_raw);
