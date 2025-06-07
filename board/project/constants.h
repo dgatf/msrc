@@ -23,6 +23,7 @@
 #define ADC2_GPIO 28          // NTC
 #define ADC3_GPIO 29          // Airspeed
 #define SMART_ESC_PWM_GPIO 12 // receiver throttle signal
+#define RESTORE_GPIO 15
 
 /* UARTS */
 #define UART_RECEIVER uart0

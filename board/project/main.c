@@ -31,7 +31,9 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
 int main() {
     stdio_init_all();
 
-    if (CONFIG_FORZE_WRITE) config_forze_write();
+    gpio_init(RESTORE_GPIO);
+    gpio_pull_up(RESTORE_GPIO);
+    if (CONFIG_FORZE_WRITE || !gpio_get(RESTORE_GPIO)) config_forze_write();
     config_t *config = config_read();
 
     context.debug = config->debug;
