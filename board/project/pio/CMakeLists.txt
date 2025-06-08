@@ -7,6 +7,14 @@ target_sources(${PROJECT_NAME} PRIVATE
     uart_tx.c
 )
 
+target_link_libraries(${PROJECT_NAME} 
+    pico_stdlib
+    hardware_irq
+    hardware_pio
+    hardware_clocks
+    hardware_dma
+)
+
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/capture_edge.pio)
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/i2c_multi.pio)
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/uart_rx.pio)
