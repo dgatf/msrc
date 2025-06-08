@@ -1,41 +1,26 @@
-/**
+/*
  * Copyright (c) 2022, Daniel Gorbea
  * All rights reserved.
  *
  * This source code is licensed under the MIT-style license found in the
  * LICENSE file in the root directory of this source tree. 
+ *
+ * Library for pin capture timer for RP2040
  */
 
-.define PUBLIC CAPTURE_EDGE_IRQ_NUM 2     // use 0 to 3
+.define PUBLIC CAPTURE_EDGE_IRQ_NUM 3     // use 0 to 3
 
-.define PUBLIC COUNTER_CYCLES 9
+.define PUBLIC COUNTER_CYCLES 5
 
 .program capture_edge
-intr:
-    mov osr isr        // bk counter
-    mov isr ~isr
-    push noblock       // send counter
-    mov isr x
-    push noblock       // send pins
-    mov isr y
-    push noblock       // send prev
-    mov y osr          // restore counter
-    mov osr x          // pins to prev
-    irq CAPTURE_EDGE_IRQ_NUM        // capture irq
-    jmp y-- decr       // adjust counter
-decr:
-    jmp y-- loop       // adjust counter
+capture:
+    irq CAPTURE_EDGE_IRQ_NUM
+    push
 .wrap_target
-loop:
-    nop                //in pins pin_count    // read pins
-    nop                //in null 32-pin_count // fill with zeros
-    mov x isr          // pins to x
-    mov isr y          // bk counter
-    mov y osr          // prev to y
-    jmp x!=y intr      // capture irq
-    mov y isr          // restore counter
-    mov osr x          // prev to osr
-    jmp y-- loop       // counter decrement every 9 cycles
 public start:
-    mov y ~null        // init counter
+    mov y x                         // pins to prev
+    nop                             //in pins CAPTURE_EDGE_PIN_COUNT  // read pins
+    nop                             //in null ZERO_COUNT
+    mov x isr                       // pins to x
+    jmp x!=y capture                // capture
 .wrap

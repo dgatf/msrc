@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. 
  */
  
-.define PUBLIC CASTLE_LINK_IRQ_NUM 2        // use 0 to 3
+.define PUBLIC CASTLE_LINK_IRQ_NUM 0        // use 0 to 3
 
 // 0 RX input
 // 1 PWM input/output
