@@ -158,8 +158,7 @@ void gps_task(void *parameters) {
     xTaskCreate(distance_task, "distance_task", STACK_DISTANCE, (void *)&parameters_distance, 2, &task_handle);
     // xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-    /* Change GPS config. For ublox compatible devices. If not success it will switch to nmea protocol in 2 sec and
-     * every 10 sec*/
+    /* Change GPS config. For ublox compatible devices */
 
     set_baudrate(parameter.baudrate);
     uart_pio_begin(parameter.baudrate, UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1);
