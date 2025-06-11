@@ -18,23 +18,23 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
 #include "esc_pwm.h"
+#include "esc_ztw.h"
+#include "gps.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "ibus.h"
 #include "ms5611.h"
-#include "gps.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"
+#include "smart_esc.h"
 #include "stdlib.h"
 #include "string.h"
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
-#include "smart_esc.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 #define HOTT_VARIO_MODULE_ID 0x89
 #define HOTT_GPS_MODULE_ID 0x8A
@@ -133,6 +133,7 @@
 #define HOTT_GENERAL_PRESSURE 14
 
 typedef struct hott_sensor_vario_t {
+    uint8_t startByte;      // 1
     uint8_t sensorID;
     uint8_t warningId;
     uint8_t sensorTextID;
@@ -145,6 +146,7 @@ typedef struct hott_sensor_vario_t {
     uint16_t m10s;  // ?? idem
     uint8_t text[24];
     uint8_t version;
+    uint8_t empty;
     uint8_t endByte;
     uint8_t checksum;
 } __attribute__((packed)) hott_sensor_vario_t;
@@ -357,10 +359,10 @@ typedef struct hott_sensor_gps_t {
     uint8_t angleYdirection; /* Byte 31: angle y-direction (1 byte) */
     uint8_t angleZdirection; /* Byte 32: angle z-direction (1 byte) */
 
-    uint8_t gps_time_h;  //#33 UTC time hours
-    uint8_t gps_time_m;  //#34 UTC time minutes
-    uint8_t gps_time_s;  //#35 UTC time seconds
-    uint8_t gps_time_sss;//#36 UTC time milliseconds
+    uint8_t gps_time_h;     //#33 UTC time hours
+    uint8_t gps_time_m;     //#34 UTC time minutes
+    uint8_t gps_time_s;     //#35 UTC time seconds
+    uint8_t gps_time_sss;   //#36 UTC time milliseconds
     uint16_t msl_altitude;  //#37 mean sea level altitude
 
     uint8_t vibration; /* Byte 39: vibration (1 bytes) */
@@ -424,11 +426,14 @@ static void process(hott_sensors_t *sensors) {
 
 static void send_packet(hott_sensors_t *sensors, uint8_t address) {
     // packet in little endian
+    vTaskDelay(50 / portTICK_PERIOD_MS);
     switch (address) {
         case HOTT_VARIO_MODULE_ID: {
             static uint16_t max_altitude = 0, min_altitude = 0;
             if (!sensors->is_enabled[HOTT_TYPE_VARIO]) return;
             hott_sensor_vario_t packet = {0};
+            uint8_t buff[] = {0x7C, 0x89, 0x0, 0x90, 0x0, 0xF4, 0x1, 0xF4, 0x5, 0x0, 0x0, 0x0, 0xBE, 0x0, 0x0, 0x0, 0x75, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7D, 0xC1};
+            packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_VARIO_MODULE_ID;
             packet.sensorTextID = HOTT_VARIO_SENSOR_ID;
             packet.altitude = *sensors->vario[HOTT_VARIO_ALTITUDE] + 500;
@@ -440,7 +445,8 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.m3s = vario_alarm_parameters.m3s;
             packet.m10s = vario_alarm_parameters.m10s;
             packet.endByte = HOTT_END_BYTE;
-            packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
+            memcpy((uint8_t *)&packet, buff, 45);
+            //packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
             debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
             debug_buffer((uint8_t *)&packet, sizeof(packet), "0x%X ");
@@ -558,14 +564,14 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             float longitude = fabs(*sensors->gps[HOTT_GPS_LONGITUDE]);
             packet.longitudeDegMin = (uint)longitude * 100 + (longitude - (uint)longitude) * 60;
             packet.longitudeSec = (longitude * 60 - (uint)(longitude * 60)) * 60;
-            //packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
+            // packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
             packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
             // packet.climbrate = *sensors->gps[HOTT_GPS_ALTITUDE];    // 30000, 0.00
             // packet.climbrate3s = *sensors->gps[HOTT_GPS_ALTITUDE];  // 120, 0
             packet.GPSNumSat = *sensors->gps[HOTT_GPS_SATS];
-            // uint8_t GPSFixChar;      // Byte 28: GPS.FixChar. (GPS fix character. display, if DGPS, 2D oder 3D) (1 byte)
-            // uint8_t homeDirection;   // Byte 29: HomeDirection (direction from starting point to Model position) (1 byte)
-            // uint8_t gps_time_h;  //#33 UTC time hours int8_t gps_time_m;  //#34 UTC time minutes
+            // uint8_t GPSFixChar;      // Byte 28: GPS.FixChar. (GPS fix character. display, if DGPS, 2D oder 3D) (1
+            // byte) uint8_t homeDirection;   // Byte 29: HomeDirection (direction from starting point to Model
+            // position) (1 byte) uint8_t gps_time_h;  //#33 UTC time hours int8_t gps_time_m;  //#34 UTC time minutes
             // uint8_t gps_time_s;  //#35 UTC time seconds
             // uint8_t gps_time_sss;//#36 UTC time milliseconds
             // uint8_t msl_altitude;//#37 mean sea level altitudeuint8_t vibration;
@@ -593,6 +599,7 @@ static uint8_t get_crc(const uint8_t *buffer, uint len) {
     for (uint i = 0; i < len; i++) {
         crc += buffer[i];
     }
+    // debug("\n>CRC: 0x%X", crc & 0xFF);
     return crc;
 }
 
@@ -823,7 +830,6 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
         sensors->esc[HOTT_ESC_CAPACITY] = parameter.consumption;
         sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.temp_motor;
-
     }
     if (config->esc_protocol == ESC_ZTW) {
         esc_ztw_parameters_t parameter;
