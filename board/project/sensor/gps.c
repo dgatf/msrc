@@ -139,7 +139,7 @@ void gps_task(void *parameters) {
     *parameter.h_acc = 0;
     *parameter.v_acc = 0;
 #ifdef SIM_SENSORS
-    *parameter.lat = 123.456789;  // deg * 1e7  11º32'45.67" +N, -S
+    *parameter.lat = 123.456789;   // deg * 1e7  11º32'45.67" +N, -S
     *parameter.lon = -123.456789;  //-deg + 10e7 1251.964833333; // 20º51'57.89" +E, -W
     *parameter.alt = 1283;         // m
     *parameter.spd = 158;          // kts
@@ -247,7 +247,7 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->time = navpvt.hour * 10000L + navpvt.min * 100 + navpvt.sec;
                 *parameter->date = (navpvt.year - 2000) * 10000L + navpvt.month * 100 + navpvt.day;
                 *parameter->vspeed = navpvt.velD / 1000.0F;
-                *parameter->spd_kmh = navpvt.gSpeed * 3600L / 1000.0F;
+                *parameter->spd_kmh = navpvt.gSpeed * 3600L / 1000000.0F;
                 *parameter->spd = 0.5144444F * navpvt.gSpeed;
                 *parameter->fix = navpvt.fixType;
                 *parameter->n_vel = navpvt.velN / 1000.0F;
@@ -258,9 +258,12 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->alt_elipsiod = navpvt.height / 1000.0F;
                 *parameter->h_acc = navpvt.hAcc / 1000.0F;
                 *parameter->v_acc = navpvt.vAcc / 1000.0F;
-                debug("\nGPS (%u) < NAV-PTV: Y: %u M: %u D: %u H: %u M: %u S: %u Fix: %u Sat: %i Lon: %i Lat: %i",
-                      uxTaskGetStackHighWaterMark(NULL), navpvt.year, navpvt.month, navpvt.day, navpvt.hour, navpvt.min,
-                      navpvt.sec, navpvt.fixType, navpvt.numSV, navpvt.lon, navpvt.lat);
+                debug(
+                    "\nGPS (%u) < NAV-PTV: Date: %.0f Time: %.0f Fix: %.0f Sat: %.0f Lon: %.5f Lat: %.5f Alt: %.2f "
+                    "Vspeed: %.2f Speed(kmh): (%i) %.2f",
+                    uxTaskGetStackHighWaterMark(NULL), *parameter->date, *parameter->time, *parameter->fix,
+                    *parameter->sat, *parameter->lon, *parameter->lat, *parameter->alt, *parameter->vspeed,
+                    navpvt.gSpeed, *parameter->spd_kmh);
             } else if (msg_info.class == 0x01 && msg_info.id == 0x04 && msg_info.len == sizeof(ublox_navdop_t) - 2) {
                 // cancel_alarm(alarm_id_ublox);
                 // alarm_id_ublox = add_alarm_in_ms(2000, alarm_ublox_timeout, &alarm_parameters, false);

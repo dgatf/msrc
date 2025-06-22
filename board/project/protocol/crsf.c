@@ -255,7 +255,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             crsf_sensor_gps_formatted_t sensor = {0};
             if (sensors->gps.latitude) sensor.latitude = swap_32((int32_t)(*sensors->gps.latitude * 10000000L));
             if (sensors->gps.longitude) sensor.longitude = swap_32((int32_t)(*sensors->gps.longitude * 10000000L));
-            if (sensors->gps.groundspeed) sensor.groundspeed = swap_16((uint16_t)(*sensors->gps.groundspeed * 10));
+            if (sensors->gps.groundspeed) sensor.groundspeed = swap_16((uint16_t)(fabs(*sensors->gps.groundspeed * 10)));
             if (sensors->gps.satellites) sensor.satellites = *sensors->gps.satellites;
             if (sensors->gps.heading) sensor.heading = swap_16((uint16_t)(*sensors->gps.heading * 100));
             if (sensors->gps.altitude) {
