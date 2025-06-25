@@ -248,7 +248,7 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->date = (navpvt.year - 2000) * 10000L + navpvt.month * 100 + navpvt.day;
                 *parameter->vspeed = navpvt.velD / 1000.0F;
                 *parameter->spd_kmh = navpvt.gSpeed * 3600L / 1000000.0F;
-                *parameter->spd = 0.5144444F * navpvt.gSpeed;
+                *parameter->spd = 0.5144444F * navpvt.gSpeed * 3600L / 1000000.0F;
                 *parameter->fix = navpvt.fixType;
                 *parameter->n_vel = navpvt.velN / 1000.0F;
                 *parameter->e_vel = navpvt.velE / 1000.0F;
@@ -260,10 +260,10 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->v_acc = navpvt.vAcc / 1000.0F;
                 debug(
                     "\nGPS (%u) < NAV-PTV: Date: %.0f Time: %.0f Fix: %.0f Sat: %.0f Lon: %.5f Lat: %.5f Alt: %.2f "
-                    "Vspeed: %.2f Speed(kmh): %.2f",
+                    "Vspeed: %.2f Speed: mm/s %i knots %.2f kmh %.2f",
                     uxTaskGetStackHighWaterMark(NULL), *parameter->date, *parameter->time, *parameter->fix,
                     *parameter->sat, *parameter->lon, *parameter->lat, *parameter->alt, *parameter->vspeed,
-                    *parameter->spd_kmh);
+                    navpvt.gSpeed, *parameter->spd, *parameter->spd_kmh);
             } else if (msg_info.class == 0x01 && msg_info.id == 0x04 && msg_info.len == sizeof(ublox_navdop_t) - 2) {
                 // cancel_alarm(alarm_id_ublox);
                 // alarm_id_ublox = add_alarm_in_ms(2000, alarm_ublox_timeout, &alarm_parameters, false);
