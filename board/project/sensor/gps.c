@@ -260,10 +260,10 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->v_acc = navpvt.vAcc / 1000.0F;
                 debug(
                     "\nGPS (%u) < NAV-PTV: Date: %.0f Time: %.0f Fix: %.0f Sat: %.0f Lon: %.5f Lat: %.5f Alt: %.2f "
-                    "Vspeed: %.2f Speed(kmh): (%i) %.2f",
+                    "Vspeed: %.2f Speed(kmh): %.2f",
                     uxTaskGetStackHighWaterMark(NULL), *parameter->date, *parameter->time, *parameter->fix,
                     *parameter->sat, *parameter->lon, *parameter->lat, *parameter->alt, *parameter->vspeed,
-                    navpvt.gSpeed, *parameter->spd_kmh);
+                    *parameter->spd_kmh);
             } else if (msg_info.class == 0x01 && msg_info.id == 0x04 && msg_info.len == sizeof(ublox_navdop_t) - 2) {
                 // cancel_alarm(alarm_id_ublox);
                 // alarm_id_ublox = add_alarm_in_ms(2000, alarm_ublox_timeout, &alarm_parameters, false);
@@ -351,8 +351,8 @@ static void set_nmea_config(uint rate) {
 }
 
 static void set_baudrate(uint16_t baudrate) {
-    char msg[30];
-    uint baudrates[] = {115200, 57600, 38400, 19200, 9600, 4800};
+    char msg[300];
+    uint baudrates[] = {115200, 57600, 38400, 9600};
     for (uint i = 0; i < sizeof(baudrates) / sizeof(uint); i++) {
         uart_pio_begin(baudrates[i], UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1);
         vTaskDelay(10 / portTICK_PERIOD_MS);

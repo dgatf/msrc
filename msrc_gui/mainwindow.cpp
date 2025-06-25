@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
                          "Kiss", "APD HV", "HobbyWing V5", "Smart ESC/BAT", "OMP M4", "ZTW"});
 
-    ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "19200", "9600", "4800"});
+    ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "9600"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItem("Frsky Smartport", RX_SMARTPORT);
     ui->cbReceiver->addItem("Frsky D", RX_FRSKY_D);
