@@ -52,7 +52,7 @@ jobs:
           filename: 'msrc_gui/appdir/msrc_gui.AppImage'
           folderId: ${{ secrets.FOLDER_ID }}
           overwrite: 'true'
-          name: msrc_link.AppImage
+          name: msrc_link_xdfly.AppImage
 
   macos:
     runs-on: macos-14
@@ -84,7 +84,7 @@ jobs:
           filename: 'build/msrc_gui.dmg'
           folderId: ${{ secrets.FOLDER_ID }}
           overwrite: 'true'
-          name: msrc_link.dmg
+          name: msrc_link_xdfly.dmg
 
   windows:
     runs-on: windows-2019
@@ -116,4 +116,4 @@ jobs:
           filename: 'build/release/msrc_gui.exe'
           folderId: ${{ secrets.FOLDER_ID }}
           overwrite: 'true'
-          name: msrc_link.exe
+          name: msrc_link_xdfly.exe

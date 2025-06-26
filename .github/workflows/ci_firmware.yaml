@@ -37,4 +37,4 @@ jobs:
           filename: 'build/project/MSRC-RP2040.uf2'
           folderId: ${{ secrets.FOLDER_ID }}
           overwrite: 'true'
-          name: MSRC-RP2040.uf2
+          name: MSRC-RP2040_xdfly.uf2
