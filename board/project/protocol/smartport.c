@@ -1281,7 +1281,6 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter.e_vel = malloc(sizeof(float));
         parameter.v_vel = malloc(sizeof(float));
         parameter.alt_elipsiod = malloc(sizeof(float));
-        parameter.dist = malloc(sizeof(float));
         parameter.pdop = malloc(sizeof(float));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
