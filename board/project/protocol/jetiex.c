@@ -854,6 +854,7 @@ static void set_config(sensor_jetiex_t **sensor) {
         parameter.v_vel = malloc(sizeof(float));
         parameter.alt_elipsiod = malloc(sizeof(float));
         parameter.dist = malloc(sizeof(float));
+        parameter.pdop = malloc(sizeof(float));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         new_sensor = malloc(sizeof(sensor_jetiex_t));
@@ -894,6 +895,9 @@ static void set_config(sensor_jetiex_t **sensor) {
         add_sensor(new_sensor, sensor);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "HDOP", "", parameter.hdop};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_2_DECIMAL, "PDOP", "", parameter.pdop};
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

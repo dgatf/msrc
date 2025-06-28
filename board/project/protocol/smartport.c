@@ -582,7 +582,7 @@ static int32_t format(uint16_t data_id, float value) {
         (data_id >= VFAS_FIRST_ID && data_id <= VFAS_LAST_ID) ||
         (data_id >= ACCX_FIRST_ID && data_id <= GPS_ALT_LAST_ID) ||
         (data_id >= GPS_COURS_FIRST_ID && data_id <= GPS_COURS_LAST_ID) ||
-        (data_id >= A3_FIRST_ID && data_id <= A4_LAST_ID))
+        (data_id >= A3_FIRST_ID && data_id <= A4_LAST_ID) || DIY_FIRST_ID + 5)
         return round(value * 100);
 
     if ((data_id >= CURR_FIRST_ID && data_id <= CURR_LAST_ID) ||
@@ -1282,6 +1282,7 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter.v_vel = malloc(sizeof(float));
         parameter.alt_elipsiod = malloc(sizeof(float));
         parameter.dist = malloc(sizeof(float));
+        parameter.pdop = malloc(sizeof(float));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -1341,6 +1342,13 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor.value = parameter.dist;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = DIY_FIRST_ID + 5;
+        parameter_sensor.value = parameter.pdop;
+        parameter_sensor.rate = config->refresh_rate_gps;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_voltage) {
