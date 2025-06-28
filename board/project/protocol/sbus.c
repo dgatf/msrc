@@ -716,11 +716,13 @@ static void set_config(void) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_VOLT_V1, parameter.voltage};
-        add_sensor(SLOT_VOLT_V1, new_sensor);
-        new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_VOLT_V2, NULL};
+        *new_sensor = (sensor_sbus_t){SBUS_VOLT_V2, parameter.voltage};
         add_sensor(SLOT_VOLT_V2, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        float *volt_v1 =  malloc(sizeof(float));
+        *volt_v1 = 0;
+        *new_sensor = (sensor_sbus_t){SBUS_VOLT_V1, volt_v1};
+        add_sensor(SLOT_VOLT_V1, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_current) {
