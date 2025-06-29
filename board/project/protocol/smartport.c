@@ -582,7 +582,7 @@ static int32_t format(uint16_t data_id, float value) {
         (data_id >= VFAS_FIRST_ID && data_id <= VFAS_LAST_ID) ||
         (data_id >= ACCX_FIRST_ID && data_id <= GPS_ALT_LAST_ID) ||
         (data_id >= GPS_COURS_FIRST_ID && data_id <= GPS_COURS_LAST_ID) ||
-        (data_id >= A3_FIRST_ID && data_id <= A4_LAST_ID) || DIY_FIRST_ID + 5)
+        (data_id >= A3_FIRST_ID && data_id <= A4_LAST_ID) || data_id == DIY_FIRST_ID + 5)
         return round(value * 100);
 
     if ((data_id >= CURR_FIRST_ID && data_id <= CURR_LAST_ID) ||
