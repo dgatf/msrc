@@ -167,7 +167,7 @@ void MainWindow::generateCircuit(QLabel *label) {
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if (ui->cbReceiver->currentText() == "Frsky D") {
+        if (ui->cbReceiver->currentText() == "Frsky D" || ui->cbReceiver->currentText() == "CRSF") {
             image.load(":/res/receiver_frsky_d_rp2040_zero.png");
         } else if (ui->cbReceiver->currentText() == "Spektrum XBUS") {
             image.load(":/res/receiver_xbus_rp2040_zero.png");

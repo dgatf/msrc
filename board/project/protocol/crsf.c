@@ -209,7 +209,6 @@ typedef struct crsf_sensors_t {
     crsf_sensor_gps_extended_t gps_extended;
 } crsf_sensors_t;
 
-static void process(crsf_sensors_t *sensors);
 static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buffer);
 static void send_packet(crsf_sensors_t *sensors);
 static uint8_t get_crc(const uint8_t *ptr, uint32_t len);
@@ -222,25 +221,11 @@ void crsf_task(void *parameters) {
     set_config(&sensors);
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
-    uart0_begin(416666L, UART_RECEIVER_TX, UART_RECEIVER_RX, CRSF_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
+    uart0_begin(416666L, UART_RECEIVER_TX, UART_RECEIVER_RX, CRSF_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, false);
     debug("\nCRSF init");
     while (1) {
-        ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
-        process(&sensors);
-    }
-}
-
-static void process(crsf_sensors_t *sensors) {
-    uint len = uart0_available();
-    if (len >= 4 && len <= 256) {
-        uint8_t buffer[len];
-        uart0_read_bytes(buffer, len);
-        debug("\nCRSF (%u) < ", uxTaskGetStackHighWaterMark(NULL));
-        debug_buffer(buffer, len, "0x%X ");
-        if (/*buffer[0] == 0xC8 &&*/ get_crc(&buffer[2], len - 3) == buffer[len - 1])
-            send_packet(sensors);
-        else
-            debug("\nCRSF. Bad CRC or header");
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+        send_packet(&sensors);
     }
 }
 
@@ -255,13 +240,14 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             crsf_sensor_gps_formatted_t sensor = {0};
             if (sensors->gps.latitude) sensor.latitude = swap_32((int32_t)(*sensors->gps.latitude * 10000000L));
             if (sensors->gps.longitude) sensor.longitude = swap_32((int32_t)(*sensors->gps.longitude * 10000000L));
-            if (sensors->gps.groundspeed) sensor.groundspeed = swap_16((uint16_t)(fabs(*sensors->gps.groundspeed * 10)));
+            if (sensors->gps.groundspeed)
+                sensor.groundspeed = swap_16((uint16_t)(fabs(*sensors->gps.groundspeed * 10)));
             if (sensors->gps.satellites) sensor.satellites = *sensors->gps.satellites;
             if (sensors->gps.heading) sensor.heading = swap_16((uint16_t)(*sensors->gps.heading * 100));
             if (sensors->gps.altitude) {
                 float altitude = *sensors->gps.altitude + 1000;
                 if (altitude < 0) altitude = 0;
-                if (altitude > 2276) altitude = 2276;
+                if (altitude > 65535) altitude = 65535;
                 sensor.altitude = swap_16((uint16_t)altitude);
             }
             memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_gps_formatted_t));
@@ -302,8 +288,8 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             if (sensors->baro.altitude) {
                 float altitude = *sensors->baro.altitude + 1000;
                 if (altitude < 0) altitude = 0;
-                if (altitude > 2276) altitude = 2276;
-                sensor.altitude = swap_16((uint16_t)altitude);
+                if (altitude > 3276) altitude = 3276;
+                sensor.altitude = swap_16((uint16_t)(altitude * 10));
             }
             memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_baro_formatted_t));
             buffer[3 + sizeof(crsf_sensor_baro_formatted_t)] =
@@ -824,7 +810,7 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->gps.satellites = parameter.sat;
         sensors->gps.altitude = parameter.alt;
 
-        sensors->enabled_sensors[TYPE_GPS_TIME] = true;
+        /*sensors->enabled_sensors[TYPE_GPS_TIME] = true;
         sensors->gps_time.date = parameter.date;
         sensors->gps_time.time = parameter.time;
 
@@ -839,7 +825,7 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->gps_extended.track_acc = parameter.track_acc;
         sensors->gps_extended.alt_ellipsoid = parameter.alt_elipsiod;
         sensors->gps_extended.h_acc = parameter.h_acc;
-        sensors->gps_extended.v_acc = parameter.v_acc;
+        sensors->gps_extended.v_acc = parameter.v_acc;*/
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
