@@ -55,7 +55,8 @@
 #define HOTT_BINARY_MODE_REQUEST_ID 0x80
 #define HOTT_TEXT_MODE_REQUEST_ID 0x7F
 
-#define HOTT_TIMEOUT_US 2000
+#define HOTT_TIMEOUT_US 5000
+#define HOTT_INTERBYTE_DELAY_US 500
 #define HOTT_PACKET_LENGHT 2
 
 #define HOTT_START_BYTE 0x7C
@@ -133,7 +134,7 @@
 #define HOTT_GENERAL_PRESSURE 14
 
 typedef struct hott_sensor_vario_t {
-    uint8_t startByte;      // 1
+    uint8_t startByte;  // 1
     uint8_t sensorID;
     uint8_t warningId;
     uint8_t sensorTextID;
@@ -394,6 +395,7 @@ float *baro_temp = NULL, *baro_pressure = NULL;
 
 static void process(hott_sensors_t *sensors);
 static void send_packet(hott_sensors_t *sensors, uint8_t address);
+static void send_bytes(uint8_t *buffer, uint len);
 static uint8_t get_crc(const uint8_t *buffer, uint len);
 static void set_config(hott_sensors_t *sensors);
 static int64_t interval_1000_callback(alarm_id_t id, void *parameters);
@@ -426,13 +428,11 @@ static void process(hott_sensors_t *sensors) {
 
 static void send_packet(hott_sensors_t *sensors, uint8_t address) {
     // packet in little endian
-    vTaskDelay(50 / portTICK_PERIOD_MS);
     switch (address) {
         case HOTT_VARIO_MODULE_ID: {
             static uint16_t max_altitude = 0, min_altitude = 0;
             if (!sensors->is_enabled[HOTT_TYPE_VARIO]) return;
             hott_sensor_vario_t packet = {0};
-            uint8_t buff[] = {0x7C, 0x89, 0x0, 0x90, 0x0, 0xF4, 0x1, 0xF4, 0x5, 0x0, 0x0, 0x0, 0xBE, 0x0, 0x0, 0x0, 0x75, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7D, 0xC1};
             packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_VARIO_MODULE_ID;
             packet.sensorTextID = HOTT_VARIO_SENSOR_ID;
@@ -445,14 +445,8 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.m3s = vario_alarm_parameters.m3s;
             packet.m10s = vario_alarm_parameters.m10s;
             packet.endByte = HOTT_END_BYTE;
-            memcpy((uint8_t *)&packet, buff, 45);
-            //packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
-            uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
-            debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
-            debug_buffer((uint8_t *)&packet, sizeof(packet), "0x%X ");
-
-            // blink led
-            vTaskResume(context.led_task_handle);
+            packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
+            send_bytes((uint8_t *)&packet, sizeof(packet));
             break;
         }
         case HOTT_ESC_MODULE_ID: {
@@ -518,12 +512,7 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             // uint8_t highestCurrentMotorNumber;  // Byte 41
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
-            uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
-            debug("\nHOTT (%u) Len: %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
-            debug_buffer((uint8_t *)&packet, sizeof(packet), "0x%X ");
-
-            // blink led
-            vTaskResume(context.led_task_handle);
+            send_bytes((uint8_t *)&packet, sizeof(packet));
             break;
         }
         case HOTT_ELECTRIC_AIR_MODULE_ID: {
@@ -540,12 +529,7 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
                 packet.temp1 = *sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] + 20;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
-            uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
-            debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
-            debug_buffer((uint8_t *)&packet, sizeof(packet), "0x%X ");
-
-            // blink led
-            vTaskResume(context.led_task_handle);
+            send_bytes((uint8_t *)&packet, sizeof(packet));
             break;
         }
         case HOTT_GPS_MODULE_ID: {
@@ -583,15 +567,20 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
 
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
-            uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
-            debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), sizeof(packet));
-            debug_buffer((uint8_t *)&packet, sizeof(packet), "0x%X ");
-
-            // blink led
-            vTaskResume(context.led_task_handle);
+            send_bytes((uint8_t *)&packet, sizeof(packet));
             break;
         }
     }
+}
+
+static void send_bytes(uint8_t *buffer, uint len) {
+    for (uint i = 0; i < len; i++) {
+        uart0_write(*(buffer + i));
+        sleep_us(HOTT_INTERBYTE_DELAY_US);
+    }
+    vTaskResume(context.led_task_handle);
+    debug("\nHOTT (%u) %u > ", uxTaskGetStackHighWaterMark(NULL), len);
+    debug_buffer(buffer, len, "0x%X ");
 }
 
 static uint8_t get_crc(const uint8_t *buffer, uint len) {
