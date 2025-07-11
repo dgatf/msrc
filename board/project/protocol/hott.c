@@ -394,8 +394,8 @@ vario_alarm_parameters_t vario_alarm_parameters;
 float *baro_temp = NULL, *baro_pressure = NULL;
 
 static void process(hott_sensors_t *sensors);
-static void send_packet(hott_sensors_t *sensors, uint8_t address);
-static void send_bytes(uint8_t *buffer, uint len);
+static void format_packet(hott_sensors_t *sensors, uint8_t address);
+static void send_packet(uint8_t *buffer, uint len);
 static uint8_t get_crc(const uint8_t *buffer, uint len);
 static void set_config(hott_sensors_t *sensors);
 static int64_t interval_1000_callback(alarm_id_t id, void *parameters);
@@ -422,11 +422,11 @@ static void process(hott_sensors_t *sensors) {
         uart0_read_bytes(buffer, len);
         debug("\nHOTT (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         debug_buffer(buffer, len, "0x%X ");
-        if (buffer[0] == HOTT_BINARY_MODE_REQUEST_ID) send_packet(sensors, buffer[1]);
+        if (buffer[0] == HOTT_BINARY_MODE_REQUEST_ID) format_packet(sensors, buffer[1]);
     }
 }
 
-static void send_packet(hott_sensors_t *sensors, uint8_t address) {
+static void format_packet(hott_sensors_t *sensors, uint8_t address) {
     // packet in little endian
     switch (address) {
         case HOTT_VARIO_MODULE_ID: {
@@ -446,7 +446,7 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.m10s = vario_alarm_parameters.m10s;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
-            send_bytes((uint8_t *)&packet, sizeof(packet));
+            send_packet((uint8_t *)&packet, sizeof(packet));
             break;
         }
         case HOTT_ESC_MODULE_ID: {
@@ -512,7 +512,7 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
             // uint8_t highestCurrentMotorNumber;  // Byte 41
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
-            send_bytes((uint8_t *)&packet, sizeof(packet));
+            send_packet((uint8_t *)&packet, sizeof(packet));
             break;
         }
         case HOTT_ELECTRIC_AIR_MODULE_ID: {
@@ -525,11 +525,13 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
                 packet.battery1 = *sensors->electric_air[HOTT_ELECTRIC_BAT_1_VOLTAGE] * 10;
             if (sensors->electric_air[HOTT_ELECTRIC_CURRENT])
                 packet.current = *sensors->electric_air[HOTT_ELECTRIC_CURRENT] * 10;
+            if (sensors->electric_air[HOTT_ELECTRIC_CAPACITY])
+                packet.capacity = *sensors->electric_air[HOTT_ELECTRIC_CAPACITY];
             if (sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1])
                 packet.temp1 = *sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] + 20;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
-            send_bytes((uint8_t *)&packet, sizeof(packet));
+            send_packet((uint8_t *)&packet, sizeof(packet));
             break;
         }
         case HOTT_GPS_MODULE_ID: {
@@ -567,13 +569,13 @@ static void send_packet(hott_sensors_t *sensors, uint8_t address) {
 
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
-            send_bytes((uint8_t *)&packet, sizeof(packet));
+            send_packet((uint8_t *)&packet, sizeof(packet));
             break;
         }
     }
 }
 
-static void send_bytes(uint8_t *buffer, uint len) {
+static void send_packet(uint8_t *buffer, uint len) {
     for (uint i = 0; i < len; i++) {
         uart0_write(*(buffer + i));
         sleep_us(HOTT_INTERBYTE_DELAY_US);
@@ -915,6 +917,7 @@ static void set_config(hott_sensors_t *sensors) {
 
         sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
         sensors->electric_air[HOTT_ELECTRIC_CURRENT] = parameter.current;
+        sensors->electric_air[HOTT_ELECTRIC_CAPACITY] = parameter.consumption;
     }
     if (config->enable_analog_ntc) {
         ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
