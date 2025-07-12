@@ -245,7 +245,7 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->cog = navpvt.headMot / 100000.0F;
                 *parameter->sat = navpvt.numSV;
                 *parameter->time = navpvt.hour * 10000L + navpvt.min * 100 + navpvt.sec;
-                *parameter->date = (navpvt.year - 2000) * 10000L + navpvt.month * 100 + navpvt.day;
+                *parameter->date = navpvt.day * 10000L + navpvt.month * 100 + (navpvt.year - 2000);
                 *parameter->vspeed = navpvt.velD / 1000.0F;
                 *parameter->spd_kmh = navpvt.gSpeed * 3600L / 1000000.0F;
                 *parameter->spd = 0.5144444F * navpvt.gSpeed * 3600L / 1000000.0F;
