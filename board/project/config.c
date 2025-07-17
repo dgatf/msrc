@@ -212,5 +212,6 @@ void config_forze_write() {
     config.gps_rate = GPS_RATE;
     config.gpio_interval = GPIO_INTERVAL_MS;
     config.gpio_mask = GPIO_MASK;
+    config.sbus_battery_slot = true;
     config_write(&config);
 }

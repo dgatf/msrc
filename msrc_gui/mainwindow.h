@@ -86,5 +86,7 @@ class MainWindow : public QMainWindow {
     void on_btScroll_clicked();
     void on_gbFuelPressure_toggled(bool arg1);
     void on_cbGpsProtocol_currentTextChanged(const QString &arg1);
+    void on_ckSbusBattery_toggled(bool checked);
+    void on_ckSbusExtVolt_toggled(bool checked);
 };
 #endif  // MAINWINDOW_H

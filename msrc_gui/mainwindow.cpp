@@ -445,6 +445,14 @@ void MainWindow::setUiFromConfig() {
     // Voltage
 
     ui->gbVoltage1->setChecked(config.enable_analog_voltage);
+    if (config.sbus_battery_slot == true) {
+        ui->ckSbusBattery->setChecked(true);
+        ui->ckSbusExtVolt->setChecked(false);
+    }
+    else {
+        ui->ckSbusBattery->setChecked(false);
+        ui->ckSbusExtVolt->setChecked(true);
+    }
 
     // Temperature
 
@@ -637,6 +645,7 @@ void MainWindow::getConfigFromUi() {
 
     config.enable_analog_voltage = ui->gbVoltage1->isChecked();
     config.analog_voltage_multiplier = ui->sbVoltage1Mult->value();
+    config.sbus_battery_slot = ui->ckSbusBattery->isChecked();
 
     // Current
 
@@ -890,6 +899,15 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
     } else {
         ui->cbSpeedUnitsGps->setVisible(false);
         ui->lbSpeedUnitsGps->setVisible(false);
+    }
+
+    if (arg1 == "Futaba SBUS2") {
+
+        ui->ckSbusBattery->setVisible(true);
+        ui->ckSbusExtVolt->setVisible(true);
+    } else {
+        ui->ckSbusBattery->setVisible(false);
+        ui->ckSbusExtVolt->setVisible(false);
     }
 
     if (arg1 == "Serial Monitor") {
@@ -1238,3 +1256,14 @@ void MainWindow::on_cbGpsProtocol_currentTextChanged(const QString &arg1) {
         ui->cbGpsRate ->setVisible(true);
     }
 }
+
+void MainWindow::on_ckSbusBattery_toggled(bool checked)
+{
+    ui->ckSbusExtVolt->setChecked(!checked);
+}
+
+void MainWindow::on_ckSbusExtVolt_toggled(bool checked)
+{
+    ui->ckSbusBattery->setChecked(!checked);
+}
+

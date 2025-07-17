@@ -188,7 +188,11 @@ static inline void send_slot(uint8_t slot) {
     debug(" (%u)", slot);
     uint16_t value = 0;
     if (sbus_sensor[slot]) {
-        if (sbus_sensor[slot]->value) value = format(sbus_sensor[slot]->data_id, *sbus_sensor[slot]->value);
+        if (sbus_sensor[slot]->value) {
+            value = format(sbus_sensor[slot]->data_id, *sbus_sensor[slot]->value);
+        } else {
+            value = format(sbus_sensor[slot]->data_id, 0);
+        }
         uint8_t data[3];
         data[0] = get_slot_id(slot);
         data[1] = value;
@@ -714,15 +718,23 @@ static void set_config(void) {
                                           config->analog_voltage_multiplier, malloc(sizeof(float))};
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        if (config->sbus_battery_slot) {
+            new_sensor = malloc(sizeof(sensor_sbus_t));
+            *new_sensor = (sensor_sbus_t){SBUS_VOLT_V1, parameter.voltage};
+            add_sensor(SLOT_VOLT_V1, new_sensor);
 
-        new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_VOLT_V2, parameter.voltage};
-        add_sensor(SLOT_VOLT_V2, new_sensor);
-        new_sensor = malloc(sizeof(sensor_sbus_t));
-        float *volt_v1 =  malloc(sizeof(float));
-        *volt_v1 = 0;
-        *new_sensor = (sensor_sbus_t){SBUS_VOLT_V1, volt_v1};
-        add_sensor(SLOT_VOLT_V1, new_sensor);
+            new_sensor = malloc(sizeof(sensor_sbus_t));
+            *new_sensor = (sensor_sbus_t){SBUS_VOLT_V2, NULL};
+            add_sensor(SLOT_VOLT_V2, new_sensor);
+        } else {
+            new_sensor = malloc(sizeof(sensor_sbus_t));
+            *new_sensor = (sensor_sbus_t){SBUS_VOLT_V1, NULL};
+            add_sensor(SLOT_VOLT_V1, new_sensor);
+
+            new_sensor = malloc(sizeof(sensor_sbus_t));
+            *new_sensor = (sensor_sbus_t){SBUS_VOLT_V2, parameter.voltage};
+            add_sensor(SLOT_VOLT_V2, new_sensor);
+        }
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_current) {

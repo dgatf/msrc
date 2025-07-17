@@ -165,7 +165,7 @@ typedef struct config_t {
     uint8_t gps_rate;
     serial_monitor_format_t serial_monitor_format;
     uint8_t gps_protocol;
-    uint8_t spare4_2;
+    bool sbus_battery_slot;
     uint8_t spare4_3;
     uint8_t spare4_4;
     uint32_t spare5;
