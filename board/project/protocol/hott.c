@@ -526,7 +526,7 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             if (sensors->electric_air[HOTT_ELECTRIC_CURRENT])
                 packet.current = *sensors->electric_air[HOTT_ELECTRIC_CURRENT] * 10;
             if (sensors->electric_air[HOTT_ELECTRIC_CAPACITY])
-                packet.capacity = *sensors->electric_air[HOTT_ELECTRIC_CAPACITY];
+                packet.capacity = *sensors->electric_air[HOTT_ELECTRIC_CAPACITY] / 10;
             if (sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1])
                 packet.temp1 = *sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] + 20;
             packet.endByte = HOTT_END_BYTE;
