@@ -56,7 +56,7 @@
 #define SLOT_TEMP2 30
 
 #define TIMEOUT_US 500
-#define SLOT_0_DELAY 2000
+#define SLOT_0_DELAY 1500
 #define INTER_SLOT_DELAY 700
 #define PACKET_LENGHT 25
 #define SBUS_NEGATIVE_BIT 15
@@ -718,15 +718,15 @@ static void set_config(void) {
                                           config->analog_voltage_multiplier, malloc(sizeof(float))};
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        //if (config->sbus_battery_slot) {
+        if (config->sbus_battery_slot) {
             new_sensor = malloc(sizeof(sensor_sbus_t));
             *new_sensor = (sensor_sbus_t){SBUS_VOLT_V1, parameter.voltage};
             add_sensor(SLOT_VOLT_V1, new_sensor);
 
             new_sensor = malloc(sizeof(sensor_sbus_t));
-            *new_sensor = (sensor_sbus_t){SBUS_VOLT_V2, parameter.voltage};
+            *new_sensor = (sensor_sbus_t){SBUS_VOLT_V2, NULL};
             add_sensor(SLOT_VOLT_V2, new_sensor);
-        /*} else {
+        } else {
             new_sensor = malloc(sizeof(sensor_sbus_t));
             *new_sensor = (sensor_sbus_t){SBUS_VOLT_V1, NULL};
             add_sensor(SLOT_VOLT_V1, new_sensor);
@@ -734,7 +734,7 @@ static void set_config(void) {
             new_sensor = malloc(sizeof(sensor_sbus_t));
             *new_sensor = (sensor_sbus_t){SBUS_VOLT_V2, parameter.voltage};
             add_sensor(SLOT_VOLT_V2, new_sensor);
-        }*/
+        }
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_current) {
