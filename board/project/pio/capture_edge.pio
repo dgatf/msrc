@@ -19,8 +19,8 @@ capture:
 .wrap_target
 public start:
     mov y x                         // pins to prev
-    nop                             //in pins CAPTURE_EDGE_PIN_COUNT  // read pins
-    nop                             //in null ZERO_COUNT
+    nop                             // in pins CAPTURE_EDGE_PIN_COUNT  // read pins
+    nop                             // in null ZERO_COUNT
     mov x isr                       // pins to x
     jmp x!=y capture                // capture
 .wrap

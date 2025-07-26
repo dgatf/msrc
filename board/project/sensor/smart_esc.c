@@ -345,16 +345,12 @@ static void capture_pwm_throttle_handler(uint counter, edge_type_t edge) {
     if (edge == EDGE_RISE) {
         counter_edge_rise = counter;
     } else if (edge == EDGE_FALL && counter_edge_rise) {
-        uint count = counter - counter_edge_rise;
-        float duration_pulse =
-            (float)(counter - counter_edge_rise) / clock_get_hz(clk_sys) * COUNTER_CYCLES * 1000000;  // us
-        float delta = duration_pulse - 1000;
-        if (delta < 0)
-            delta = 0;
-        else if (delta > 1000)
-            delta = 1000;
-        throttle = delta / 1000 * 65532;  // 1000us->0% 2000us->100%
-        // debug("\nSmart Esc. Throttle (%u%%) %u", throttle / 65532 * 100, throttle);
+        uint pulse = (float)(counter - counter_edge_rise) / clock_get_hz(clk_sys) * COUNTER_CYCLES * 1000000;
+        int delta = pulse - 1000;
+        if (delta < 0) delta = 0;
+        if (delta > 1000) delta = 1000;
+        throttle = delta / 1000.0F * 65532;  // 0us->0% 1000us->100%
+        // debug("\nSmart Esc. Thr (%.0f%%) %u us %u", throttle / 65532.0F * 100, throttle, pulse);
     }
     timeout_throttle_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_throttle_callback, NULL, true);
 }
@@ -366,16 +362,12 @@ static void capture_pwm_reverse_handler(uint counter, edge_type_t edge) {
     if (edge == EDGE_RISE) {
         counter_edge_rise = counter;
     } else if (edge == EDGE_FALL && counter_edge_rise) {
-        uint count = counter - counter_edge_rise;
-        float duration_pulse =
-            (float)(counter - counter_edge_rise) / clock_get_hz(clk_sys) * COUNTER_CYCLES * 1000000;  // us
-        float delta = duration_pulse - 1000;
-        if (delta < 0)
-            delta = 0;
-        else if (delta > 1000)
-            delta = 1000;
-        reverse = delta / 1000 * 65532;  // 1000us->0% 2000us->100%
-        // debug("\nSmart Esc. Reverse (%u%%) %u", reverse / 65532 * 100, reverse);
+        uint pulse = (float)(counter - counter_edge_rise) / clock_get_hz(clk_sys) * COUNTER_CYCLES * 1000000;
+        int delta = pulse - 1000;
+        if (delta < 0) delta = 0;
+        if (delta > 1000) delta = 1000;
+        reverse = delta / 1000.0F * 65532;  // 0us->0% 1000us->100%
+        // debug("\nSmart Esc. Rev (%.0f%%) %u us %u", reverse / 65532.0F * 100, reverse, pulse);
     }
     timeout_reverse_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_reverse_callback, NULL, true);
 }
