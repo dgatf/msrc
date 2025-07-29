@@ -11,7 +11,7 @@
 #define PWM_CAPTURE_GPIO 4    // pwm (rpm)
 #define CASTLE_PWM_GPIO 4     // receiver throttle signal
 #define CASTLE_ESC_GPIO 5     // esc throttle signal
-#define UART_TX_PIO_GPIO 13   // gps rx
+#define UART_TX_PIO_GPIO 14   // gps rx
 #define UART_RX_PIO_GPIO 6    // gps tx
 #define CLOCK_STRETCH_GPIO 7  // npn switch
 #define I2C0_SDA_GPIO 8       // i2c module (vario)
