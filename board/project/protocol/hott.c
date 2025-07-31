@@ -21,6 +21,7 @@
 #include "esc_omp_m4.h"
 #include "esc_pwm.h"
 #include "esc_ztw.h"
+#include "fuel_meter.h"
 #include "gps.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
@@ -35,12 +36,13 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
+#include "xgzp68xxd.h"
 
 #define HOTT_VARIO_MODULE_ID 0x89
 #define HOTT_GPS_MODULE_ID 0x8A
 #define HOTT_ESC_MODULE_ID 0x8C
-#define HOTT_GENERAL_AIR_MODULE_ID 0x8D  // not used
-#define HOTT_ELECTRIC_AIR_MODULE_ID 0x8E
+#define HOTT_GENERAL_AIR_MODULE_ID 0x8D
+#define HOTT_ELECTRIC_AIR_MODULE_ID 0x8E  // not used, for internal Hott telemetry
 
 #define HOTT_VARIO_SENSOR_ID 0x90
 #define HOTT_GPS_SENSOR_ID 0xA0
@@ -65,8 +67,9 @@
 // TYPE
 #define HOTT_TYPE_VARIO 0
 #define HOTT_TYPE_ESC 1
-#define HOTT_TYPE_ELECTRIC 2
+#define HOTT_TYPE_GENERAL 2
 #define HOTT_TYPE_GPS 3
+#define HOTT_TYPE_ELECTRIC 4
 
 // VARIO
 #define HOTT_VARIO_ALTITUDE 0
@@ -87,7 +90,7 @@
 #define HOTT_ESC_BEC_TEMPERATURE 9
 #define HOTT_ESC_EXT_TEMPERATURE 10
 
-// ELECTRIC (BATTERY)
+// ELECTRIC - used by internal receiver vario (shouldnt be used)
 #define HOTT_ELECTRIC_EXT_TEMPERATURE 0
 #define HOTT_ELECTRIC_CELL_BAT_1_VOLTAGE 1
 #define HOTT_ELECTRIC_CELL_BAT_2_VOLTAGE 2
@@ -115,23 +118,31 @@
 #define HOTT_GPS_CLIMBRATE 6
 #define HOTT_GPS_CLIMBRATE3S 7
 #define HOTT_GPS_SATS 8
+#define HOTT_GPS_FIX 9
+#define HOTT_GPS_TIME 10
 
-// GENERAL (FUEL) - not used by msrc
-#define HOTT_GENERAL_CELL 0
-#define HOTT_GENERAL_BATTERY_1 1
-#define HOTT_GENERAL_BATTERY_2 2
-#define HOTT_GENERAL_TEMP_1 3
-#define HOTT_GENERAL_TEMP_2 4
-#define HOTT_GENERAL_RPM_1 5
-#define HOTT_GENERAL_ALTITUDE 6
-#define HOTT_GENERAL_CLIMBRATE 7
-#define HOTT_GENERAL_CLIMBRATE3S 8
-#define HOTT_GENERAL_CURRENT 9
-#define HOTT_GENERAL_VOLTAGE 10
-#define HOTT_GENERAL_CAPACITY 11
-#define HOTT_GENERAL_SPEED 12
-#define HOTT_GENERAL_RPM_2 13
-#define HOTT_GENERAL_PRESSURE 14
+// GENERAL
+#define HOTT_GENERAL_CELL_1 0
+#define HOTT_GENERAL_CELL_2 1
+#define HOTT_GENERAL_CELL_3 2
+#define HOTT_GENERAL_CELL_4 3
+#define HOTT_GENERAL_CELL_5 4
+#define HOTT_GENERAL_CELL_6 5
+#define HOTT_GENERAL_BATTERY_1 6
+#define HOTT_GENERAL_BATTERY_2 7
+#define HOTT_GENERAL_TEMP_1 8
+#define HOTT_GENERAL_TEMP_2 9
+#define HOTT_GENERAL_FUEL 10  // ml
+#define HOTT_GENERAL_RPM_1 11
+#define HOTT_GENERAL_ALTITUDE 12
+#define HOTT_GENERAL_CLIMBRATE 13
+#define HOTT_GENERAL_CLIMBRATE3S 14
+#define HOTT_GENERAL_CURRENT 15
+#define HOTT_GENERAL_VOLTAGE 16
+#define HOTT_GENERAL_CAPACITY 17
+#define HOTT_GENERAL_SPEED 18
+#define HOTT_GENERAL_RPM_2 19
+#define HOTT_GENERAL_PRESSURE 20
 
 typedef struct hott_sensor_vario_t {
     uint8_t startByte;  // 1
@@ -190,6 +201,7 @@ typedef struct hott_sensor_airesc_t {
     uint8_t checksum;                   /* Byte 45: Parity Byte */
 } __attribute__((packed)) hott_sensor_airesc_t;
 
+// used by internal receiver vario (shouldnt be used)
 typedef struct hott_sensor_electric_air_t {
     uint8_t startByte;      // 1
     uint8_t sensorID;       // 2
@@ -325,7 +337,7 @@ typedef struct hott_sensor_general_air_t {
                                    // 1 bar = 10 hoch 5 Pa
     uint8_t version;               //#43 version number (Bytes 35 .43 new but not yet in the record in the display!)
     uint8_t endByte;               //#44 stop byte 0x7D
-    uint8_t parity;                //#45 CHECKSUM CRC/Parity (calculated dynamicaly)
+    uint8_t checksum;              //#45 CHECKSUM CRC/Parity (calculated dynamicaly)
 } __attribute__((packed)) hott_sensor_general_air_t;
 
 typedef struct hott_sensor_gps_t {
@@ -377,10 +389,10 @@ typedef struct hott_sensor_gps_t {
 
 typedef struct hott_sensors_t {
     bool is_enabled[4];
-    float *gps[9];
+    float *gps[11];
     float *vario[4];
     float *esc[11];
-    float *electric_air[16];
+    float *general_air[21];
 } hott_sensors_t;
 
 typedef struct vario_alarm_parameters_t {
@@ -430,7 +442,7 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
     // packet in little endian
     switch (address) {
         case HOTT_VARIO_MODULE_ID: {
-            static uint16_t max_altitude = 0, min_altitude = 0;
+            static uint16_t max_altitude = 0, min_altitude = 0xFFFF;
             if (!sensors->is_enabled[HOTT_TYPE_VARIO]) return;
             hott_sensor_vario_t packet = {0};
             packet.startByte = HOTT_START_BYTE;
@@ -467,7 +479,7 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.sensorTextID = HOTT_ESC_SENSOR_ID;
             if (sensors->esc[HOTT_ESC_VOLTAGE]) {
                 packet.inputVolt = *sensors->esc[HOTT_ESC_VOLTAGE] * 10;
-                if (packet.inputVolt > minInputVolt) packet.minInputVolt = packet.inputVolt;
+                if (packet.inputVolt < minInputVolt) packet.minInputVolt = packet.inputVolt;
             }
             if (sensors->esc[HOTT_ESC_TEMPERATURE]) {
                 packet.escTemperature = *sensors->esc[HOTT_ESC_TEMPERATURE] + 20;
@@ -515,20 +527,20 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             send_packet((uint8_t *)&packet, sizeof(packet));
             break;
         }
-        case HOTT_ELECTRIC_AIR_MODULE_ID: {
-            if (!sensors->is_enabled[HOTT_TYPE_ELECTRIC]) return;
-            hott_sensor_electric_air_t packet = {0};
+        case HOTT_GENERAL_AIR_MODULE_ID: {
+            if (!sensors->is_enabled[HOTT_TYPE_GENERAL]) return;
+            hott_sensor_general_air_t packet = {0};
             packet.startByte = HOTT_START_BYTE;
-            packet.sensorID = HOTT_ELECTRIC_AIR_MODULE_ID;
-            packet.sensorTextID = HOTT_ELECTRIC_AIR_SENSOR_ID;
-            if (sensors->electric_air[HOTT_ELECTRIC_BAT_1_VOLTAGE])
-                packet.battery1 = *sensors->electric_air[HOTT_ELECTRIC_BAT_1_VOLTAGE] * 10;
-            if (sensors->electric_air[HOTT_ELECTRIC_CURRENT])
-                packet.current = *sensors->electric_air[HOTT_ELECTRIC_CURRENT] * 10;
-            if (sensors->electric_air[HOTT_ELECTRIC_CAPACITY])
-                packet.capacity = *sensors->electric_air[HOTT_ELECTRIC_CAPACITY] / 10;
-            if (sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1])
-                packet.temp1 = *sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] + 20;
+            packet.sensorID = HOTT_GENERAL_AIR_MODULE_ID;
+            packet.sensorTextID = HOTT_GENERAL_AIR_SENSOR_ID;
+            if (sensors->general_air[HOTT_GENERAL_BATTERY_1])
+                packet.battery1 = *sensors->general_air[HOTT_GENERAL_BATTERY_1] * 10;
+            if (sensors->general_air[HOTT_GENERAL_CURRENT])
+                packet.current = *sensors->general_air[HOTT_GENERAL_CURRENT] * 10;
+            if (sensors->general_air[HOTT_GENERAL_CAPACITY])
+                packet.batt_cap = *sensors->general_air[HOTT_GENERAL_CAPACITY] / 10;
+            if (sensors->general_air[HOTT_GENERAL_PRESSURE])
+                packet.pressure = *sensors->general_air[HOTT_GENERAL_PRESSURE] * 1e-5 * 10; // Pa -> bar (in steps of 0.1 bar)   
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             send_packet((uint8_t *)&packet, sizeof(packet));
@@ -541,7 +553,7 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.sensorID = HOTT_GPS_MODULE_ID;
             packet.sensorTextID = HOTT_GPS_SENSOR_ID;
             packet.flightDirection = *sensors->gps[HOTT_GPS_DIRECTION] / 2;  // 0.5°
-            packet.GPSSpeed = *sensors->gps[HOTT_GPS_SPEED];                 // km/h
+            packet.GPSSpeed = *sensors->gps[HOTT_GPS_SPEED];  // km/h
             packet.LatitudeNS = sensors->gps[HOTT_GPS_LATITUDE] > 0 ? 0 : 1;
             float latitude = fabs(*sensors->gps[HOTT_GPS_LATITUDE]);
             packet.LatitudeDegMin = (uint)latitude * 100 + (latitude - (uint)latitude) * 60;
@@ -550,28 +562,36 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             float longitude = fabs(*sensors->gps[HOTT_GPS_LONGITUDE]);
             packet.longitudeDegMin = (uint)longitude * 100 + (longitude - (uint)longitude) * 60;
             packet.longitudeSec = (longitude * 60 - (uint)(longitude * 60)) * 60;
-            // packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
+            packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
             packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
-            // packet.climbrate = *sensors->gps[HOTT_GPS_ALTITUDE];    // 30000, 0.00
+            float climbrate = fabs(*sensors->gps[HOTT_GPS_CLIMBRATE] * 100 + 30000);
+            if (climbrate < 0) climbrate = 0;
+            packet.climbrate = climbrate;  // 30000, 0.00
             // packet.climbrate3s = *sensors->gps[HOTT_GPS_ALTITUDE];  // 120, 0
             packet.GPSNumSat = *sensors->gps[HOTT_GPS_SATS];
-            // uint8_t GPSFixChar;      // Byte 28: GPS.FixChar. (GPS fix character. display, if DGPS, 2D oder 3D) (1
-            // byte) uint8_t homeDirection;   // Byte 29: HomeDirection (direction from starting point to Model
-            // position) (1 byte) uint8_t gps_time_h;  //#33 UTC time hours int8_t gps_time_m;  //#34 UTC time minutes
-            // uint8_t gps_time_s;  //#35 UTC time seconds
+            packet.GPSFixChar = *sensors->gps[HOTT_GPS_FIX];  // (GPS fix character. display, if DGPS, 2D oder 3D)
+            // (1 byte) uint8_t homeDirection;   // Byte 29: HomeDirection (direction from starting point to Model
+            // position) (1 byte)
+            uint hour = (uint)(*sensors->gps[HOTT_GPS_TIME]) / 10000;
+            uint min = (uint)(*sensors->gps[HOTT_GPS_TIME]) / 100 - hour * 100;
+            uint sec = (uint)(*sensors->gps[HOTT_GPS_TIME]) - hour * 10000 - sec * 100;
+            packet.gps_time_h = hour;
+            packet.gps_time_m = min;
+            packet.gps_time_s = sec;
             // uint8_t gps_time_sss;//#36 UTC time milliseconds
-            // uint8_t msl_altitude;//#37 mean sea level altitudeuint8_t vibration;
+            packet.msl_altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
             // uint8_t vibration; // Byte 39 vibrations level in %
             // uint8_t Ascii4;    // Byte 40: 00 ASCII Free Character [4] appears right to home distance
             // uint8_t Ascii5;    // Byte 41: 00 ASCII Free Character [5] appears right to home direction
             // uint8_t GPS_fix;   // Byte 42: 00 ASCII Free Character [6], we use it for GPS FIX
-            // uint8_t version;   // Byte 43: 00 version number*/
+            // uint8_t version;   // Byte 43: 00 version number
 
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             send_packet((uint8_t *)&packet, sizeof(packet));
             break;
         }
+        
     }
 }
 
@@ -789,10 +809,16 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->esc[HOTT_ESC_BEC_VOLTAGE] = parameter.voltage_bec;
         sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
 
-        sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
-        sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] = parameter.temperature_bat;
-        sensors->electric_air[HOTT_ELECTRIC_CURRENT] = parameter.current_bat;
-        sensors->electric_air[HOTT_ELECTRIC_CAPACITY] = parameter.consumption;
+        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        sensors->general_air[HOTT_GENERAL_TEMP_1] = parameter.temperature_bat;
+        sensors->general_air[HOTT_GENERAL_CURRENT] = parameter.current_bat;
+        sensors->general_air[HOTT_GENERAL_CAPACITY] = parameter.consumption;
+        sensors->general_air[HOTT_GENERAL_CELL_1] = parameter.cell[0];
+        sensors->general_air[HOTT_GENERAL_CELL_2] = parameter.cell[1];
+        sensors->general_air[HOTT_GENERAL_CELL_3] = parameter.cell[2];
+        sensors->general_air[HOTT_GENERAL_CELL_4] = parameter.cell[3];
+        sensors->general_air[HOTT_GENERAL_CELL_5] = parameter.cell[4];
+        sensors->general_air[HOTT_GENERAL_CELL_6] = parameter.cell[5];
     }
     if (config->esc_protocol == ESC_OMP_M4) {
         esc_omp_m4_parameters_t parameter;
@@ -887,9 +913,15 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->gps[HOTT_GPS_LATITUDE] = parameter.lat;
         sensors->gps[HOTT_GPS_LONGITUDE] = parameter.lon;
         sensors->gps[HOTT_GPS_SATS] = parameter.sat;
+        sensors->gps[HOTT_GPS_FIX] = parameter.fix;
         sensors->gps[HOTT_GPS_ALTITUDE] = parameter.alt;
         sensors->gps[HOTT_GPS_SPEED] = parameter.spd_kmh;
         sensors->gps[HOTT_GPS_DIRECTION] = parameter.cog;
+        sensors->gps[HOTT_GPS_DISTANCE] = parameter.dist;
+        sensors->gps[HOTT_GPS_CLIMBRATE] = parameter.vspeed;
+        sensors->gps[HOTT_GPS_TIME] = parameter.time;
+        sensors->gps[HOTT_GPS_TIME] = parameter.time;
+        sensors->gps[HOTT_GPS_TIME] = parameter.time;
     }
     if (config->enable_analog_voltage) {
         voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage,
@@ -898,8 +930,8 @@ static void set_config(hott_sensors_t *sensors) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-        sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
-        sensors->electric_air[HOTT_ELECTRIC_BAT_1_VOLTAGE] = parameter.voltage;
+        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        sensors->general_air[HOTT_GENERAL_BATTERY_1] = parameter.voltage;
     }
     if (config->enable_analog_current) {
         current_parameters_t parameter = {1,
@@ -915,9 +947,9 @@ static void set_config(hott_sensors_t *sensors) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-        sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
-        sensors->electric_air[HOTT_ELECTRIC_CURRENT] = parameter.current;
-        sensors->electric_air[HOTT_ELECTRIC_CAPACITY] = parameter.consumption;
+        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        sensors->general_air[HOTT_GENERAL_CURRENT] = parameter.current;
+        sensors->general_air[HOTT_GENERAL_CAPACITY] = parameter.consumption;
     }
     if (config->enable_analog_ntc) {
         ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
@@ -925,8 +957,8 @@ static void set_config(hott_sensors_t *sensors) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-        sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
-        sensors->electric_air[HOTT_ELECTRIC_TEMPERATURE_1] = parameter.ntc;
+        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        sensors->general_air[HOTT_GENERAL_TEMP_1] = parameter.ntc;
     }
     if (config->enable_analog_airspeed) {
         airspeed_parameters_t parameter = {3,
@@ -1003,6 +1035,26 @@ static void set_config(hott_sensors_t *sensors) {
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
+    }
+    if (config->enable_fuel_flow) {
+        fuel_meter_parameters_t parameter = {config->fuel_flow_ml_per_pulse, malloc(sizeof(float)),
+                                             malloc(sizeof(float))};
+        xTaskCreate(fuel_meter_task, "fuel_meter_task", STACK_FUEL_METER, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        sensors->general_air[HOTT_GENERAL_FUEL] = parameter.consumption_total;
+    }
+    if (config->enable_fuel_pressure) {
+        xgzp68xxd_parameters_t parameter = {config->xgzp68xxd_k, malloc(sizeof(float)),
+                                             malloc(sizeof(float))};
+        xTaskCreate(xgzp68xxd_task, "fuel_pressure_task", STACK_FUEL_PRESSURE, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        sensors->general_air[HOTT_GENERAL_PRESSURE] = parameter.pressure;
     }
 }
 

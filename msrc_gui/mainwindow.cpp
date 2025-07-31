@@ -945,14 +945,14 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
     }
 
     // Fuel meter
-    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS"  || arg1 == "HOTT") {
         ui->gbFuelmeter->setVisible(true);
     } else {
         ui->gbFuelmeter->setVisible(false);
     }
 
     // Fuel pressure
-    if (arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS") {
+    if (arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" || arg1 == "HOTT") {
         ui->gbFuelPressure->setVisible(true);
     } else {
         ui->gbFuelPressure->setVisible(false);
