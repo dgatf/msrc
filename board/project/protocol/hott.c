@@ -397,6 +397,7 @@ typedef struct hott_sensors_t {
 
 typedef struct vario_alarm_parameters_t {
     float *altitude;
+    float *vspd;
     uint16_t m1s;
     uint16_t m3s;
     uint16_t m10s;
@@ -540,7 +541,8 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             if (sensors->general_air[HOTT_GENERAL_CAPACITY])
                 packet.batt_cap = *sensors->general_air[HOTT_GENERAL_CAPACITY] / 10;
             if (sensors->general_air[HOTT_GENERAL_PRESSURE])
-                packet.pressure = *sensors->general_air[HOTT_GENERAL_PRESSURE] * 1e-5 * 10; // Pa -> bar (in steps of 0.1 bar)   
+                packet.pressure =
+                    *sensors->general_air[HOTT_GENERAL_PRESSURE] * 1e-5 * 10;  // Pa -> bar (in steps of 0.1 bar)
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             send_packet((uint8_t *)&packet, sizeof(packet));
@@ -553,7 +555,7 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.sensorID = HOTT_GPS_MODULE_ID;
             packet.sensorTextID = HOTT_GPS_SENSOR_ID;
             packet.flightDirection = *sensors->gps[HOTT_GPS_DIRECTION] / 2;  // 0.5°
-            packet.GPSSpeed = *sensors->gps[HOTT_GPS_SPEED];  // km/h
+            packet.GPSSpeed = *sensors->gps[HOTT_GPS_SPEED];                 // km/h
             packet.LatitudeNS = sensors->gps[HOTT_GPS_LATITUDE] > 0 ? 0 : 1;
             float latitude = fabs(*sensors->gps[HOTT_GPS_LATITUDE]);
             packet.LatitudeDegMin = (uint)latitude * 100 + (latitude - (uint)latitude) * 60;
@@ -591,7 +593,6 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             send_packet((uint8_t *)&packet, sizeof(packet));
             break;
         }
-        
     }
 }
 
@@ -884,13 +885,20 @@ static void set_config(hott_sensors_t *sensors) {
         parameter.rate = config->gps_rate;
         parameter.lat = malloc(sizeof(double));
         parameter.lon = malloc(sizeof(double));
-        parameter.alt = malloc(sizeof(float));
+        if (config->i2c_module)
+            parameter.alt = vario_alarm_parameters.altitude;
+        else
+            parameter.alt = malloc(sizeof(float));
         parameter.spd = malloc(sizeof(float));
         parameter.cog = malloc(sizeof(float));
         parameter.hdop = malloc(sizeof(float));
         parameter.sat = malloc(sizeof(float));
         parameter.time = malloc(sizeof(float));
         parameter.date = malloc(sizeof(float));
+        if (config->i2c_module)
+            parameter.vspeed = vario_alarm_parameters.vspd;
+        else
+            parameter.vspeed = malloc(sizeof(float));
         parameter.vspeed = malloc(sizeof(float));
         parameter.dist = malloc(sizeof(float));
         parameter.spd_kmh = malloc(sizeof(float));
@@ -1047,8 +1055,7 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->general_air[HOTT_GENERAL_FUEL] = parameter.consumption_total;
     }
     if (config->enable_fuel_pressure) {
-        xgzp68xxd_parameters_t parameter = {config->xgzp68xxd_k, malloc(sizeof(float)),
-                                             malloc(sizeof(float))};
+        xgzp68xxd_parameters_t parameter = {config->xgzp68xxd_k, malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(xgzp68xxd_task, "fuel_pressure_task", STACK_FUEL_PRESSURE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -1073,6 +1080,7 @@ static int64_t interval_3000_callback(alarm_id_t id, void *parameters) {
     vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
     static float prev = 0;
     parameter->m3s = (*parameter->altitude - prev) * 100 + 30000;
+    *parameter->vspd = parameter->m3s / 3.0F;
 #ifdef SIM_SENSORS
     vario_alarm_parameters.m3s = 34 * 100 + 30000;
 #endif
