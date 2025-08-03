@@ -565,8 +565,8 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.longitudeDegMin = (uint)longitude * 100 + (longitude - (uint)longitude) * 60;
             packet.longitudeSec = (longitude * 60 - (uint)(longitude * 60)) * 60;
             packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
-            packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
-            float climbrate = fabs(*sensors->gps[HOTT_GPS_CLIMBRATE] * 100 + 30000);
+            packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE];
+            float climbrate = *sensors->gps[HOTT_GPS_CLIMBRATE] * 100 + 30000;
             if (climbrate < 0) climbrate = 0;
             packet.climbrate = climbrate;  // 30000, 0.00
             // packet.climbrate3s = *sensors->gps[HOTT_GPS_ALTITUDE];  // 120, 0
@@ -885,20 +885,13 @@ static void set_config(hott_sensors_t *sensors) {
         parameter.rate = config->gps_rate;
         parameter.lat = malloc(sizeof(double));
         parameter.lon = malloc(sizeof(double));
-        if (config->i2c_module)
-            parameter.alt = vario_alarm_parameters.altitude;
-        else
-            parameter.alt = malloc(sizeof(float));
+        parameter.alt = malloc(sizeof(float));
         parameter.spd = malloc(sizeof(float));
         parameter.cog = malloc(sizeof(float));
         parameter.hdop = malloc(sizeof(float));
         parameter.sat = malloc(sizeof(float));
         parameter.time = malloc(sizeof(float));
         parameter.date = malloc(sizeof(float));
-        if (config->i2c_module)
-            parameter.vspeed = vario_alarm_parameters.vspd;
-        else
-            parameter.vspeed = malloc(sizeof(float));
         parameter.vspeed = malloc(sizeof(float));
         parameter.dist = malloc(sizeof(float));
         parameter.spd_kmh = malloc(sizeof(float));
