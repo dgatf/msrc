@@ -806,6 +806,7 @@ static void set_config(sensor_jetiex_t **sensor) {
         *new_sensor =
             (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_2_DECIMAL, "Voltage", "V", parameter.voltage};
         add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor =
             (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current BEC", "A", parameter.current_bec};
         add_sensor(new_sensor, sensor);
@@ -817,6 +818,7 @@ static void set_config(sensor_jetiex_t **sensor) {
         *new_sensor = (sensor_jetiex_t){0,   JETIEX_TYPE_INT14,        JETIEX_FORMAT_0_DECIMAL, "Temp FET",
                                         "C", parameter.temperature_fet};
         add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0,   JETIEX_TYPE_INT14,        JETIEX_FORMAT_0_DECIMAL, "Temp BEC",
                                         "C", parameter.temperature_bec};
         add_sensor(new_sensor, sensor);
