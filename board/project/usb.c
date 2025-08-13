@@ -15,7 +15,7 @@
 static uint8_t buffer_rx[USB_BUFFER_LENGTH];
 
 static int read_usb();
-static void process_usb();
+static void process_usb(int lenght);
 
 void usb_task() {
     while (1) {
@@ -44,6 +44,7 @@ static void process_usb(int lenght) {
 
             config_t *config = (config_t *)(buffer_rx + 2);
             if (config->version == CONFIG_VERSION) {
+                config->rpm_multiplier = config->pinionTeeth / (1.0 * config->mainTeeth * config->pairOfPoles);
                 context.led_cycles = 3;
                 context.led_cycle_duration = 1000;
                 vTaskResume(context.led_task_handle);

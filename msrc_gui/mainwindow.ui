@@ -88,7 +88,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-1566</y>
+             <y>-264</y>
              <width>603</width>
              <height>2669</height>
             </rect>
@@ -232,11 +232,14 @@
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
                     <property name="maximum">
-                     <number>1500</number>
+                     <number>2000</number>
                     </property>
                     <property name="singleStep">
-                     <number>100</number>
+                     <number>1</number>
                     </property>
                     <property name="value">
                      <number>100</number>
@@ -288,11 +291,14 @@
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
                     <property name="maximum">
-                     <number>1500</number>
+                     <number>2000</number>
                     </property>
                     <property name="singleStep">
-                     <number>100</number>
+                     <number>1</number>
                     </property>
                     <property name="value">
                      <number>100</number>
@@ -304,11 +310,14 @@
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
                     <property name="maximum">
-                     <number>1500</number>
+                     <number>2000</number>
                     </property>
                     <property name="singleStep">
-                     <number>100</number>
+                     <number>1</number>
                     </property>
                     <property name="value">
                      <number>100</number>
@@ -330,11 +339,14 @@
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
                     <property name="maximum">
-                     <number>1500</number>
+                     <number>2000</number>
                     </property>
                     <property name="singleStep">
-                     <number>100</number>
+                     <number>1</number>
                     </property>
                     <property name="value">
                      <number>100</number>
@@ -366,11 +378,14 @@
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
                     <property name="maximum">
-                     <number>1500</number>
+                     <number>2000</number>
                     </property>
                     <property name="singleStep">
-                     <number>100</number>
+                     <number>1</number>
                     </property>
                     <property name="value">
                      <number>100</number>
@@ -382,11 +397,14 @@
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
                     <property name="maximum">
-                     <number>1500</number>
+                     <number>2000</number>
                     </property>
                     <property name="singleStep">
-                     <number>100</number>
+                     <number>1</number>
                     </property>
                     <property name="value">
                      <number>100</number>
@@ -398,11 +416,14 @@
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
                     <property name="maximum">
-                     <number>1500</number>
+                     <number>2000</number>
                     </property>
                     <property name="singleStep">
-                     <number>100</number>
+                     <number>1</number>
                     </property>
                     <property name="value">
                      <number>100</number>
@@ -414,11 +435,14 @@
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
                     <property name="maximum">
-                     <number>1500</number>
+                     <number>2000</number>
                     </property>
                     <property name="singleStep">
-                     <number>100</number>
+                     <number>1</number>
                     </property>
                     <property name="value">
                      <number>100</number>

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <semphr.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "airspeed.h"
 #include "bmp180.h"
@@ -129,7 +130,7 @@
 #define FUEL_QTY_FIRST_ID 0x0a10  // 100 ml
 #define FUEL_QTY_LAST_ID 0x0a1f
 
-#define TIMEOUT_US 1000
+#define TIMEOUT_US 500
 #define PACKET_LENGHT 2
 
 typedef enum coordinate_type_t {
@@ -199,9 +200,9 @@ typedef struct smartport_packet_parameters_t {
 } smartport_packet_parameters_t;
 
 typedef struct smartport_packet_t {
-    uint16_t type_id;
+    uint16_t frame_id;
     uint16_t data_id;
-    uint32_t data;
+    uint32_t value;
 } smartport_packet_t;
 
 static SemaphoreHandle_t semaphore_sensor = NULL;
@@ -211,6 +212,7 @@ static const uint8_t sensor_id_matrix[29] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x45,
                                              0x34, 0x95, 0x16, 0xB7, 0x98, 0x39, 0xBA, 0x1B, 0x0};
 static TaskHandle_t packet_task_handle;
 static QueueHandle_t packet_queue_handle;
+config_t *config_lua;
 
 static void sensor_task(void *parameters);
 static void sensor_void_task(void *parameters);
@@ -220,13 +222,13 @@ static void sensor_datetime_task(void *parameters);
 static void sensor_cell_task(void *parameters);
 static void packet_task(void *parameters);
 static void process(smartport_parameters_t *parameter);
-static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, uint16_t data_id, uint32_t value);
+static void process_packet(smartport_parameters_t *parameter, uint8_t frame_id, uint16_t data_id, uint32_t value);
 static int32_t format(uint16_t data_id, float value);
 static uint32_t format_double(uint16_t data_id, float value_l, float value_h);
 static uint32_t format_coordinate(coordinate_type_t type, float value);
 static uint32_t format_datetime(uint8_t type, uint32_t value);
 static uint32_t format_cell(uint8_t cell_index, float value);
-static void send_packet(uint8_t type_id, uint16_t data_id, uint32_t value);
+static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value);
 static void send_byte(uint8_t c, uint16_t *crcp);
 static void set_config(smartport_parameters_t *parameter);
 static uint8_t sensor_id_to_crc(uint8_t sensor_id);
@@ -269,7 +271,7 @@ static void process(smartport_parameters_t *parameter) {
             if (lenght == PACKET_LENGHT) {
                 debug("\nSmartport (%u) < ", uxTaskGetStackHighWaterMark(NULL));
                 debug_buffer(data, PACKET_LENGHT, "0x%X ");
-                if (is_maintenance_mode && uxQueueMessagesWaiting(packet_queue_handle)) {
+                if (/*is_maintenance_mode &&*/ uxQueueMessagesWaiting(packet_queue_handle)) {
                     xTaskNotifyGive(packet_task_handle);
                 } else if (!is_maintenance_mode) {
                     xSemaphoreGive(semaphore_sensor);
@@ -288,14 +290,15 @@ static void process(smartport_parameters_t *parameter) {
                 }
                 if (i == 10) {
                     uint8_t crc = get_crc(data);
-                    if (crc == data[9] && data[2] != 0x00 && data[2] != 0x10) {
-                        uint8_t type_id = data[2];
+                    if (crc == data[9]) {
+                        uint8_t frame_id = data[2];
                         uint16_t data_id = (uint16_t)data[4] << 8 | data[3];
                         uint value =
                             (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 | (uint16_t)data[6] << 8 | data[5];
-                        debug("\nSmartport. Received packet (%u) < ", uxTaskGetStackHighWaterMark(NULL));
+                        debug("\nSmartport. Received packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X < ",
+                              uxTaskGetStackHighWaterMark(NULL), frame_id, data_id, value);
                         debug_buffer(data, 10, "0x%X ");
-                        process_packet(parameter, type_id, data_id, value);
+                        process_packet(parameter, frame_id, data_id, value);
                     }
                 }
             }
@@ -303,26 +306,28 @@ static void process(smartport_parameters_t *parameter) {
     }
 }
 
-static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, uint16_t data_id, uint32_t value) {
+static void process_packet(smartport_parameters_t *parameter, uint8_t frame_id, uint16_t data_id, uint32_t value) {
     // set maintenance mode on
-    if (type_id == 0x21 && data_id == 0xFFFF && value == 0x80) {
+    if (frame_id == 0x21 && data_id == 0xFFFF && value == 0x80) {
         is_maintenance_mode = true;
         debug("\nSmartport (%u). Maintenance mode ON ", uxTaskGetStackHighWaterMark(NULL));
+        config_t *config = config_read();
+        debug("\nDataId 0x%0X 0x%X", parameter->data_id, config->smartport_data_id);
         return;
     }
 
     // set maintenance mode off
-    if (type_id == 0x20 && data_id == 0xFFFF && value == 0x80) {
+    if (frame_id == 0x20 && data_id == 0xFFFF && value == 0x80) {
         is_maintenance_mode = false;
         debug("\nSmartport (%u). Maintenance mode OFF ", uxTaskGetStackHighWaterMark(NULL));
         return;
     }
 
     // send sensor id
-    if (is_maintenance_mode && type_id == 0x30 && data_id == parameter->data_id && value == 0x01) {
+    if (is_maintenance_mode && frame_id == 0x30 && data_id == parameter->data_id && value == 0x01) {
         smartport_packet_t packet;
-        packet.data = (parameter->sensor_id - 1) << 8 | 0x01;
-        packet.type_id = 0x32;
+        packet.value = (parameter->sensor_id - 1) << 8 | 0x01;
+        packet.frame_id = 0x32;
         packet.data_id = parameter->data_id;
         xQueueSendToBack(packet_queue_handle, &packet, 0);
         debug("\nSmartport (%u). Send sensor Id %i (0x%X)", uxTaskGetStackHighWaterMark(NULL), parameter->sensor_id,
@@ -331,7 +336,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
     }
 
     // change sensor id
-    if (is_maintenance_mode && type_id == 0x31 && data_id == parameter->data_id && (uint8_t)value == 0x01) {
+    if (is_maintenance_mode && frame_id == 0x31 && data_id == parameter->data_id && (uint8_t)value == 0x01) {
         uint8_t sensor_id = (value >> 8) + 1;
         config_t *config = config_read();
         config->smartport_sensor_id = sensor_id;
@@ -341,8 +346,8 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
         return;
     }
 
-    // send config
-    if (is_maintenance_mode && type_id == 0x30 && data_id == parameter->data_id && value == 0) {
+    // send config (old)
+    if (is_maintenance_mode && frame_id == 0x30 && data_id == parameter->data_id && value == 0) {
         uint32_t value = 0;
         smartport_packet_t packet;
         config_t *config = config_read();
@@ -351,9 +356,9 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
         // value |= (uint32_t)VERSION_PATCH << 8;
         // value |= (uint32_t)VERSION_MINOR << 16;
         // value |= (uint32_t)VERSION_MAJOR << 24;
-        packet.type_id = 0x32;
+        packet.frame_id = 0x32;
         packet.data_id = parameter->data_id;
-        packet.data = value;
+        packet.value = value;
         xQueueSendToBack(packet_queue_handle, &packet, 0);
         // packet 2
         value = 0xF2;
@@ -367,9 +372,9 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
         value |= ((uint8_t)(config->refresh_rate_voltage / 100) & 0b1111) << 20;
         value |= ((uint8_t)(config->refresh_rate_current / 100) & 0b1111) << 24;
         value |= ((uint8_t)(config->refresh_rate_temperature / 100) & 0b1111) << 28;
-        packet.type_id = 0x32;
+        packet.frame_id = 0x32;
         packet.data_id = parameter->data_id;
-        packet.data = value;
+        packet.value = value;
         xQueueSendToBack(packet_queue_handle, &packet, 0);
         // packet 3
         value = 0xF3;
@@ -378,61 +383,523 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t type_id, u
         value |= (ELEMENTS(config->alpha_current) & 0b1111) << 16;
         value |= (ELEMENTS(config->alpha_temperature) & 0b1111) << 20;
         value |= config->esc_protocol << 24;
-        packet.type_id = 0x32;
+        packet.frame_id = 0x32;
         packet.data_id = parameter->data_id;
-        packet.data = value;
+        packet.value = value;
         xQueueSendToBack(packet_queue_handle, &packet, 0);
         // packet 4
         value = 0xF4;
         value |= config->i2c_module << 8;
         value |= config->i2c_address << 12;
-        packet.type_id = 0x32;
+        packet.frame_id = 0x32;
         packet.data_id = parameter->data_id;
-        packet.data = value;
+        packet.value = value;
         xQueueSendToBack(packet_queue_handle, &packet, 0);
         debug("\nSmartport (%u). Send config...", uxTaskGetStackHighWaterMark(NULL));
         return;
     }
 
-    // receive config
-    if (is_maintenance_mode && type_id == 0x31 && data_id == parameter->data_id &&
-        ((uint8_t)(value) == 0xF1 || (uint8_t)(value) == 0xF2 || (uint8_t)(value) == 0xF3)) {
-        static config_t config;
+    // sensor id search
+    if (frame_id == 0x35 && data_id == 0x5200) {
+        smartport_packet_t packet;
+        packet.value = 1;
+        packet.frame_id = 0x32;
+        packet.data_id = 0x5201;
+        is_maintenance_mode = true;
+        xQueueSendToBack(packet_queue_handle, &packet, 0);
+    }
 
-        if ((uint8_t)value == 0xF1) {
-            config_get(&config);
-            config.enable_analog_airspeed = (value >> 8) & 1;
-            config.enable_gps = (value >> 9) & 1;
-            config.enable_analog_voltage = (value >> 10) & 1;
-            config.enable_analog_current = (value >> 12) & 1;
-            config.enable_analog_ntc = (value >> 13) & 1;
-            config.enable_pwm_out = (value >> 15) & 1;
-            config.refresh_rate_rpm = ((uint8_t)(value >> 16) & 0b1111) * 100;
-            config.refresh_rate_voltage = ((uint8_t)(value >> 20) & 0b1111) * 100;
-            config.refresh_rate_current = ((uint8_t)(value >> 24) & 0b1111) * 100;
-            config.refresh_rate_temperature = ((uint8_t)(value >> 28) & 0b1111) * 100;
-            debug("\nSmartport (%u). Received config 1/3", uxTaskGetStackHighWaterMark(NULL));
-        } else if ((uint8_t)value == 0xF2) {
-            config.alpha_rpm = ALPHA((value >> 8) & 0b1111);
-            config.alpha_voltage = ALPHA((value >> 12) & 0b1111);
-            config.alpha_current = ALPHA((value >> 16) & 0b1111);
-            config.alpha_temperature = ALPHA((value >> 20) & 0b1111);
-            config.esc_protocol = (value >> 24) & 0b11111111;
-            debug("\nSmartport (%u). Received config 2/3", uxTaskGetStackHighWaterMark(NULL));
-        } else if ((uint8_t)value == 0xF3) {
-            smartport_packet_t packet;
-            config.i2c_module = (value >> 8) & 0b1111;
-            config.i2c_address = (value >> 12) & 0b11111111;
-            config_write(&config);
-
-            packet.type_id = 0x32;
-            packet.data_id = parameter->data_id;
-            packet.data = 0xFF;
-            xQueueSendToBack(packet_queue_handle, &packet, 0);
-            add_alarm_in_ms(6000, reboot_callback, NULL, true);
-            debug("\nSmartport (%u). Received config 3/3. Write config. Reboot...\n",
-                  uxTaskGetStackHighWaterMark(NULL));
+    // send config
+    if (frame_id == 0x34) {
+        config_t *config = config_read();
+        uint8_t frame_id_send = 0x32;
+        bool send = true;
+        smartport_packet_t packet;
+        packet.value = parameter->sensor_id;
+        packet.frame_id = 0x32;
+        packet.data_id = data_id;
+        switch (data_id) {
+            case 0x5101: {
+                char version[] = PROJECT_VERSION;
+                memmove(version, version + 1, strlen(version));
+                char *token;
+                token = strtok(version, " . ");
+                while (token != NULL) {
+                    packet.value = packet.value << 8 | atoi(token);
+                    token = strtok(NULL, " . ");
+                }
+                packet.value = swap_32(packet.value);
+                break;
+            }
+            case 0x5102:
+                packet.value = config->rx_protocol;
+                break;
+            case 0x5103:
+                packet.value = config->esc_protocol;
+                break;
+            case 0x5104:
+                packet.value = config->enable_gps;
+                break;
+            case 0x5105:
+                packet.value = config->gps_baudrate;
+                break;
+            case 0x5106:
+                packet.value = config->enable_analog_voltage;
+                break;
+            case 0x5107:
+                packet.value = config->enable_analog_current;
+                break;
+            case 0x5108:
+                packet.value = config->enable_analog_ntc;
+                break;
+            case 0x5109:
+                packet.value = config->enable_analog_airspeed;
+                break;
+            case 0x510A:
+                packet.value = config->i2c_module;
+                break;
+            case 0x510B:
+                packet.value = config->i2c_address;
+                break;
+            case 0x510C:
+                packet.value = ELEMENTS(config->alpha_rpm);
+                break;
+            case 0x510D:
+                packet.value = ELEMENTS(config->alpha_voltage);
+                break;
+            case 0x510E:
+                packet.value = ELEMENTS(config->alpha_current);
+                break;
+            case 0x510F:
+                packet.value = ELEMENTS(config->alpha_temperature);
+                break;
+            case 0x5110:
+                packet.value = ELEMENTS(config->alpha_vario);
+                break;
+            case 0x5111:
+                packet.value = ELEMENTS(config->alpha_airspeed);
+                break;
+            case 0x5112:
+                packet.value = config->refresh_rate_rpm;
+                break;
+            case 0x5113:
+                packet.value = config->refresh_rate_voltage;
+                break;
+            case 0x5114:
+                packet.value = config->refresh_rate_current;
+                break;
+            case 0x5115:
+                packet.value = config->refresh_rate_temperature;
+                break;
+            case 0x5116:
+                packet.value = config->refresh_rate_gps;
+                break;
+            case 0x5117:
+                packet.value = config->refresh_rate_consumption;
+                break;
+            case 0x5118:
+                packet.value = config->refresh_rate_vario;
+                break;
+            case 0x5119:
+                packet.value = config->refresh_rate_airspeed;
+                break;
+            case 0x511A:
+                packet.value = config->refresh_rate_default;
+                break;
+            case 0x511B:
+                packet.value = config->analog_voltage_multiplier * 100;
+                break;
+            case 0x511C:
+                packet.value = config->analog_current_type;
+                break;
+            case 0x511D:
+                packet.value = config->gpio_interval;
+                break;
+            case 0x511E:
+                packet.value = config->analog_current_quiescent_voltage;
+                break;
+            case 0x511F:
+                packet.value = config->analog_current_multiplier;
+                break;
+            case 0x5120:
+                packet.value = config->analog_current_offset * 100;
+                break;
+            case 0x5121:
+                packet.value = config->analog_current_autoffset;
+                break;
+            case 0x5122:
+                packet.value = config->pairOfPoles;
+                break;
+            case 0x5123:
+                packet.value = config->mainTeeth;
+                break;
+            case 0x5124:
+                packet.value = config->pinionTeeth;
+                break;
+            case 0x5125:
+                packet.value = config->rpm_multiplier;
+                break;
+            case 0x5126:
+                packet.value = config->bmp280_filter;
+                break;
+            case 0x5127:
+                packet.value = config->enable_pwm_out;
+                break;
+            case 0x5128:
+                packet.value = config->smartport_sensor_id;
+                break;
+            case 0x5129:
+                packet.value = config->smartport_data_id;
+                break;
+            case 0x512A:
+                packet.value = config->vario_auto_offset;
+                break;
+            case 0x512B:
+                packet.value = config->xbus_clock_stretch;
+                break;
+            case 0x512C:
+                packet.value = config->jeti_gps_speed_units_kmh;
+                break;
+            case 0x512D:
+                packet.value = config->enable_esc_hw4_init_delay;
+                break;
+            case 0x512E:
+                packet.value = config->esc_hw4_init_delay_duration;
+                break;
+            case 0x512F:
+                packet.value = config->esc_hw4_current_thresold;
+                break;
+            case 0x5130:
+                packet.value = config->esc_hw4_current_max;
+                break;
+            case 0x5131:
+                packet.value = config->esc_hw4_divisor * 100;
+                break;
+            case 0x5132:
+                packet.value = config->esc_hw4_current_multiplier * 100;
+                break;
+            case 0x5133:
+                packet.value = config->ibus_alternative_coordinates;
+                break;
+            case 0x5134:
+                packet.value = config->debug;
+                break;
+            case 0x5135:
+                packet.value = config->esc_hw4_is_manual_offset;
+                break;
+            case 0x5136:
+                packet.value = config->analog_rate;
+                break;
+            case 0x5137:
+                packet.value = config->xbus_use_alternative_volt_temp;
+                break;
+            case 0x5138:
+                packet.value = config->gpio_mask;
+                break;
+            case 0x5139:
+                packet.value = config->esc_hw4_offset;
+                break;
+            case 0x513A:
+                packet.value = config->serial_monitor_baudrate;
+                break;
+            case 0x513B:
+                packet.value = config->serial_monitor_stop_bits;
+                break;
+            case 0x513C:
+                packet.value = config->serial_monitor_parity;
+                break;
+            case 0x513D:
+                packet.value = config->serial_monitor_timeout_ms;
+                break;
+            case 0x513E:
+                packet.value = config->serial_monitor_inverted;
+                break;
+            case 0x513F:
+                packet.value = config->airspeed_offset * 100;
+                break;
+            case 0x5140:
+                packet.value = config->airspeed_slope * 100;
+                break;
+            case 0x5141:
+                packet.value = config->fuel_flow_ml_per_pulse * 10000;
+                break;
+            case 0x5142:
+                packet.value = config->enable_fuel_flow;
+                break;
+            case 0x5143:
+                packet.value = config->xgzp68xxd_k;
+                break;
+            case 0x5144:
+                packet.value = config->enable_fuel_pressure;
+                break;
+            case 0x5145:
+                packet.value = config->smart_esc_calc_consumption;
+                break;
+            case 0x5146:
+                packet.value = config->serial_monitor_gpio;
+                break;
+            case 0x5147:
+                packet.value = config->gps_rate;
+                break;
+            case 0x5148:
+                packet.value = config->serial_monitor_format;
+                break;
+            case 0x5149:
+                packet.value = config->gps_protocol;
+                break;
+            case 0x514A:
+                packet.value = config->sbus_battery_slot;
+                break;
+            default:
+                send = false;
+                debug("\nSmartport. Unknown request frameId 0x%X dataId 0x%X", frame_id, data_id);
+                break;
         }
+        if (send) xQueueSendToBack(packet_queue_handle, &packet, 0);
+    }
+
+    // receive config
+    if (frame_id == 0x35 && data_id == 0x5201 && value == 0) {
+        config_lua = malloc(sizeof(config_t));
+        memcpy(config_lua, config_read(), sizeof(config_t));
+        debug("\nSmartport. Start saving...");
+    }
+    if (frame_id == 0x35 && data_id == 0x5201 && value == 1) {
+        config_write(config_lua);
+        is_maintenance_mode = false;
+        free(config_lua);
+        debug("\nSmartport. Complete save config");
+    }
+    if (frame_id == 0x33) {
+        uint8_t frame_id_send = 0x32;
+        bool write = true;
+        switch (data_id) {
+            case 0x5102:
+                config_lua->rx_protocol = value;
+                break;
+            case 0x5103:
+                config_lua->esc_protocol = value;
+                break;
+            case 0x5104:
+                config_lua->enable_gps = value;
+                break;
+            case 0x5105:
+                config_lua->gps_baudrate = value;
+                break;
+            case 0x5106:
+                config_lua->enable_analog_voltage = value;
+                break;
+            case 0x5107:
+                config_lua->enable_analog_current = value;
+                break;
+            case 0x5108:
+                config_lua->enable_analog_ntc = value;
+                break;
+            case 0x5109:
+                config_lua->enable_analog_airspeed = value;
+                break;
+            case 0x510A:
+                config_lua->i2c_module = value;
+                break;
+            case 0x510B:
+                config_lua->i2c_address = value;
+                break;
+            case 0x510C:
+                config_lua->alpha_rpm = value;
+                break;
+            case 0x510D:
+                config_lua->alpha_voltage = value;
+                break;
+            case 0x510E:
+                config_lua->alpha_current = value;
+                break;
+            case 0x510F:
+                config_lua->alpha_temperature = value;
+                break;
+            case 0x5110:
+                config_lua->alpha_vario = value;
+                break;
+            case 0x5111:
+                config_lua->alpha_airspeed = value;
+                break;
+            case 0x5112:
+                config_lua->refresh_rate_rpm = value;
+                debug("\nRPM: %u", config_lua->refresh_rate_rpm);
+                break;
+            case 0x5113:
+                config_lua->refresh_rate_voltage = value;
+                debug("\nRPM: %u", config_lua->refresh_rate_rpm);
+                break;
+            case 0x5114:
+                config_lua->refresh_rate_current = value;
+                break;
+            case 0x5115:
+                config_lua->refresh_rate_temperature = value;
+                break;
+            case 0x5116:
+                config_lua->refresh_rate_gps = value;
+                break;
+            case 0x5117:
+                config_lua->refresh_rate_consumption = value;
+                break;
+            case 0x5118:
+                config_lua->refresh_rate_vario = value;
+                break;
+            case 0x5119:
+                config_lua->refresh_rate_airspeed = value;
+                break;
+            case 0x511A:
+                config_lua->refresh_rate_default = value;
+                break;
+            case 0x511B:
+                config_lua->analog_voltage_multiplier = value / 100;
+                break;
+            case 0x511C:
+                config_lua->analog_current_type = value;
+                break;
+            case 0x511D:
+                config_lua->gpio_interval = value;
+                break;
+            case 0x511E:
+                config_lua->analog_current_quiescent_voltage = value;
+                break;
+            case 0x511F:
+                config_lua->analog_current_multiplier = value;
+                break;
+            case 0x5120:
+                config_lua->analog_current_offset = value / 100;
+                break;
+            case 0x5121:
+                config_lua->analog_current_autoffset = value;
+                break;
+            case 0x5122:
+                config_lua->pairOfPoles = value;
+                break;
+            case 0x5123:
+                config_lua->mainTeeth = value;
+                break;
+            case 0x5124:
+                config_lua->pinionTeeth = value;
+                break;
+            case 0x5125:
+                config_lua->rpm_multiplier = value;
+                break;
+            case 0x5126:
+                config_lua->bmp280_filter = value;
+                break;
+            case 0x5127:
+                config_lua->enable_pwm_out = value;
+                break;
+            case 0x5128:
+                config_lua->smartport_sensor_id = value;
+                break;
+            case 0x5129:
+                config_lua->smartport_data_id = value;
+                break;
+            case 0x512A:
+                config_lua->vario_auto_offset = value;
+                break;
+            case 0x512B:
+                config_lua->xbus_clock_stretch = value;
+                break;
+            case 0x512C:
+                config_lua->jeti_gps_speed_units_kmh = value;
+                break;
+            case 0x512D:
+                config_lua->enable_esc_hw4_init_delay = value;
+                break;
+            case 0x512E:
+                config_lua->esc_hw4_init_delay_duration = value;
+                break;
+            case 0x512F:
+                config_lua->esc_hw4_current_thresold = value;
+                break;
+            case 0x5130:
+                config_lua->esc_hw4_current_max = value;
+                break;
+            case 0x5131:
+                config_lua->esc_hw4_divisor = value / 100;
+                break;
+            case 0x5132:
+                config_lua->esc_hw4_current_multiplier = value / 100;
+                break;
+            case 0x5133:
+                config_lua->ibus_alternative_coordinates = value;
+                break;
+            case 0x5134:
+                config_lua->debug = value;
+                break;
+            case 0x5135:
+                config_lua->esc_hw4_is_manual_offset = value;
+                break;
+            case 0x5136:
+                config_lua->analog_rate = value;
+                break;
+            case 0x5137:
+                config_lua->xbus_use_alternative_volt_temp = value;
+                break;
+            case 0x5138:
+                config_lua->gpio_mask = value;
+                break;
+            case 0x5139:
+                config_lua->esc_hw4_offset = value;
+                break;
+            case 0x513A:
+                config_lua->serial_monitor_baudrate = value;
+                break;
+            case 0x513B:
+                config_lua->serial_monitor_stop_bits = value;
+                break;
+            case 0x513C:
+                config_lua->serial_monitor_parity = value;
+                break;
+            case 0x513D:
+                config_lua->serial_monitor_timeout_ms = value;
+                break;
+            case 0x513E:
+                config_lua->serial_monitor_inverted = value;
+                break;
+            case 0x513F:
+                config_lua->airspeed_offset = value / 100;
+                break;
+            case 0x5140:
+                config_lua->airspeed_slope = value / 100;
+                break;
+            case 0x5141:
+                config_lua->fuel_flow_ml_per_pulse = value / 10000;
+                break;
+            case 0x5142:
+                config_lua->enable_fuel_flow = value;
+                break;
+            case 0x5143:
+                config_lua->xgzp68xxd_k = value;
+                break;
+            case 0x5144:
+                config_lua->enable_fuel_pressure = value;
+                break;
+            case 0x5145:
+                config_lua->smart_esc_calc_consumption = value;
+                break;
+            case 0x5146:
+                config_lua->serial_monitor_gpio = value;
+                break;
+            case 0x5147:
+                config_lua->gps_rate = value;
+                break;
+            case 0x5148:
+                config_lua->serial_monitor_format = value;
+                break;
+            case 0x5149:
+                config_lua->gps_protocol = value;
+                break;
+            case 0x514A:
+                config_lua->sbus_battery_slot = value;
+                break;
+            default:
+                debug("\nSmartport. Unknown save request. frameId 0x%X dataId 0x%X", frame_id, data_id);
+                break;
+        }
+        debug("\nSmartport. Store config. frameId 0x%X dataId 0x%X value %u", frame_id, data_id, value);
     }
 }
 
@@ -568,7 +1035,7 @@ static void packet_task(void *parameters) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         xQueueReceive(packet_queue_handle, &packet, 0);
         debug("\nSmartport. Packet (%u) > ", uxTaskGetStackHighWaterMark(NULL));
-        send_packet(packet.type_id, packet.data_id, packet.data);
+        send_packet(packet.frame_id, packet.data_id, packet.value);
         vTaskDelay(1500 / portTICK_PERIOD_MS);
     }
 }
@@ -614,7 +1081,7 @@ static uint32_t format_coordinate(coordinate_type_t type, float value) {
     if (type == SMARTPORT_LONGITUDE) {
         data |= (uint32_t)1 << 31;
     }
-    data |= (uint32_t)(value * 60 * 10000); // deg to min * 10000
+    data |= (uint32_t)(value * 60 * 10000);  // deg to min * 10000
     return data;
 }
 
@@ -646,11 +1113,11 @@ static void send_byte(uint8_t c, uint16_t *crcp) {
     debug("%X ", c);
 }
 
-static void send_packet(uint8_t type_id, uint16_t data_id, uint32_t value) {
+static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
     uint16_t crc = 0;
     uint8_t *u8p;
-    // type_id
-    send_byte(type_id, &crc);
+    // frame_id
+    send_byte(frame_id, &crc);
     // data_id
     u8p = (uint8_t *)&data_id;
     send_byte(u8p[0], &crc);
@@ -672,7 +1139,7 @@ static void set_config(smartport_parameters_t *parameter) {
     TaskHandle_t task_handle;
     float *baro_temp = NULL, *baro_pressure = NULL;
     parameter->sensor_id = config->smartport_sensor_id;
-    parameter->data_id = config->smartport_data_id;
+    parameter->data_id = 0x5000;  // config->smartport_data_id;
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
