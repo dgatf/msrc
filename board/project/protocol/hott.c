@@ -398,9 +398,9 @@ typedef struct hott_sensors_t {
 typedef struct vario_alarm_parameters_t {
     float *altitude;
     float *vspd;
-    uint16_t m1s;
-    uint16_t m3s;
-    uint16_t m10s;
+    float m1s;
+    float m3s;
+    float m10s;
 } vario_alarm_parameters_t;
 
 vario_alarm_parameters_t vario_alarm_parameters;
@@ -454,7 +454,7 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             if (min_altitude > packet.altitude) min_altitude = packet.altitude;
             packet.maxAltitude = max_altitude;
             packet.minAltitude = min_altitude;
-            packet.m1s = vario_alarm_parameters.m1s;
+            packet.m1s = *sensors->vario[HOTT_VARIO_M1S];
             packet.m3s = vario_alarm_parameters.m3s;
             packet.m10s = vario_alarm_parameters.m10s;
             packet.endByte = HOTT_END_BYTE;
@@ -543,6 +543,10 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             if (sensors->general_air[HOTT_GENERAL_PRESSURE])
                 packet.pressure =
                     *sensors->general_air[HOTT_GENERAL_PRESSURE] * 1e-5 * 10;  // Pa -> bar (in steps of 0.1 bar)
+            if (sensors->general_air[HOTT_GENERAL_ALTITUDE])
+                packet.altitude = *sensors->general_air[HOTT_GENERAL_ALTITUDE] + 500;
+            if (sensors->general_air[HOTT_GENERAL_CLIMBRATE])
+                packet.altitude = *sensors->general_air[HOTT_GENERAL_CLIMBRATE] * 100 + 30000;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             send_packet((uint8_t *)&packet, sizeof(packet));
@@ -992,6 +996,13 @@ static void set_config(hott_sensors_t *sensors) {
 
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
+        sensors->vario[HOTT_VARIO_M1S] = parameter.vspeed;
+        
+        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        sensors->general_air[HOTT_GENERAL_ALTITUDE] = parameter.altitude;
+        sensors->general_air[HOTT_GENERAL_CLIMBRATE] = parameter.vspeed;
+
+        vario_alarm_parameters.altitude = parameter.altitude;
 
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
@@ -1012,6 +1023,13 @@ static void set_config(hott_sensors_t *sensors) {
 
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
+        sensors->vario[HOTT_VARIO_M1S] = parameter.vspeed;
+        
+        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        sensors->general_air[HOTT_GENERAL_ALTITUDE] = parameter.altitude;
+        sensors->general_air[HOTT_GENERAL_CLIMBRATE] = parameter.vspeed;
+
+        vario_alarm_parameters.altitude = parameter.altitude;
 
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
@@ -1032,6 +1050,13 @@ static void set_config(hott_sensors_t *sensors) {
 
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
+        sensors->vario[HOTT_VARIO_M1S] = parameter.vspeed;
+        
+        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        sensors->general_air[HOTT_GENERAL_ALTITUDE] = parameter.altitude;
+        sensors->general_air[HOTT_GENERAL_CLIMBRATE] = parameter.vspeed;
+
+        vario_alarm_parameters.altitude = parameter.altitude;
 
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
