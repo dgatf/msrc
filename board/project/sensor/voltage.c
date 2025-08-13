@@ -9,7 +9,7 @@ void voltage_task(void *parameters) {
     voltage_parameters_t parameter = *(voltage_parameters_t *)parameters;
     adc_init();
     adc_gpio_init(parameter.adc_num + 26);
-    gpio_pull_down(parameter.adc_num + 26);
+    //gpio_pull_down(parameter.adc_num + 26);
     *parameter.voltage = 0;
     xTaskNotifyGive(context.receiver_task_handle);
     while (1) {

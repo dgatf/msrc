@@ -16,7 +16,7 @@ void current_task(void *parameters) {
     xTaskNotifyGive(context.receiver_task_handle);
     adc_init();
     adc_gpio_init(parameter.adc_num + 26);
-    gpio_pull_down(parameter.adc_num + 26);
+    //gpio_pull_down(parameter.adc_num + 26);
     if (parameter.auto_offset) {
         parameter.offset = -1;
         auto_offset_float_parameters_t parameter_auto_offset = {5000, parameter.voltage, &parameter.offset};
