@@ -929,8 +929,8 @@ static void set_config(sensor_jetiex_t **sensor) {
         *new_sensor =
             (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current", "A", parameter.current};
         add_sensor(new_sensor, sensor);
-        *new_sensor = (sensor_jetiex_t){0,     JETIEX_TYPE_INT22,    JETIEX_FORMAT_0_DECIMAL, "Consumption",
-                                        "mAh", parameter.consumption};
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Consumption", "mAh", parameter.consumption};
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
