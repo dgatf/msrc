@@ -415,11 +415,11 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t frame_id, 
         uint8_t frame_id_send = 0x32;
         bool send = true;
         smartport_packet_t packet;
-        packet.value = parameter->sensor_id;
         packet.frame_id = 0x32;
         packet.data_id = data_id;
         switch (data_id) {
             case 0x5101: {
+                packet.value = 0;
                 char version[] = PROJECT_VERSION;
                 memmove(version, version + 1, strlen(version));
                 char *token;
@@ -428,7 +428,6 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t frame_id, 
                     packet.value = packet.value << 8 | atoi(token);
                     token = strtok(NULL, " . ");
                 }
-                packet.value = swap_32(packet.value);
                 break;
             }
             case 0x5102:

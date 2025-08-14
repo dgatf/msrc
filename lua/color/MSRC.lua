@@ -15,11 +15,11 @@ end save   | radio  | 0x35    | 0x5201  | 1             |
 ]]--
 
 local scriptVersion = "v1.0"
+local firmwareVersion
 local page = 0
 local pageLong = false
 local pagePos = 1
 local isSelected = false
-local isIncremented = false
 local status = "searchSensorId"
 local exit = false
 local saveChanges = true
@@ -201,7 +201,7 @@ local function getTextFlags(itemPos)
 	return value
 end
 
-local function getValue()
+local function getValue(isIncremented)
 	if isIncremented == true and vars[page][pagePos][2] < vars[page][pagePos][4] then
 		vars[page][pagePos][2] = vars[page][pagePos][2] + vars[page][pagePos][5]
 	end
@@ -219,25 +219,13 @@ local function getString(strList, value)
 end
 
 local function drawTitle(str, page, pages)
-    if LCD_W == 480 then
-        lcd.drawText(1, 1 ,str)
-        if page ~= 0 and pages ~= 0 then
-            lcd.drawText(200, 1 ,page .. "/" .. pages)
-        end
-    else
-        lcd.drawScreenTitle(str, page, pages)
+    lcd.drawText(1, 1 ,str)
+    if page ~= 0 and pages ~= 0 then
+        lcd.drawText(200, 1 ,page .. "/" .. pages)
     end
 end
 
 local function drawPage()
-    if LCD_W == 480 then
-        drawHorus()
-    else
-        drawTaranis()
-    end
-end
-
-local function drawHorus()
     lcd.clear()
     if exit == true then
         drawTitle("Exit", 0, 0)
@@ -429,15 +417,10 @@ local function handleEvents(event)
 	if event == EVT_EXIT_BREAK then
 		if isSelected == true then
 			isSelected = false
-			drawPage()
-			return
 		else
 		    exit = true
-            drawPage()
-            return
 		end
-	end
-	if event == EVT_PAGE_BREAK and exit == false then
+	elseif event == EVT_PAGE_BREAK and exit == false then
 		if pageLong then
 			page = page - 1
 		else
@@ -453,24 +436,19 @@ local function handleEvents(event)
 		isSelected = false
         status = "getConfig"
         posConfig = 1
-        return
 	elseif event == EVT_PAGE_LONG then
 		pageLong = true
 	elseif event == EVT_ROT_RIGHT then
         if exit == true then
             saveChanges = not saveChanges
-            return
-        end
-		if isSelected == false then
+        elseif isSelected == false then
 			pagePos = pagePos + 1
 			if pagePos > #vars[page] then
 				pagePos = 1
 			end
 		else
-			isIncremented = true
-			getValue()
+			getValue(true)
 		end
-		drawPage()
 	elseif event == EVT_ROT_LEFT then
         if exit == true then
             saveChanges = not saveChanges
@@ -482,27 +460,23 @@ local function handleEvents(event)
 				pagePos = #vars[page]
 			end
 		else
-			isIncremented = false
-			getValue()
+			getValue(false)
 		end
-		drawPage()
 	elseif event == EVT_ROT_BREAK then
         if exit == true then
             if saveChanges == true then
                 status = "saveConfig"
                 page = 1
                 posConfig = 1
-                return
             else
                 exit = false
                 saveChanges = true
             end
-            return
+        else
+            isSelected = not isSelected
         end
-		isSelected = not isSelected
-		drawPage()
 	end
-	if page > 0 then
+	if page > 0 and status == "config" then
 		drawPage()
 	end
 end
@@ -514,13 +488,15 @@ local function searchSensorId()
         page = 1
 		status = "getConfig"
 		lcd.clear()
-        drawTitle("MSRC " .. scriptVersion, 0, 0)
-		lcd.drawText(1, 20, "Found MSRC at sensorId " .. sensorId[2], SMLSIZE)
+        drawTitle("MSRC "  .. scriptVersion, 0, 0)
+        lcd.drawText(1, 20, "Found MSRC at sensorId  " .. sensorId[2], SMLSIZE)
 		return
 	end
 	if sensorIdIndex <= 28 then
 		if sportTelemetryPush(sensorIdIndex - 1, 0x35, 0x5200, 0) then
-			lcd.drawText(1, 20, "Search MSRC at sensorId " .. sensorIdIndex, SMLSIZE)
+			lcd.clear()
+            drawTitle("MSRC "  .. scriptVersion, 0, 0)
+            lcd.drawText(1, 20, "Search MSRC at sensorId " .. sensorIdIndex, SMLSIZE)
 			sensorIdIndex = sensorIdIndex + 1
 		end
 	end
@@ -532,7 +508,9 @@ local function getConfig()
         lcd.clear()
         drawTitle(pageName[page], page, #vars)
 		lcd.drawText(60, 30, posConfig .. "/" .. #vars[page], 0)
-        if dataId == 0x5131 or dataId == 0x5132 or dataId == 0x513F or dataId == 0x5140 or dataId == 0x511B or dataId == 0x5120 then
+        if dataId == 0x5101 then
+            firmwareVersion = "v" .. bit32.rshift(value, 16) .. "." .. bit32.band(bit32.rshift(value, 8), 0xF) .. "." .. bit32.band(value, 0xF) 
+        elseif dataId == 0x5131 or dataId == 0x5132 or dataId == 0x513F or dataId == 0x5140 or dataId == 0x511B or dataId == 0x5120 then
             vars[page][posConfig][2] = value / 100
         elseif dataId == 0x5141 then
             vars[page][posConfig][2] = value / 10000
@@ -544,6 +522,16 @@ local function getConfig()
             elseif value == 57600 then 
                 vars[page][posConfig][2] = 2
             elseif value == 38400 then 
+                vars[page][posConfig][2] = 3
+            else
+                vars[page][posConfig][2] = 4
+            end
+        elseif dataId == 0x5147 then 
+            if value == 1 then 
+                vars[page][posConfig][2] = 1
+            elseif value == 5 then 
+                vars[page][posConfig][2] = 2
+            elseif value == 10 then 
                 vars[page][posConfig][2] = 3
             else
                 vars[page][posConfig][2] = 4
@@ -561,22 +549,20 @@ local function getConfig()
 		posConfig = posConfig + 1
         if posConfig > #vars[page] then
 			status = "config"
-            drawPage()
-            return
 		end
 		newValueConfig = true
-        return
     elseif newValueConfig == true or (getTime() - tsRequest > 200) then
-        if vars[page][posConfig][2] ~= nil then
+        if firmwareVersion == nil then
+            if sportTelemetryPush(sensorId[2] - 1, 0x34, 0x5101, 0) then 
+                tsRequest = getTime()
+                newValueConfig = false
+            end
+        elseif vars[page][posConfig][2] ~= nil then
             posConfig = posConfig + 1
             if posConfig > #vars[page] then
 			    status = "config"
-                drawPage()
-                return
 		    end
-            return
-        end
-		if sportTelemetryPush(sensorId[2] - 1, 0x34, vars[page][posConfig][6], 0) then
+        elseif sportTelemetryPush(sensorId[2] - 1, 0x34, vars[page][posConfig][6], 0) then
 			tsRequest = getTime()
 			newValueConfig = false
 		end
@@ -613,6 +599,16 @@ local function saveConfig()
             else
                 value = 9600
             end
+        elseif dataId == 0x5147 then 
+            if vars[page][posConfig][2] == 1 then 
+                value = 1
+            elseif vars[page][posConfig][2] == 2 then 
+                value = 5
+            elseif vars[page][posConfig][2] == 3 then 
+                value = 10
+            else
+                value = 20
+            end
         elseif dataId == 0x5138 then 
             value = gpio17[2] -- bit 1
             value = bit32.bor(value, bit32.lshift(gpio18[2], 1)) -- bit 2
@@ -625,8 +621,6 @@ local function saveConfig()
         if sportTelemetryPush(sensorId[2] - 1, 0x33, vars[page][posConfig][6], value) then
             lcd.drawText(1, 20, "Send dataId " .. vars[page][posConfig][6], SMLSIZE)
             posConfig = posConfig + 1
-        else
-            lcd.drawText(1, 35, "Error dataId " .. vars[page][posConfig][6], SMLSIZE)
         end
     else
         posConfig = posConfig + 1
@@ -645,21 +639,17 @@ end
 local function run_func(event)
 	if status == "searchSensorId" then
         searchSensorId()
-    end
-	if status == "getConfig" then
+    elseif status == "getConfig" then
 		getConfig()
-	end
-	if status == "config" then
+	elseif status == "config" then
         handleEvents(event)
-	end
-    if status == "saveConfig" or status == "startSave" then
+    elseif status == "saveConfig" or status == "startSave" then
 		saveConfig()
-	end
-    if status == "exit" then
+	elseif status == "exit" then
         lcd.clear()
-		lcd.drawScreenTitle("MSRC " .. scriptVersion, 0, 0)
+		drawTitle("MSRC " .. scriptVersion, 0, 0)
 		lcd.drawText(1, 20, "Completed!", SMLSIZE)
-        --return 1
+		lcd.drawText(1, 40, "Reboot MSRC to apply changes.", SMLSIZE)
     end
 	return 0
 end
