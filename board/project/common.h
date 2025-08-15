@@ -54,6 +54,7 @@ typedef struct context_t {
 
 float get_average(float alpha, float prev_value, float new_value);
 float get_consumption(float current, uint16_t current_max, uint32_t *timestamp);
+float get_energy(float power, uint16_t power_max, uint32_t *timestamp_power);
 float voltage_read(uint8_t adc_num);
 float get_altitude(float pressure, float temperature, float P0);
 void get_vspeed(float *vspeed, float altitude, uint interval);

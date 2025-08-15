@@ -29,6 +29,19 @@ float get_consumption(float current, uint16_t current_max, uint32_t *timestamp) 
     return mah;
 }
 
+float get_energy(float power, uint16_t power_max, uint32_t *timestamp_power) {
+    if (!*timestamp_power) {
+        *timestamp_power = time_us_32();
+        return 0;
+    }
+    uint32_t now = time_us_32();                    // us
+    uint32_t interval = (now - *timestamp_power) / 1000;  // ms
+    float Wh = power * interval / 3600000.0;
+    *timestamp_power = now;
+    if (interval > 2000 || (power_max && (Wh > power_max * interval / 3600000.0))) return 0;
+    return Wh;
+}
+
 float voltage_read(uint8_t adc_num) {
     adc_select_input(adc_num);
     return adc_read() * BOARD_VCC / ADC_RESOLUTION;
