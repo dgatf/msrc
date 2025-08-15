@@ -8,6 +8,7 @@
 #include "bmp280.h"
 #include "config.h"
 #include "current.h"
+#include "power.h"
 #include "esc_apd_f.h"
 #include "esc_apd_hv.h"
 #include "esc_castle.h"
@@ -902,7 +903,7 @@ static void set_config(sensor_jetiex_t **sensor) {
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-    if (config->enable_analog_voltage) {
+    if (config->enable_analog_voltage && !config->enable_analog_current) {
         voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage,
                                           config->analog_voltage_multiplier, malloc(sizeof(float))};
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
@@ -913,7 +914,7 @@ static void set_config(sensor_jetiex_t **sensor) {
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-    if (config->enable_analog_current) {
+    if (config->enable_analog_current && !config->enable_analog_voltage) {
         current_parameters_t parameter = {1,
                                           config->analog_rate,
                                           config->alpha_current,
@@ -932,6 +933,49 @@ static void set_config(sensor_jetiex_t **sensor) {
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Consumption", "mAh", parameter.consumption};
         add_sensor(new_sensor, sensor);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_analog_current && config->enable_analog_voltage) {
+        power_parameters_t parameter = {1,
+                                        0,
+                                        config->analog_rate,
+                                        config->alpha_current,
+                                        config->analog_current_multiplier,
+                                        config->analog_voltage_multiplier,
+                                        config->analog_current_offset,
+                                        config->analog_current_autoffset,
+                                        malloc(sizeof(float)),
+                                        malloc(sizeof(float)),
+                                        malloc(sizeof(float)),
+                                        malloc(sizeof(float)),
+                                        malloc(sizeof(float)),
+                                        malloc(sizeof(float))};
+        xTaskCreate(power_task, "power_task", STACK_POWER, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor =
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_2_DECIMAL, "Voltage", "V", parameter.voltage};
+        add_sensor(new_sensor, sensor);
+        
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor =
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current", "A", parameter.current};
+        add_sensor(new_sensor, sensor);
+
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor =
+            (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Power", "W", parameter.power};
+        add_sensor(new_sensor, sensor);
+        
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Consumption", "mAh", parameter.consumption};
+        add_sensor(new_sensor, sensor);
+
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Energy", "Wh", parameter.power_consumption};
+        add_sensor(new_sensor, sensor);        
+
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_ntc) {
