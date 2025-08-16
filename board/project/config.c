@@ -71,8 +71,8 @@
 #define BMP280_FILTER 3  // BMP Filter. Higher filter = lower noise: 1 - low, 2 - medium, 3 - high
 
 /* Only smartport and opentx */
-#define SMARTPORT_SENSOR_ID 18    // Sensor Id
-#define SMARTPORT_DATA_ID 0x5000  // DataId (sensor type)
+#define SMARTPORT_SENSOR_ID 15    // Sensor Id
+#define SMARTPORT_DATA_ID 0x5100  // DataId (sensor type)
 
 /* Ibus */
 #define IBUS_GPS_ALTERNATIVE_COORDINATES false
