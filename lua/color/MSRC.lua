@@ -53,7 +53,7 @@ local sensorId = { "Sensor Id", nil, 1, 28, 1, 0x5128 }
 local page_sensorId = { sensorId }
 
 -- Page 2 - Refresh interval (ms 1-2000)
-local rateRpm = { "RPM", 1, 1, 2000, 1, 0x5112 }
+local rateRpm = { "RPM", nil, 1, 2000, 1, 0x513A }
 local rateVolt = { "Voltage", nil, 1, 2000, 1, 0x5113 }
 local rateCurr = { "Current", nil, 1, 2000, 1, 0x5114 }
 local rateTemp = { "Temperature", nil, 1, 2000, 1, 0x5115 }
@@ -248,12 +248,11 @@ local function handleEvents(event)
 			page = 1
             status = "getConfig"
 		end
-		return
-	end
-	if event == EVT_EXIT_BREAK then
+	elseif event == EVT_EXIT_BREAK then
 		if isSelected == true then
 			isSelected = false
 		else
+            status = "config"
 			exit = true
 		end
 	elseif (event == EVT_PAGE_BREAK or event == 513) and exit == false then
@@ -307,6 +306,7 @@ local function handleEvents(event)
 			else
 				exit = false
 				saveChanges = true
+                status = "getConfig"
 			end
 		else
 			isSelected = not isSelected
@@ -324,56 +324,51 @@ local function getConfig()
                 .. bit32.band(bit32.rshift(value, 8), 0xF)
                 .. "."
                 .. bit32.band(value, 0xF)
-                status = "config"
+            status = "config"
         elseif (getTime() - ts > 200) and sportTelemetryPush(sensorIdTx - 1, 0x30, 0x5101, 1) then
 			ts = getTime()
 		end
-	else
-        if dataId ~= nil and dataId == vars[page][varIndex][6] then
-            if
-                dataId == 0x5131
-                or dataId == 0x5132
-                or dataId == 0x513F
-                or dataId == 0x5140
-                or dataId == 0x511B
-                or dataId == 0x5120
-            then
-                vars[page][varIndex][2] = value / 100
-            elseif dataId == 0x5141 then
-                vars[page][varIndex][2] = value / 10000
-            elseif dataId == 0x5132 then
-                analogCurrSens[2] = 1000 / value
-            elseif dataId == 0x5105 then
-                vars[page][varIndex][2] = getIndex(gpsBaudrateVal, value) - 1
-            elseif dataId == 0x5147 then
-                vars[page][varIndex][2] = getIndex(gpsRateVal, value) - 1
-            elseif dataId == 0x5138 then
-                gpio17[2] = bit32.extract(value, 0)
-                gpio18[2] = bit32.extract(value, 1)
-                gpio19[2] = bit32.extract(value, 2)
-                gpio20[2] = bit32.extract(value, 3)
-                gpio21[2] = bit32.extract(value, 4)
-                gpio22[2] = bit32.extract(value, 5)
-            else
-                vars[page][varIndex][2] = value
-            end
-            varIndex = varIndex + 1
-            if varIndex > #vars[page] then
-                status = "config"
-            end
-            newValue = true
-        
-        elseif newValue == true or (getTime() - ts > 200) then
-            if vars[page][varIndex][2] ~= nil then
-                varIndex = varIndex + 1
-                if varIndex > #vars[page] then
-                    status = "config"
-                end
-            elseif sportTelemetryPush(sensorIdTx - 1, 0x30, vars[page][varIndex][6], 1) then
-                ts = getTime()
-                newValue = false
-            end
+	elseif dataId ~= nil and dataId == vars[page][varIndex][6] then
+        if
+            dataId == 0x5131
+            or dataId == 0x5132
+            or dataId == 0x513F
+            or dataId == 0x5140
+            or dataId == 0x511B
+            or dataId == 0x5120
+        then
+            vars[page][varIndex][2] = value / 100
+        elseif dataId == 0x5141 then
+            vars[page][varIndex][2] = value / 10000
+        elseif dataId == 0x5132 then
+            analogCurrSens[2] = 1000 / value
+        elseif dataId == 0x5105 then
+            vars[page][varIndex][2] = getIndex(gpsBaudrateVal, value) - 1
+        elseif dataId == 0x5147 then
+            vars[page][varIndex][2] = getIndex(gpsRateVal, value) - 1
+        elseif dataId == 0x5138 then
+            gpio17[2] = bit32.extract(value, 0)
+            gpio18[2] = bit32.extract(value, 1)
+            gpio19[2] = bit32.extract(value, 2)
+            gpio20[2] = bit32.extract(value, 3)
+            gpio21[2] = bit32.extract(value, 4)
+            gpio22[2] = bit32.extract(value, 5)
+        else
+            vars[page][varIndex][2] = value
         end
+        varIndex = varIndex + 1
+        ts = 0
+        if varIndex > #vars[page] then
+            status = "config"
+        end
+    elseif vars[page][varIndex][2] ~= nil then
+        varIndex = varIndex + 1
+        ts = 0
+        if varIndex > #vars[page] then
+            status = "config"
+        end
+    elseif (getTime() - ts > 200) and sportTelemetryPush(sensorIdTx - 1, 0x30, vars[page][varIndex][6], 1) then
+        ts = getTime()
     end
 end
 
@@ -430,7 +425,8 @@ local function run_func(event)
 			status = "getConfig"
 		end
 	elseif status == "getConfig" then
-		getConfig() 
+		handleEvents(event)
+        getConfig() 
 	elseif status == "config" then
 		handleEvents(event)
 	elseif status == "saveConfig" or status == "startSave" then

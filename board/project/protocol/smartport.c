@@ -378,9 +378,6 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
                 }
                 break;
             }
-            case 0x5102:
-                packet.value = config->rx_protocol;
-                break;
             case 0x5103:
                 packet.value = config->esc_protocol;
                 break;
@@ -426,7 +423,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
             case 0x5111:
                 packet.value = ELEMENTS(config->alpha_airspeed);
                 break;
-            case 0x5112:
+            case 0x513A:
                 packet.value = config->refresh_rate_rpm;
                 break;
             case 0x5113:
@@ -465,9 +462,6 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
             case 0x511E:
                 packet.value = config->analog_current_quiescent_voltage;
                 break;
-            case 0x511F:
-                packet.value = config->analog_current_multiplier;
-                break;
             case 0x5120:
                 packet.value = config->analog_current_offset * 100;
                 break;
@@ -495,17 +489,8 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
             case 0x5128:
                 packet.value = config->smartport_sensor_id;
                 break;
-            case 0x5129:
-                packet.value = config->smartport_data_id;
-                break;
             case 0x512A:
                 packet.value = config->vario_auto_offset;
-                break;
-            case 0x512B:
-                packet.value = config->xbus_clock_stretch;
-                break;
-            case 0x512C:
-                packet.value = config->jeti_gps_speed_units_kmh;
                 break;
             case 0x512D:
                 packet.value = config->enable_esc_hw4_init_delay;
@@ -525,41 +510,17 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
             case 0x5132:
                 packet.value = config->esc_hw4_current_multiplier * 100;
                 break;
-            case 0x5133:
-                packet.value = config->ibus_alternative_coordinates;
-                break;
-            case 0x5134:
-                packet.value = config->debug;
-                break;
             case 0x5135:
                 packet.value = config->esc_hw4_is_manual_offset;
                 break;
             case 0x5136:
                 packet.value = config->analog_rate;
                 break;
-            case 0x5137:
-                packet.value = config->xbus_use_alternative_volt_temp;
-                break;
             case 0x5138:
                 packet.value = config->gpio_mask;
                 break;
             case 0x5139:
                 packet.value = config->esc_hw4_offset;
-                break;
-            case 0x513A:
-                packet.value = config->serial_monitor_baudrate;
-                break;
-            case 0x513B:
-                packet.value = config->serial_monitor_stop_bits;
-                break;
-            case 0x513C:
-                packet.value = config->serial_monitor_parity;
-                break;
-            case 0x513D:
-                packet.value = config->serial_monitor_timeout_ms;
-                break;
-            case 0x513E:
-                packet.value = config->serial_monitor_inverted;
                 break;
             case 0x513F:
                 packet.value = config->airspeed_offset * 100;
@@ -582,20 +543,11 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
             case 0x5145:
                 packet.value = config->smart_esc_calc_consumption;
                 break;
-            case 0x5146:
-                packet.value = config->serial_monitor_gpio;
-                break;
             case 0x5147:
                 packet.value = config->gps_rate;
                 break;
-            case 0x5148:
-                packet.value = config->serial_monitor_format;
-                break;
             case 0x5149:
                 packet.value = config->gps_protocol;
-                break;
-            case 0x514A:
-                packet.value = config->sbus_battery_slot;
                 break;
             default:
                 send = false;
@@ -620,9 +572,6 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
         uint8_t frame_id_send = 0x32;
         bool write = true;
         switch (data_id) {
-            case 0x5102:
-                config_lua->rx_protocol = value;
-                break;
             case 0x5103:
                 config_lua->esc_protocol = value;
                 break;
@@ -668,7 +617,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
             case 0x5111:
                 config_lua->alpha_airspeed = value;
                 break;
-            case 0x5112:
+            case 0x513A:
                 config_lua->refresh_rate_rpm = value;
                 break;
             case 0x5113:
@@ -743,12 +692,6 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
             case 0x512A:
                 config_lua->vario_auto_offset = value;
                 break;
-            case 0x512B:
-                config_lua->xbus_clock_stretch = value;
-                break;
-            case 0x512C:
-                config_lua->jeti_gps_speed_units_kmh = value;
-                break;
             case 0x512D:
                 config_lua->enable_esc_hw4_init_delay = value;
                 break;
@@ -767,41 +710,17 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
             case 0x5132:
                 config_lua->esc_hw4_current_multiplier = value / 100;
                 break;
-            case 0x5133:
-                config_lua->ibus_alternative_coordinates = value;
-                break;
-            case 0x5134:
-                config_lua->debug = value;
-                break;
             case 0x5135:
                 config_lua->esc_hw4_is_manual_offset = value;
                 break;
             case 0x5136:
                 config_lua->analog_rate = value;
                 break;
-            case 0x5137:
-                config_lua->xbus_use_alternative_volt_temp = value;
-                break;
             case 0x5138:
                 config_lua->gpio_mask = value;
                 break;
             case 0x5139:
                 config_lua->esc_hw4_offset = value;
-                break;
-            case 0x513A:
-                config_lua->serial_monitor_baudrate = value;
-                break;
-            case 0x513B:
-                config_lua->serial_monitor_stop_bits = value;
-                break;
-            case 0x513C:
-                config_lua->serial_monitor_parity = value;
-                break;
-            case 0x513D:
-                config_lua->serial_monitor_timeout_ms = value;
-                break;
-            case 0x513E:
-                config_lua->serial_monitor_inverted = value;
                 break;
             case 0x513F:
                 config_lua->airspeed_offset = value / 100;
@@ -824,20 +743,11 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
             case 0x5145:
                 config_lua->smart_esc_calc_consumption = value;
                 break;
-            case 0x5146:
-                config_lua->serial_monitor_gpio = value;
-                break;
             case 0x5147:
                 config_lua->gps_rate = value;
                 break;
-            case 0x5148:
-                config_lua->serial_monitor_format = value;
-                break;
             case 0x5149:
                 config_lua->gps_protocol = value;
-                break;
-            case 0x514A:
-                config_lua->sbus_battery_slot = value;
                 break;
             default:
                 debug("\nSmartport. Unknown save request. frameId 0x%X dataId 0x%X", frame_id, data_id);
