@@ -303,8 +303,8 @@ static void process(smartport_parameters_t *parameter) {
                 uint8_t sensor_id = data[1];
                 uint8_t frame_id = data[2];
                 uint16_t data_id = (uint16_t)data[4] << 8 | data[3];
-                if (crc == data[9] &&
-                    (sensor_id == sensor_id_to_crc(parameter->sensor_id) || data_id == 0xFFFF || data_id == parameter->data_id)) {
+                // process no telemetry packets
+                if (crc == data[9] && frame_id != 0x10) {
                     uint value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 | (uint16_t)data[6] << 8 | data[5];
                     debug("\nSmartport. Received packet (%u) sensorId 0x%X FrameId 0x%X DataId 0x%X Value 0x%X < ",
                           uxTaskGetStackHighWaterMark(NULL), sensor_id, frame_id, data_id, value);
@@ -357,9 +357,8 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
         return;
     }
 
-
     // send config
-    if (sensor_id == parameter->sensor_id && frame_id == 0x34) {
+    if (frame_id == 0x30 && (uint8_t)value == 0x01) {
         config_t *config = config_read();
         uint8_t frame_id_send = 0x32;
         bool send = true;
@@ -607,17 +606,17 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
     }
 
     // receive config
-    if (frame_id == 0x35 && data_id == 0x5201 && value == 0) {
+    if (frame_id == 0x31 && data_id == 0x5201 && value == 0) {
         config_lua = malloc(sizeof(config_t));
         memcpy(config_lua, config_read(), sizeof(config_t));
         debug("\nSmartport. Start saving...");
     }
-    if (frame_id == 0x35 && data_id == 0x5201 && value == 1) {
+    if (frame_id == 0x31 && data_id == 0x5201 && value == 1) {
         config_write(config_lua);
         free(config_lua);
         debug("\nSmartport. Complete save config");
     }
-    if (frame_id == 0x33) {
+    if (frame_id == 0x31) {
         uint8_t frame_id_send = 0x32;
         bool write = true;
         switch (data_id) {

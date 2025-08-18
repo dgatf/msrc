@@ -16,6 +16,7 @@ end save   | radio  | 0x35    | 0x5201  | 1             |
 
 local scriptVersion = "v1.0"
 local firmwareVersion
+local sensorIdTx = 18
 local page = 0
 local pageLong = false
 local pagePos = 1
@@ -25,9 +26,7 @@ local exit = false
 local saveChanges = true
 local ts = 0
 local newValue = true
-local sensorIdIndex = 1
-local newValueConfig = true
-local posConfig = 1
+local varIndex = 1
 local drawPage
 
 local onOffStr = { "Off", "On" }
@@ -54,7 +53,7 @@ local sensorId = { "Sensor Id", nil, 1, 28, 1, 0x5128 }
 local page_sensorId = { sensorId }
 
 -- Page 2 - Refresh interval (ms 1-2000)
-local rateRpm = { "RPM", nil, 1, 2000, 1, 0x5112 }
+local rateRpm = { "RPM", 1, 1, 2000, 1, 0x5112 }
 local rateVolt = { "Voltage", nil, 1, 2000, 1, 0x5113 }
 local rateCurr = { "Current", nil, 1, 2000, 1, 0x5114 }
 local rateTemp = { "Temperature", nil, 1, 2000, 1, 0x5115 }
@@ -116,9 +115,9 @@ local page_esc = {
 
 -- Page 5 - GPS
 local gpsEnable = { "Enable", nil, 0, 1, 1, 0x5104 }
-local gpsProtocolStr = { "NMEA", "UBLOX" }
+local gpsProtocolStr = { "UBLOX", "NMEA" } --
 local gpsProtocol = { "Protocol", nil, 0, 1, 1, 0x5149 }
-local gpsBaudrateVal = { 115200, 57600, 38400, 9600 }
+local gpsBaudrateVal = { 9600, 38400, 57600, 115200 }
 local gpsBaudrate = { "Baudrate", nil, 0, 3, 1, 0x5105 }
 local gpsRateVal = { 1, 5, 10, 20 }
 local gpsRate = { "Rate", nil, 0, 3, 1, 0x5147 }
@@ -130,7 +129,7 @@ local varioModelStr = { "None", "BMP280", "MS5611", "BMP180" }
 local varioModel = { "Model", nil, 0, 3, 1, 0x510A }
 local varioAddress = { "Address", nil, 0x76, 0x77, 1, 0x510B }
 local varioFilterStr = { "Low", "Medium", "High" }
-local varioFilter = { "Filter", nil, 0, 1, 1, 0x5126 }
+local varioFilter = { "Filter", nil, 1, 3, 1, 0x5126 }
 
 local page_vario = { varioModel, varioAddress, varioFilter }
 
@@ -212,7 +211,7 @@ local function getTextFlags(itemPos)
 	return value
 end
 
-local function getValue(isIncremented)
+local function changeValue(isIncremented)
 	if isIncremented == true then
 		vars[page][pagePos][2] = vars[page][pagePos][2] + vars[page][pagePos][5]
         if vars[page][pagePos][2] > vars[page][pagePos][4] then vars[page][pagePos][2] = vars[page][pagePos][4] end
@@ -222,24 +221,32 @@ local function getValue(isIncremented)
 	end
 end
 
-local function getString(strList, value)
-	if value > #strList then
-		return strList[1]
-	else
-		return strList[value]
-	end
+local function getValue(list, index)
+	if index > #list then
+		return list[1]
+    end
+	return list[index]
+end
+
+local function getIndex(list, value)
+    for i = 1, #list do
+	    if value == list[i] then
+		    return i
+        end
+    end
+	return 1
 end
 
 local function handleEvents(event)
 	-- Check one-time script
 	if event == nil then
-		error("Cannot run as a model script!")
 		return 2
 	end
 	-- Handle events
 	if page == 0 then
 		if event == EVT_PAGE_BREAK or event == 513 then
 			page = 1
+            status = "getConfig"
 		end
 		return
 	end
@@ -265,7 +272,7 @@ local function handleEvents(event)
 		isSelected = false
 		status = "getConfig"
 		ts = 0
-		posConfig = 1
+		varIndex = 1
 	elseif event == EVT_PAGE_LONG or event == 2049 then
 		pageLong = true
 	elseif event == EVT_ROT_RIGHT then
@@ -277,12 +284,11 @@ local function handleEvents(event)
 				pagePos = 1
 			end
 		else
-			getValue(true)
+			changeValue(true)
 		end
 	elseif event == EVT_ROT_LEFT then
 		if exit == true then
 			saveChanges = not saveChanges
-			return
 		end
 		if isSelected == false then
 			pagePos = pagePos - 1
@@ -290,14 +296,14 @@ local function handleEvents(event)
 				pagePos = #vars[page]
 			end
 		else
-			getValue(false)
+			changeValue(false)
 		end
 	elseif event == EVT_ROT_BREAK then
 		if exit == true then
 			if saveChanges == true then
 				status = "saveConfig"
 				page = 1
-				posConfig = 1
+				varIndex = 1
 			else
 				exit = false
 				saveChanges = true
@@ -308,133 +314,93 @@ local function handleEvents(event)
 	end
 end
 
-local function getSensorId()
-	local sensorIdTx, frameId, dataId, value = sportTelemetryPop()
-	if dataId == 0x5100 then
-		sensorId[2] = bit32.rshift(value, 8) + 1
-	elseif dataId == 0x5101 then
-		firmwareVersion = "v"
-			.. bit32.rshift(value, 16)
-			.. "."
-			.. bit32.band(bit32.rshift(value, 8), 0xF)
-			.. "."
-			.. bit32.band(value, 0xF)
-		status = "config"
-	elseif sensorId[2] == nil then
-		if (getTime() - ts > 200) and sportTelemetryPush(17, 0x30, 0x5100, 1) then
-			ts = getTime()
-		end
-	elseif firmwareVersion == nil then
-		if (getTime() - ts > 200) and sportTelemetryPush(sensorId[2] - 1, 0x34, 0x5101, 1) then
-			ts = getTime()
-		end
-	end
-end
-
 local function getConfig()
 	local sensor, frameId, dataId, value = sportTelemetryPop()
-	if dataId ~= nil and dataId == vars[page][posConfig][6] then
-		if
-			dataId == 0x5131
-			or dataId == 0x5132
-			or dataId == 0x513F
-			or dataId == 0x5140
-			or dataId == 0x511B
-			or dataId == 0x5120
-		then
-			vars[page][posConfig][2] = value / 100
-		elseif dataId == 0x5141 then
-			vars[page][posConfig][2] = value / 10000
-		elseif dataId == 0x5132 then
-			analogCurrSens[2] = 1000 / value
-		elseif dataId == 0x5105 then
-			if value == 115200 then
-				vars[page][posConfig][2] = 1
-			elseif value == 57600 then
-				vars[page][posConfig][2] = 2
-			elseif value == 38400 then
-				vars[page][posConfig][2] = 3
-			else
-				vars[page][posConfig][2] = 4
-			end
-		elseif dataId == 0x5147 then
-			if value == 1 then
-				vars[page][posConfig][2] = 1
-			elseif value == 5 then
-				vars[page][posConfig][2] = 2
-			elseif value == 10 then
-				vars[page][posConfig][2] = 3
-			else
-				vars[page][posConfig][2] = 4
-			end
-		elseif dataId == 0x5138 then
-			gpio17[2] = bit32.extract(value, 0)
-			gpio18[2] = bit32.extract(value, 1)
-			gpio19[2] = bit32.extract(value, 2)
-			gpio20[2] = bit32.extract(value, 3)
-			gpio21[2] = bit32.extract(value, 4)
-			gpio22[2] = bit32.extract(value, 5)
-		else
-			vars[page][posConfig][2] = value
-		end
-		posConfig = posConfig + 1
-		if posConfig > #vars[page] then
-			status = "config"
-		end
-		newValueConfig = true
-	elseif newValueConfig == true or (getTime() - ts > 200) then
-		if vars[page][posConfig][2] ~= nil then
-			posConfig = posConfig + 1
-			if posConfig > #vars[page] then
-				status = "config"
-			end
-		elseif sportTelemetryPush(sensorId[2] - 1, 0x34, vars[page][posConfig][6], 0) then
+    if firmwareVersion == nil then
+        if dataId ~= nil and dataId == 0x5101 then
+            firmwareVersion = "v"
+                .. bit32.rshift(value, 16)
+                .. "."
+                .. bit32.band(bit32.rshift(value, 8), 0xF)
+                .. "."
+                .. bit32.band(value, 0xF)
+                status = "config"
+        elseif (getTime() - ts > 200) and sportTelemetryPush(sensorIdTx - 1, 0x30, 0x5101, 1) then
 			ts = getTime()
-			newValueConfig = false
 		end
-	end
+	else
+        if dataId ~= nil and dataId == vars[page][varIndex][6] then
+            if
+                dataId == 0x5131
+                or dataId == 0x5132
+                or dataId == 0x513F
+                or dataId == 0x5140
+                or dataId == 0x511B
+                or dataId == 0x5120
+            then
+                vars[page][varIndex][2] = value / 100
+            elseif dataId == 0x5141 then
+                vars[page][varIndex][2] = value / 10000
+            elseif dataId == 0x5132 then
+                analogCurrSens[2] = 1000 / value
+            elseif dataId == 0x5105 then
+                vars[page][varIndex][2] = getIndex(gpsBaudrateVal, value) - 1
+            elseif dataId == 0x5147 then
+                vars[page][varIndex][2] = getIndex(gpsRateVal, value) - 1
+            elseif dataId == 0x5138 then
+                gpio17[2] = bit32.extract(value, 0)
+                gpio18[2] = bit32.extract(value, 1)
+                gpio19[2] = bit32.extract(value, 2)
+                gpio20[2] = bit32.extract(value, 3)
+                gpio21[2] = bit32.extract(value, 4)
+                gpio22[2] = bit32.extract(value, 5)
+            else
+                vars[page][varIndex][2] = value
+            end
+            varIndex = varIndex + 1
+            if varIndex > #vars[page] then
+                status = "config"
+            end
+            newValue = true
+        
+        elseif newValue == true or (getTime() - ts > 200) then
+            if vars[page][varIndex][2] ~= nil then
+                varIndex = varIndex + 1
+                if varIndex > #vars[page] then
+                    status = "config"
+                end
+            elseif sportTelemetryPush(sensorIdTx - 1, 0x30, vars[page][varIndex][6], 1) then
+                ts = getTime()
+                newValue = false
+            end
+        end
+    end
 end
 
 local function saveConfig()
 	if status == "saveConfig" then
-		if sportTelemetryPush(sensorId[2] - 1, 0x35, 0x5201, 0) then
+		if sportTelemetryPush(sensorIdTx - 1, 0x31, 0x5201, 0) then
 			status = "startSave"
 		end
 		return
 	end
 	if page > #vars then
-		if sportTelemetryPush(sensorId[2] - 1, 0x35, 0x5201, 1) then
+		if sportTelemetryPush(sensorIdTx - 1, 0x31, 0x5201, 1) then
 			status = "maintOff"
 		end
 		return
 	end
-	if vars[page][posConfig][2] ~= nil and vars[page][posConfig][6] ~= 0 then
-		local value = vars[page][posConfig][2]
-		local dataId = vars[page][posConfig][6]
+    local value = vars[page][varIndex][2]
+	local dataId = vars[page][varIndex][6]
+	if value ~= nil and dataId ~= 0 then
 		if dataId == 0x5131 or dataId == 0x5132 or dataId == 0x513F or dataId == 0x5140 or dataId == 0x511B then
 			value = value * 100
 		elseif dataId == 0x5141 then
 			value = value * 10000
 		elseif dataId == 0x5105 then
-			if vars[page][posConfig][2] == 1 then
-				value = 115200
-			elseif vars[page][posConfig][2] == 2 then
-				value = 57600
-			elseif vars[page][posConfig][2] == 3 then
-				value = 38400
-			else
-				value = 9600
-			end
+            value = getValue(gpsBaudrateVal, vars[page][varIndex][2])
 		elseif dataId == 0x5147 then
-			if vars[page][posConfig][2] == 1 then
-				value = 1
-			elseif vars[page][posConfig][2] == 2 then
-				value = 5
-			elseif vars[page][posConfig][2] == 3 then
-				value = 10
-			else
-				value = 20
-			end
+            value = getValue(gpsRateVal, vars[page][varIndex][2])
 		elseif dataId == 0x5138 then
 			value = gpio17[2] -- bit 1
 			value = bit32.bor(value, bit32.lshift(gpio18[2], 1)) -- bit 2
@@ -443,15 +409,15 @@ local function saveConfig()
 			value = bit32.bor(value, bit32.lshift(gpio21[2], 4)) -- bit 5
 			value = bit32.bor(value, bit32.lshift(gpio22[2], 5)) -- bit 6
 		end
-		if sportTelemetryPush(sensorId[2] - 1, 0x33, vars[page][posConfig][6], value) then
-			posConfig = posConfig + 1
+		if sportTelemetryPush(sensorIdTx - 1, 0x31, dataId, value) then
+			varIndex = varIndex + 1
 		end
 	else
-		posConfig = posConfig + 1
+		varIndex = varIndex + 1
 	end
-	if posConfig > #vars[page] then
+	if varIndex > #vars[page] then
 		page = page + 1
-		posConfig = 1
+		varIndex = 1
 	end
 end
 
@@ -460,19 +426,17 @@ end
 
 local function run_func(event)
     if status == "maintOn" then
-		if sportTelemetryPush(17, 0x21, 0xFFFF, 0x80) then
-			status = "getSensorId"
+		if sportTelemetryPush(sensorIdTx - 1, 0x21, 0xFFFF, 0x80) then
+			status = "getConfig"
 		end
-	elseif status == "getSensorId" then
-		getSensorId()
 	elseif status == "getConfig" then
-		getConfig()
+		getConfig() 
 	elseif status == "config" then
 		handleEvents(event)
 	elseif status == "saveConfig" or status == "startSave" then
 		saveConfig()
 	elseif status == "maintOff" then
-		if sportTelemetryPush(17, 0x20, 0xFFFF, 0x80) then
+		if sportTelemetryPush(sensorIdTx - 1, 0x20, 0xFFFF, 0x80) then
 			status = "exit"
 		end
 	end
@@ -483,29 +447,28 @@ end
 -- Only b&w lcd
 function drawPage()
 	lcd.clear()
-	if status == "maintOn" or status == "getSensorId" or page == 0 then
+	if page == 0 then
 		lcd.drawScreenTitle("MSRC " .. scriptVersion, 0, 0)
-		if sensorId[2] ~= nil then
-			lcd.drawText(1, 20, "MSRC at sensorId  " .. sensorId[2], SMLSIZE)
-		end
 		if firmwareVersion ~= nil then
-			lcd.drawText(1, 35, "Firmware " .. firmwareVersion, SMLSIZE)
-			lcd.drawText(1, 50, "Press Page", SMLSIZE)
+			lcd.drawText(1, 20, "Firmware " .. firmwareVersion, SMLSIZE)
+			lcd.drawText(1, 35, "Press Page", SMLSIZE)
 		end
 	elseif status == "getConfig" then
 		lcd.drawScreenTitle(pageName[page], page, #vars)
-		lcd.drawText(60, 30, posConfig .. "/" .. #vars[page], 0)
+		lcd.drawText(60, 30, varIndex .. "/" .. #vars[page], 0)
 	elseif status == "config" then
 		if exit == true then
 			lcd.drawScreenTitle("Exit", 0, 0)
 			lcd.drawText(1, 20, "Save changes?", SMLSIZE)
+            local flag_yes = 0
+            local flag_cancel = 0
 			if saveChanges == true then
-				lcd.drawText(1, 30, "Yes", SMLSIZE + INVERS)
-				lcd.drawText(60, 30, "Cancel", SMLSIZE)
+                flag_yes = INVERS
 			else
-				lcd.drawText(1, 30, "Yes", SMLSIZE)
-				lcd.drawText(60, 30, "Cancel", SMLSIZE + INVERS)
+                flag_cancel = INVERS
 			end
+            lcd.drawText(1, 30, "Yes", SMLSIZE + flag_yes)
+			lcd.drawText(60, 30, "Cancel", SMLSIZE + flag_cancel)
 			return
 		end
 		lcd.drawScreenTitle(pageName[page], page, #vars)
@@ -560,7 +523,7 @@ function drawPage()
 			lcd.drawText(1, 23, vars[page][3][1], SMLSIZE)
 			lcd.drawText(60, 23, vars[page][3][2], SMLSIZE + getTextFlags(3))
 			lcd.drawText(1, 30, vars[page][4][1], SMLSIZE)
-			lcd.drawText(60, 30, getString(escProtocolStr, vars[page][4][2] + 1), SMLSIZE + getTextFlags(4))
+			lcd.drawText(60, 30, getValue(escProtocolStr, vars[page][4][2] + 1), SMLSIZE + getTextFlags(4))
 			if escProtocolStr[vars[page][4][2] + 1] == "Hobbywing V4" then
 				vars[page] =
 					{ pairPoles, mainGear, pinionGear, escProtocol, hw4Thresold, hw4VoltDiv, hw4CurrMult, hw4MaxCurr }
@@ -575,37 +538,37 @@ function drawPage()
 			elseif escProtocolStr[vars[page][4][2] + 1] == "Smart ESC/BAT" then
 				vars[page] = { pairPoles, mainGear, pinionGear, escProtocol, smartEscConsumption }
 				lcd.drawText(1, 37, vars[page][5][1], SMLSIZE)
-				lcd.drawText(60, 37, getString(onOffStr, vars[page][5][2] + 1), SMLSIZE + getTextFlags(5))
+				lcd.drawText(60, 37, getValue(onOffStr, vars[page][5][2] + 1), SMLSIZE + getTextFlags(5))
 			else
 				vars[page] = { pairPoles, mainGear, pinionGear, escProtocol }
 			end
 		-- 5 GPS
 		elseif page == 5 then
 			lcd.drawText(1, 9, vars[page][1][1], SMLSIZE)
-			lcd.drawText(60, 9, getString(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
+			lcd.drawText(60, 9, getValue(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
 			lcd.drawText(1, 16, vars[page][2][1], SMLSIZE)
-			lcd.drawText(60, 16, getString(gpsProtocolStr, vars[page][2][2] + 1), SMLSIZE + getTextFlags(2))
+			lcd.drawText(60, 16, getValue(gpsProtocolStr, vars[page][2][2] + 1), SMLSIZE + getTextFlags(2))
 			lcd.drawText(1, 23, vars[page][3][1], SMLSIZE)
-			lcd.drawText(60, 23, getString(gpsBaudrateVal, vars[page][3][2] + 1), SMLSIZE + getTextFlags(3))
+			lcd.drawText(60, 23, getValue(gpsBaudrateVal, vars[page][3][2] + 1), SMLSIZE + getTextFlags(3))
 			lcd.drawText(1, 30, vars[page][4][1], SMLSIZE)
-			lcd.drawText(60, 30, getString(gpsRateVal, vars[page][4][2] + 1), SMLSIZE + getTextFlags(4))
+			lcd.drawText(60, 30, getValue(gpsRateVal, vars[page][4][2] + 1), SMLSIZE + getTextFlags(4))
 		-- 6 Vario
 		elseif page == 6 then
 			lcd.drawText(1, 9, vars[page][1][1], SMLSIZE)
-			lcd.drawText(60, 9, getString(varioModelStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
+			lcd.drawText(60, 9, getValue(varioModelStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
 			lcd.drawText(1, 16, vars[page][2][1], SMLSIZE)
 			lcd.drawText(60, 16, vars[page][2][2], SMLSIZE + getTextFlags(2))
 			if varioModelStr[vars[page][1][2] + 1] == "BMP280" then
 				vars[page] = { varioModel, varioAddress, varioFilter }
 				lcd.drawText(1, 23, vars[page][3][1], SMLSIZE)
-				lcd.drawText(60, 23, getString(varioFilterStr, vars[page][3][2]), SMLSIZE + getTextFlags(3))
+				lcd.drawText(60, 23, getValue(varioFilterStr, vars[page][3][2]), SMLSIZE + getTextFlags(3))
 			else
 				vars[page] = { varioModel, varioAddress }
 			end
 		-- 7 Fuel meter
 		elseif page == 7 then
 			lcd.drawText(1, 9, vars[page][1][1], SMLSIZE)
-			lcd.drawText(60, 9, getString(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
+			lcd.drawText(60, 9, getValue(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
 			lcd.drawText(1, 16, vars[page][2][1], SMLSIZE)
 			lcd.drawText(60, 16, vars[page][2][2], SMLSIZE + getTextFlags(2))
 		-- 8 GPIO
@@ -613,17 +576,17 @@ function drawPage()
 			lcd.drawText(1, 9, vars[page][1][1], SMLSIZE)
 			lcd.drawText(60, 9, vars[page][1][2], SMLSIZE + getTextFlags(1))
 			lcd.drawText(1, 16, vars[page][2][1], SMLSIZE)
-			lcd.drawText(60, 16, getString(onOffStr, vars[page][2][2] + 1), SMLSIZE + getTextFlags(2))
+			lcd.drawText(60, 16, getValue(onOffStr, vars[page][2][2] + 1), SMLSIZE + getTextFlags(2))
 			lcd.drawText(1, 23, vars[page][3][1], SMLSIZE)
-			lcd.drawText(60, 23, getString(onOffStr, vars[page][3][2] + 1), SMLSIZE + getTextFlags(3))
+			lcd.drawText(60, 23, getValue(onOffStr, vars[page][3][2] + 1), SMLSIZE + getTextFlags(3))
 			lcd.drawText(1, 30, vars[page][4][1], SMLSIZE)
-			lcd.drawText(60, 30, getString(onOffStr, vars[page][4][2] + 1), SMLSIZE + getTextFlags(4))
+			lcd.drawText(60, 30, getValue(onOffStr, vars[page][4][2] + 1), SMLSIZE + getTextFlags(4))
 			lcd.drawText(1, 37, vars[page][5][1], SMLSIZE)
-			lcd.drawText(60, 37, getString(onOffStr, vars[page][5][2] + 1), SMLSIZE + getTextFlags(5))
+			lcd.drawText(60, 37, getValue(onOffStr, vars[page][5][2] + 1), SMLSIZE + getTextFlags(5))
 			lcd.drawText(1, 44, vars[page][6][1], SMLSIZE)
-			lcd.drawText(60, 44, getString(onOffStr, vars[page][6][2] + 1), SMLSIZE + getTextFlags(6))
+			lcd.drawText(60, 44, getValue(onOffStr, vars[page][6][2] + 1), SMLSIZE + getTextFlags(6))
 			lcd.drawText(1, 51, vars[page][7][1], SMLSIZE)
-			lcd.drawText(60, 51, getString(onOffStr, vars[page][7][2] + 1), SMLSIZE + getTextFlags(7))
+			lcd.drawText(60, 51, getValue(onOffStr, vars[page][7][2] + 1), SMLSIZE + getTextFlags(7))
 		-- 9 Analog rate
 		elseif page == 9 then
 			lcd.drawText(1, 9, vars[page][1][1], SMLSIZE)
@@ -631,32 +594,32 @@ function drawPage()
 		-- 10 Analog temperature
 		elseif page == 10 then
 			lcd.drawText(1, 9, vars[page][1][1], SMLSIZE)
-			lcd.drawText(60, 9, getString(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
+			lcd.drawText(60, 9, getValue(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
 		-- 11 Analog voltage
 		elseif page == 11 then
 			lcd.drawText(1, 9, vars[page][1][1], SMLSIZE)
-			lcd.drawText(60, 9, getString(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
+			lcd.drawText(60, 9, getValue(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
 			lcd.drawText(1, 16, vars[page][2][1], SMLSIZE)
 			lcd.drawText(60, 16, vars[page][2][2], SMLSIZE + getTextFlags(2))
 		-- 12 Analog current
 		elseif page == 12 then
 			lcd.drawText(1, 9, vars[page][1][1], SMLSIZE)
-			lcd.drawText(60, 9, getString(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
+			lcd.drawText(60, 9, getValue(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
 			lcd.drawText(1, 16, vars[page][2][1], SMLSIZE)
-			lcd.drawText(60, 16, getString(analogCurrTypeStr, vars[page][2][2] + 1), SMLSIZE + getTextFlags(2))
+			lcd.drawText(60, 16, getValue(analogCurrTypeStr, vars[page][2][2] + 1), SMLSIZE + getTextFlags(2))
 			if analogCurrTypeStr[vars[page][2][2] + 1] == "Hall Effect" then
 				vars[page] = { analogCurr, analogCurrType, analogCurrSens, analogCurrAutoOffset }
-				if getString(onOffStr, vars[page][4][2] + 1) == "On" then
+				if getValue(onOffStr, vars[page][4][2] + 1) == "On" then
 					lcd.drawText(1, 23, vars[page][3][1], SMLSIZE)
 					lcd.drawText(60, 23, vars[page][3][2], SMLSIZE + getTextFlags(3))
 					lcd.drawText(1, 30, vars[page][4][1], SMLSIZE)
-					lcd.drawText(60, 30, getString(onOffStr, vars[page][4][2] + 1), SMLSIZE + getTextFlags(4))
+					lcd.drawText(60, 30, getValue(onOffStr, vars[page][4][2] + 1), SMLSIZE + getTextFlags(4))
 				else
 					vars[page] = { analogCurr, analogCurrType, analogCurrSens, analogCurrAutoOffset, analogCurrOffset }
 					lcd.drawText(1, 23, vars[page][3][1], SMLSIZE)
 					lcd.drawText(60, 23, vars[page][3][2], SMLSIZE + getTextFlags(3))
 					lcd.drawText(1, 30, vars[page][4][1], SMLSIZE)
-					lcd.drawText(60, 30, getString(onOffStr, vars[page][4][2] + 1), SMLSIZE + getTextFlags(4))
+					lcd.drawText(60, 30, getValue(onOffStr, vars[page][4][2] + 1), SMLSIZE + getTextFlags(4))
 					lcd.drawText(1, 37, vars[page][5][1], SMLSIZE)
 					lcd.drawText(60, 37, vars[page][5][2], SMLSIZE + getTextFlags(5))
 				end
@@ -668,7 +631,7 @@ function drawPage()
 		-- 13 Analog airspeed
 		elseif page == 13 then
 			lcd.drawText(1, 9, vars[page][1][1], SMLSIZE)
-			lcd.drawText(60, 9, getString(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
+			lcd.drawText(60, 9, getValue(onOffStr, vars[page][1][2] + 1), SMLSIZE + getTextFlags(1))
 			lcd.drawText(1, 16, vars[page][2][1], SMLSIZE)
 			lcd.drawText(60, 16, vars[page][2][2], SMLSIZE + getTextFlags(2))
 			lcd.drawText(1, 23, vars[page][3][1], SMLSIZE)
@@ -677,7 +640,7 @@ function drawPage()
 	elseif status == "startSave" then
 		lcd.drawScreenTitle("Saving ", 0, 0)
 		if page <= #vars then
-			lcd.drawText(1, 20, "Send dataId " .. vars[page][posConfig][6], SMLSIZE)
+			lcd.drawText(1, 20, "Send dataId " .. vars[page][varIndex][6], SMLSIZE)
 		end
 	elseif status == "exit" then
 		lcd.drawScreenTitle("MSRC " .. scriptVersion, 0, 0)
