@@ -345,12 +345,46 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
         return;
     }
 
+    // send rate
+    if (frame_id == 0x30 && data_id == parameter->data_id && value == 0x22) {
+        smartport_packet_t packet;
+        packet.value = 0x122;
+        packet.frame_id = 0x32;
+        packet.data_id = parameter->data_id;
+        xQueueSendToBack(packet_queue_handle, &packet, 0);
+        debug("\nSmartport (%u). Send rate %i (0x%X)", uxTaskGetStackHighWaterMark(NULL), packet.value >> 8,
+              packet.value);
+        return;
+    }
+
+    // send version
+    if (frame_id == 0x30 && data_id == parameter->data_id && value == 0x0C) {
+        smartport_packet_t packet;
+        packet.value = 0;
+        char version[] = PROJECT_VERSION;
+        memmove(version, version + 1, strlen(version));
+        char *token;
+        token = strtok(version, " . ");
+        while (token != NULL) {
+            packet.value = packet.value << 4 | atoi(token);
+            token = strtok(NULL, " . ");
+        }
+        packet.value = packet.value >> 4;
+        packet.value = (packet.value << 8) | 0xC;
+        packet.frame_id = 0x32;
+        packet.data_id = parameter->data_id;
+        xQueueSendToBack(packet_queue_handle, &packet, 0);
+        debug("\nSmartport (%u). Send version %s (0x%X)", uxTaskGetStackHighWaterMark(NULL), PROJECT_VERSION,
+              packet.value);
+        return;
+    }
+
     // change sensor id
     if (frame_id == 0x31 && data_id == parameter->data_id && (uint8_t)value == 0x01) {
         static bool is_changed = false;
         if (is_changed == true) return;
         uint8_t sensor_id = (value >> 8) + 1;
-        parameter->sensor_id = sensor_id; 
+        parameter->sensor_id = sensor_id;
         config_lua = malloc(sizeof(config_t));
         memcpy(config_lua, config_read(), sizeof(config_t));
         config_lua->smartport_sensor_id = sensor_id;
@@ -358,8 +392,8 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
         sleep_ms(10);
         free(config_lua);
         is_changed = true;
-        debug("\nSmartport (%u). Change sensorId %i (0x%X)", uxTaskGetStackHighWaterMark(NULL), config_lua->smartport_sensor_id,
-              sensor_id_to_crc(config_lua->smartport_sensor_id));
+        debug("\nSmartport (%u). Change sensorId %i (0x%X)", uxTaskGetStackHighWaterMark(NULL),
+              config_lua->smartport_sensor_id, sensor_id_to_crc(config_lua->smartport_sensor_id));
         return;
     }
 
