@@ -571,6 +571,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
     }
     if (frame_id == 0x31 && data_id == 0x5201 && value == 1) {
         config_write(config_lua);
+        sleep_ms(10);
         free(config_lua);
         debug("\nSmartport. Complete save config");
     }

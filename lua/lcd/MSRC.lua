@@ -22,7 +22,6 @@ local pageLong = false
 local pagePos = 1
 local isSelected = false
 local status = "maintOn"
-local exit = false
 local saveChanges = true
 local ts = 0
 local newValue = true
@@ -252,10 +251,9 @@ local function handleEvents(event)
 		if isSelected == true then
 			isSelected = false
 		else
-            status = "config"
-			exit = true
+			status = "exitScr"
 		end
-	elseif (event == EVT_PAGE_BREAK or event == 513) and exit == false then
+	elseif (event == EVT_PAGE_BREAK or event == 513) and (status ~= "exitScr") then
 		if pageLong then
 			page = page - 1
 		else
@@ -275,7 +273,7 @@ local function handleEvents(event)
 	elseif event == EVT_PAGE_LONG or event == 2049 then
 		pageLong = true
 	elseif event == EVT_ROT_RIGHT then
-		if exit == true then
+		if status == "exitScr" then
 			saveChanges = not saveChanges
 		elseif isSelected == false then
 			pagePos = pagePos + 1
@@ -286,7 +284,7 @@ local function handleEvents(event)
 			changeValue(true)
 		end
 	elseif event == EVT_ROT_LEFT then
-		if exit == true then
+		if status == "exitScr" then
 			saveChanges = not saveChanges
 		end
 		if isSelected == false then
@@ -298,13 +296,12 @@ local function handleEvents(event)
 			changeValue(false)
 		end
 	elseif event == EVT_ROT_BREAK then
-		if exit == true then
+		if status == "exitScr" then
 			if saveChanges == true then
 				status = "saveConfig"
 				page = 1
 				varIndex = 1
 			else
-				exit = false
 				saveChanges = true
                 status = "getConfig"
 			end
@@ -427,7 +424,7 @@ local function run_func(event)
 	elseif status == "getConfig" then
 		handleEvents(event)
         getConfig() 
-	elseif status == "config" then
+	elseif status == "config" or status == "exitScr" then
 		handleEvents(event)
 	elseif status == "saveConfig" or status == "startSave" then
 		saveConfig()
@@ -453,20 +450,6 @@ function drawPage()
 		lcd.drawScreenTitle(pageName[page], page, #vars)
 		lcd.drawText(60, 30, varIndex .. "/" .. #vars[page], 0)
 	elseif status == "config" then
-		if exit == true then
-			lcd.drawScreenTitle("Exit", 0, 0)
-			lcd.drawText(1, 20, "Save changes?", SMLSIZE)
-            local flag_yes = 0
-            local flag_cancel = 0
-			if saveChanges == true then
-                flag_yes = INVERS
-			else
-                flag_cancel = INVERS
-			end
-            lcd.drawText(1, 30, "Yes", SMLSIZE + flag_yes)
-			lcd.drawText(60, 30, "Cancel", SMLSIZE + flag_cancel)
-			return
-		end
 		lcd.drawScreenTitle(pageName[page], page, #vars)
 		if pagePos > #vars[page] then
 			pagePos = 1
@@ -633,7 +616,19 @@ function drawPage()
 			lcd.drawText(1, 23, vars[page][3][1], SMLSIZE)
 			lcd.drawText(60, 23, vars[page][3][2], SMLSIZE + getTextFlags(3))
 		end
-	elseif status == "startSave" then
+	elseif status == "exitScr" then
+        lcd.drawScreenTitle("Exit", 0, 0)
+        lcd.drawText(1, 20, "Save changes?", SMLSIZE)
+        local flag_yes = 0
+        local flag_cancel = 0
+        if saveChanges == true then
+            flag_yes = INVERS
+        else
+            flag_cancel = INVERS
+        end
+        lcd.drawText(1, 30, "Yes", SMLSIZE + flag_yes)
+        lcd.drawText(60, 30, "Cancel", SMLSIZE + flag_cancel)
+    elseif status == "startSave" then
 		lcd.drawScreenTitle("Saving ", 0, 0)
 		if page <= #vars then
 			lcd.drawText(1, 20, "Send dataId " .. vars[page][varIndex][6], SMLSIZE)
