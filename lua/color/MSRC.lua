@@ -623,7 +623,7 @@ function drawPage()
             lcd.drawText(200, 50, vars[page][3][2], SMLSIZE + getTextFlags(3))
         end
     elseif status == "exitScr" then
-        lcd.drawScreenTitle("Exit", 0, 0)
+        drawTitle("Exit", 0, 0)
         lcd.drawText(1, 20, "Save changes?", SMLSIZE)
         local flag_yes = 0
         local flag_cancel = 0
@@ -632,8 +632,8 @@ function drawPage()
         else
             flag_cancel = INVERS
         end
-        lcd.drawText(1, 30, "Yes", SMLSIZE + flag_yes)
-        lcd.drawText(200, 30, "Cancel", SMLSIZE + flag_cancel)
+        lcd.drawText(1, 40, "Yes", SMLSIZE + flag_yes)
+        lcd.drawText(200, 40, "Cancel", SMLSIZE + flag_cancel)
     elseif status == "startSave" then
 		drawTitle("Saving ", 0, 0)
 		if page <= #vars then
