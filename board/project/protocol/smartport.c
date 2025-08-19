@@ -347,13 +347,19 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
 
     // change sensor id
     if (frame_id == 0x31 && data_id == parameter->data_id && (uint8_t)value == 0x01) {
+        static bool is_changed = false;
+        if (is_changed == true) return;
         uint8_t sensor_id = (value >> 8) + 1;
-        parameter->sensor_id = sensor_id;
-        config_t *config = config_read();
-        config->smartport_sensor_id = sensor_id;
-        config_write(config);
-        debug("\nSmartport (%u). Change sensorId %i (0x%X)", uxTaskGetStackHighWaterMark(NULL), sensor_id,
-              sensor_id_to_crc(sensor_id));
+        parameter->sensor_id = sensor_id; 
+        config_lua = malloc(sizeof(config_t));
+        memcpy(config_lua, config_read(), sizeof(config_t));
+        config_lua->smartport_sensor_id = sensor_id;
+        config_write(config_lua);
+        sleep_ms(10);
+        free(config_lua);
+        is_changed = true;
+        debug("\nSmartport (%u). Change sensorId %i (0x%X)", uxTaskGetStackHighWaterMark(NULL), config_lua->smartport_sensor_id,
+              sensor_id_to_crc(config_lua->smartport_sensor_id));
         return;
     }
 
