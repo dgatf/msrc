@@ -1034,7 +1034,7 @@ static void set_config(smartport_parameters_t *parameter) {
     TaskHandle_t task_handle;
     float *baro_temp = NULL, *baro_pressure = NULL;
     parameter->sensor_id = config->smartport_sensor_id;
-    parameter->data_id = config->smartport_data_id;
+    parameter->data_id = 0x5100;
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
