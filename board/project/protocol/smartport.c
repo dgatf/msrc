@@ -1927,6 +1927,7 @@ static void set_config(smartport_parameters_t *parameter) {
         smartport_sensor_cell_individual_parameters_t parameter_sensor;
         for (uint i = 0; i < 4; i++) parameter_sensor.cell_voltage[i] = parameter.cell[i];
         parameter_sensor.rate = config->refresh_rate_voltage;
+        parameter_sensor.cell_count = parameter.cell_count;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor,
                     3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
