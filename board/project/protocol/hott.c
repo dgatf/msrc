@@ -37,6 +37,7 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "xgzp68xxd.h"
+#include "ads7830.h"
 
 #define HOTT_VARIO_MODULE_ID 0x89
 #define HOTT_GPS_MODULE_ID 0x8A
@@ -1080,6 +1081,26 @@ static void set_config(hott_sensors_t *sensors) {
 
         sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
         sensors->general_air[HOTT_GENERAL_PRESSURE] = parameter.pressure;
+    }
+    if (config->enable_ads7830) {
+        ads7830_parameters_t parameter = {config->alpha_voltage,
+                                          0x72,
+                                          malloc(sizeof(uint8_t)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float))};
+        xTaskCreate(ads7830_task, "ads7830_task", STACK_GPIO, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        sensors->general_air[HOTT_GENERAL_CELL_1] = parameter.cell[0];
+        sensors->general_air[HOTT_GENERAL_CELL_2] = parameter.cell[1];
+        sensors->general_air[HOTT_GENERAL_CELL_3] = parameter.cell[2];
+        sensors->general_air[HOTT_GENERAL_CELL_4] = parameter.cell[3];
+        sensors->general_air[HOTT_GENERAL_CELL_5] = parameter.cell[4];
+        sensors->general_air[HOTT_GENERAL_CELL_6] = parameter.cell[6];
     }
 }
 
