@@ -88,9 +88,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-264</y>
+             <y>-1441</y>
              <width>603</width>
-             <height>2669</height>
+             <height>2698</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -1058,6 +1058,13 @@
                    <widget class="QComboBox" name="cbMaxPressure"/>
                   </item>
                  </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="cbADS7830">
+                 <property name="text">
+                  <string>Lipo (ADS7830)</string>
+                 </property>
                 </widget>
                </item>
                <item>

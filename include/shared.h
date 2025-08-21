@@ -166,7 +166,7 @@ typedef struct config_t {                            // smartport data_id
     serial_monitor_format_t serial_monitor_format;   // 0x5148
     uint8_t gps_protocol;                            // 0x5149
     bool sbus_battery_slot;                          // 0x514A
-    uint8_t spare4_3;
+    bool enable_ads7830;                             // 0x514B
     uint8_t spare4_4;
     uint32_t spare5;
     uint32_t spare6;

@@ -599,6 +599,10 @@ void MainWindow::setUiFromConfig() {
     ui->cbGpio21->setChecked(config.gpio_mask & (1 << 4));
     ui->cbGpio22->setChecked(config.gpio_mask & (1 << 5));
     ui->sbGpioInterval->setValue(config.gpio_interval);
+
+    // Lipo (ads7830)
+    ui->cbADS7830->setChecked(config.enable_ads7830);
+
 }
 
 void MainWindow::getConfigFromUi() {
@@ -802,6 +806,9 @@ void MainWindow::getConfigFromUi() {
     // Debug
 
     config.debug = 0;  // disabled from msrc_gui
+
+    // Lipo (ads7830)
+    config.enable_ads7830 = ui->cbADS7830->isChecked();
 }
 
 void MainWindow::requestSerialConfig() {
