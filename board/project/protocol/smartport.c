@@ -1914,13 +1914,13 @@ static void set_config(smartport_parameters_t *parameter) {
     }
     if (config->enable_ads7830) {
         ads7830_parameters_t parameter = {config->alpha_voltage,
-                                          0x72,
+                                          0x48,
                                           malloc(sizeof(uint8_t)),
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float))};
-        xTaskCreate(ads7830_task, "ads7830_task", STACK_GPIO, (void *)&parameter, 2, &task_handle);
+        xTaskCreate(ads7830_task, "ads7830_task", STACK_ADS7830, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 

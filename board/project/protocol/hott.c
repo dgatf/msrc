@@ -548,6 +548,14 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
                 packet.altitude = *sensors->general_air[HOTT_GENERAL_ALTITUDE] + 500;
             if (sensors->general_air[HOTT_GENERAL_CLIMBRATE])
                 packet.altitude = *sensors->general_air[HOTT_GENERAL_CLIMBRATE] * 100 + 30000;
+            if (sensors->general_air[HOTT_GENERAL_CELL_1])
+                packet.cell[0] = *sensors->general_air[HOTT_GENERAL_CELL_1] * 50;
+            if (sensors->general_air[HOTT_GENERAL_CELL_2])
+                packet.cell[1] = *sensors->general_air[HOTT_GENERAL_CELL_2] * 50;
+            if (sensors->general_air[HOTT_GENERAL_CELL_3])
+                packet.cell[2] = *sensors->general_air[HOTT_GENERAL_CELL_3] * 50;
+            if (sensors->general_air[HOTT_GENERAL_CELL_4])
+                packet.cell[3] = *sensors->general_air[HOTT_GENERAL_CELL_4] * 50;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             send_packet((uint8_t *)&packet, sizeof(packet));
@@ -1084,7 +1092,7 @@ static void set_config(hott_sensors_t *sensors) {
     }
     if (config->enable_ads7830) {
         ads7830_parameters_t parameter = {config->alpha_voltage,
-                                          0x72,
+                                          0x48,
                                           malloc(sizeof(uint8_t)),
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float)),
@@ -1099,8 +1107,6 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->general_air[HOTT_GENERAL_CELL_2] = parameter.cell[1];
         sensors->general_air[HOTT_GENERAL_CELL_3] = parameter.cell[2];
         sensors->general_air[HOTT_GENERAL_CELL_4] = parameter.cell[3];
-        sensors->general_air[HOTT_GENERAL_CELL_5] = parameter.cell[4];
-        sensors->general_air[HOTT_GENERAL_CELL_6] = parameter.cell[6];
     }
 }
 
