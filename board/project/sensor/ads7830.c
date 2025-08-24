@@ -36,7 +36,6 @@ void ads7830_task(void *parameters) {
     *parameter.cell[2] = 0;
     *parameter.cell[3] = 0;
     *parameter.cell_count = 1;
-    float voltage_total = 0;
     uint8_t cmd[4] = {CMD_CH0, CMD_CH1, CMD_CH2, CMD_CH3};
     i2c_init(i2c0, 100 * 1000);
     gpio_set_function(I2C0_SDA_GPIO, GPIO_FUNC_I2C);
@@ -45,10 +44,11 @@ void ads7830_task(void *parameters) {
     gpio_pull_up(I2C0_SCL_GPIO);
     while (1) {
         *parameter.cell[cont % 4] = read(&parameter, cmd[cont % 4]);
-        if (*parameter.cell[cont % 4] > 1) *parameter.cell_count = (cont % 4) + 1;
-        voltage_total = *parameter.cell[0] + *parameter.cell[1] + *parameter.cell[2] + *parameter.cell[3];
-        debug("\nADS7830 (%u). Cell index %u Cell1 %u Cell2 %u Cell3 %u Cell3 %u", uxTaskGetStackHighWaterMark(NULL),
-              cont % 4, *parameter.cell[0], *parameter.cell[1], *parameter.cell[2], *parameter.cell[3]);
+        uint cell_index = (cont % 4) + 1;  // 1 to 4
+        if (*parameter.cell[cont % 4] > 1 && cell_index > *parameter.cell_count) *parameter.cell_count = cell_index;
+        debug("\nADS7830 (%u). Cell index %u Cell count %u Cell1 %u Cell2 %u Cell3 %u Cell3 %u",
+              uxTaskGetStackHighWaterMark(NULL), cell_index, *parameter.cell_count, *parameter.cell[0],
+              *parameter.cell[1], *parameter.cell[2], *parameter.cell[3]);
         cont++;
         read(&parameter, cmd[cont % 4]);
         vTaskDelay(100 / portTICK_PERIOD_MS);

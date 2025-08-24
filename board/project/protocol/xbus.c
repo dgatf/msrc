@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "ads7830.h"
 #include "airspeed.h"
 #include "bmp180.h"
 #include "bmp280.h"
@@ -15,13 +16,15 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
 #include "esc_pwm.h"
+#include "esc_ztw.h"
 #include "fuel_meter.h"
+#include "gps.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
 #include "ms5611.h"
-#include "gps.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"
@@ -31,8 +34,6 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "xgzp68xxd.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 xbus_sensor_t *sensor;
 xbus_sensor_formatted_t *sensor_formatted;
@@ -210,7 +211,17 @@ void xbus_format_sensor(uint8_t address) {
         case XBUS_STRU_TELE_DIGITAL_AIR_ID: {
             if (sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE])
                 sensor_formatted->stru_tele_digital_air->pressure =
-                    swap_16((uint16_t)(*sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE] * 0.000145038 * 10)); // Pa to psi, precision 0.1 psi
+                    swap_16((uint16_t)(*sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE] * 0.000145038 *
+                                       10));  // Pa to psi, precision 0.1 psi
+            break;
+        }
+        case XBUS_TELE_LIPOMON_ID: {
+            for (uint i = 0; i < 6; i++) {
+                if (*sensor->tele_lipomon[i] < 1 || !sensor->tele_lipomon[i])
+                    sensor_formatted->tele_lipomon->cell[i] = 0xFFFF;
+                else
+                    sensor_formatted->tele_lipomon->cell[i] = swap_16((uint16_t)(*sensor->tele_lipomon[i] * 100));
+            }
             break;
         }
     }
@@ -293,7 +304,15 @@ static void i2c_request_handler(uint8_t address) {
             xbus_format_sensor(address);
             i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->stru_tele_digital_air);
             vTaskResume(context.led_task_handle);
-            debug_buffer((uint8_t *)sensor_formatted->stru_tele_digital_air, sizeof(xbus_stru_tele_digital_air_t), "0x%X ");
+            debug_buffer((uint8_t *)sensor_formatted->stru_tele_digital_air, sizeof(xbus_stru_tele_digital_air_t),
+                         "0x%X ");
+            break;
+        case XBUS_TELE_LIPOMON_ID:
+            if (!sensor->is_enabled[XBUS_TELE_LIPOMON]) break;
+            xbus_format_sensor(address);
+            i2c_multi_set_write_buffer((uint8_t *)sensor_formatted->tele_lipomon);
+            vTaskResume(context.led_task_handle);
+            debug_buffer((uint8_t *)sensor_formatted->tele_lipomon, sizeof(xbus_tele_lipomon_t), "0x%X ");
             break;
     }
 }
@@ -812,16 +831,38 @@ static void set_config() {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_fuel_pressure) {
-        xgzp68xxd_parameters_t parameter = {config->xgzp68xxd_k, malloc(sizeof(float)),
-                                             malloc(sizeof(float))};
+        xgzp68xxd_parameters_t parameter = {config->xgzp68xxd_k, malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(xgzp68xxd_task, "fuel_pressure_task", STACK_FUEL_PRESSURE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE] = parameter.pressure;
         sensor->is_enabled[XBUS_STRU_TELE_DIGITAL_AIR] = true;
         sensor_formatted->stru_tele_digital_air = calloc(1, 16);
-        *sensor_formatted->stru_tele_digital_air = (xbus_stru_tele_digital_air_t){XBUS_STRU_TELE_DIGITAL_AIR_ID, 0, 0 ,0};
+        *sensor_formatted->stru_tele_digital_air =
+            (xbus_stru_tele_digital_air_t){XBUS_STRU_TELE_DIGITAL_AIR_ID, 0, 0, 0};
         i2c_multi_enable_address(XBUS_STRU_TELE_DIGITAL_AIR_ID);
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_ads7830) {
+        ads7830_parameters_t parameter = {config->alpha_voltage,   0x48,
+                                          malloc(sizeof(uint8_t)), malloc(sizeof(float)),
+                                          malloc(sizeof(float)),   malloc(sizeof(float)),
+                                          malloc(sizeof(float))};
+        xTaskCreate(ads7830_task, "ads7830_task", STACK_ADS7830, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensor->is_enabled[XBUS_TELE_LIPOMON] = true;
+        sensor->tele_lipomon[LIPOMON_CELL1] = parameter.cell[0];
+        sensor->tele_lipomon[LIPOMON_CELL2] = parameter.cell[1];
+        sensor->tele_lipomon[LIPOMON_CELL3] = parameter.cell[2];
+        sensor->tele_lipomon[LIPOMON_CELL4] = parameter.cell[3];
+        sensor->tele_lipomon[LIPOMON_CELL5] = NULL;
+        sensor->tele_lipomon[LIPOMON_CELL6] = NULL;
+        sensor_formatted->tele_lipomon = calloc(1, 16);
+        *sensor_formatted->tele_lipomon = (xbus_tele_lipomon_t){XBUS_TELE_LIPOMON_ID, 0, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_TELE_LIPOMON_ID);
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

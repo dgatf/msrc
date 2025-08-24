@@ -167,6 +167,11 @@ void MainWindow::generateCircuit(QLabel *label) {
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
+        if (ui->cbADS7830->isChecked()) {
+            image.load(":/res/ad7830.png");
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
         if (ui->cbReceiver->currentText() == "Frsky D" || ui->cbReceiver->currentText() == "CRSF") {
             image.load(":/res/receiver_frsky_d_rp2040_zero.png");
         } else if (ui->cbReceiver->currentText() == "Spektrum XBUS") {
@@ -1271,5 +1276,12 @@ void MainWindow::on_ckSbusBattery_toggled(bool checked)
 void MainWindow::on_ckSbusExtVolt_toggled(bool checked)
 {
     ui->ckSbusBattery->setChecked(!checked);
+}
+
+
+void MainWindow::on_cbADS7830_toggled(bool checked)
+{
+    Q_UNUSED(checked);
+    generateCircuit(ui->lbCircuit);
 }
 

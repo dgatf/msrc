@@ -14,6 +14,7 @@
 #define XBUS_RPMVOLTTEMP_ID 0x7E
 #define XBUS_FUEL_FLOW_ID 0x22
 #define XBUS_STRU_TELE_DIGITAL_AIR_ID 0x36
+#define XBUS_TELE_LIPOMON_ID 0x3A  // 6S Cell Monitor
 
 #define XBUS_GPS_INFO_FLAGS_IS_NORTH_BIT 0
 #define XBUS_GPS_INFO_FLAGS_IS_EAST_BIT 1
@@ -31,7 +32,8 @@ typedef enum xbus_sensors_t {
     XBUS_RPMVOLTTEMP,
     XBUS_ENERGY,
     XBUS_FUEL_FLOW,
-    XBUS_STRU_TELE_DIGITAL_AIR
+    XBUS_STRU_TELE_DIGITAL_AIR,
+    XBUS_TELE_LIPOMON
 } xbus_sensors_t;
 
 typedef enum xbus_airspeed_enum_t { XBUS_AIRSPEED_AIRSPEED } xbus_airspeed_enum_t;
@@ -92,6 +94,8 @@ typedef enum xbus_rpm_volt_temp_enum_t {
 typedef enum xbus_fuel_flow_enum_t { XBUS_FUEL_FLOW_CONSUMED, XBUS_FUEL_FLOW_RATE } xbus_fuel_flow_enum_t;
 
 typedef enum xbus_stru_tele_digital_air_enum_t { XBUS_FUEL_PRESSURE } xbus_stru_tele_digital_air_enum_t;
+
+typedef enum xbus_tele_lipomon_enum_t { LIPOMON_CELL1, LIPOMON_CELL2, LIPOMON_CELL3, LIPOMON_CELL4, LIPOMON_CELL5, LIPOMON_CELL6 } xbus_tele_lipomon_enum_t;
 
 typedef struct xbus_airspeed_t {
     uint8_t identifier;     // Source device 0x11
@@ -202,6 +206,13 @@ typedef struct xbus_stru_tele_digital_air_t {
     uint16_t pressure;  // Tank pressure, 0.1PSI (0-6553.4PSI)
 } xbus_stru_tele_digital_air_t;
 
+typedef struct xbus_tele_lipomon_t {
+    uint8_t identifier;  // Source device = 0x3A
+    uint8_t sID;         // Secondary ID
+    uint16_t cell[6];    // Voltage across cell 1, .01V steps 0x7FFF --> cell not present
+    uint8_t temp;        // Temperature, 0.1C (0-655.34C)
+} xbus_tele_lipomon_t;
+
 typedef struct xbus_sensor_formatted_t {
     xbus_airspeed_t *airspeed;
     xbus_altitude_t *altitude;
@@ -214,10 +225,11 @@ typedef struct xbus_sensor_formatted_t {
     xbus_energy_t *energy;
     xbus_fuel_flow_t *fuel_flow;
     xbus_stru_tele_digital_air_t *stru_tele_digital_air;
+    xbus_tele_lipomon_t *tele_lipomon;
 } xbus_sensor_formatted_t;
 
 typedef struct xbus_sensor_t {
-    bool is_enabled[11];
+    bool is_enabled[12];
     float *airspeed[1];
     float *altimeter[1];
     float *gps_loc[5];
@@ -229,6 +241,7 @@ typedef struct xbus_sensor_t {
     float *energy[6];
     float *fuel_flow[2];
     float *stru_tele_digital_air[1];
+    float *tele_lipomon[7];
 } xbus_sensor_t;
 
 extern context_t context;
