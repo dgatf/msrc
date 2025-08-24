@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ads7830.h"
 #include "airspeed.h"
 #include "bmp180.h"
 #include "bmp280.h"
@@ -37,7 +38,6 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "xgzp68xxd.h"
-#include "ads7830.h"
 
 #define HOTT_VARIO_MODULE_ID 0x89
 #define HOTT_GPS_MODULE_ID 0x8A
@@ -151,10 +151,10 @@ typedef struct hott_sensor_vario_t {
     uint8_t warningId;
     uint8_t sensorTextID;
     uint8_t alarmInverse;
-    uint16_t altitude;  // value + 500 (e.g. 0m = 500)
-    uint16_t maxAltitude;
+    uint16_t altitude;     // 6-7 value + 500 (e.g. 0m = 500)
+    uint16_t maxAltitude;  // 8-9
     uint16_t minAltitude;
-    uint16_t m1s;   // ?? (value * 100) + 30000 (e.g. 10m = 31000)
+    uint16_t m1s;   // 12-13 (value * 100) + 30000 (e.g. 10m = 31000)
     uint16_t m3s;   // ?? idem
     uint16_t m10s;  // ?? idem
     uint8_t text[24];
@@ -455,7 +455,7 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             if (min_altitude > packet.altitude) min_altitude = packet.altitude;
             packet.maxAltitude = max_altitude;
             packet.minAltitude = min_altitude;
-            packet.m1s = *sensors->vario[HOTT_VARIO_M1S];
+            packet.m1s = *sensors->vario[HOTT_VARIO_M1S] * 100 + 30000;
             packet.m3s = vario_alarm_parameters.m3s;
             packet.m10s = vario_alarm_parameters.m10s;
             packet.endByte = HOTT_END_BYTE;
@@ -547,7 +547,7 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             if (sensors->general_air[HOTT_GENERAL_ALTITUDE])
                 packet.altitude = *sensors->general_air[HOTT_GENERAL_ALTITUDE] + 500;
             if (sensors->general_air[HOTT_GENERAL_CLIMBRATE])
-                packet.altitude = *sensors->general_air[HOTT_GENERAL_CLIMBRATE] * 100 + 30000;
+                packet.climbrate = *sensors->general_air[HOTT_GENERAL_CLIMBRATE] * 100 + 30000;
             if (sensors->general_air[HOTT_GENERAL_CELL_1])
                 packet.cell[0] = *sensors->general_air[HOTT_GENERAL_CELL_1] * 50;
             if (sensors->general_air[HOTT_GENERAL_CELL_2])
@@ -1033,7 +1033,7 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
         sensors->vario[HOTT_VARIO_M1S] = parameter.vspeed;
-        
+
         sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
         sensors->general_air[HOTT_GENERAL_ALTITUDE] = parameter.altitude;
         sensors->general_air[HOTT_GENERAL_CLIMBRATE] = parameter.vspeed;
@@ -1091,12 +1091,9 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->general_air[HOTT_GENERAL_PRESSURE] = parameter.pressure;
     }
     if (config->enable_ads7830) {
-        ads7830_parameters_t parameter = {config->alpha_voltage,
-                                          0x48,
-                                          malloc(sizeof(uint8_t)),
-                                          malloc(sizeof(float)),
-                                          malloc(sizeof(float)),
-                                          malloc(sizeof(float)),
+        ads7830_parameters_t parameter = {config->alpha_voltage,   0x48,
+                                          malloc(sizeof(uint8_t)), malloc(sizeof(float)),
+                                          malloc(sizeof(float)),   malloc(sizeof(float)),
                                           malloc(sizeof(float))};
         xTaskCreate(ads7830_task, "ads7830_task", STACK_GPIO, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
