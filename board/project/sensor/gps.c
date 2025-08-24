@@ -160,6 +160,7 @@ void gps_task(void *parameters) {
 
     /* Change GPS config. For ublox compatible devices */
 
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
     set_baudrate(parameter.baudrate);
     uart_pio_begin(parameter.baudrate, UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1);
     if (parameter.protocol == UBLOX)
