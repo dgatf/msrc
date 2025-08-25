@@ -578,7 +578,7 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
             packet.longitudeDegMin = (uint)longitude * 100 + (longitude - (uint)longitude) * 60;
             packet.longitudeSec = (longitude * 60 - (uint)(longitude * 60)) * 60;
             packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
-            packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE];
+            packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
             float climbrate = *sensors->gps[HOTT_GPS_CLIMBRATE] * 100 + 30000;
             if (climbrate < 0) climbrate = 0;
             packet.climbrate = climbrate;  // 30000, 0.00
