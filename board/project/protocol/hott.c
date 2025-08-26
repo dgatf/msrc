@@ -1006,12 +1006,17 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
         sensors->vario[HOTT_VARIO_M1S] = parameter.vspeed;
-        
+
         sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
         sensors->general_air[HOTT_GENERAL_ALTITUDE] = parameter.altitude;
         sensors->general_air[HOTT_GENERAL_CLIMBRATE] = parameter.vspeed;
 
         vario_alarm_parameters.altitude = parameter.altitude;
+
+        if (config->enable_gps) {
+            sensors->gps[HOTT_GPS_ALTITUDE] = parameter.altitude;
+            sensors->gps[HOTT_GPS_CLIMBRATE] = parameter.vspeed;
+        }
 
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
@@ -1040,6 +1045,11 @@ static void set_config(hott_sensors_t *sensors) {
 
         vario_alarm_parameters.altitude = parameter.altitude;
 
+        if (config->enable_gps) {
+            sensors->gps[HOTT_GPS_ALTITUDE] = parameter.altitude;
+            sensors->gps[HOTT_GPS_CLIMBRATE] = parameter.vspeed;
+        }
+
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
@@ -1060,12 +1070,17 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->is_enabled[HOTT_TYPE_VARIO] = true;
         sensors->vario[HOTT_VARIO_ALTITUDE] = parameter.altitude;
         sensors->vario[HOTT_VARIO_M1S] = parameter.vspeed;
-        
+
         sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
         sensors->general_air[HOTT_GENERAL_ALTITUDE] = parameter.altitude;
         sensors->general_air[HOTT_GENERAL_CLIMBRATE] = parameter.vspeed;
 
         vario_alarm_parameters.altitude = parameter.altitude;
+
+        if (config->enable_gps) {
+            sensors->gps[HOTT_GPS_ALTITUDE] = parameter.altitude;
+            sensors->gps[HOTT_GPS_CLIMBRATE] = parameter.vspeed;
+        }
 
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
