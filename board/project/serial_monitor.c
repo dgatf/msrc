@@ -43,7 +43,7 @@ void serial_monitor_task(void *parameters) {
 static void process(config_t *config) {
     static uint ts = 0;
     uint length;
-    uint8_t data[length];
+    uint8_t data[512];
     switch (config->serial_monitor_gpio) {
         case 1:
             length = uart0_available();
