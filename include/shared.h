@@ -155,7 +155,7 @@ typedef struct config_t {                            // smartport data_id
     uint16_t serial_monitor_timeout_ms;              // 0x513D
     bool serial_monitor_inverted;                    // 0x513E
     int8_t airspeed_offset;                          // 0x513F
-    int16_t airspeed_slope;                          // 0x5140
+    int16_t airspeed_vcc;                            // 0x5140
     float fuel_flow_ml_per_pulse;                    // 0x5141
     bool enable_fuel_flow;                           // 0x5142
     uint16_t xgzp68xxd_k;                            // 0x5143

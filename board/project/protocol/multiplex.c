@@ -646,7 +646,7 @@ static void set_config(sensor_multiplex_t **sensors) {
                                            config->analog_rate,
                                            config->alpha_airspeed,
                                            config->airspeed_offset,
-                                           config->airspeed_slope,
+                                           config->airspeed_vcc,
                                            malloc(sizeof(float))};
         xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);

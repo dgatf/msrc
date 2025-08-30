@@ -59,7 +59,7 @@
 #define ANALOG_CURRENT_AUTO_OFFSET true
 /* Analog airspeed */
 #define AIRSPEED_OFFSET 0
-#define AIRSPEED_SLOPE 1
+#define AIRSPEED_VCC 5
 
 /* RPM multipliers (optional, this may be done in transmitter*/
 #define RPM_PAIR_OF_POLES 1
@@ -202,7 +202,7 @@ void config_forze_write() {
     config.serial_monitor_timeout_ms = SERIAL_MONITOR_TIMEOUT_MS;
     config.serial_monitor_inverted = SERIAL_MONITOR_INVERTED;
     config.airspeed_offset = AIRSPEED_OFFSET * 100;
-    config.airspeed_slope = AIRSPEED_SLOPE * 100;
+    config.airspeed_vcc = AIRSPEED_VCC * 100;
     config.fuel_flow_ml_per_pulse = FUEL_FLOW_ML_PER_MINUTE;
     config.enable_fuel_flow = ENABLE_FUEL_FLOW;
     config.enable_fuel_pressure = false;

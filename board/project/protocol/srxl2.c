@@ -548,7 +548,7 @@ static void set_config(void) {
                                            config->analog_rate,
                                            config->alpha_airspeed,
                                            (float)config->airspeed_offset / 100,
-                                           (float)config->airspeed_slope / 100,
+                                           (float)config->airspeed_vcc / 100,
                                            baro_temp,
                                            baro_pressure,
                                            malloc(sizeof(float))};

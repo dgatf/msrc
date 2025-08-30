@@ -567,7 +567,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
                 packet.value = config->airspeed_offset * 100;
                 break;
             case 0x5140:
-                packet.value = config->airspeed_slope * 100;
+                packet.value = config->airspeed_vcc * 100;
                 break;
             case 0x5141:
                 packet.value = config->fuel_flow_ml_per_pulse * 10000;
@@ -768,7 +768,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
                 config_lua->airspeed_offset = value / 100;
                 break;
             case 0x5140:
-                config_lua->airspeed_slope = value / 100;
+                config_lua->airspeed_vcc = value / 100;
                 break;
             case 0x5141:
                 config_lua->fuel_flow_ml_per_pulse = value / 10000;
@@ -1860,7 +1860,7 @@ static void set_config(smartport_parameters_t *parameter) {
                                            config->analog_rate,
                                            config->alpha_airspeed,
                                            (float)config->airspeed_offset / 100,
-                                           (float)config->airspeed_slope / 100,
+                                           (float)config->airspeed_vcc / 100,
                                            baro_temp,
                                            baro_pressure,
                                            malloc(sizeof(float))};
