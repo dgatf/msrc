@@ -178,7 +178,7 @@ local page_analogCurr = { analogCurr, analogCurrType, analogCurrMult, analogCurr
 
 -- Page 13 - Airspeed analog
 local analogAirspeed = { "Enable", nil, 0, 1, 1, 0x5109 }
-local analogAirspeedVcc = { "Vcc", nil, 4.75, 5.25, 0.01, 0x5140 }
+local analogAirspeedVcc = { "Vcc", nil, 3.3, 5.25, 0.01, 0x5140 }
 local analogAirspeedOffset = { "Offset", nil, -1, 1, 0.1, 0x513F }
 
 local page_analogAirspeed = { analogAirspeed, analogAirspeedVcc, analogAirspeedOffset }
