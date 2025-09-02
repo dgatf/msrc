@@ -88,7 +88,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-1733</y>
+             <y>-1640</y>
              <width>603</width>
              <height>2698</height>
             </rect>
@@ -1317,23 +1317,23 @@
                   <item row="1" column="0">
                    <widget class="QLabel" name="label_6">
                     <property name="text">
-                     <string>Offset (V)</string>
+                     <string>Offset (mV)</string>
                     </property>
                    </widget>
                   </item>
                   <item row="1" column="1">
                    <widget class="QDoubleSpinBox" name="sbAirspeedOffset">
                     <property name="decimals">
-                     <number>2</number>
+                     <number>0</number>
                     </property>
                     <property name="minimum">
-                     <double>-1.000000000000000</double>
+                     <double>-1000.000000000000000</double>
                     </property>
                     <property name="maximum">
-                     <double>1.000000000000000</double>
+                     <double>1000.000000000000000</double>
                     </property>
                     <property name="singleStep">
-                     <double>0.010000000000000</double>
+                     <double>1.000000000000000</double>
                     </property>
                     <property name="value">
                      <double>0.000000000000000</double>

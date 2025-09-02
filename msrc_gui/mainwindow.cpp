@@ -478,7 +478,7 @@ void MainWindow::setUiFromConfig() {
 
     ui->gbAirspeed->setChecked(config.enable_analog_airspeed);
     ui->sbAirspeedVcc->setValue(config.airspeed_vcc / 100.0);
-    ui->sbAirspeedOffset->setValue(config.airspeed_offset / 100.0);
+    ui->sbAirspeedOffset->setValue(config.airspeed_offset);
 
     // Altitude
 
@@ -684,7 +684,7 @@ void MainWindow::getConfigFromUi() {
 
     config.enable_analog_airspeed = ui->gbAirspeed->isChecked();
     config.airspeed_vcc = ui->sbAirspeedVcc->value() * 100;
-    config.airspeed_offset = ui->sbAirspeedOffset->value() * 100;
+    config.airspeed_offset = ui->sbAirspeedOffset->value();
 
     // Altitude
 

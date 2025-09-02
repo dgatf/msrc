@@ -179,7 +179,7 @@ local page_analogCurr = { analogCurr, analogCurrType, analogCurrMult, analogCurr
 -- Page 13 - Airspeed analog
 local analogAirspeed = { "Enable", nil, 0, 1, 1, 0x5109 }
 local analogAirspeedVcc = { "Vcc", nil, 3.3, 5.25, 0.01, 0x5140 }
-local analogAirspeedOffset = { "Offset", nil, -1, 1, 0.1, 0x513F }
+local analogAirspeedOffset = { "Offset", nil, -1000, 1000, 1, 0x513F }
 
 local page_analogAirspeed = { analogAirspeed, analogAirspeedVcc, analogAirspeedOffset }
 
@@ -329,7 +329,6 @@ local function getConfig()
         if
             dataId == 0x5131
             or dataId == 0x5132
-            or dataId == 0x513F
             or dataId == 0x5140
             or dataId == 0x511B
             or dataId == 0x5120
@@ -385,7 +384,7 @@ local function saveConfig()
     local value = vars[page][varIndex][2]
 	local dataId = vars[page][varIndex][6]
 	if value ~= nil and dataId ~= 0 then
-		if dataId == 0x5131 or dataId == 0x5132 or dataId == 0x513F or dataId == 0x5140 or dataId == 0x511B then
+		if dataId == 0x5131 or dataId == 0x5132 or dataId == 0x5140 or dataId == 0x511B then
 			value = value * 100
 		elseif dataId == 0x5141 then
 			value = value * 10000

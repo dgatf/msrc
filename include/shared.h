@@ -154,7 +154,7 @@ typedef struct config_t {                            // smartport data_id
     uint8_t serial_monitor_parity;                   // 0x513C
     uint16_t serial_monitor_timeout_ms;              // 0x513D
     bool serial_monitor_inverted;                    // 0x513E
-    int8_t airspeed_offset;                          // 0x513F
+    int8_t spare0;
     int16_t airspeed_vcc;                            // 0x5140
     float fuel_flow_ml_per_pulse;                    // 0x5141
     bool enable_fuel_flow;                           // 0x5142
@@ -168,7 +168,8 @@ typedef struct config_t {                            // smartport data_id
     bool sbus_battery_slot;                          // 0x514A
     bool enable_ads7830;                             // 0x514B
     uint8_t spare4_4;
-    uint32_t spare5;
+    int16_t airspeed_offset;                         // 0x513F
+    uint16_t spare5;
     uint32_t spare6;
     uint32_t spare7;
     uint32_t spare8;

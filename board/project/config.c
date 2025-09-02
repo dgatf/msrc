@@ -58,8 +58,8 @@
 #define ANALOG_CURRENT_OFFSET 0
 #define ANALOG_CURRENT_AUTO_OFFSET true
 /* Analog airspeed */
-#define AIRSPEED_OFFSET 0
-#define AIRSPEED_VCC 5
+#define AIRSPEED_OFFSET 0  // mV
+#define AIRSPEED_VCC 5     // V
 
 /* RPM multipliers (optional, this may be done in transmitter*/
 #define RPM_PAIR_OF_POLES 1
@@ -90,8 +90,8 @@
 #define SERIAL_MONITOR_PARITY 0
 #define SERIAL_MONITOR_TIMEOUT_MS 1
 #define SERIAL_MONITOR_INVERTED false
-#define SERIAL_MONITOR_GPIO 5 // GPIO 1 or 5
-#define SERIAL_MONITOR_FORMAT 0 // 0 = hex, 1 = text
+#define SERIAL_MONITOR_GPIO 5    // GPIO 1 or 5
+#define SERIAL_MONITOR_FORMAT 0  // 0 = hex, 1 = text
 
 /* Add init delay for FlyFun ESC. Enable if the ESC doesn't arm */
 #define ENABLE_ESC_INIT_DELAY false
@@ -201,7 +201,7 @@ void config_forze_write() {
     config.serial_monitor_parity = SERIAL_MONITOR_PARITY;
     config.serial_monitor_timeout_ms = SERIAL_MONITOR_TIMEOUT_MS;
     config.serial_monitor_inverted = SERIAL_MONITOR_INVERTED;
-    config.airspeed_offset = AIRSPEED_OFFSET * 100;
+    config.airspeed_offset = AIRSPEED_OFFSET;
     config.airspeed_vcc = AIRSPEED_VCC * 100;
     config.fuel_flow_ml_per_pulse = FUEL_FLOW_ML_PER_MINUTE;
     config.enable_fuel_flow = ENABLE_FUEL_FLOW;

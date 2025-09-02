@@ -564,7 +564,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
                 packet.value = config->esc_hw4_offset;
                 break;
             case 0x513F:
-                packet.value = config->airspeed_offset * 100;
+                packet.value = config->airspeed_offset;
                 break;
             case 0x5140:
                 packet.value = config->airspeed_vcc * 100;
@@ -765,7 +765,7 @@ static void process_packet(smartport_parameters_t *parameter, uint8_t sensor_id,
                 config_lua->esc_hw4_offset = value;
                 break;
             case 0x513F:
-                config_lua->airspeed_offset = value / 100;
+                config_lua->airspeed_offset = value;
                 break;
             case 0x5140:
                 config_lua->airspeed_vcc = value / 100;
@@ -1859,7 +1859,7 @@ static void set_config(smartport_parameters_t *parameter) {
         airspeed_parameters_t parameter = {3,
                                            config->analog_rate,
                                            config->alpha_airspeed,
-                                           (float)config->airspeed_offset / 100,
+                                           (float)config->airspeed_offset / 1000,
                                            (float)config->airspeed_vcc / 100,
                                            baro_temp,
                                            baro_pressure,
