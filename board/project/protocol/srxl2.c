@@ -39,7 +39,7 @@
 #define SRXL2_DEVICE_BAUDRATE 1  // 0 = 115200. 1 = 400000
 #define SRXL2_DEVICE_INFO 0
 #define SRXL2_DEVICE_UID 0x12345678
-#define MAX_BAD_FRAMES 5
+#define MAX_BAD_FRAMES 50
 
 static volatile uint8_t dest_id = 0xFF;
 static volatile uint8_t baudrate = 0;
@@ -104,7 +104,7 @@ static void process(void) {
 
         // Check for bad frames
         static uint bad_frames = 0;
-        if (bad_frames == MAX_BAD_FRAMES) {
+        if (bad_frames > MAX_BAD_FRAMES) {
             if (baudrate) {
                 uart_set_baudrate(uart0, 115200);
                 baudrate = 0;
@@ -119,6 +119,8 @@ static void process(void) {
         }
 
         if (length < 3 || length > 128) {
+            if (length == 1) return;
+            debug("\nSRXL2. Bad Fr %u (len %u)", bad_frames, length);
             bad_frames++;
             return;
         }
@@ -134,7 +136,8 @@ static void process(void) {
             debug(" -> BAD CRC");
             debug(" %X", crc);
             // Allow packets with wrong crc for handshake
-            if (dest_id != 0xFF || !(data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID)) {
+            if (dest_id != 0xFF ||
+                !(data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID)) {
                 bad_frames++;
                 return;
             }

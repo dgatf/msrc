@@ -4,7 +4,7 @@
 #include "common.h"
 #include "xbus.h"
 
-#define SRXL2_TIMEOUT_US 1000
+#define SRXL2_TIMEOUT_US 500
 #define SRXL2_HEADER 0xA6
 #define SRXL2_HANDSHAKE_LEN 14
 #define SRXL2_TELEMETRY_LEN 22
