@@ -15,13 +15,15 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
 #include "esc_pwm.h"
+#include "esc_ztw.h"
 #include "fuel_meter.h"
+#include "gps.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
 #include "ms5611.h"
-#include "gps.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"
@@ -31,16 +33,16 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "xgzp68xxd.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 #define SRXL2_DEVICE_ID 0x31
 #define SRXL2_DEVICE_PRIORITY 10
-#define SRXL2_DEVICE_BAUDRATE 0
+#define SRXL2_DEVICE_BAUDRATE 1  // 0 = 115200. 1 = 400000
 #define SRXL2_DEVICE_INFO 0
 #define SRXL2_DEVICE_UID 0x12345678
+#define MAX_BAD_FRAMES 5
 
 static volatile uint8_t dest_id = 0xFF;
+static volatile uint8_t baudrate = 0;
 static alarm_id_t alarm_id;
 static volatile bool send_handshake = false;
 
@@ -99,7 +101,27 @@ static void process(void) {
     if (length) {
         cancel_alarm(alarm_id);
         alarm_id = add_alarm_in_us(50000, alarm_50ms, NULL, true);
-        if (length < 3 || length > 128) return;
+
+        // Check for bad frames
+        static uint bad_frames = 0;
+        if (bad_frames == MAX_BAD_FRAMES) {
+            if (baudrate) {
+                uart_set_baudrate(uart0, 115200);
+                baudrate = 0;
+                debug("\nSRXL2. Autobaud 115200");
+            } else {
+                uart_set_baudrate(uart0, 400000);
+                baudrate = 1;
+                debug("\nSRXL2. Autobaud 400000");
+            }
+            bad_frames = 0;
+            return;
+        }
+
+        if (length < 3 || length > 128) {
+            bad_frames++;
+            return;
+        }
         uint8_t data[length];
         uint16_t crc;
         uart0_read_bytes(data, length);
@@ -111,15 +133,34 @@ static void process(void) {
         } else {
             debug(" -> BAD CRC");
             debug(" %X", crc);
-            if (dest_id != 0xFF) return;  // allow packets with wrong crc for handshake
+            // Allow packets with wrong crc for handshake
+            if (dest_id != 0xFF || !(data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID)) {
+                bad_frames++;
+                return;
+            }
         }
+        bad_frames = 0;
+
+        // Handshake received
         if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID) {
             dest_id = data[3];
             debug("\nSRXL2. Set dest_id 0x%X", dest_id);
             srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, dest_id, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE,
                                  SRXL2_DEVICE_INFO, SRXL2_DEVICE_UID);
-        } else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE_ID) {
+
+        }
+        // Send telemetry
+        else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE_ID) {
             send_packet();
+        }
+        // Set baudrate
+        else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == 0xFF) {
+            baudrate = data[6];
+            if (baudrate)
+                uart_set_baudrate(uart0, 400000);
+            else
+                uart_set_baudrate(uart0, 115200);
+            debug("\nSRXL2. Set baudrate %u", baudrate);
         }
     }
 }
@@ -184,6 +225,8 @@ static void send_packet(void) {
 static int64_t alarm_50ms(alarm_id_t id, void *user_data) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     send_handshake = true;
+    if (baudrate) uart_set_baudrate(uart0, 115200);
+    baudrate = 0;
     vTaskNotifyGiveIndexedFromISR(context.uart0_notify_task_handle, 1, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return 50000;
