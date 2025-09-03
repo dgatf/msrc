@@ -102,7 +102,7 @@ typedef struct alarm_parameters_t {
 static void process(gps_parameters_t *parameter);
 static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_parameters_t *parameter);
 static void send_ublox_message(uint8_t *buf, uint len);
-static void set_baudrate(uint16_t baudrate);
+static void set_baudrate(uint baudrate);
 static void set_nmea_config(uint rate);
 static void set_ublox_config(uint rate);
 static void nmea_msg(char *cmd, bool enable);
@@ -352,13 +352,13 @@ static void set_nmea_config(uint rate) {
     ubx_cfg_cfg();                   // Save changes
 }
 
-static void set_baudrate(uint16_t baudrate) {
+static void set_baudrate(uint baudrate) {
     char msg[300];
     uint baudrates[] = {115200, 57600, 38400, 9600};
+    sprintf(msg, "$PUBX,41,1,3,3,%u,0\r\n", baudrate);
     for (uint i = 0; i < sizeof(baudrates) / sizeof(uint); i++) {
         uart_pio_begin(baudrates[i], UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1);
         vTaskDelay(10 / portTICK_PERIOD_MS);
-        sprintf(msg, "$PUBX,41,1,3,3,%i,0\r\n", baudrate);
         uart_pio_write_bytes(msg, strlen(msg));
         vTaskDelay(200 / portTICK_PERIOD_MS);
         uart_pio_remove();
