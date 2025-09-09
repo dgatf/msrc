@@ -10,7 +10,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     this->setWindowTitle(QString::asprintf("MSRC Link %s", PROJECT_VERSION));
     ui->tbViews->setCurrentIndex(0);
     ui->ptDebug->ensureCursorVisible();
-    ui->saScroll->setEnabled(false);
+    ui->tbConfig->setEnabled(false);
+    ui->tbConfig->setCurrentIndex(0);
     ui->btDebug->setDisabled(true);
     ui->btUpdate->setDisabled(true);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
@@ -289,7 +290,7 @@ void MainWindow::openSerialPort() {
         ui->btConnect->setText("Disconnect");
         ui->actionUpdateConfig->setEnabled(true);
         ui->actionDefaultConfig->setEnabled(true);
-        ui->saScroll->setEnabled(true);
+        ui->tbConfig->setEnabled(true);
         ui->cbPortList->setDisabled(true);
         ui->btDebug->setEnabled(true);
         ui->btDebug->setText("Enable Log");
@@ -300,7 +301,7 @@ void MainWindow::openSerialPort() {
         ui->btConnect->setText("Connect");
         ui->actionUpdateConfig->setEnabled(false);
         ui->actionDefaultConfig->setEnabled(false);
-        ui->saScroll->setEnabled(false);
+        ui->tbConfig->setEnabled(false);
         ui->btDebug->setEnabled(false);
         ui->btDebug->setText("Enable Log");
     }
@@ -314,7 +315,7 @@ void MainWindow::closeSerialPort() {
     ui->btConnect->setText("Connect");
     ui->actionUpdateConfig->setEnabled(false);
     ui->actionDefaultConfig->setEnabled(false);
-    ui->saScroll->setEnabled(false);
+    ui->tbConfig->setEnabled(false);
     ui->cbPortList->setDisabled(false);
     ui->btDebug->setDisabled(true);
     ui->btDebug->setText("Enable Log");
