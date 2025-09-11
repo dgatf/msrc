@@ -17,8 +17,11 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Install QT
-        uses: jurplel/install-qt-action@v2
-        
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.*'
+          modules: qtserialport
+
       - name: Git tags
         run: git fetch --prune --unshallow
 
