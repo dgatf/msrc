@@ -449,8 +449,7 @@ void MainWindow::setUiFromConfig() {
     if (config.sbus_battery_slot == true) {
         ui->ckSbusBattery->setChecked(true);
         ui->ckSbusExtVolt->setChecked(false);
-    }
-    else {
+    } else {
         ui->ckSbusBattery->setChecked(false);
         ui->ckSbusExtVolt->setChecked(true);
     }
@@ -863,7 +862,7 @@ void MainWindow::enableWidgets(QWidget *widget, bool enable) {
     foreach (child, widgets) child->setEnabled(enable);
 }
 
-void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
+void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     if (arg1 == "Spektrum XBUS") {
         ui->cbClockStretch->setVisible(true);
         ui->cbAlternativePacket->setVisible(true);
@@ -902,7 +901,6 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
     }
 
     if (arg1 == "Futaba SBUS2") {
-
         ui->ckSbusBattery->setVisible(true);
         ui->ckSbusExtVolt->setVisible(true);
     } else {
@@ -945,14 +943,15 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
     }
 
     // Fuel meter
-    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS"  || arg1 == "HOTT") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" || arg1 == "HOTT") {
         ui->gbFuelmeter->setVisible(true);
     } else {
         ui->gbFuelmeter->setVisible(false);
     }
 
     // Fuel pressure
-    if (arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" || arg1 == "HOTT") {
+    if (arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" ||
+        arg1 == "HOTT") {
         ui->gbFuelPressure->setVisible(true);
     } else {
         ui->gbFuelPressure->setVisible(false);
@@ -1019,16 +1018,25 @@ void MainWindow::on_cbReceiver_currentIndexChanged(const QString &arg1) {
         ui->lbAirspeedAvg->setVisible(true);
         ui->sbAirspeedAvg->setVisible(true);
     }
+    generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbEsc_currentIndexChanged(const QString &arg1) {
-    if (arg1 == "Hobbywing V4/Flyfun (not VBAR firmware)")
-        ui->gbEscParameters->setVisible(true);
+void MainWindow::on_cbEsc_currentTextChanged(const QString &arg1) {
+    if (arg1 == "Smart ESC/BAT")
+        ui->cbCalculateConsumption->setVisible(true);
     else
+        ui->cbCalculateConsumption->setVisible(false);
+    if (arg1 == "Hobbywing V4/Flyfun (not VBAR firmware)") {
+        ui->gbEscParameters->setVisible(true);
+        ui->cbPwmOut->setVisible(true);
+    } else {
         ui->gbEscParameters->setVisible(false);
+        ui->cbPwmOut->setVisible(false);
+    }
+    generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbEscModel_currentIndexChanged(const QString &arg1) {
+void MainWindow::on_cbEscModel_currentTextChanged(const QString &arg1) {
     if (arg1 == "Platinum PRO v4 25/40/60") {
         ui->sbVoltageDivisor->setValue(11);
         ui->sbCurrentMultiplier->setValue(0);
@@ -1102,16 +1110,6 @@ void MainWindow::on_cbEscModel_currentIndexChanged(const QString &arg1) {
     }
 }
 
-void MainWindow::on_cbBarometerType_currentIndexChanged(const QString &arg1) {
-    if (arg1 == "BMP280") {
-        ui->cbAltitudeFilter->setVisible(true);
-        ui->lbAltitudeFilter->setVisible(true);
-    } else {
-        ui->cbAltitudeFilter->setVisible(false);
-        ui->lbAltitudeFilter->setVisible(false);
-    }
-}
-
 void MainWindow::on_gbEsc_toggled(bool enabled) {
     enableWidgets(ui->gbEsc, enabled);
     generateCircuit(ui->lbCircuit);
@@ -1138,25 +1136,15 @@ void MainWindow::on_gbCurrent_toggled(bool enabled) {
 }
 
 void MainWindow::on_cbBarometerType_currentTextChanged(const QString &arg1) {
-    Q_UNUSED(arg1);
-    generateCircuit(ui->lbCircuit);
-}
-
-void MainWindow::on_cbEsc_currentTextChanged(const QString &arg1) {
-    generateCircuit(ui->lbCircuit);
-    if (arg1 == "Hobbywing V4")
-        ui->cbPwmOut->setVisible(true);
-    else
-        ui->cbPwmOut->setVisible(false);
-    if (arg1 == "Smart ESC/BAT")
-        ui->cbCalculateConsumption->setVisible(true);
-    else
-        ui->cbCalculateConsumption->setVisible(false);
-}
-
-void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
-    Q_UNUSED(arg1);
-    generateCircuit(ui->lbCircuit);
+    if (arg1 == "BMP280") {
+        ui->cbAltitudeFilter->setVisible(true);
+        ui->lbAltitudeFilter->setVisible(true);
+    } else {
+        ui->cbAltitudeFilter->setVisible(false);
+        ui->lbAltitudeFilter->setVisible(false);
+    }
+    // Q_UNUSED(arg1);
+    // generateCircuit(ui->lbCircuit);
 }
 
 void MainWindow::on_btCircuit_clicked() {
@@ -1249,21 +1237,14 @@ void MainWindow::on_gbFuelPressure_toggled(bool enabled) {
 
 void MainWindow::on_cbGpsProtocol_currentTextChanged(const QString &arg1) {
     if (arg1 == "NMEA") {
-        ui->lbGpsRate ->setVisible(false);
-        ui->cbGpsRate ->setVisible(false);
+        ui->lbGpsRate->setVisible(false);
+        ui->cbGpsRate->setVisible(false);
     } else {
-        ui->lbGpsRate ->setVisible(true);
-        ui->cbGpsRate ->setVisible(true);
+        ui->lbGpsRate->setVisible(true);
+        ui->cbGpsRate->setVisible(true);
     }
 }
 
-void MainWindow::on_ckSbusBattery_toggled(bool checked)
-{
-    ui->ckSbusExtVolt->setChecked(!checked);
-}
+void MainWindow::on_ckSbusBattery_toggled(bool checked) { ui->ckSbusExtVolt->setChecked(!checked); }
 
-void MainWindow::on_ckSbusExtVolt_toggled(bool checked)
-{
-    ui->ckSbusBattery->setChecked(!checked);
-}
-
+void MainWindow::on_ckSbusExtVolt_toggled(bool checked) { ui->ckSbusBattery->setChecked(!checked); }

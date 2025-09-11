@@ -14,6 +14,7 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QTimer>
+
 #include "shared.h"
 
 QT_BEGIN_NAMESPACE
@@ -62,18 +63,15 @@ class MainWindow : public QMainWindow {
     void saveConfig();
     void showAbout();
     void exitApp();
-    void on_cbReceiver_currentIndexChanged(const QString &arg1);
-    void on_cbEsc_currentIndexChanged(const QString &arg1);
+    void on_cbReceiver_currentTextChanged(const QString &arg1);
+    void on_cbEsc_currentTextChanged(const QString &arg1);
     void on_gbEsc_toggled(bool arg1);
-    void on_cbEscModel_currentIndexChanged(const QString &arg1);
-    void on_cbBarometerType_currentIndexChanged(const QString &arg1);
+    void on_cbEscModel_currentTextChanged(const QString &arg1);
     void on_gbVoltage1_toggled(bool arg1);
     void on_cbTemperature1_toggled(bool checked);
     void on_gbAltitude_toggled(bool arg1);
     void on_gbCurrent_toggled(bool arg1);
     void on_cbBarometerType_currentTextChanged(const QString &arg1);
-    void on_cbEsc_currentTextChanged(const QString &arg1);
-    void on_cbReceiver_currentTextChanged(const QString &arg1);
     void on_btCircuit_clicked();
     void resizeEvent(QResizeEvent *event);
     void on_gbGps_toggled(bool arg1);
