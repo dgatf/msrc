@@ -1,0 +1,37 @@
+name: CI - MSRC Link - win
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - msrc_gui/**
+
+jobs:
+
+  windows:
+    runs-on: windows-2022
+
+    steps:
+      - name: Get actions code
+        uses: actions/checkout@v4
+        
+      - name: Install QT
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.*'
+          modules: qtserialport
+
+      - name: Git tags
+        run: git fetch --prune --unshallow
+
+      - name: Configure build
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          qmake ../msrc_gui 
+          
