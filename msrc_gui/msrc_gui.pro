@@ -8,6 +8,8 @@ system(rm VERSION)
 message($${PROJECT_VERSION})
 DEFINES += PROJECT_VERSION=$${PROJECT_VERSION}
 
+QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
+
 CONFIG += c++11
 
 # You can make your code fail to compile if it uses deprecated APIs.
