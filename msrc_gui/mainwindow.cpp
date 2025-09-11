@@ -168,11 +168,6 @@ void MainWindow::generateCircuit(QLabel *label) {
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if (ui->cbADS7830->isChecked()) {
-            image.load(":/res/ad7830.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
-        }
-
         if (ui->cbReceiver->currentText() == "Frsky D" || ui->cbReceiver->currentText() == "CRSF") {
             image.load(":/res/receiver_frsky_d_rp2040_zero.png");
         } else if (ui->cbReceiver->currentText() == "Spektrum XBUS") {
@@ -605,10 +600,6 @@ void MainWindow::setUiFromConfig() {
     ui->cbGpio21->setChecked(config.gpio_mask & (1 << 4));
     ui->cbGpio22->setChecked(config.gpio_mask & (1 << 5));
     ui->sbGpioInterval->setValue(config.gpio_interval);
-
-    // Lipo (ads7830)
-    ui->cbADS7830->setChecked(config.enable_ads7830);
-
 }
 
 void MainWindow::getConfigFromUi() {
@@ -812,9 +803,6 @@ void MainWindow::getConfigFromUi() {
     // Debug
 
     config.debug = 0;  // disabled from msrc_gui
-
-    // Lipo (ads7830)
-    config.enable_ads7830 = ui->cbADS7830->isChecked();
 }
 
 void MainWindow::requestSerialConfig() {
@@ -1277,12 +1265,5 @@ void MainWindow::on_ckSbusBattery_toggled(bool checked)
 void MainWindow::on_ckSbusExtVolt_toggled(bool checked)
 {
     ui->ckSbusBattery->setChecked(!checked);
-}
-
-
-void MainWindow::on_cbADS7830_toggled(bool checked)
-{
-    Q_UNUSED(checked);
-    generateCircuit(ui->lbCircuit);
 }
 

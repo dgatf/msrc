@@ -3,7 +3,6 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "ads7830.h"
 #include "airspeed.h"
 #include "bmp180.h"
 #include "bmp280.h"
@@ -844,29 +843,6 @@ static void set_config() {
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-    if (config->enable_ads7830) {
-        ads7830_parameters_t parameter = {config->alpha_voltage,   0x48,
-                                          malloc(sizeof(uint8_t)), malloc(sizeof(float)),
-                                          malloc(sizeof(float)),   malloc(sizeof(float)),
-                                          malloc(sizeof(float))};
-        xTaskCreate(ads7830_task, "ads7830_task", STACK_ADS7830, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-        sensor->is_enabled[XBUS_TELE_LIPOMON] = true;
-        sensor->tele_lipomon[LIPOMON_CELL1] = parameter.cell[0];
-        sensor->tele_lipomon[LIPOMON_CELL2] = parameter.cell[1];
-        sensor->tele_lipomon[LIPOMON_CELL3] = parameter.cell[2];
-        sensor->tele_lipomon[LIPOMON_CELL4] = parameter.cell[3];
-        sensor->tele_lipomon[LIPOMON_CELL5] = NULL;
-        sensor->tele_lipomon[LIPOMON_CELL6] = NULL;
-        sensor_formatted->tele_lipomon = calloc(1, 16);
-        *sensor_formatted->tele_lipomon = (xbus_tele_lipomon_t){XBUS_TELE_LIPOMON_ID, 0, 0, 0, 0, 0, 0, 0, 0};
-        i2c_multi_enable_address(XBUS_TELE_LIPOMON_ID);
-
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    }
-
     if (config->xbus_clock_stretch) {
         gpio_set_dir(CLOCK_STRETCH_GPIO, true);
         gpio_put(CLOCK_STRETCH_GPIO, false);

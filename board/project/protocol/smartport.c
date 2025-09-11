@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ads7830.h"
 #include "airspeed.h"
 #include "bmp180.h"
 #include "bmp280.h"
@@ -1909,27 +1908,6 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor.gpio_mask = config->gpio_mask;
         xTaskCreate(sensor_gpio_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    }
-    if (config->enable_ads7830) {
-        ads7830_parameters_t parameter = {config->alpha_voltage,
-                                          0x48,
-                                          malloc(sizeof(uint8_t)),
-                                          malloc(sizeof(float)),
-                                          malloc(sizeof(float)),
-                                          malloc(sizeof(float)),
-                                          malloc(sizeof(float))};
-        xTaskCreate(ads7830_task, "ads7830_task", STACK_ADS7830, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-        smartport_sensor_cell_individual_parameters_t parameter_sensor;
-        for (uint i = 0; i < 4; i++) parameter_sensor.cell_voltage[i] = parameter.cell[i];
-        parameter_sensor.rate = config->refresh_rate_voltage;
-        parameter_sensor.cell_count = parameter.cell_count;
-        xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor,
-                    3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

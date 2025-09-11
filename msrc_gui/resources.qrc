@@ -20,6 +20,5 @@
         <file>res/smart_esc.png</file>
         <file>res/fuel_pressure.png</file>
         <file>res/fuel_meter.png</file>
-        <file>res/ad7830.png</file>
     </qresource>
 </RCC>

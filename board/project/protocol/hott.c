@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ads7830.h"
 #include "airspeed.h"
 #include "bmp180.h"
 #include "bmp280.h"
@@ -1104,21 +1103,6 @@ static void set_config(hott_sensors_t *sensors) {
 
         sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
         sensors->general_air[HOTT_GENERAL_PRESSURE] = parameter.pressure;
-    }
-    if (config->enable_ads7830) {
-        ads7830_parameters_t parameter = {config->alpha_voltage,   0x48,
-                                          malloc(sizeof(uint8_t)), malloc(sizeof(float)),
-                                          malloc(sizeof(float)),   malloc(sizeof(float)),
-                                          malloc(sizeof(float))};
-        xTaskCreate(ads7830_task, "ads7830_task", STACK_GPIO, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
-        sensors->general_air[HOTT_GENERAL_CELL_1] = parameter.cell[0];
-        sensors->general_air[HOTT_GENERAL_CELL_2] = parameter.cell[1];
-        sensors->general_air[HOTT_GENERAL_CELL_3] = parameter.cell[2];
-        sensors->general_air[HOTT_GENERAL_CELL_4] = parameter.cell[3];
     }
 }
 
