@@ -45,7 +45,7 @@ jobs:
         run: |
           cp build/msrc_gui msrc_gui/appdir
           cd msrc_gui/appdir
-          ../linuxdeployqt-continuous-x86_64.AppImage msrc_gui -appimage
+          ../linuxdeployqt-continuous-x86_64.AppImage msrc_gui -appimage -extra-plugins=iconengines,platformthemes/libqgtk3.so
           mv *.AppImage msrc_gui.AppImage
 
       - name: Upload to Google Drive
