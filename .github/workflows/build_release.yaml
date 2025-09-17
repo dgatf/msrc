@@ -56,7 +56,11 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Install QT
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.*'
+          modules: qtserialport
+
       
       - name: Git tags
         run: git fetch --prune --unshallow
@@ -81,7 +85,7 @@ jobs:
         run: |
           cp build/msrc_gui msrc_gui/appdir
           cd msrc_gui/appdir
-          ../linuxdeployqt-continuous-x86_64.AppImage msrc_gui -appimage
+          ../linuxdeployqt-continuous-x86_64.AppImage msrc_gui -appimage -extra-plugins=iconengines,platformthemes/libqgtk3.so
           mv *.AppImage msrc_link_${{ github.ref_name }}.AppImage
 
       - name: Release
@@ -105,7 +109,8 @@ jobs:
       - name: Install QT
         uses: jurplel/install-qt-action@v4
         with:
-          version: '5.15.2'
+          version: '6.8.*'
+          modules: qtserialport
         
       - name: Git tags
         run: git fetch --prune --unshallow
@@ -140,7 +145,7 @@ jobs:
       - name: Install qt static
         uses: orestonce/install-qt-static@v0.4.3
         with:
-          version: Qt5.15.7-Windows-x86_64-MinGW8.1.0-staticFull-20221104
+          version: Qt6.5.3-Windows-x86_64-MinGW13.2.0-ucrt-staticFull-20240527
 
       - name: Git tags
         run: git fetch --prune --unshallow
