@@ -34,6 +34,7 @@ void airspeed_task(void *parameters) {
         else
             pressure = *parameter.pressure;  // Pa
         voltage = voltage_read(parameter.adc_num);
+        if (pressure < 1000) pressure = 101325;
         air_density = pressure / (AIR_CONSTANT_R * (temperature + 273.15));                // kg/m3
         delta_pressure = ((voltage + parameter.offset) / parameter.vcc - 0.5) * 5 * 1000;  // Pa
         // Formula: speed = sqrt(2*P/air_dens) -> Units: P (Pa=N/m2), air_dens (kg/m3), N (kg*m/s2) -> speed =
