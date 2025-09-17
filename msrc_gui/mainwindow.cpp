@@ -102,6 +102,7 @@ void MainWindow::generateCircuit(QLabel *label) {
     QPainter *paint = new QPainter(pix);
     QImage image;
 
+    paint->fillRect(0,0,label->width(),label->height(), label->palette().color(QPalette::Base));
     image.load(":/res/rp2040_zero.png");
     paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
 
