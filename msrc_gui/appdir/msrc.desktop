@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
 Name=MSRC
-Exec=AppRun %F
-Icon=default
+Exec=msrc_gui %F
+Icon=msrc
 Comment=Sensors for RC
 Terminal=false
 Categories = Utility;
