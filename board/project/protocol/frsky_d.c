@@ -154,7 +154,7 @@ static uint16_t format(uint8_t data_id, float value) {
         uint8_t deg = coord;
         uint8_t min = (coord - deg) * 60;
         char buf[7];
-        sprintf(buf, "%u%.2u", deg, min); // (ddd)mm
+        sprintf(buf, "%u%02u", deg, min); // (ddd)mm
         return atoi(buf);
     }
 
