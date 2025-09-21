@@ -154,7 +154,7 @@ static uint16_t format(uint8_t data_id, float value) {
         uint8_t deg = coord;
         uint8_t min = (coord - deg) * 60;
         char buf[7];
-        sprintf(buf, "%d%d", deg, min);
+        sprintf(buf, "%u%.2u", deg, min); // (ddd)mm
         return atoi(buf);
     }
 
@@ -169,19 +169,19 @@ static uint16_t format(uint8_t data_id, float value) {
     }
 
     if (data_id == FRSKY_D_GPS_YEAR_ID) {
-        return value / 10000;
+        return ((uint)value % 100) + 2000; // ddmmyy -> yyyy
     }
 
-    if (data_id == FRSKY_D_GPS_DAY_MONTH_ID) {
-        return value - (uint32_t)(value / 10000) * 10000;
-    }
-
-    if (data_id == FRSKY_D_GPS_HOUR_MIN_ID) {
+    if (data_id == FRSKY_D_GPS_DAY_MONTH_ID) { // ddmmyy -> ddmm
         return value / 100;
     }
 
-    if (data_id == FRSKY_D_GPS_SEC_ID) {
-        return value - (uint32_t)(value / 100) * 100;
+    if (data_id == FRSKY_D_GPS_HOUR_MIN_ID) { // hhmmss -> hhmm
+        return value / 100;
+    }
+
+    if (data_id == FRSKY_D_GPS_SEC_ID) { // hhmmss -> ss
+        return (uint)value % 100;
     }
 
     if (data_id == FRSKY_D_CURRENT_ID || data_id == FRSKY_D_VFAS_ID) return round(value * 10);
