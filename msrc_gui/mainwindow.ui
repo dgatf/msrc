@@ -30,7 +30,7 @@
       <item>
        <layout class="QVBoxLayout" name="vlLeft">
         <property name="sizeConstraint">
-         <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+         <enum>QLayout::SetDefaultConstraint</enum>
         </property>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -82,7 +82,7 @@
            <attribute name="title">
             <string>Receiver</string>
            </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <layout class="QVBoxLayout" name="verticalLayout">
             <item>
              <widget class="QScrollArea" name="scrollArea">
               <property name="widgetResizable">
@@ -92,386 +92,230 @@
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>0</y>
+                 <y>-307</y>
                  <width>581</width>
-                 <height>724</height>
+                 <height>713</height>
                 </rect>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_5">
-                <item>
-                 <widget class="QGroupBox" name="gbReceiver">
+               <layout class="QGridLayout" name="gridLayout_14">
+                <item row="5" column="0">
+                 <widget class="QLabel" name="lbSensorId">
                   <property name="enabled">
                    <bool>true</bool>
                   </property>
-                  <property name="minimumSize">
+                  <property name="text">
+                   <string>Sensor ID</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="9" column="0">
+                 <widget class="QLabel" name="lbStopbits">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Stop bits</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QCheckBox" name="cbFPortInverted">
+                  <property name="text">
+                   <string>Inverted</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="12" column="0">
+                 <widget class="QCheckBox" name="cbInverted">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Inverted</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QCheckBox" name="cbAlternativePacket">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Alternative packet</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="1">
+                 <widget class="QComboBox" name="cbBaudrate">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="editable">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="11" column="1">
+                 <widget class="QSpinBox" name="sbTimeout">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="maximum">
+                   <number>100</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QCheckBox" name="cbAlternativeCoordinates">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Alternative coordinates</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="0">
+                 <widget class="QLabel" name="lbBaudrate">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Baudrate</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="11" column="0">
+                 <widget class="QLabel" name="lbTimeout">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Timeout (ms)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Protocol</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="1">
+                 <widget class="QComboBox" name="cbSerialMonitorGpio"/>
+                </item>
+                <item row="10" column="1">
+                 <widget class="QComboBox" name="cbParity">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="10" column="0">
+                 <widget class="QLabel" name="lbParity">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Parity</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="13" column="1">
+                 <widget class="QComboBox" name="cbSerialFormat"/>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QCheckBox" name="cbClockStretch">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Clock stretch</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="1">
+                 <widget class="QSpinBox" name="sbSensorId">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <number>30</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="cbReceiver">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="0">
+                 <widget class="QLabel" name="lbSerialMonitorGpio">
+                  <property name="text">
+                   <string>GPIO</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="9" column="1">
+                 <widget class="QComboBox" name="cbStopbits">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="15" column="0">
+                 <spacer name="verticalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
                    <size>
-                    <width>0</width>
-                    <height>0</height>
+                    <width>20</width>
+                    <height>40</height>
                    </size>
                   </property>
-                  <property name="title">
-                   <string>Receiver</string>
+                 </spacer>
+                </item>
+                <item row="14" column="0" colspan="2">
+                 <widget class="QGroupBox" name="gbRate">
+                  <property name="enabled">
+                   <bool>true</bool>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_2">
+                  <property name="title">
+                   <string>Refresh rate (ms)</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_13">
                    <item row="4" column="0">
-                    <widget class="QLabel" name="lbSensorId">
+                    <widget class="QLabel" name="label_25">
                      <property name="enabled">
                       <bool>true</bool>
                      </property>
                      <property name="text">
-                      <string>Sensor ID</string>
+                      <string>GPS</string>
                      </property>
                     </widget>
                    </item>
                    <item row="6" column="0">
-                    <widget class="QLabel" name="lbBaudrate">
+                    <widget class="QLabel" name="label_28">
                      <property name="enabled">
                       <bool>true</bool>
                      </property>
                      <property name="text">
-                      <string>Baudrate</string>
+                      <string>Vario</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="9" column="0">
-                    <widget class="QLabel" name="lbTimeout">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="text">
-                      <string>Timeout (ms)</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QCheckBox" name="cbAlternativeCoordinates">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="text">
-                      <string>Alternative coordinates</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="1">
-                    <widget class="QComboBox" name="cbBaudrate">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="editable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="12" column="0" colspan="2">
-                    <widget class="QGroupBox" name="gbRate">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="title">
-                      <string>Refresh rate (ms)</string>
-                     </property>
-                     <layout class="QGridLayout" name="gridLayout_5">
-                      <item row="0" column="1">
-                       <widget class="QSpinBox" name="sbRpmRate">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>2000</number>
-                        </property>
-                        <property name="singleStep">
-                         <number>1</number>
-                        </property>
-                        <property name="value">
-                         <number>100</number>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="4" column="0">
-                       <widget class="QLabel" name="label_25">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="text">
-                         <string>GPS</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="5" column="0">
-                       <widget class="QLabel" name="label_5">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="text">
-                         <string>Consumption</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="6" column="0">
-                       <widget class="QLabel" name="label_28">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="text">
-                         <string>Vario</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="2" column="0">
-                       <widget class="QLabel" name="label_18">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="text">
-                         <string>Current</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="2" column="1">
-                       <widget class="QSpinBox" name="sbCurrentRate">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>2000</number>
-                        </property>
-                        <property name="singleStep">
-                         <number>1</number>
-                        </property>
-                        <property name="value">
-                         <number>100</number>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="5" column="1">
-                       <widget class="QSpinBox" name="sbConsumptionRate">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>2000</number>
-                        </property>
-                        <property name="singleStep">
-                         <number>1</number>
-                        </property>
-                        <property name="value">
-                         <number>100</number>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="3" column="0">
-                       <widget class="QLabel" name="label_19">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="text">
-                         <string>Temperature</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="7" column="1">
-                       <widget class="QSpinBox" name="sbAirspeedRate">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>2000</number>
-                        </property>
-                        <property name="singleStep">
-                         <number>1</number>
-                        </property>
-                        <property name="value">
-                         <number>100</number>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="7" column="0">
-                       <widget class="QLabel" name="label_30">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="text">
-                         <string>Airspeed</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="0" column="0">
-                       <widget class="QLabel" name="label_16">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="text">
-                         <string>RPM</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="4" column="1">
-                       <widget class="QSpinBox" name="sbGpsRate">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>2000</number>
-                        </property>
-                        <property name="singleStep">
-                         <number>1</number>
-                        </property>
-                        <property name="value">
-                         <number>100</number>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="QSpinBox" name="sbVoltageRate">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>2000</number>
-                        </property>
-                        <property name="singleStep">
-                         <number>1</number>
-                        </property>
-                        <property name="value">
-                         <number>100</number>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="6" column="1">
-                       <widget class="QSpinBox" name="sbVarioRate">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>2000</number>
-                        </property>
-                        <property name="singleStep">
-                         <number>1</number>
-                        </property>
-                        <property name="value">
-                         <number>100</number>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="3" column="1">
-                       <widget class="QSpinBox" name="sbTemperatureRate">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="minimum">
-                         <number>1</number>
-                        </property>
-                        <property name="maximum">
-                         <number>2000</number>
-                        </property>
-                        <property name="singleStep">
-                         <number>1</number>
-                        </property>
-                        <property name="value">
-                         <number>100</number>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="0">
-                       <widget class="QLabel" name="label_17">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="text">
-                         <string>Voltage</string>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                   <item row="7" column="0">
-                    <widget class="QLabel" name="lbStopbits">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="text">
-                      <string>Stop bits</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="13" column="0">
-                    <spacer name="verticalSpacer_3">
-                     <property name="orientation">
-                      <enum>Qt::Orientation::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="11" column="1">
-                    <widget class="QComboBox" name="cbSerialFormat"/>
-                   </item>
-                   <item row="5" column="1">
-                    <widget class="QComboBox" name="cbSerialMonitorGpio"/>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QComboBox" name="cbReceiver">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="8" column="0">
-                    <widget class="QLabel" name="lbParity">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="text">
-                      <string>Parity</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="7" column="1">
-                    <widget class="QComboBox" name="cbStopbits">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="9" column="1">
-                    <widget class="QSpinBox" name="sbTimeout">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="maximum">
-                      <number>100</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QSpinBox" name="sbSensorId">
+                   <item row="2" column="1">
+                    <widget class="QSpinBox" name="sbCurrentRate">
                      <property name="enabled">
                       <bool>true</bool>
                      </property>
@@ -479,77 +323,235 @@
                       <number>1</number>
                      </property>
                      <property name="maximum">
-                      <number>30</number>
+                      <number>2000</number>
+                     </property>
+                     <property name="singleStep">
+                      <number>1</number>
+                     </property>
+                     <property name="value">
+                      <number>100</number>
                      </property>
                     </widget>
                    </item>
                    <item row="0" column="0">
-                    <widget class="QLabel" name="label">
+                    <widget class="QLabel" name="label_16">
                      <property name="enabled">
                       <bool>true</bool>
                      </property>
                      <property name="text">
-                      <string>Protocol</string>
+                      <string>RPM</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_18">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="text">
+                      <string>Current</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="7" column="0">
+                    <widget class="QLabel" name="label_30">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="text">
+                      <string>Airspeed</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="1">
+                    <widget class="QSpinBox" name="sbVarioRate">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>2000</number>
+                     </property>
+                     <property name="singleStep">
+                      <number>1</number>
+                     </property>
+                     <property name="value">
+                      <number>100</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QSpinBox" name="sbVoltageRate">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>2000</number>
+                     </property>
+                     <property name="singleStep">
+                      <number>1</number>
+                     </property>
+                     <property name="value">
+                      <number>100</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QSpinBox" name="sbRpmRate">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>2000</number>
+                     </property>
+                     <property name="singleStep">
+                      <number>1</number>
+                     </property>
+                     <property name="value">
+                      <number>100</number>
                      </property>
                     </widget>
                    </item>
                    <item row="3" column="0">
-                    <widget class="QCheckBox" name="cbAlternativePacket">
+                    <widget class="QLabel" name="label_19">
                      <property name="enabled">
                       <bool>true</bool>
                      </property>
                      <property name="text">
-                      <string>Alternative packet</string>
+                      <string>Temperature</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="5" column="0">
-                    <widget class="QLabel" name="lbSerialMonitorGpio">
-                     <property name="text">
-                      <string>GPIO</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="11" column="0">
-                    <widget class="QLabel" name="lbSerialFormat">
-                     <property name="text">
-                      <string>Output format</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="10" column="0">
-                    <widget class="QCheckBox" name="cbInverted">
+                   <item row="7" column="1">
+                    <widget class="QSpinBox" name="sbAirspeedRate">
                      <property name="enabled">
                       <bool>true</bool>
                      </property>
-                     <property name="text">
-                      <string>Inverted</string>
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>2000</number>
+                     </property>
+                     <property name="singleStep">
+                      <number>1</number>
+                     </property>
+                     <property name="value">
+                      <number>100</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QSpinBox" name="sbConsumptionRate">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>2000</number>
+                     </property>
+                     <property name="singleStep">
+                      <number>1</number>
+                     </property>
+                     <property name="value">
+                      <number>100</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QSpinBox" name="sbGpsRate">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>2000</number>
+                     </property>
+                     <property name="singleStep">
+                      <number>1</number>
+                     </property>
+                     <property name="value">
+                      <number>100</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QSpinBox" name="sbTemperatureRate">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>2000</number>
+                     </property>
+                     <property name="singleStep">
+                      <number>1</number>
+                     </property>
+                     <property name="value">
+                      <number>100</number>
                      </property>
                     </widget>
                    </item>
                    <item row="1" column="0">
-                    <widget class="QCheckBox" name="cbClockStretch">
+                    <widget class="QLabel" name="label_17">
                      <property name="enabled">
                       <bool>true</bool>
                      </property>
                      <property name="text">
-                      <string>Clock stretch</string>
+                      <string>Voltage</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="8" column="1">
-                    <widget class="QComboBox" name="cbParity">
+                   <item row="5" column="0">
+                    <widget class="QLabel" name="label_5">
                      <property name="enabled">
                       <bool>true</bool>
+                     </property>
+                     <property name="text">
+                      <string>Consumption</string>
                      </property>
                     </widget>
                    </item>
                   </layout>
                  </widget>
                 </item>
+                <item row="13" column="0">
+                 <widget class="QLabel" name="lbSerialFormat">
+                  <property name="text">
+                   <string>Output format</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>
@@ -569,7 +571,7 @@
                  <x>0</x>
                  <y>0</y>
                  <width>581</width>
-                 <height>1943</height>
+                 <height>1953</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -1169,9 +1171,6 @@
                         <property name="text">
                          <string>Multiplier</string>
                         </property>
-                        <property name="alignment">
-                         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-                        </property>
                        </widget>
                       </item>
                       <item row="1" column="0">
@@ -1273,9 +1272,6 @@
                         </property>
                         <property name="text">
                          <string>Sensitivity (mV/A)</string>
-                        </property>
-                        <property name="alignment">
-                         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
                         </property>
                        </widget>
                       </item>
@@ -1647,7 +1643,7 @@
       <item>
        <layout class="QVBoxLayout" name="vlRight">
         <property name="sizeConstraint">
-         <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+         <enum>QLayout::SetDefaultConstraint</enum>
         </property>
         <item>
          <widget class="QTabWidget" name="tbViews">
@@ -1666,9 +1662,6 @@
              <spacer name="verticalSpacer_2">
               <property name="enabled">
                <bool>true</bool>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Orientation::Vertical</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -1704,9 +1697,6 @@
              <spacer name="verticalSpacer">
               <property name="enabled">
                <bool>true</bool>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Orientation::Vertical</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>

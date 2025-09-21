@@ -98,7 +98,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::generateCircuit(QLabel *label) {
-    QSize *size = new QSize(label->width(), label->height());
+    QSize *size = new QSize(label->width() - 10, label->height()-10);
     QPixmap *pix = new QPixmap(*size);
     QPainter *paint = new QPainter(pix);
     QImage image;
@@ -545,6 +545,10 @@ void MainWindow::setUiFromConfig() {
     else
         ui->cbSpeedUnitsGps->setCurrentIndex(1);
 
+    // FPort
+
+    ui->cbFPortInverted->setChecked(config.fport_inverted);
+
     // HW V4/V5 parameters
 
     ui->cbInitDelay->setChecked(config.enable_esc_hw4_init_delay);
@@ -744,6 +748,10 @@ void MainWindow::getConfigFromUi() {
 
     config.ibus_alternative_coordinates = ui->cbAlternativeCoordinates->isChecked();
 
+    // FPort
+
+    config.fport_inverted = ui->cbFPortInverted->isChecked();
+
     // HW V4/V5 parameters
 
     config.enable_esc_hw4_init_delay = ui->cbInitDelay->isChecked();
@@ -878,6 +886,12 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->gbRate->setVisible(true);
     } else {
         ui->gbRate->setVisible(false);
+    }
+
+    if (arg1 == "Frsky FPort") {
+        ui->cbFPortInverted->setVisible(true);
+    } else {
+        ui->cbFPortInverted->setVisible(false);
     }
 
     if (arg1 == "Frsky Smartport") {
