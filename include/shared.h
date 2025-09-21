@@ -20,7 +20,8 @@ typedef enum rx_protocol_t : uint8_t {
     RX_CRSF,
     RX_HOTT,
     RX_SANWA,
-    RX_JR_PROPO
+    RX_JR_PROPO,
+    RX_FPORT
 } rx_protocol_t;
 
 typedef enum esc_protocol_t : uint8_t {
@@ -63,7 +64,8 @@ typedef enum rx_protocol_t {
     RX_CRSF,
     RX_HOTT,
     RX_SANWA,
-    RX_JR_PROPO
+    RX_JR_PROPO,
+    RX_FPORT
 } rx_protocol_t;
 
 typedef enum esc_protocol_t {

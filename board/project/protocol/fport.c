@@ -1,4 +1,4 @@
-#include "smartport.h"
+#include "fport.h"
 
 #include <math.h>
 #include <semphr.h>
@@ -27,24 +27,19 @@
 #include "ntc.h"
 #include "pwm_out.h"
 #include "smart_esc.h"
+#include "smartport.h"
 #include "stdlib.h"
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
 
-#define AIRCR_Register (*((volatile uint32_t *)(PPB_BASE + 0x0ED0C)))
-#define POLL_LENGHT 2
-#define PACKET_LENGHT 10
+#define PACKET_LENGHT 12
 
 static SemaphoreHandle_t semaphore_sensor = NULL;
 static bool is_maintenance_mode = false;
-static const uint8_t sensor_id_matrix[29] = {0x00, 0xA1, 0x22, 0x83, 0xE4, 0x45, 0xC6, 0x67, 0x48, 0xE9,
-                                             0x6A, 0xCB, 0xAC, 0xD,  0x8E, 0x2F, 0xD0, 0x71, 0xF2, 0x53,
-                                             0x34, 0x95, 0x16, 0xB7, 0x98, 0x39, 0xBA, 0x1B, 0x0};
-static TaskHandle_t packet_task_handle;
-static QueueHandle_t packet_queue_handle;
 static config_t *config_lua;
 
+static void process(smartport_parameters_t *parameter);
 static void sensor_task(void *parameters);
 static void sensor_void_task(void *parameters);
 static void sensor_double_task(void *parameters);
@@ -52,661 +47,23 @@ static void sensor_coordinates_task(void *parameters);
 static void sensor_datetime_task(void *parameters);
 static void sensor_cell_task(void *parameters);
 static void sensor_gpio_task(void *parameters);
-static void packet_task(void *parameters);
-static void process(smartport_parameters_t *parameter);
 static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value);
 static void set_config(smartport_parameters_t *parameter);
-static uint8_t sensor_id_to_crc(uint8_t sensor_id);
-static uint8_t sensor_crc_to_id(uint8_t sensor_id_crc);
-static int64_t reboot_callback(alarm_id_t id, void *user_data);
 
-void smartport_task(void *parameters) {
+void fport_task(void *parameters) {
     smartport_parameters_t parameter;
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
-    uart0_begin(57600, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, true, true);
+    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
     semaphore_sensor = xSemaphoreCreateBinary();
     xSemaphoreTake(semaphore_sensor, 0);
     set_config(&parameter);
-    packet_queue_handle = xQueueCreate(32, sizeof(smartport_packet_t));
-    xTaskCreate(packet_task, "packet_task", STACK_SMARTPORT_PACKET_TASK, (void *)&parameter.data_id, 3,
-                &packet_task_handle);
-    xQueueSendToBack(context.tasks_queue_handle, packet_task_handle, 0);
-    // TaskHandle_t task_handle;
-    // xTaskCreate(sensor_void_task, "sensor_void_task", STACK_SMARTPORT_SENSOR_VOID_TASK, NULL, 2, &task_handle);
-    // xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-    debug("\nSmartport init");
+    debug("\nFport init");
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process(&parameter);
     }
 }
-
-smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, uint8_t sensor_id, uint8_t frame_id,
-                                            uint16_t data_id, uint32_t value) {
-    smartport_packet_t packet = {0};
-    // set maintenance mode on
-    if (frame_id == 0x21 && (data_id == 0xFFFF || data_id == parameter->data_id) && value == 0x80) {
-        is_maintenance_mode = true;
-        debug("\nSmartport (%u). Maintenance mode ON ", uxTaskGetStackHighWaterMark(NULL));
-        return packet;
-    }
-
-    // set maintenance mode off
-    if (frame_id == 0x20 && (data_id == 0xFFFF || data_id == parameter->data_id) && value == 0x80) {
-        is_maintenance_mode = false;
-        debug("\nSmartport (%u). Maintenance mode OFF ", uxTaskGetStackHighWaterMark(NULL));
-        return packet;
-    }
-
-    // send sensor id
-    if (frame_id == 0x30 && data_id == parameter->data_id && value == 0x01) {
-        smartport_packet_t packet;
-        packet.value = (parameter->sensor_id - 1) << 8 | 0x01;
-        packet.frame_id = 0x32;
-        packet.data_id = parameter->data_id;
-        debug("\nSmartport (%u). Send sensorId %i (0x%X)", uxTaskGetStackHighWaterMark(NULL), parameter->sensor_id,
-              sensor_id_to_crc(parameter->sensor_id));
-        return packet;
-    }
-
-    // send rate
-    if (frame_id == 0x30 && data_id == parameter->data_id && value == 0x22) {
-        smartport_packet_t packet;
-        packet.value = 0x122;
-        packet.frame_id = 0x32;
-        packet.data_id = parameter->data_id;
-        debug("\nSmartport (%u). Send rate %i (0x%X)", uxTaskGetStackHighWaterMark(NULL), packet.value >> 8,
-              packet.value);
-        return packet;
-    }
-
-    // send version
-    if (frame_id == 0x30 && data_id == parameter->data_id && value == 0x0C) {
-        packet.value = 0;
-        char version[] = PROJECT_VERSION;
-        memmove(version, version + 1, strlen(version));
-        char *token;
-        token = strtok(version, " . ");
-        while (token != NULL) {
-            packet.value = packet.value << 4 | atoi(token);
-            token = strtok(NULL, " . ");
-        }
-        packet.value = packet.value >> 4;
-        packet.value = (packet.value << 8) | 0xC;
-        packet.frame_id = 0x32;
-        packet.data_id = parameter->data_id;
-        debug("\nSmartport (%u). Send version %s (0x%X)", uxTaskGetStackHighWaterMark(NULL), PROJECT_VERSION,
-              packet.value);
-        return packet;
-    }
-
-    // change sensor id
-    if (frame_id == 0x31 && data_id == parameter->data_id && (uint8_t)value == 0x01) {
-        static bool is_changed = false;
-        if (is_changed == true) return packet;
-        uint8_t sensor_id = (value >> 8) + 1;
-        parameter->sensor_id = sensor_id;
-        config_lua = malloc(sizeof(config_t));
-        memcpy(config_lua, config_read(), sizeof(config_t));
-        config_lua->smartport_sensor_id = sensor_id;
-        config_write(config_lua);
-        sleep_ms(10);
-        free(config_lua);
-        is_changed = true;
-        debug("\nSmartport (%u). Change sensorId %i (0x%X)", uxTaskGetStackHighWaterMark(NULL),
-              config_lua->smartport_sensor_id, sensor_id_to_crc(config_lua->smartport_sensor_id));
-        return packet;
-    }
-
-    // send config
-    if (frame_id == 0x30 && (uint8_t)value == 0x01) {
-        config_t *config = config_read();
-        uint8_t frame_id_send = 0x32;
-        bool send = true;
-        switch (data_id) {
-            case 0x5101: {
-                packet.value = 0;
-                char version[] = PROJECT_VERSION;
-                memmove(version, version + 1, strlen(version));
-                char *token;
-                token = strtok(version, " . ");
-                while (token != NULL) {
-                    packet.value = packet.value << 8 | atoi(token);
-                    token = strtok(NULL, " . ");
-                }
-                break;
-            }
-            case 0x5103:
-                packet.value = config->esc_protocol;
-                break;
-            case 0x5104:
-                packet.value = config->enable_gps;
-                break;
-            case 0x5105:
-                packet.value = config->gps_baudrate;
-                break;
-            case 0x5106:
-                packet.value = config->enable_analog_voltage;
-                break;
-            case 0x5107:
-                packet.value = config->enable_analog_current;
-                break;
-            case 0x5108:
-                packet.value = config->enable_analog_ntc;
-                break;
-            case 0x5109:
-                packet.value = config->enable_analog_airspeed;
-                break;
-            case 0x510A:
-                packet.value = config->i2c_module;
-                break;
-            case 0x510B:
-                packet.value = config->i2c_address;
-                break;
-            case 0x510C:
-                packet.value = ELEMENTS(config->alpha_rpm);
-                break;
-            case 0x510D:
-                packet.value = ELEMENTS(config->alpha_voltage);
-                break;
-            case 0x510E:
-                packet.value = ELEMENTS(config->alpha_current);
-                break;
-            case 0x510F:
-                packet.value = ELEMENTS(config->alpha_temperature);
-                break;
-            case 0x5110:
-                packet.value = ELEMENTS(config->alpha_vario);
-                break;
-            case 0x5111:
-                packet.value = ELEMENTS(config->alpha_airspeed);
-                break;
-            case 0x513A:
-                packet.value = config->refresh_rate_rpm;
-                break;
-            case 0x5113:
-                packet.value = config->refresh_rate_voltage;
-                break;
-            case 0x5114:
-                packet.value = config->refresh_rate_current;
-                break;
-            case 0x5115:
-                packet.value = config->refresh_rate_temperature;
-                break;
-            case 0x5116:
-                packet.value = config->refresh_rate_gps;
-                break;
-            case 0x5117:
-                packet.value = config->refresh_rate_consumption;
-                break;
-            case 0x5118:
-                packet.value = config->refresh_rate_vario;
-                break;
-            case 0x5119:
-                packet.value = config->refresh_rate_airspeed;
-                break;
-            case 0x511A:
-                packet.value = config->refresh_rate_default;
-                break;
-            case 0x511B:
-                packet.value = config->analog_voltage_multiplier * 100;
-                break;
-            case 0x511C:
-                packet.value = config->analog_current_type;
-                break;
-            case 0x511D:
-                packet.value = config->gpio_interval;
-                break;
-            case 0x511E:
-                packet.value = config->analog_current_quiescent_voltage;
-                break;
-            case 0x5120:
-                packet.value = config->analog_current_offset * 100;
-                break;
-            case 0x5121:
-                packet.value = config->analog_current_autoffset;
-                break;
-            case 0x5122:
-                packet.value = config->pairOfPoles;
-                break;
-            case 0x5123:
-                packet.value = config->mainTeeth;
-                break;
-            case 0x5124:
-                packet.value = config->pinionTeeth;
-                break;
-            case 0x5125:
-                packet.value = config->rpm_multiplier;
-                break;
-            case 0x5126:
-                packet.value = config->bmp280_filter;
-                break;
-            case 0x5127:
-                packet.value = config->enable_pwm_out;
-                break;
-            case 0x5128:
-                packet.value = config->smartport_sensor_id;
-                break;
-            case 0x512A:
-                packet.value = config->vario_auto_offset;
-                break;
-            case 0x512D:
-                packet.value = config->enable_esc_hw4_init_delay;
-                break;
-            case 0x512E:
-                packet.value = config->esc_hw4_init_delay_duration;
-                break;
-            case 0x512F:
-                packet.value = config->esc_hw4_current_thresold;
-                break;
-            case 0x5130:
-                packet.value = config->esc_hw4_current_max;
-                break;
-            case 0x5131:
-                packet.value = config->esc_hw4_divisor * 100;
-                break;
-            case 0x5132:
-                packet.value = config->esc_hw4_current_multiplier * 100;
-                break;
-            case 0x5135:
-                packet.value = config->esc_hw4_is_manual_offset;
-                break;
-            case 0x5136:
-                packet.value = config->analog_rate;
-                break;
-            case 0x5138:
-                packet.value = config->gpio_mask;
-                break;
-            case 0x5139:
-                packet.value = config->esc_hw4_offset;
-                break;
-            case 0x513F:
-                packet.value = config->airspeed_offset;
-                break;
-            case 0x5140:
-                packet.value = config->airspeed_vcc * 100;
-                break;
-            case 0x5141:
-                packet.value = config->fuel_flow_ml_per_pulse * 10000;
-                break;
-            case 0x5142:
-                packet.value = config->enable_fuel_flow;
-                break;
-            case 0x5143:
-                packet.value = config->xgzp68xxd_k;
-                break;
-            case 0x5144:
-                packet.value = config->enable_fuel_pressure;
-                break;
-            case 0x5145:
-                packet.value = config->smart_esc_calc_consumption;
-                break;
-            case 0x5147:
-                packet.value = config->gps_rate;
-                break;
-            case 0x5149:
-                packet.value = config->gps_protocol;
-                break;
-            default:
-                send = false;
-                debug("\nSmartport. Unknown request frameId 0x%X dataId 0x%X", frame_id, data_id);
-                break;
-        }
-        if (send) {
-            packet.frame_id = 0x32;
-            packet.data_id = data_id;
-            return packet;
-        }
-    }
-
-    // receive config
-    if (frame_id == 0x31 && data_id == 0x5201 && value == 0) {
-        config_lua = malloc(sizeof(config_t));
-        memcpy(config_lua, config_read(), sizeof(config_t));
-        debug("\nSmartport. Start saving...");
-    }
-    if (frame_id == 0x31 && data_id == 0x5201 && value == 1) {
-        config_write(config_lua);
-        sleep_ms(10);
-        free(config_lua);
-        debug("\nSmartport. Complete save config");
-    }
-    if (frame_id == 0x31) {
-        uint8_t frame_id_send = 0x32;
-        bool write = true;
-        switch (data_id) {
-            case 0x5103:
-                config_lua->esc_protocol = value;
-                break;
-            case 0x5104:
-                config_lua->enable_gps = value;
-                break;
-            case 0x5105:
-                config_lua->gps_baudrate = value;
-                break;
-            case 0x5106:
-                config_lua->enable_analog_voltage = value;
-                break;
-            case 0x5107:
-                config_lua->enable_analog_current = value;
-                break;
-            case 0x5108:
-                config_lua->enable_analog_ntc = value;
-                break;
-            case 0x5109:
-                config_lua->enable_analog_airspeed = value;
-                break;
-            case 0x510A:
-                config_lua->i2c_module = value;
-                break;
-            case 0x510B:
-                config_lua->i2c_address = value;
-                break;
-            case 0x510C:
-                config_lua->alpha_rpm = value;
-                break;
-            case 0x510D:
-                config_lua->alpha_voltage = value;
-                break;
-            case 0x510E:
-                config_lua->alpha_current = value;
-                break;
-            case 0x510F:
-                config_lua->alpha_temperature = value;
-                break;
-            case 0x5110:
-                config_lua->alpha_vario = value;
-                break;
-            case 0x5111:
-                config_lua->alpha_airspeed = value;
-                break;
-            case 0x513A:
-                config_lua->refresh_rate_rpm = value;
-                break;
-            case 0x5113:
-                config_lua->refresh_rate_voltage = value;
-                break;
-            case 0x5114:
-                config_lua->refresh_rate_current = value;
-                break;
-            case 0x5115:
-                config_lua->refresh_rate_temperature = value;
-                break;
-            case 0x5116:
-                config_lua->refresh_rate_gps = value;
-                break;
-            case 0x5117:
-                config_lua->refresh_rate_consumption = value;
-                break;
-            case 0x5118:
-                config_lua->refresh_rate_vario = value;
-                break;
-            case 0x5119:
-                config_lua->refresh_rate_airspeed = value;
-                break;
-            case 0x511A:
-                config_lua->refresh_rate_default = value;
-                break;
-            case 0x511B:
-                config_lua->analog_voltage_multiplier = value / 100;
-                break;
-            case 0x511C:
-                config_lua->analog_current_type = value;
-                break;
-            case 0x511D:
-                config_lua->gpio_interval = value;
-                break;
-            case 0x511E:
-                config_lua->analog_current_quiescent_voltage = value;
-                break;
-            case 0x511F:
-                config_lua->analog_current_multiplier = value;
-                break;
-            case 0x5120:
-                config_lua->analog_current_offset = value / 100;
-                break;
-            case 0x5121:
-                config_lua->analog_current_autoffset = value;
-                break;
-            case 0x5122:
-                config_lua->pairOfPoles = value;
-                break;
-            case 0x5123:
-                config_lua->mainTeeth = value;
-                break;
-            case 0x5124:
-                config_lua->pinionTeeth = value;
-                break;
-            case 0x5125:
-                config_lua->rpm_multiplier = value;
-                break;
-            case 0x5126:
-                config_lua->bmp280_filter = value;
-                break;
-            case 0x5127:
-                config_lua->enable_pwm_out = value;
-                break;
-            case 0x5128:
-                config_lua->smartport_sensor_id = value;
-                break;
-            case 0x5129:
-                config_lua->smartport_data_id = value;
-                break;
-            case 0x512A:
-                config_lua->vario_auto_offset = value;
-                break;
-            case 0x512D:
-                config_lua->enable_esc_hw4_init_delay = value;
-                break;
-            case 0x512E:
-                config_lua->esc_hw4_init_delay_duration = value;
-                break;
-            case 0x512F:
-                config_lua->esc_hw4_current_thresold = value;
-                break;
-            case 0x5130:
-                config_lua->esc_hw4_current_max = value;
-                break;
-            case 0x5131:
-                config_lua->esc_hw4_divisor = value / 100;
-                break;
-            case 0x5132:
-                config_lua->esc_hw4_current_multiplier = value / 100;
-                break;
-            case 0x5135:
-                config_lua->esc_hw4_is_manual_offset = value;
-                break;
-            case 0x5136:
-                config_lua->analog_rate = value;
-                break;
-            case 0x5138:
-                config_lua->gpio_mask = value;
-                break;
-            case 0x5139:
-                config_lua->esc_hw4_offset = value;
-                break;
-            case 0x513F:
-                config_lua->airspeed_offset = value;
-                break;
-            case 0x5140:
-                config_lua->airspeed_vcc = value / 100;
-                break;
-            case 0x5141:
-                config_lua->fuel_flow_ml_per_pulse = value / 10000;
-                break;
-            case 0x5142:
-                config_lua->enable_fuel_flow = value;
-                break;
-            case 0x5143:
-                config_lua->xgzp68xxd_k = value;
-                break;
-            case 0x5144:
-                config_lua->enable_fuel_pressure = value;
-                break;
-            case 0x5145:
-                config_lua->smart_esc_calc_consumption = value;
-                break;
-            case 0x5147:
-                config_lua->gps_rate = value;
-                break;
-            case 0x5149:
-                config_lua->gps_protocol = value;
-                break;
-            default:
-                debug("\nSmartport. Unknown save request. frameId 0x%X dataId 0x%X", frame_id, data_id);
-                break;
-        }
-        debug("\nSmartport. Store config. frameId 0x%X dataId 0x%X value %u", frame_id, data_id, value);
-    }
-    return packet;
-}
-
-int32_t smartport_format(uint16_t data_id, float value) {
-    if ((data_id >= GPS_SPEED_FIRST_ID && data_id <= GPS_SPEED_LAST_ID) ||
-        (data_id >= RBOX_BATT1_FIRST_ID && data_id <= RBOX_BATT2_FIRST_ID))
-        return round(value * 1000);
-
-    if ((data_id >= ALT_FIRST_ID && data_id <= VARIO_LAST_ID) ||
-        (data_id >= VFAS_FIRST_ID && data_id <= VFAS_LAST_ID) ||
-        (data_id >= ACCX_FIRST_ID && data_id <= GPS_ALT_LAST_ID) ||
-        (data_id >= GPS_COURS_FIRST_ID && data_id <= GPS_COURS_LAST_ID) ||
-        (data_id >= A3_FIRST_ID && data_id <= A4_LAST_ID) || data_id == DIY_FIRST_ID + 5)
-        return round(value * 100);
-
-    if ((data_id >= CURR_FIRST_ID && data_id <= CURR_LAST_ID) ||
-        (data_id >= AIR_SPEED_FIRST_ID && data_id <= AIR_SPEED_LAST_ID) || data_id == A1_ID || data_id == A2_ID ||
-        data_id == RXBT_ID)
-        return round(value * 10);
-
-    return round(value);
-}
-
-uint32_t smartport_format_double(uint16_t data_id, float value_l, float value_h) {
-    if ((data_id >= ESC_POWER_FIRST_ID && data_id <= ESC_POWER_LAST_ID) ||
-        (data_id >= SBEC_POWER_FIRST_ID && data_id <= SBEC_POWER_LAST_ID))
-        return (uint32_t)round(value_h * 100) << 16 | (uint16_t)round(value_l * 100);
-
-    if (data_id >= ESC_RPM_CONS_FIRST_ID && data_id <= ESC_RPM_CONS_LAST_ID) {
-        return (uint32_t)round(value_h) << 16 | (uint16_t)round((value_l) / 100);
-    }
-
-    return (uint16_t)round(value_h * 500) << 8 | (uint16_t)value_l;
-}
-
-uint32_t smartport_format_coordinate(coordinate_type_t type, float value) {
-    uint32_t data = 0;
-    if (value < 0) {
-        data |= (uint32_t)1 << 30;
-        value *= -1;
-    }
-    if (type == SMARTPORT_LONGITUDE) {
-        data |= (uint32_t)1 << 31;
-    }
-    data |= (uint32_t)(value * 60 * 10000);  // deg to min * 10000
-    return data;
-}
-
-uint32_t smartport_format_datetime(uint8_t type, uint32_t value) {
-    uint8_t dayHour = value / 10000;
-    uint8_t monthMin = value / 100 - dayHour * 100;
-    uint8_t yearSec = value - (value / 100) * 100;
-    if (type == SMARTPORT_DATE) {
-        return (uint32_t)yearSec << 24 | (uint32_t)monthMin << 16 | dayHour << 8 | 0xFF;
-    }
-    return (uint32_t)dayHour << 24 | (uint32_t)monthMin << 16 | yearSec << 8;
-}
-
-uint32_t smartport_format_cell(uint8_t cell_index, float value) {
-    return cell_index | (uint16_t)round(value * 500) << 8;
-}
-
-uint8_t smartport_get_crc(uint8_t *data, uint len) {
-    uint16_t crc = 0;
-    for (uint8_t i = 2; i < len; i++) {
-        crc += data[i];
-        crc += crc >> 8;
-        crc &= 0x00FF;
-    }
-    return 0xFF - (uint8_t)crc;
-}
-
-void smartport_send_byte(uint8_t c, uint16_t *crcp) {
-    if (crcp != NULL) {
-        uint16_t crc = *crcp;
-        crc += c;
-        crc += crc >> 8;
-        crc &= 0x00FF;
-        *crcp = crc;
-    }
-    if (c == 0x7D || c == 0x7E) {
-        uart0_write(c);
-        c ^= 0x20;
-    }
-    uart0_write(c);
-    debug("0x%X ", c);
-}
-
-static void process(smartport_parameters_t *parameter) {
-    uint lenght = uart0_available();
-    if (lenght) {
-        uint8_t data[lenght];
-        if (context.debug == 2 && lenght != 2) {
-            printf("\n");
-            debug_buffer2(data, lenght, "0x%X ");
-        }
-        uart0_read_bytes(data, lenght);
-
-        // send telemetry
-        if (data[0] == 0x7E && data[1] == sensor_id_to_crc(parameter->sensor_id) && lenght == POLL_LENGHT &&
-            !is_maintenance_mode) {
-            debug("\nSmartport (%u) < ", uxTaskGetStackHighWaterMark(NULL));
-            debug_buffer(data, POLL_LENGHT, "0x%X ");
-            xSemaphoreGive(semaphore_sensor);
-            vTaskDelay(4 / portTICK_PERIOD_MS);
-            xSemaphoreTake(semaphore_sensor, 0);
-        }
-
-        // send packet
-        if (data[0] == 0x7E && data[1] == sensor_id_to_crc(parameter->sensor_id) && lenght == POLL_LENGHT &&
-            is_maintenance_mode) {
-            debug("\nSmartport (%u) < ", uxTaskGetStackHighWaterMark(NULL));
-            debug_buffer(data, POLL_LENGHT, "0x%X ");
-            if (uxQueueMessagesWaiting(packet_queue_handle)) xTaskNotifyGive(packet_task_handle);
-        }
-
-        // receive packet
-        if (lenght >= 10) {
-            uint8_t delta = 0;
-            uint i;
-            for (i = 0; i < lenght; i++) {
-                data[i] = data[i + delta];
-                if (data[i] == 0x7D) {
-                    delta++;
-                    data[i] = data[i + delta] ^ 0x20;
-                }
-            }
-            if (i - delta == PACKET_LENGHT) {
-                uint8_t crc = smartport_get_crc(data, PACKET_LENGHT - 1);
-                uint8_t sensor_id = data[1];
-                uint8_t frame_id = data[2];
-                uint16_t data_id = (uint16_t)data[4] << 8 | data[3];
-                // process no telemetry packets
-                if (crc == data[9] && frame_id != 0x10) {
-                    uint value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 | (uint16_t)data[6] << 8 | data[5];
-                    debug("\nSmartport. Received packet (%u) sensorId 0x%X FrameId 0x%X DataId 0x%X Value 0x%X < ",
-                          uxTaskGetStackHighWaterMark(NULL), sensor_id, frame_id, data_id, value);
-                    debug_buffer(data, PACKET_LENGHT, "0x%X ");
-                    smartport_packet_t packet =
-                        smartport_process_packet(parameter, parameter->sensor_id, frame_id, data_id, value);
-                    if (packet.data_id != 0) xQueueSendToBack(packet_queue_handle, &packet, 0);
-                }
-            }
-        }
-    }
-}
-
-static int64_t reboot_callback(alarm_id_t id, void *user_data) { AIRCR_Register = 0x5FA0004; }
 
 static void sensor_task(void *parameters) {
     smartport_sensor_parameters_t parameter = *(smartport_sensor_parameters_t *)parameters;
@@ -831,16 +188,75 @@ static void sensor_cell_individual_task(void *parameters) {
     }
 }
 
-static void packet_task(void *parameters) {
-    uint16_t data_id = *(uint16_t *)parameters;
-    smartport_packet_t packet;
-    while (1) {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        xQueueReceive(packet_queue_handle, &packet, 0);
-        debug("\nSmartport. Packet (%u) > ", uxTaskGetStackHighWaterMark(NULL));
-        send_packet(packet.frame_id, packet.data_id, packet.value);
-        // vTaskDelay(1500 / portTICK_PERIOD_MS);
+static void process(smartport_parameters_t *parameter) {
+    uint lenght = uart0_available();
+    if (lenght > 128 || lenght < 10) return;
+    if (lenght) {
+        uint8_t data[lenght];
+        uart0_read_bytes(data, lenght);
+        if (data[0] == 0x7E && data[1] == 0x19 && data[2] == 0x00) {
+            uint i = 1;
+            while (data[i] != 0x7E) i++;
+            memmove(data, data + i + 1, PACKET_LENGHT);
+        }
+        // send telemetry
+        if (data[0] == 0x7E && data[1] == 0x08 && data[2] == 0x01 && (data[3] == 0x00 || data[3] == 0x10)) {
+            if (!is_maintenance_mode) {
+                debug("\nFport (%u) < ", uxTaskGetStackHighWaterMark(NULL));
+                debug_buffer(data, PACKET_LENGHT, "0x%X ");
+                xSemaphoreGive(semaphore_sensor);
+                vTaskDelay(4 / portTICK_PERIOD_MS);
+                xSemaphoreTake(semaphore_sensor, 0);
+            }
+        }
+        // receive & send packet
+        else if (data[0] == 0x7E && data[1] == 0x08 && data[2] == 0x01) {
+            uint8_t crc = smartport_get_crc(data + 1, PACKET_LENGHT - 1);
+            uint8_t frame_id = data[3];
+            uint16_t data_id = (uint16_t)data[5] << 8 | data[4];
+            if (crc == data[PACKET_LENGHT - 1]) {
+                uint value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 | (uint16_t)data[6] << 8 | data[5];
+                debug("\nFPort. Received packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X < ",
+                      uxTaskGetStackHighWaterMark(NULL), frame_id, data_id, value);
+                debug_buffer(data, 10, "0x%X ");
+                smartport_packet_t packet = smartport_process_packet(parameter, 0, frame_id, data_id, value);
+                if (packet.data_id != 0) {
+                    send_packet(packet.frame_id, packet.data_id, packet.value);
+                    debug("\nFPort. Send packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X",
+                          uxTaskGetStackHighWaterMark(NULL), frame_id, data_id, value);
+                }
+            }
+        }
     }
+}
+
+static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
+    uint16_t crc = 0;
+    uint8_t *u8p;
+    // header
+    uart0_write(0x7E);
+    // len
+    smartport_send_byte(0x08, &crc);
+    // type
+    smartport_send_byte(0x81, &crc);
+    // frame_id
+    smartport_send_byte(frame_id, &crc);
+    // data_id
+    u8p = (uint8_t *)&data_id;
+    smartport_send_byte(u8p[0], &crc);
+    smartport_send_byte(u8p[1], &crc);
+    // value
+    u8p = (uint8_t *)&value;
+    smartport_send_byte(u8p[0], &crc);
+    smartport_send_byte(u8p[1], &crc);
+    smartport_send_byte(u8p[2], &crc);
+    smartport_send_byte(u8p[3], &crc);
+    // crc
+    smartport_send_byte(0xFF - (uint8_t)crc, NULL);
+    // end
+    uart0_write(0x7E);
+    // blink
+    vTaskResume(context.led_task_handle);
 }
 
 static void set_config(smartport_parameters_t *parameter) {
@@ -1302,14 +718,6 @@ static void set_config(smartport_parameters_t *parameter) {
                     3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        // cycles
-        /*parameter_sensor.data_id = DIY_FIRST_ID + 100;
-        parameter_sensor.value = parameter.cycles;
-        parameter_sensor.rate = config->refresh_rate_default;
-        xTaskCreate(sensor_cell_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor,
-                    3, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);*/
     }
     if (config->esc_protocol == ESC_OMP_M4) {
         esc_omp_m4_parameters_t parameter;
@@ -1725,41 +1133,4 @@ static void set_config(smartport_parameters_t *parameter) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-}
-
-static uint8_t sensor_id_to_crc(uint8_t sensor_id) {
-    if (sensor_id < 1 || sensor_id > 28) {
-        return 0;
-    }
-    return sensor_id_matrix[sensor_id - 1];
-}
-
-static uint8_t sensor_crc_to_id(uint8_t sensor_id_crc) {
-    uint8_t cont = 0;
-    while (sensor_id_crc != sensor_id_matrix[cont] && cont < 28) {
-        cont++;
-    }
-    if (cont == 28) return 0;
-    return cont + 1;
-}
-
-static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
-    uint16_t crc = 0;
-    uint8_t *u8p;
-    // frame_id
-    smartport_send_byte(frame_id, &crc);
-    // data_id
-    u8p = (uint8_t *)&data_id;
-    smartport_send_byte(u8p[0], &crc);
-    smartport_send_byte(u8p[1], &crc);
-    // value
-    u8p = (uint8_t *)&value;
-    smartport_send_byte(u8p[0], &crc);
-    smartport_send_byte(u8p[1], &crc);
-    smartport_send_byte(u8p[2], &crc);
-    smartport_send_byte(u8p[3], &crc);
-    // crc
-    smartport_send_byte(0xFF - (uint8_t)crc, NULL);
-    // blink
-    vTaskResume(context.led_task_handle);
 }

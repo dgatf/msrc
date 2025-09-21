@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbGpsBaudrate->setCurrentIndex(5);
     ui->cbReceiver->addItem("Frsky Smartport", RX_SMARTPORT);
     ui->cbReceiver->addItem("Frsky D", RX_FRSKY_D);
+    ui->cbReceiver->addItem("Frsky FPort", RX_FPORT);
     ui->cbReceiver->addItem("Spektrum XBUS", RX_XBUS);
     ui->cbReceiver->addItem("Spektrum SRXL", RX_SRXL);
     ui->cbReceiver->addItem("Spektrum SRXL2", RX_SRXL2);
@@ -873,7 +874,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->cbAlternativePacket->setVisible(false);
     }
 
-    if (arg1 == "Frsky Smartport" || arg1 == "Frsky D") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Frsky D" || arg1 == "Frsky FPort") {
         ui->gbRate->setVisible(true);
     } else {
         ui->gbRate->setVisible(false);
@@ -944,7 +945,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     }
 
     // Fuel meter
-    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" || arg1 == "HOTT") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" || arg1 == "HOTT" || arg1 == "Frsky FPort") {
         ui->gbFuelmeter->setVisible(true);
     } else {
         ui->gbFuelmeter->setVisible(false);
@@ -959,7 +960,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     }
 
     // GPIO
-    if (arg1 == "Frsky Smartport") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Frsky FPort") {
         ui->gbGpio->setVisible(true);
     } else {
         ui->gbGpio->setVisible(false);
