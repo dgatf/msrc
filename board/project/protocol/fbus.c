@@ -33,7 +33,17 @@
 #include "uart_pio.h"
 #include "voltage.h"
 
-#define PACKET_LENGHT 12
+#define DOWNLINK_LENGHT 12
+#define UPLINK_LENGHT 10
+
+typedef struct fbus_packet_t {
+    uint8_t len;
+    uint8_t sensor_id;
+    uint8_t frame_id;
+    uint16_t data_id;
+    uint32_t value;
+    uint8_t crc;
+} __attribute__((packed)) fbus_packet_t;
 
 static SemaphoreHandle_t semaphore_sensor = NULL;
 static bool is_maintenance_mode = false;
@@ -194,30 +204,34 @@ static void process(smartport_parameters_t *parameter) {
     if (lenght) {
         uint8_t data[lenght];
         uart0_read_bytes(data, lenght);
-        if (data[0] == 0x7E && data[2] == 0xFF) { // no byte stuffing
-            memmove(data, data + data[1] + 4, PACKET_LENGHT); // header 3 + footer 1 = 4
-            debug("\nMoved");
+        if (data[0] == 0x7E && data[2] == 0xFF) {                // no byte stuffing
+            memmove(data, data + data[1] + 4, DOWNLINK_LENGHT);  // header 3 + footer 1 = 4
         }
         debug("\nFBUS (%u) < ", uxTaskGetStackHighWaterMark(NULL));
-        debug_buffer(data, PACKET_LENGHT, "0x%X ");
-        debug("\nS ID 0x%X", smartport_sensor_id_to_crc(parameter->sensor_id));
+        debug_buffer(data, DOWNLINK_LENGHT, "0x%X ");
         uint16_t data_id = 8 << data[5] | data[6];
-        uint8_t crc = smartport_get_crc(data + 1, PACKET_LENGHT - 3); // crc from len, size 9
+        uint8_t crc = smartport_get_crc(data + 1, DOWNLINK_LENGHT - 3);  // crc from len, size 9
         // send telemetry
-        if (data[0] == 0x7E && data[1] == 0x08 && data[2] ==  smartport_sensor_id_to_crc(parameter->sensor_id) && (data[3] == 0x00 || data[3] == 0x10) /*&& crc == data[PACKET_LENGHT - 1]*/) {
-            if (!is_maintenance_mode) {
-                xSemaphoreGive(semaphore_sensor);
-                vTaskDelay(4 / portTICK_PERIOD_MS);
-                xSemaphoreTake(semaphore_sensor, 0);
+        if (data[0] == 0x7E && data[1] == 0x08 && data[2] == smartport_sensor_id_to_crc(parameter->sensor_id) &&
+            (data[3] == 0x00 || data[3] == 0x10)) {
+            if (crc == data[DOWNLINK_LENGHT - 2]) {
+                if (!is_maintenance_mode) {
+                    xSemaphoreGive(semaphore_sensor);
+                    vTaskDelay(4 / portTICK_PERIOD_MS);
+                    xSemaphoreTake(semaphore_sensor, 0);
+                }
+            } else {
+                debug("\nFBUS. Bad CRC 0x%X - 0x%X", data[DOWNLINK_LENGHT - 1], crc);
             }
         }
         // receive & send packet
-        else if (data[0] == 0x7E && data[1] == 0x08 && (data_id == parameter->data_id || data_id == 0xFFFF) && crc == data[PACKET_LENGHT - 1]) {
-            uint8_t crc = smartport_get_crc(data + 1, PACKET_LENGHT - 1);
-            uint8_t frame_id = data[3];
-            uint16_t data_id = (uint16_t)data[5] << 8 | data[4];
-            if (crc == data[PACKET_LENGHT - 1]) {
+        else if (data[0] == 0x7E && data[1] == 0x08 && (data_id == parameter->data_id || data_id == 0xFFFF)) {
+            uint8_t crc = smartport_get_crc(data + 1, DOWNLINK_LENGHT - 3);
+
+            if (crc == data[DOWNLINK_LENGHT - 2]) {
                 uint value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 | (uint16_t)data[6] << 8 | data[5];
+                uint8_t frame_id = data[3];
+                uint16_t data_id = (uint16_t)data[5] << 8 | data[4];
                 debug("\nFBUS. Received packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X < ",
                       uxTaskGetStackHighWaterMark(NULL), frame_id, data_id, value);
                 debug_buffer(data, 10, "0x%X ");
@@ -233,37 +247,23 @@ static void process(smartport_parameters_t *parameter) {
 }
 
 static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
-    uint16_t crc = 0;
-    uint8_t *u8p;
-    // header
-    uart0_write(0x7E);
-    // len
-    smartport_send_byte(0x08, &crc);
-    // sensor id
-    smartport_send_byte(smartport_sensor_id_to_crc(sensor_id), &crc);
-    // frame_id
-    smartport_send_byte(frame_id, &crc);
-    // data_id
-    u8p = (uint8_t *)&data_id;
-    smartport_send_byte(u8p[0], &crc);
-    smartport_send_byte(u8p[1], &crc);
-    // value
-    u8p = (uint8_t *)&value;
-    smartport_send_byte(u8p[0], &crc);
-    smartport_send_byte(u8p[1], &crc);
-    smartport_send_byte(u8p[2], &crc);
-    smartport_send_byte(u8p[3], &crc);
-    // crc
-    smartport_send_byte(0xFF - (uint8_t)crc, NULL);
-    // end
-    uart0_write(0x7E);
+    fbus_packet_t packet;
+    packet.len = 8;
+    packet.sensor_id = smartport_sensor_id_to_crc(sensor_id);
+    packet.frame_id = frame_id;
+    packet.data_id = data_id;
+    packet.value = value;
+    packet.crc = smartport_get_crc(((uint8_t *)&packet), 9);
+    uart0_write_bytes((uint8_t *)&packet, sizeof(packet));
+    debug_buffer((uint8_t *)&packet, sizeof(packet), "0x%X ");
     // blink
     vTaskResume(context.led_task_handle);
 }
 
 static void set_config(smartport_parameters_t *parameter) {
     config_t *config = config_read();
-    uart0_begin(460800, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, config->fbus_inverted, true);
+    uart0_begin(460800, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, config->fbus_inverted,
+                true);
     TaskHandle_t task_handle;
     float *baro_temp = NULL, *baro_pressure = NULL;
     parameter->sensor_id = config->smartport_sensor_id;

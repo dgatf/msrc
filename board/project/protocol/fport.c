@@ -232,8 +232,6 @@ static void process(smartport_parameters_t *parameter) {
 static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
     uint16_t crc = 0;
     uint8_t *u8p;
-    // header
-    uart0_write(0x7E);
     // len
     smartport_send_byte(0x08, &crc);
     // type
@@ -252,8 +250,6 @@ static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
     smartport_send_byte(u8p[3], &crc);
     // crc
     smartport_send_byte(0xFF - (uint8_t)crc, NULL);
-    // end
-    uart0_write(0x7E);
     // blink
     vTaskResume(context.led_task_handle);
 }

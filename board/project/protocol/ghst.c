@@ -142,13 +142,13 @@ static void process(ghst_sensors_t *sensors) {
         uart0_read_bytes(data, GHST_PACKET_LEN + 2);
         debug("\nGHST (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         debug_buffer(data, GHST_PACKET_LEN + 2, "0x%X ");
-        // send telemetry
         uint8_t crc = get_crc(data + 2, GHST_PACKET_LEN - 1); // crc from type, size 11
+        // send telemetry
         if (data[0] == GHST_ADDR_RX) {
             if (data[13] == crc)
                 send_packet(sensors);
             else
-                debug("\nBad CRC 0x%X - 0x%X", data[13], crc);
+                debug("\nGHST. Bad CRC 0x%X - 0x%X", data[13], crc);
         }
     }
 }
