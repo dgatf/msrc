@@ -56,8 +56,6 @@ static void packet_task(void *parameters);
 static void process(smartport_parameters_t *parameter);
 static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value);
 static void set_config(smartport_parameters_t *parameter);
-static uint8_t sensor_id_to_crc(uint8_t sensor_id);
-static uint8_t sensor_crc_to_id(uint8_t sensor_id_crc);
 static int64_t reboot_callback(alarm_id_t id, void *user_data);
 
 void smartport_task(void *parameters) {
@@ -106,7 +104,7 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
         packet.frame_id = 0x32;
         packet.data_id = parameter->data_id;
         debug("\nSmartport (%u). Send sensorId %i (0x%X)", uxTaskGetStackHighWaterMark(NULL), parameter->sensor_id,
-              sensor_id_to_crc(parameter->sensor_id));
+              smartport_sensor_id_to_crc(parameter->sensor_id));
         return packet;
     }
 
@@ -155,7 +153,7 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
         free(config_lua);
         is_changed = true;
         debug("\nSmartport (%u). Change sensorId %i (0x%X)", uxTaskGetStackHighWaterMark(NULL),
-              config_lua->smartport_sensor_id, sensor_id_to_crc(config_lua->smartport_sensor_id));
+              config_lua->smartport_sensor_id, smartport_sensor_id_to_crc(config_lua->smartport_sensor_id));
         return packet;
     }
 
@@ -647,6 +645,22 @@ void smartport_send_byte(uint8_t c, uint16_t *crcp) {
     debug("0x%X ", c);
 }
 
+uint8_t smartport_sensor_id_to_crc(uint8_t sensor_id) {
+    if (sensor_id < 1 || sensor_id > 28) {
+        return 0;
+    }
+    return sensor_id_matrix[sensor_id - 1];
+}
+
+uint8_t smartport_sensor_crc_to_id(uint8_t sensor_id_crc) {
+    uint8_t cont = 0;
+    while (sensor_id_crc != sensor_id_matrix[cont] && cont < 28) {
+        cont++;
+    }
+    if (cont == 28) return 0;
+    return cont + 1;
+}
+
 static void process(smartport_parameters_t *parameter) {
     uint lenght = uart0_available();
     if (lenght) {
@@ -658,7 +672,7 @@ static void process(smartport_parameters_t *parameter) {
         uart0_read_bytes(data, lenght);
 
         // send telemetry
-        if (data[0] == 0x7E && data[1] == sensor_id_to_crc(parameter->sensor_id) && lenght == POLL_LENGHT &&
+        if (data[0] == 0x7E && data[1] == smartport_sensor_id_to_crc(parameter->sensor_id) && lenght == POLL_LENGHT &&
             !is_maintenance_mode) {
             debug("\nSmartport (%u) < ", uxTaskGetStackHighWaterMark(NULL));
             debug_buffer(data, POLL_LENGHT, "0x%X ");
@@ -668,7 +682,7 @@ static void process(smartport_parameters_t *parameter) {
         }
 
         // send packet
-        if (data[0] == 0x7E && data[1] == sensor_id_to_crc(parameter->sensor_id) && lenght == POLL_LENGHT &&
+        if (data[0] == 0x7E && data[1] == smartport_sensor_id_to_crc(parameter->sensor_id) && lenght == POLL_LENGHT &&
             is_maintenance_mode) {
             debug("\nSmartport (%u) < ", uxTaskGetStackHighWaterMark(NULL));
             debug_buffer(data, POLL_LENGHT, "0x%X ");
@@ -1725,22 +1739,6 @@ static void set_config(smartport_parameters_t *parameter) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-}
-
-static uint8_t sensor_id_to_crc(uint8_t sensor_id) {
-    if (sensor_id < 1 || sensor_id > 28) {
-        return 0;
-    }
-    return sensor_id_matrix[sensor_id - 1];
-}
-
-static uint8_t sensor_crc_to_id(uint8_t sensor_id_crc) {
-    uint8_t cont = 0;
-    while (sensor_id_crc != sensor_id_matrix[cont] && cont < 28) {
-        cont++;
-    }
-    if (cont == 28) return 0;
-    return cont + 1;
 }
 
 static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {

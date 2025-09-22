@@ -14,4 +14,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     sanwa.c
     jr_dmss.c
     fport.c
+    fbus.c
 )

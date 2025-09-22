@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbReceiver->addItem("Frsky Smartport", RX_SMARTPORT);
     ui->cbReceiver->addItem("Frsky D", RX_FRSKY_D);
     ui->cbReceiver->addItem("Frsky FPort", RX_FPORT);
+    ui->cbReceiver->addItem("Frsky FBUS", RX_FBUS);
     ui->cbReceiver->addItem("Spektrum XBUS", RX_XBUS);
     ui->cbReceiver->addItem("Spektrum SRXL", RX_SRXL);
     ui->cbReceiver->addItem("Spektrum SRXL2", RX_SRXL2);
@@ -549,6 +550,10 @@ void MainWindow::setUiFromConfig() {
 
     ui->cbFPortInverted->setChecked(config.fport_inverted);
 
+    // FBUS
+
+    ui->cbFbusInverted->setChecked(config.fbus_inverted);
+
     // HW V4/V5 parameters
 
     ui->cbInitDelay->setChecked(config.enable_esc_hw4_init_delay);
@@ -752,6 +757,10 @@ void MainWindow::getConfigFromUi() {
 
     config.fport_inverted = ui->cbFPortInverted->isChecked();
 
+    // FBUS
+
+    config.fbus_inverted = ui->cbFbusInverted->isChecked();
+
     // HW V4/V5 parameters
 
     config.enable_esc_hw4_init_delay = ui->cbInitDelay->isChecked();
@@ -892,6 +901,12 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->cbFPortInverted->setVisible(true);
     } else {
         ui->cbFPortInverted->setVisible(false);
+    }
+
+    if (arg1 == "Frsky FBUS") {
+        ui->cbFbusInverted->setVisible(true);
+    } else {
+        ui->cbFbusInverted->setVisible(false);
     }
 
     if (arg1 == "Frsky Smartport") {

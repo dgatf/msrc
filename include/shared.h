@@ -21,7 +21,8 @@ typedef enum rx_protocol_t : uint8_t {
     RX_HOTT,
     RX_SANWA,
     RX_JR_PROPO,
-    RX_FPORT
+    RX_FPORT,
+    RX_FBUS
 } rx_protocol_t;
 
 typedef enum esc_protocol_t : uint8_t {
@@ -65,7 +66,8 @@ typedef enum rx_protocol_t {
     RX_HOTT,
     RX_SANWA,
     RX_JR_PROPO,
-    RX_FPORT
+    RX_FPORT,
+    RX_FBUS
 } rx_protocol_t;
 
 typedef enum esc_protocol_t {
@@ -169,7 +171,7 @@ typedef struct config_t {                            // smartport data_id
     uint8_t gps_protocol;                            // 0x5149
     bool sbus_battery_slot;                          // 0x514A
     bool fport_inverted;
-    uint8_t spare4_4;
+    bool fbus_inverted;
     int16_t airspeed_offset;                         // 0x513F
     uint16_t spare5;
     uint32_t spare6;

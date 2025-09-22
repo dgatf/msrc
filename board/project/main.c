@@ -20,6 +20,7 @@
 #include "sanwa.h"
 #include "jr_dmss.h"
 #include "fport.h"
+#include "fbus.h"
 
 context_t context;
 
@@ -128,6 +129,11 @@ int main() {
             break;
         case RX_FPORT:
             xTaskCreate(fport_task, "fport_task", STACK_RX_FPORT, NULL, 4, &context.receiver_task_handle);
+            context.uart0_notify_task_handle = context.receiver_task_handle;
+            xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
+            break;
+        case RX_FBUS:
+            xTaskCreate(fbus_task, "fbus_task", STACK_RX_FBUS, NULL, 4, &context.receiver_task_handle);
             context.uart0_notify_task_handle = context.receiver_task_handle;
             xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
             break;
