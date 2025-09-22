@@ -15,4 +15,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     jr_dmss.c
     fport.c
     fbus.c
+    ghst.c
 )

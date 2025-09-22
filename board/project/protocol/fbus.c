@@ -195,22 +195,24 @@ static void process(smartport_parameters_t *parameter) {
         uint8_t data[lenght];
         uart0_read_bytes(data, lenght);
         if (data[0] == 0x7E && data[2] == 0xFF) { // no byte stuffing
-            uint i = 1;
             memmove(data, data + data[1] + 4, PACKET_LENGHT); // header 3 + footer 1 = 4
+            debug("\nMoved");
         }
+        debug("\nFBUS (%u) < ", uxTaskGetStackHighWaterMark(NULL));
+        debug_buffer(data, PACKET_LENGHT, "0x%X ");
+        debug("\nS ID 0x%X", smartport_sensor_id_to_crc(parameter->sensor_id));
         uint16_t data_id = 8 << data[5] | data[6];
+        uint8_t crc = smartport_get_crc(data + 1, PACKET_LENGHT - 3); // crc from len, size 9
         // send telemetry
-        if (data[0] == 0x7E && data[1] == 0x08 && data[2] ==  smartport_sensor_id_to_crc(parameter->sensor_id) && (data[3] == 0x00 || data[3] == 0x10)) {
+        if (data[0] == 0x7E && data[1] == 0x08 && data[2] ==  smartport_sensor_id_to_crc(parameter->sensor_id) && (data[3] == 0x00 || data[3] == 0x10) /*&& crc == data[PACKET_LENGHT - 1]*/) {
             if (!is_maintenance_mode) {
-                debug("\nFBUS (%u) < ", uxTaskGetStackHighWaterMark(NULL));
-                debug_buffer(data, PACKET_LENGHT, "0x%X ");
                 xSemaphoreGive(semaphore_sensor);
                 vTaskDelay(4 / portTICK_PERIOD_MS);
                 xSemaphoreTake(semaphore_sensor, 0);
             }
         }
         // receive & send packet
-        else if (data[0] == 0x7E && data[1] == 0x08 && (data_id == parameter->data_id || data_id == 0xFFFF)) {
+        else if (data[0] == 0x7E && data[1] == 0x08 && (data_id == parameter->data_id || data_id == 0xFFFF) && crc == data[PACKET_LENGHT - 1]) {
             uint8_t crc = smartport_get_crc(data + 1, PACKET_LENGHT - 1);
             uint8_t frame_id = data[3];
             uint16_t data_id = (uint16_t)data[5] << 8 | data[4];

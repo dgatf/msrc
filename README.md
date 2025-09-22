@@ -1,4 +1,4 @@
-# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, FBUS, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF, Sanwa, Hott, SRXL2, JR DMSS
+# MSRC - Multi Sensor for RC - RP2040 - Smartport, Frsky D, FPort, FBUS, XBUS, SRXL, IBUS, SBUS2, Multiplex Sensor Bus, Jeti Ex Bus, Hitec, CRSF, Sanwa, Hott, SRXL2, JR DMSS, GHST
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=9GKNBVGHKXFGW&no_recurring=0&currency_code=USD)
 
@@ -8,6 +8,7 @@ This is a DIY project to send sensors telemetry for a fraction of the weight and
 
 - Frsky Smartport
 - FrSky D
+- Frsky FPort
 - Frsky FBUS
 - Spektrum XBUS
 - Spektrum SRXL
@@ -21,6 +22,7 @@ This is a DIY project to send sensors telemetry for a fraction of the weight and
 - Sanwa
 - Hott
 - JR DMSS
+- GHST
 
 ## Sensors
 

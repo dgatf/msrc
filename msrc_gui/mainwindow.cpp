@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbReceiver->addItem("HOTT", RX_HOTT);
     ui->cbReceiver->addItem("Hitec", RX_HITEC);
     ui->cbReceiver->addItem("JR Propo", RX_JR_PROPO);
+    ui->cbReceiver->addItem("GHST", RX_GHST);
     ui->cbReceiver->addItem("Serial Monitor", SERIAL_MONITOR);
     ui->cbEscModel->addItems({"", "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A", "Platinum PRO v4 100A",
                               "Platinum PRO v4 120A", "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A",
@@ -909,7 +910,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->cbFbusInverted->setVisible(false);
     }
 
-    if (arg1 == "Frsky Smartport") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Frsky FBUS") {
         ui->lbSensorId->setVisible(true);
         ui->sbSensorId->setVisible(true);
     } else {

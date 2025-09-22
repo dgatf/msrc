@@ -21,6 +21,7 @@
 #include "jr_dmss.h"
 #include "fport.h"
 #include "fbus.h"
+#include "ghst.h"
 
 context_t context;
 
@@ -134,6 +135,11 @@ int main() {
             break;
         case RX_FBUS:
             xTaskCreate(fbus_task, "fbus_task", STACK_RX_FBUS, NULL, 4, &context.receiver_task_handle);
+            context.uart0_notify_task_handle = context.receiver_task_handle;
+            xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
+            break;
+        case RX_GHST:
+            xTaskCreate(ghst_task, "ghst_task", STACK_RX_GHST, NULL, 3, &context.receiver_task_handle);
             context.uart0_notify_task_handle = context.receiver_task_handle;
             xQueueSendToBack(context.tasks_queue_handle, context.receiver_task_handle, 0);
             break;
