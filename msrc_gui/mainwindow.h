@@ -73,7 +73,6 @@ class MainWindow : public QMainWindow {
     void on_gbCurrent_toggled(bool arg1);
     void on_cbBarometerType_currentTextChanged(const QString &arg1);
     void on_btCircuit_clicked();
-    void resizeEvent(QResizeEvent *event);
     void on_gbGps_toggled(bool arg1);
     void on_cbCurrentAutoOffset_toggled(bool checked);
     void on_cbCurrentSensorType_currentTextChanged(const QString &arg1);

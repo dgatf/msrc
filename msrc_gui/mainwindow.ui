@@ -92,7 +92,7 @@
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-307</y>
+                 <y>0</y>
                  <width>581</width>
                  <height>742</height>
                 </rect>
@@ -1658,26 +1658,13 @@
            <bool>true</bool>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">
             <string>Circuit</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <spacer name="verticalSpacer_2">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
             <item>
              <widget class="QLabel" name="lbCircuit">
               <property name="enabled">
@@ -1698,20 +1685,10 @@
               <property name="text">
                <string>Circuit image</string>
               </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer">
-              <property name="enabled">
+              <property name="scaledContents">
                <bool>true</bool>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="btCircuit">

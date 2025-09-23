@@ -84,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
     connect(ui->actionDefaultConfig, SIGNAL(triggered()), this, SLOT(defaultConfig()));
 
-    ui->lbCircuit->resize(621, 400);  //(ui->lbCircuit->parentWidget()->width(),
+    ui->lbCircuit->resize(600, 400);  //(ui->lbCircuit->parentWidget()->width(),
     // ui->lbCircuit->parentWidget()->height());
     generateCircuit(ui->lbCircuit);
 
@@ -105,7 +105,7 @@ void MainWindow::generateCircuit(QLabel *label) {
     QPainter *paint = new QPainter(pix);
     QImage image;
 
-    paint->fillRect(0,0,label->width(),label->height(), label->palette().color(QPalette::Base));
+    paint->fillRect(0,0,size->width(),size->height(), label->palette().color(QPalette::Base));
     image.load(":/res/rp2040_zero.png");
     paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
 
@@ -1194,11 +1194,6 @@ void MainWindow::on_btCircuit_clicked() {
     circuitDialog.setModal(true);
     circuitDialog.mainWindow = this;
     circuitDialog.exec();
-}
-
-void MainWindow::resizeEvent(QResizeEvent *event) {
-    Q_UNUSED(event);
-    generateCircuit(ui->lbCircuit);
 }
 
 void MainWindow::on_gbGps_toggled(bool enabled) {
