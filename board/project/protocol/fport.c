@@ -218,7 +218,7 @@ static void process(smartport_parameters_t *parameter) {
                 debug("\nFPort. Received packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X < ",
                       uxTaskGetStackHighWaterMark(NULL), frame_id, data_id, value);
                 debug_buffer(data, 10, "0x%X ");
-                smartport_packet_t packet = smartport_process_packet(parameter, 0, frame_id, data_id, value);
+                smartport_packet_t packet = smartport_process_packet(parameter, frame_id, data_id, value);
                 if (packet.data_id != 0) {
                     send_packet(packet.frame_id, packet.data_id, packet.value);
                     debug("\nFPort. Send packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X",
@@ -256,7 +256,8 @@ static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
 
 static void set_config(smartport_parameters_t *parameter) {
     config_t *config = config_read();
-    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, config->fport_inverted, true);
+    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, config->fport_inverted,
+                true);
     TaskHandle_t task_handle;
     float *baro_temp = NULL, *baro_pressure = NULL;
     parameter->sensor_id = config->smartport_sensor_id;

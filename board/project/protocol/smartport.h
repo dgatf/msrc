@@ -182,8 +182,8 @@ uint32_t smartport_format_coordinate(coordinate_type_t type, float value);
 uint32_t smartport_format_datetime(uint8_t type, uint32_t value);
 uint32_t smartport_format_cell(uint8_t cell_index, float value);
 uint8_t smartport_get_crc(uint8_t *data, uint len);
-smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, uint8_t sensor_id, uint8_t frame_id,
-                                            uint16_t data_id, uint32_t value);
+smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, uint8_t frame_id, uint16_t data_id,
+                                            uint32_t value);
 void smartport_send_byte(uint8_t c, uint16_t *crcp);
 uint8_t smartport_sensor_id_to_crc(uint8_t sensor_id);
 uint8_t smartport_sensor_crc_to_id(uint8_t sensor_id_crc);

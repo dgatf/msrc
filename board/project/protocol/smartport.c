@@ -80,8 +80,8 @@ void smartport_task(void *parameters) {
     }
 }
 
-smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, uint8_t sensor_id, uint8_t frame_id,
-                                            uint16_t data_id, uint32_t value) {
+smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, uint8_t frame_id, uint16_t data_id,
+                                            uint32_t value) {
     smartport_packet_t packet = {0};
     // set maintenance mode on
     if (frame_id == 0x21 && (data_id == 0xFFFF || data_id == parameter->data_id) && value == 0x80) {
@@ -711,8 +711,7 @@ static void process(smartport_parameters_t *parameter) {
                     debug("\nSmartport. Received packet (%u) sensorId 0x%X FrameId 0x%X DataId 0x%X Value 0x%X < ",
                           uxTaskGetStackHighWaterMark(NULL), sensor_id, frame_id, data_id, value);
                     debug_buffer(data, PACKET_LENGHT, "0x%X ");
-                    smartport_packet_t packet =
-                        smartport_process_packet(parameter, parameter->sensor_id, frame_id, data_id, value);
+                    smartport_packet_t packet = smartport_process_packet(parameter, frame_id, data_id, value);
                     if (packet.data_id != 0) xQueueSendToBack(packet_queue_handle, &packet, 0);
                 }
             }

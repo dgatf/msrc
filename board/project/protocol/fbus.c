@@ -233,7 +233,7 @@ static void process(smartport_parameters_t *parameter) {
             debug("\nFBUS. Received packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X < ",
                   uxTaskGetStackHighWaterMark(NULL), frame_id, data_id, value);
             debug_buffer(data, 10, "0x%X ");
-            smartport_packet_t packet = smartport_process_packet(parameter, 0, frame_id, data_id, value);
+            smartport_packet_t packet = smartport_process_packet(parameter, frame_id, data_id, value);
             if (packet.data_id != 0) {
                 send_packet(packet.frame_id, packet.data_id, packet.value);
                 debug("\nFBUS. Send packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X", uxTaskGetStackHighWaterMark(NULL),
