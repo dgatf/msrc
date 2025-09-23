@@ -886,13 +886,12 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     if (arg1 == "Spektrum XBUS") {
         ui->cbClockStretch->setVisible(true);
         ui->cbAlternativePacket->setVisible(true);
-
     } else {
         ui->cbClockStretch->setVisible(false);
         ui->cbAlternativePacket->setVisible(false);
     }
 
-    if (arg1 == "Frsky Smartport" || arg1 == "Frsky D" || arg1 == "Frsky FPort") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Frsky D" || arg1 == "Frsky FPort"  || arg1 == "Frsky FBUS") {
         ui->gbRate->setVisible(true);
     } else {
         ui->gbRate->setVisible(false);
@@ -975,7 +974,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     }
 
     // Fuel meter
-    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" || arg1 == "HOTT" || arg1 == "Frsky FPort") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" || arg1 == "HOTT" || arg1 == "Frsky FPort" || arg1 == "Frsky FBUS") {
         ui->gbFuelmeter->setVisible(true);
     } else {
         ui->gbFuelmeter->setVisible(false);
@@ -990,25 +989,36 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     }
 
     // GPIO
-    if (arg1 == "Frsky Smartport" || arg1 == "Frsky FPort") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Frsky FPort" || arg1 == "Frsky FBUS") {
         ui->gbGpio->setVisible(true);
     } else {
         ui->gbGpio->setVisible(false);
     }
 
-    // GPS, current, airspeed
+    // Airspeed
+    if (arg1 == "Sanwa" || arg1 == "GHST") {
+        ui->gbAirspeed->setVisible(false);
+    } else {
+        ui->gbAirspeed->setVisible(true);
+    }
+
+    // Temperature
+    if (arg1 == "GHST") {
+        ui->cbTemperature1->setVisible(false);
+    } else {
+        ui->cbTemperature1->setVisible(true);
+    }
+
+    // GPS, current, vario
     if (arg1 == "Sanwa") {
         ui->gbGps->setVisible(false);
         ui->gbCurrent->setVisible(false);
-        ui->gbAirspeed->setVisible(false);
         ui->gbAltitude->setVisible(false);
     } else {
         ui->gbGps->setVisible(true);
         ui->gbCurrent->setVisible(true);
-        ui->gbAirspeed->setVisible(true);
         ui->gbAltitude->setVisible(true);
     }
-
     // Average elements
     if (arg1 == "Sanwa") {
         ui->lbRpmAvg->setVisible(true);
@@ -1023,19 +1033,19 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->sbVarioAvg->setVisible(false);
         ui->lbAirspeedAvg->setVisible(false);
         ui->sbAirspeedAvg->setVisible(false);
-    } else if (arg1 == "CRSF") {
-        ui->lbRpmAvg->setVisible(true);
-        ui->sbRpmAvg->setVisible(true);
+    } else if (arg1 == "GHST") {
+        ui->lbRpmAvg->setVisible(false);
+        ui->sbRpmAvg->setVisible(false);
         ui->lbVoltageAvg->setVisible(true);
         ui->sbVoltageAvg->setVisible(true);
         ui->lbCurrentAvg->setVisible(true);
         ui->sbCurrentAvg->setVisible(true);
-        ui->lbTemperatureAvg->setVisible(true);
-        ui->sbTemperatureAvg->setVisible(true);
+        ui->lbTemperatureAvg->setVisible(false);
+        ui->sbTemperatureAvg->setVisible(false);
         ui->lbVarioAvg->setVisible(true);
         ui->sbVarioAvg->setVisible(true);
-        ui->lbAirspeedAvg->setVisible(true);
-        ui->sbAirspeedAvg->setVisible(true);
+        ui->lbAirspeedAvg->setVisible(false);
+        ui->sbAirspeedAvg->setVisible(false);
     } else {
         ui->lbRpmAvg->setVisible(true);
         ui->sbRpmAvg->setVisible(true);
