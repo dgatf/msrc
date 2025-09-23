@@ -482,6 +482,9 @@ static void format_packet(hott_sensors_t *sensors, uint8_t address) {
                 packet.inputVolt = *sensors->esc[HOTT_ESC_VOLTAGE] * 10;
                 if (packet.inputVolt < minInputVolt) packet.minInputVolt = packet.inputVolt;
             }
+            if (sensors->esc[HOTT_ESC_CAPACITY]) {
+                packet.capacity = *sensors->esc[HOTT_ESC_CAPACITY];
+            }
             if (sensors->esc[HOTT_ESC_TEMPERATURE]) {
                 packet.escTemperature = *sensors->esc[HOTT_ESC_TEMPERATURE] + 20;
                 if (packet.escTemperature > maxEscTemperature) packet.maxEscTemperature = packet.escTemperature;
