@@ -57,12 +57,13 @@ static void process(esc_kontronik_parameters_t *parameter) {
             rpm *= parameter->rpm_multiplier;
             float voltage = ((uint16_t)data[9] << 8 | data[8]) / 100.0;
             float current = ((uint16_t)data[11] << 8 | data[10]) / 10.0;
+            float consumption = ((uint16_t)data[17] << 8 | data[16]);
             float current_bec = ((uint16_t)data[19] << 8 | data[18]) / 1000.0;
             float voltage_bec = ((uint16_t)data[21] << 8 | data[20]) / 1000.0;
             float temperature_fet = data[26];
             float temperature_bec = data[27];
             *parameter->rpm = get_average(parameter->alpha_rpm, *parameter->rpm, rpm);
-            *parameter->consumption += get_consumption(*parameter->current, 0, &timestamp);
+            *parameter->consumption = consumption;
             *parameter->voltage = get_average(parameter->alpha_voltage, *parameter->voltage, voltage);
             *parameter->current = get_average(parameter->alpha_current, *parameter->current, current);
             *parameter->voltage_bec = get_average(parameter->alpha_voltage, *parameter->voltage_bec, voltage_bec);
