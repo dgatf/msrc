@@ -37,11 +37,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbReceiver->addItem("JR Propo", RX_JR_PROPO);
     ui->cbReceiver->addItem("GHST", RX_GHST);
     ui->cbReceiver->addItem("Serial Monitor", SERIAL_MONITOR);
-    ui->cbEscModel->addItems({"", "Platinum PRO v4 25/40/60", "Platinum PRO v4 80A", "Platinum PRO v4 100A",
-                              "Platinum PRO v4 120A", "Platinum PRO v4 130A-HV", "Platinum PRO v4 150A",
-                              "Platinum PRO v4 200A-HV", "FlyFun 30/40A", "FlyFun 60A", "FlyFun 80A", "FlyFun 120A",
-                              "FlyFun 110A-HV", "FlyFun 130A-HV", "FlyFun 160A-HV"});
-
     ui->sbEscOffset->setVisible(false);
     ui->cbCurrentSensorType->addItems({"Hall effect", "Shunt resistor"});
     ui->cbCurrentAutoOffset->setChecked(true);
@@ -100,12 +95,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::generateCircuit(QLabel *label) {
-    QSize *size = new QSize(label->width() - 10, label->height()-10);
+    QSize *size = new QSize(label->width() - 10, label->height() - 10);
     QPixmap *pix = new QPixmap(*size);
     QPainter *paint = new QPainter(pix);
     QImage image;
 
-    paint->fillRect(0,0,size->width(),size->height(), label->palette().color(QPalette::Base));
+    paint->fillRect(0, 0, size->width(), size->height(), label->palette().color(QPalette::Base));
     image.load(":/res/rp2040_zero.png");
     paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
 
@@ -561,10 +556,11 @@ void MainWindow::setUiFromConfig() {
     ui->cbEscAutoOffset->setChecked(!config.esc_hw4_is_manual_offset);
     ui->sbEscOffset->setValue(config.esc_hw4_offset);
     // config.esc_hw4_init_delay_duration = 10000;
-    ui->sbCurrentThresold->setValue(config.esc_hw4_current_thresold);
-    ui->sbVoltageDivisor->setValue(config.esc_hw4_divisor);
+    //ui->sbCurrentThresold->setValue(config.esc_hw4_current_thresold);
+    ui->sbVoltageDivisor->setValue(1 / config.esc_hw4_voltage_multiplier);
     ui->sbCurrentMultiplier->setValue(config.esc_hw4_current_multiplier);
-    ui->sbCurrentMax->setValue(config.esc_hw4_current_max);
+    //ui->sbCurrentMax->setValue(config.esc_hw4_current_max);
+    ui->cbHw4AutoDetect->setChecked(config.esc_hw4_auto_detect);
 
     // Smart esc
 
@@ -768,10 +764,11 @@ void MainWindow::getConfigFromUi() {
     config.esc_hw4_is_manual_offset = !ui->cbEscAutoOffset->isChecked();
     config.esc_hw4_offset = ui->sbEscOffset->value();
     // config.esc_hw4_init_delay_duration = 10000;
-    config.esc_hw4_current_thresold = ui->sbCurrentThresold->value();
-    config.esc_hw4_divisor = ui->sbVoltageDivisor->value();
+    //config.esc_hw4_current_thresold = ui->sbCurrentThresold->value();
+    config.esc_hw4_voltage_multiplier = 1 / ui->sbVoltageDivisor->value();
     config.esc_hw4_current_multiplier = ui->sbCurrentMultiplier->value();
-    config.esc_hw4_current_max = ui->sbCurrentMax->value();
+    //config.esc_hw4_current_max = ui->sbCurrentMax->value();
+    config.esc_hw4_auto_detect = ui->cbHw4AutoDetect->isChecked();
 
     // Smart esc
 
@@ -891,7 +888,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->cbAlternativePacket->setVisible(false);
     }
 
-    if (arg1 == "Frsky Smartport" || arg1 == "Frsky D" || arg1 == "Frsky FPort"  || arg1 == "Frsky FBUS") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Frsky D" || arg1 == "Frsky FPort" || arg1 == "Frsky FBUS") {
         ui->gbRate->setVisible(true);
     } else {
         ui->gbRate->setVisible(false);
@@ -974,7 +971,8 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     }
 
     // Fuel meter
-    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" || arg1 == "HOTT" || arg1 == "Frsky FPort" || arg1 == "Frsky FBUS") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" || arg1 == "HOTT" ||
+        arg1 == "Frsky FPort" || arg1 == "Frsky FBUS") {
         ui->gbFuelmeter->setVisible(true);
     } else {
         ui->gbFuelmeter->setVisible(false);
@@ -1071,85 +1069,13 @@ void MainWindow::on_cbEsc_currentTextChanged(const QString &arg1) {
     if (arg1 == "Hobbywing V4/Flyfun (not VBAR firmware)") {
         ui->gbEscParameters->setVisible(true);
         ui->cbPwmOut->setVisible(true);
+        ui->cbHw4AutoDetect->setVisible(true);
     } else {
         ui->gbEscParameters->setVisible(false);
         ui->cbPwmOut->setVisible(false);
+        ui->cbHw4AutoDetect->setVisible(false);
     }
     generateCircuit(ui->lbCircuit);
-}
-
-void MainWindow::on_cbEscModel_currentTextChanged(const QString &arg1) {
-    if (arg1 == "Platinum PRO v4 25/40/60") {
-        ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(0);
-        ui->sbCurrentMax->setValue(0);
-        ui->cbInitDelay->setChecked(false);
-    } else if (arg1 == "Platinum PRO v4 80A") {
-        ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(4000 / 8);
-        ui->sbCurrentMax->setValue(100);
-        ui->cbInitDelay->setChecked(false);
-    } else if (arg1 == "Platinum PRO v4 100A") {
-        ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(4000 / 9);
-        ui->sbCurrentMax->setValue(120);
-        ui->cbInitDelay->setChecked(false);
-    } else if (arg1 == "Platinum PRO v4 120A") {
-        ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(4000 / 10);
-        ui->sbCurrentMax->setValue(140);
-        ui->cbInitDelay->setChecked(false);
-    } else if (arg1 == "Platinum PRO v4 150A") {
-        ui->sbVoltageDivisor->setValue(15.75);
-        ui->sbCurrentMultiplier->setValue(4000 / 10);
-        ui->sbCurrentMax->setValue(170);
-        ui->cbInitDelay->setChecked(false);
-    } else if (arg1 == "Platinum PRO v4 130A-HV") {
-        ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000 / 11.3);
-        ui->sbCurrentMax->setValue(150);
-        ui->cbInitDelay->setChecked(false);
-    } else if (arg1 == "Platinum PRO v4 200A-HV") {
-        ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000 / 16.9);
-        ui->sbCurrentMax->setValue(220);
-        ui->cbInitDelay->setChecked(false);
-    } else if (arg1 == "FlyFun 30/40A") {
-        ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(0);
-        ui->sbCurrentMax->setValue(0);
-        ui->cbInitDelay->setChecked(true);
-    } else if (arg1 == "FlyFun 60A") {
-        ui->sbVoltageDivisor->setValue(11);
-        ui->sbCurrentMultiplier->setValue(4000 / 6);
-        ui->sbCurrentMax->setValue(80);
-        ui->cbInitDelay->setChecked(true);
-    } else if (arg1 == "FlyFun 80A") {
-        ui->sbVoltageDivisor->setValue(15.75);
-        ui->sbCurrentMultiplier->setValue(4000 / 12.4);
-        ui->sbCurrentMax->setValue(100);
-        ui->cbInitDelay->setChecked(true);
-    } else if (arg1 == "FlyFun 120A") {
-        ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000 / 15);
-        ui->sbCurrentMax->setValue(140);
-        ui->cbInitDelay->setChecked(true);
-    } else if (arg1 == "FlyFun 110A-HV") {
-        ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000 / 15);
-        ui->sbCurrentMax->setValue(130);
-        ui->cbInitDelay->setChecked(true);
-    } else if (arg1 == "FlyFun 130A-HV") {
-        ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000 / 15);
-        ui->sbCurrentMax->setValue(150);
-        ui->cbInitDelay->setChecked(true);
-    } else if (arg1 == "FlyFun 160A-HV") {
-        ui->sbVoltageDivisor->setValue(21);
-        ui->sbCurrentMultiplier->setValue(4000 / 15);
-        ui->sbCurrentMax->setValue(180);
-        ui->cbInitDelay->setChecked(true);
-    }
 }
 
 void MainWindow::on_gbEsc_toggled(bool enabled) {
@@ -1285,3 +1211,11 @@ void MainWindow::on_cbGpsProtocol_currentTextChanged(const QString &arg1) {
 void MainWindow::on_ckSbusBattery_toggled(bool checked) { ui->ckSbusExtVolt->setChecked(!checked); }
 
 void MainWindow::on_ckSbusExtVolt_toggled(bool checked) { ui->ckSbusBattery->setChecked(!checked); }
+
+void MainWindow::on_cbHw4AutoDetect_toggled(bool checked) {
+    if (checked) {
+        ui->gbEscParameters->setVisible(false);
+    } else {
+        ui->gbEscParameters->setVisible(true);
+    }
+}

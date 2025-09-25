@@ -146,7 +146,7 @@ typedef struct config_t {                            // smartport data_id
     uint16_t esc_hw4_init_delay_duration;            // 0x512E
     uint8_t esc_hw4_current_thresold;                // 0x512F
     uint16_t esc_hw4_current_max;                    // 0x5130
-    float esc_hw4_divisor;                           // 0x5131
+    float esc_hw4_voltage_multiplier;                // 0x5131
     float esc_hw4_current_multiplier;                // 0x5132
     bool ibus_alternative_coordinates;               // 0x5133
     uint8_t debug;                                   // 0x5134
@@ -160,7 +160,7 @@ typedef struct config_t {                            // smartport data_id
     uint8_t serial_monitor_parity;                   // 0x513C
     uint16_t serial_monitor_timeout_ms;              // 0x513D
     bool serial_monitor_inverted;                    // 0x513E
-    int8_t spare0;
+    bool esc_hw4_auto_detect;                        // 0x514B
     int16_t airspeed_vcc;                            // 0x5140
     float fuel_flow_ml_per_pulse;                    // 0x5141
     bool enable_fuel_flow;                           // 0x5142

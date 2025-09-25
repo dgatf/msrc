@@ -11,10 +11,11 @@ void cell_count_task(void *parameters) {
     float level[] = {0, 4.35, 8.7, 13.05, 17.4, 21.75, 26.1, 30.45, 34.8, 34.8, 43.5, 43.5};
     int cont = 11;
 
-    while (*parameter.voltage < level[cont] && cont > 0) {
+    float voltage = *parameter.voltage;
+    while (voltage < level[cont] && cont > 0) {
         cont--;
     }
     *parameter.cell_count = cont + 1;
-    debug("\nCell count (%u): %i", uxTaskGetStackHighWaterMark(NULL), *parameter.cell_count);
+    debug("\nCell count (%u): (%.2fV) %i", uxTaskGetStackHighWaterMark(NULL), voltage, *parameter.cell_count);
     vTaskDelete(NULL);
 }

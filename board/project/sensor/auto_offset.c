@@ -17,6 +17,6 @@ void auto_offset_int_task(void *parameters) {
     vTaskDelay(parameter.delay / portTICK_PERIOD_MS);
     *parameter.offset = *parameter.value;
     int val = *parameter.value;
-    debug("\nAuto offset int (%u)", uxTaskGetStackHighWaterMark(NULL));
+    debug("\nAuto offset int (%u): %d", uxTaskGetStackHighWaterMark(NULL), *parameter.offset);
     vTaskDelete(NULL);
 }

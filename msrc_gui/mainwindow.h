@@ -66,7 +66,6 @@ class MainWindow : public QMainWindow {
     void on_cbReceiver_currentTextChanged(const QString &arg1);
     void on_cbEsc_currentTextChanged(const QString &arg1);
     void on_gbEsc_toggled(bool arg1);
-    void on_cbEscModel_currentTextChanged(const QString &arg1);
     void on_gbVoltage1_toggled(bool arg1);
     void on_cbTemperature1_toggled(bool checked);
     void on_gbAltitude_toggled(bool arg1);
@@ -85,5 +84,6 @@ class MainWindow : public QMainWindow {
     void on_cbGpsProtocol_currentTextChanged(const QString &arg1);
     void on_ckSbusBattery_toggled(bool checked);
     void on_ckSbusExtVolt_toggled(bool checked);
+    void on_cbHw4AutoDetect_toggled(bool checked);
 };
 #endif  // MAINWINDOW_H

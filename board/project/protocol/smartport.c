@@ -302,7 +302,7 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 packet.value = config->esc_hw4_current_max;
                 break;
             case 0x5131:
-                packet.value = config->esc_hw4_divisor * 100;
+                packet.value = config->esc_hw4_voltage_multiplier * 100;
                 break;
             case 0x5132:
                 packet.value = config->esc_hw4_current_multiplier * 100;
@@ -345,6 +345,9 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 break;
             case 0x5149:
                 packet.value = config->gps_protocol;
+                break;
+            case 0x514B:
+                packet.value = config->esc_hw4_auto_detect;
                 break;
             default:
                 send = false;
@@ -507,7 +510,7 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 config_lua->esc_hw4_current_max = value;
                 break;
             case 0x5131:
-                config_lua->esc_hw4_divisor = value / 100;
+                config_lua->esc_hw4_voltage_multiplier = value / 100;
                 break;
             case 0x5132:
                 config_lua->esc_hw4_current_multiplier = value / 100;
@@ -550,6 +553,9 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 break;
             case 0x5149:
                 config_lua->gps_protocol = value;
+                break;
+            case 0x514B:
+                config_lua->esc_hw4_auto_detect = value;
                 break;
             default:
                 debug("\nSmartport. Unknown save request. frameId 0x%X dataId 0x%X", frame_id, data_id);
@@ -903,11 +909,12 @@ static void set_config(smartport_parameters_t *parameter) {
                                           config->alpha_voltage,
                                           config->alpha_current,
                                           config->alpha_temperature,
-                                          config->esc_hw4_divisor,
+                                          config->esc_hw4_voltage_multiplier,
                                           config->esc_hw4_current_multiplier,
                                           config->esc_hw4_current_thresold,
                                           config->esc_hw4_current_max,
                                           config->esc_hw4_is_manual_offset,
+                                          config->esc_hw4_auto_detect,
                                           config->esc_hw4_offset,
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float)),

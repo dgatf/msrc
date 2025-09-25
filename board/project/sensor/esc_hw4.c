@@ -22,7 +22,7 @@
 
 float current_offset_ = -1;
 
-static void process(esc_hw4_parameters_t *parameter, int current_raw_offset, uint *current_raw);
+static void process(esc_hw4_parameters_t *parameter, uint *current_raw);
 float get_voltage(uint16_t voltage_raw, esc_hw4_parameters_t *parameter);
 float get_temperature(uint16_t temperature_raw);
 float get_current(uint raw, int offset, float multiplier);
@@ -56,14 +56,11 @@ void esc_hw4_task(void *parameters) {
     xTaskCreate(cell_count_task, "cell_count_task", STACK_CELL_COUNT, (void *)&cell_count_parameters, 1, &task_handle);
     xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-    int current_raw_offset = -1;
     uint current_raw = 0;
-    if (parameter.current_is_manual_offset) {
-        current_raw_offset = parameter.current_offset * 4096.0 / 3.3 / parameter.current_multiplier;
-        if (current_raw_offset > ADC_RES) current_raw_offset = ADC_RES;
-    } else {
-        uint current_delay = 15000;
-        auto_offset_int_parameters_t current_offset_parameters = {current_delay, &current_raw, &current_raw_offset};
+    if (!parameter.auto_detect && !parameter.current_is_manual_offset) {
+        uint current_delay = CURRENT_OFFSET_DELAY;
+        auto_offset_int_parameters_t current_offset_parameters = {current_delay, &current_raw,
+                                                                  &parameter.current_offset};
         xTaskCreate(auto_offset_int_task, "esc_hw4_current_offset_task", STACK_AUTO_OFFSET, &current_offset_parameters,
                     1, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
@@ -73,37 +70,52 @@ void esc_hw4_task(void *parameters) {
 
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
-        process(&parameter, current_raw_offset, &current_raw);
+        process(&parameter, &current_raw);
     }
 }
 
-static void process(esc_hw4_parameters_t *parameter, int current_raw_offset, uint *current_raw) {
+static void process(esc_hw4_parameters_t *parameter, uint *current_raw) {
     uint16_t pwm, throttle;
     static uint32_t timestamp = 0;
     uint8_t lenght = uart1_available();
+    uint8_t data[lenght];
+    uart1_read_bytes(data, lenght);
+    debug("\nEsc HW4 (%u) < ", uxTaskGetStackHighWaterMark(NULL));
+    debug_buffer(data, lenght, "0x%X ");
+    if (lenght == 13 && parameter->auto_detect) {
+        if (data[1] == 0x9B && data[4] == 0x01 && data[12] == 0xB9) {
+            parameter->voltage_multiplier = (float)data[5] / (float)data[6] / 10.0;
+            parameter->current_multiplier = (float)data[7] / (float)data[8];
+            if (parameter->current_multiplier != 0) {
+                parameter->current_offset = (float)data[9] / parameter->current_multiplier;
+            }
+            else
+                parameter->current_offset = 0;
+            debug("\nEsc HW4 signature (%u): Divisor: %.2f CurrMult: %.4f CurrOff: %u",
+                  uxTaskGetStackHighWaterMark(NULL), 1 / parameter->voltage_multiplier, parameter->current_multiplier,
+                  parameter->current_offset);
+        } else {
+            debug("\nEsc HW4 signature error (%u): ", uxTaskGetStackHighWaterMark(NULL));
+        }
+    }
     if (lenght == PACKET_LENGHT || lenght == PACKET_LENGHT + 1) {
-        uint8_t data[PACKET_LENGHT];
-        uart1_read_bytes(data, PACKET_LENGHT);
         throttle = (uint16_t)data[4] << 8 | data[5];  // 0-1024
         pwm = (uint16_t)data[6] << 8 | data[7];       // 0-1024
         float rpm = (uint32_t)data[8] << 16 | (uint16_t)data[9] << 8 | data[10];
         // try to filter invalid data frames
-        if (throttle < 1024 && pwm < 1024 && rpm < 200000 && data[11] <= 0xF && data[13] <= 0xF && data[15] <= 0xF &&
-            data[17] <= 0xF) {
+        /*if (throttle < 1024 && pwm < 1024 && rpm < 200000 && data[11] <= 0xF && data[13] <= 0xF && data[15] <= 0xF &&
+            data[17] <= 0xF)*/
+        if (data[0] == 0x9B) {
             *current_raw = (uint16_t)data[13] << 8 | data[14];
             float voltage = get_voltage((uint16_t)data[11] << 8 | data[12], parameter);
             float current = 0;
-            if (throttle > parameter->current_thresold / 100.0 * 1024 && current_raw_offset != -1) {
-                current = get_current(*current_raw, current_raw_offset, parameter->current_multiplier);
-                if (current > parameter->current_max) current = parameter->current_max;
-            }
+            if (throttle) current = get_current(*current_raw, parameter->current_offset, parameter->current_multiplier);
             float temperature_fet = get_temperature((uint16_t)data[15] << 8 | data[16]);
             float temperature_bec = get_temperature((uint16_t)data[17] << 8 | data[18]);
             rpm *= parameter->rpm_multiplier;
             if (parameter->pwm_out) xTaskNotifyGive(context.pwm_out_task_handle);
             *parameter->rpm = get_average(parameter->alpha_rpm, *parameter->rpm, rpm);
-            if (current_raw_offset != -1)
-                *parameter->consumption += get_consumption(*parameter->current, parameter->current_max, &timestamp);
+            *parameter->consumption += get_consumption(*parameter->current, parameter->current_max, &timestamp);
             *parameter->voltage = get_average(parameter->alpha_voltage, *parameter->voltage, voltage);
             *parameter->current = get_average(parameter->alpha_current, *parameter->current, current);
             *parameter->temperature_fet =
@@ -113,20 +125,20 @@ static void process(esc_hw4_parameters_t *parameter, int current_raw_offset, uin
             *parameter->cell_voltage = *parameter->voltage / *parameter->cell_count;
             uint32_t packet = (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
             debug(
-                "\nEsc HW4 (%u) < Packet: %i Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f Cons: %.0f "
-                "CellV: %.2f CRaw: %i CRawOffset: %i CurrMult: %.2f",
-                uxTaskGetStackHighWaterMark(NULL), packet, *parameter->rpm, *parameter->voltage, *parameter->current,
+                "\nEsc HW4 (%u) < Packet: %i Thr: %u Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f Cons: %.0f "
+                "CellV: %.2f CRaw: %i CRawOffset: %u CurrMult: %.4f VoltMult: %.4f",
+                uxTaskGetStackHighWaterMark(NULL), packet, throttle, *parameter->rpm, *parameter->voltage, *parameter->current,
                 *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption,
-                *parameter->cell_voltage, *current_raw, current_raw_offset, parameter->current_multiplier);
+                *parameter->cell_voltage, *current_raw, parameter->current_offset, parameter->current_multiplier,
+                parameter->voltage_multiplier);
         } else {
-            debug("\nEsc HW4 packet error (%u): ", uxTaskGetStackHighWaterMark(NULL));
-            debug_buffer(data, PACKET_LENGHT, "0x%X ");
+            debug("\nEsc HW4 packet error (%u) 0x%X", uxTaskGetStackHighWaterMark(NULL), data[0]);
         }
     }
 }
 
 float get_voltage(uint16_t voltage_raw, esc_hw4_parameters_t *parameter) {
-    return V_REF * voltage_raw / ADC_RES * parameter->divisor;
+    return voltage_raw * parameter->voltage_multiplier;
 }
 
 float get_temperature(uint16_t temperature_raw) {
@@ -142,5 +154,5 @@ float get_current(uint raw, int offset, float multiplier) {
     // float current = (*parameter->current_raw - *parameter->current_offset) * V_REF / (parameter->ampgain *
     // DIFFAMP_SHUNT * ADC_RES);
     if ((int)raw - offset < 0) return 0;
-    return ((int)raw - offset) * V_REF / ADC_RES * multiplier;
+    return ((int)raw - offset) * multiplier;
 }
