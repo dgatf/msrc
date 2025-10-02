@@ -322,6 +322,7 @@ local function handleEvents(event)
 			else
 				saveChanges = true
 				status = statusEnum.getConfig
+                varIndex = 1
 			end
 		else
 			isSelected = not isSelected
@@ -434,8 +435,17 @@ end
 
 local function setPageItems()
 	if page == 4 then -- ESC
+		if escProtocol[2] + 1 > #escProtocolStr then
+			escProtocol[2] = 0
+		end
+		if hw4AutoDetect[2] + 1 > #onOffStr then
+			hw4AutoDetect[2] = 0
+		end
+		if hw4AutoOffset[2] + 1 > #onOffStr then
+			hw4AutoOffset[2] = 0
+		end
 		vars[page] = { pairPoles, mainGear, pinionGear, escProtocol }
-		if escProtocolStr[vars[page][4][2] + 1] == "Hobbywing V4" then
+		if escProtocolStr[escProtocol[2] + 1] == "Hobbywing V4" then
 			vars[page] = {
 				pairPoles,
 				mainGear,
@@ -471,17 +481,26 @@ local function setPageItems()
 					}
 				end
 			end
-		elseif escProtocolStr[vars[page][4][2] + 1] == "Smart ESC/BAT" then
+		elseif escProtocolStr[escProtocol[2] + 1] == "Smart ESC/BAT" then
 			vars[page] = { pairPoles, mainGear, pinionGear, escProtocol, smartEscConsumption }
 		end
 	elseif page == 6 then -- Vario
-		if varioModelStr[vars[page][1][2] + 1] == "BMP280" then
+        if varioModel[2] + 1 > #varioModelStr then
+			varioModel[2] = 0
+		end
+		if varioModelStr[varioModel[2] + 1] == "BMP280" then
 			vars[page] = { varioModel, varioAddress, varioFilter }
 		else
 			vars[page] = { varioModel, varioAddress }
 		end
 	elseif page == 12 then -- Analog current
-		if analogCurrTypeStr[vars[page][2][2] + 1] == "Hall Effect" then
+        if analogCurrType[2] + 1 > #analogCurrTypeStr then
+			analogCurrType[2] = 0
+		end
+        if analogCurrAutoOffset[2] + 1 > #onOffStr then
+			analogCurrAutoOffset[2] = 0
+		end
+		if analogCurrTypeStr[analogCurrType[2] + 1] == "Hall Effect" then
 			vars[page] = { analogCurr, analogCurrType, analogCurrSens, analogCurrAutoOffset }
 			if getValue(onOffStr, analogCurrAutoOffset[2] + 1) == "Off" then
 				vars[page] = { analogCurr, analogCurrType, analogCurrSens, analogCurrAutoOffset, analogCurrOffset }
@@ -583,7 +602,7 @@ local function run_func(event)
 		getConfig()
 	elseif status == statusEnum.config or status == statusEnum.exitScr then
 		handleEvents(event)
-		setPageItems()
+		if status == statusEnum.config then setPageItems() end
 	elseif status == statusEnum.saveConfig or status == statusEnum.startSave then
 		saveConfig()
 	elseif status == statusEnum.maintOff then
