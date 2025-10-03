@@ -105,8 +105,8 @@ local escProtocol = { "Protocol", nil, 0, 11, 1, 0x5103, escProtocolStr }
 local hw4InitDelay = { "Init Delay", nil, 0, 1, 1, 0x512E, onOffStr }
 local hw4AutoDetect = { "Auto detect", nil, 0, 1, 1, 0x514B, onOffStr }
 
-local hw4VoltDiv = { "Volt divisor", nil, 1, 1000, 0.1, 0x5131 }
-local hw4CurrMult = { "Curr mult", nil, 1, 10, 0.1, 0x5132 }
+local hw4VoltMult = { "Volt divisor", nil, 0, 1000, 1, 0x5131 }
+local hw4CurrMult = { "Curr mult", nil, 0, 1000, 1, 0x5132 }
 local hw4AutoOffset = { "Auto offset", nil, 0, 1, 1, 0x5135, onOffStr }
 local hw4Offset = { "Offset", nil, 0, 2000, 1, 0x5139 }
 
@@ -119,7 +119,7 @@ local page_esc = {
 	escProtocol,
 	hw4InitDelay,
 	hw4AutoDetect,
-	hw4VoltDiv,
+	hw4VoltMult,
 	hw4CurrMult,
 	hw4AutoOffset,
 	hw4Offset,
@@ -349,7 +349,7 @@ local function getConfig()
 			vars[page][varIndex][2] = value / 100
 		elseif dataId == 0x5141 then
 			vars[page][varIndex][2] = value / 10000
-		elseif dataId == 0x5132 then
+		elseif dataId == 0x512E then
 			analogCurrSens[2] = 1000 / value
 		elseif dataId == 0x5105 then
 			vars[page][varIndex][2] = getIndex(gpsBaudrateVal, value) - 1
@@ -370,7 +370,9 @@ local function getConfig()
 			else
 				vars[page][varIndex][2] = 0
 			end
-		else
+		elseif dataId == 0x5131 or dataId == 0x5132 then
+			vars[page][varIndex][2] = math.trunc(value * 10000)
+        else
 			vars[page][varIndex][2] = value
 		end
 		varIndex = varIndex + 1
@@ -420,7 +422,17 @@ local function saveConfig()
 			value = bit32.bor(value, bit32.lshift(gpio20[2], 3)) -- bit 4
 			value = bit32.bor(value, bit32.lshift(gpio21[2], 4)) -- bit 5
 			value = bit32.bor(value, bit32.lshift(gpio22[2], 5)) -- bit 6
-		end
+		elseif dataId == 0x5126 then
+			value = vars[page][varIndex][2] + 1
+		elseif dataId == 0x5135 then
+			if vars[page][varIndex][2] == 1 then
+				value = 0
+			else
+				value = 1
+			end
+		elseif dataId == 0x5131 or dataId == 0x5132 then
+			value = vars[page][varIndex][2] / 10000
+        end
 		if sportTelemetryPush(sensorIdTx - 1, 0x31, dataId, value) then
 			varIndex = varIndex + 1
 		end
@@ -462,7 +474,7 @@ local function setPageItems()
 					escProtocol,
 					hw4InitDelay,
 					hw4AutoDetect,
-					hw4VoltDiv,
+					hw4VoltMult,
 					hw4CurrMult,
 					hw4AutoOffset,
 				}
@@ -474,7 +486,7 @@ local function setPageItems()
 						escProtocol,
 						hw4InitDelay,
 						hw4AutoDetect,
-						hw4VoltDiv,
+						hw4VoltMult,
 						hw4CurrMult,
 						hw4AutoOffset,
 						hw4Offset,

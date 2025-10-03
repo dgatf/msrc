@@ -101,7 +101,7 @@
 #define ESC_HW4_MANUAL_OFFSET 1
 #define ESC_HW4_CURRENT_OFFSET 0
 #define ESC_HW4_CURRENT_THRESHOLD 10
-#define ESC_HW4_DIVISOR 114
+#define ESC_HW4_VOLTAGE_MULTIPLIER 0.0088
 #define ESC_HW4_CURRENT_MULTIPLIER 0.3
 #define ESC_HW4_CURRENT_MAX 250
 
@@ -188,7 +188,7 @@ void config_forze_write() {
     config.esc_hw4_init_delay_duration = ESC_INIT_DELAY_DURATION;
     config.esc_hw4_current_thresold = ESC_HW4_CURRENT_THRESHOLD;
     config.esc_hw4_current_max = ESC_HW4_CURRENT_MAX;
-    config.esc_hw4_voltage_multiplier = 1 / ESC_HW4_DIVISOR;
+    config.esc_hw4_voltage_multiplier = ESC_HW4_VOLTAGE_MULTIPLIER;
     config.esc_hw4_current_multiplier = ESC_HW4_CURRENT_MULTIPLIER;
     config.esc_hw4_current_max = ESC_HW4_CURRENT_MAX;
     config.ibus_alternative_coordinates = IBUS_GPS_ALTERNATIVE_COORDINATES;

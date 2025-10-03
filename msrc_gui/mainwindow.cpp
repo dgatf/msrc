@@ -557,8 +557,8 @@ void MainWindow::setUiFromConfig() {
     ui->sbEscOffset->setValue(config.esc_hw4_offset);
     // config.esc_hw4_init_delay_duration = 10000;
     //ui->sbCurrentThresold->setValue(config.esc_hw4_current_thresold);
-    ui->sbVoltageDivisor->setValue(1 / config.esc_hw4_voltage_multiplier);
-    ui->sbCurrentMultiplier->setValue(config.esc_hw4_current_multiplier);
+    ui->sbVoltageMultiplier->setValue(config.esc_hw4_voltage_multiplier * 10000);
+    ui->sbCurrentMultiplier->setValue(config.esc_hw4_current_multiplier * 10000);
     //ui->sbCurrentMax->setValue(config.esc_hw4_current_max);
     ui->cbHw4AutoDetect->setChecked(config.esc_hw4_auto_detect);
 
@@ -765,8 +765,8 @@ void MainWindow::getConfigFromUi() {
     config.esc_hw4_offset = ui->sbEscOffset->value();
     // config.esc_hw4_init_delay_duration = 10000;
     //config.esc_hw4_current_thresold = ui->sbCurrentThresold->value();
-    config.esc_hw4_voltage_multiplier = 1 / ui->sbVoltageDivisor->value();
-    config.esc_hw4_current_multiplier = ui->sbCurrentMultiplier->value();
+    config.esc_hw4_voltage_multiplier = ui->sbVoltageMultiplier->value() / 10000.0;
+    config.esc_hw4_current_multiplier = ui->sbCurrentMultiplier->value() / 10000.0;
     //config.esc_hw4_current_max = ui->sbCurrentMax->value();
     config.esc_hw4_auto_detect = ui->cbHw4AutoDetect->isChecked();
 

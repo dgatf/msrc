@@ -302,10 +302,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 packet.value = config->esc_hw4_current_max;
                 break;
             case 0x5131:
-                packet.value = config->esc_hw4_voltage_multiplier * 100;
+                packet.value = config->esc_hw4_voltage_multiplier;
                 break;
             case 0x5132:
-                packet.value = config->esc_hw4_current_multiplier * 100;
+                packet.value = config->esc_hw4_current_multiplier;
                 break;
             case 0x5135:
                 packet.value = config->esc_hw4_is_manual_offset;
@@ -450,7 +450,7 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 config_lua->refresh_rate_default = value;
                 break;
             case 0x511B:
-                config_lua->analog_voltage_multiplier = value / 100;
+                config_lua->analog_voltage_multiplier = value / 100.0;
                 break;
             case 0x511C:
                 config_lua->analog_current_type = value;
@@ -465,7 +465,7 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 config_lua->analog_current_multiplier = value;
                 break;
             case 0x5120:
-                config_lua->analog_current_offset = value / 100;
+                config_lua->analog_current_offset = value / 100.0;
                 break;
             case 0x5121:
                 config_lua->analog_current_autoffset = value;
@@ -510,10 +510,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 config_lua->esc_hw4_current_max = value;
                 break;
             case 0x5131:
-                config_lua->esc_hw4_voltage_multiplier = value / 100;
+                config_lua->esc_hw4_voltage_multiplier = value;
                 break;
             case 0x5132:
-                config_lua->esc_hw4_current_multiplier = value / 100;
+                config_lua->esc_hw4_current_multiplier = value;
                 break;
             case 0x5135:
                 config_lua->esc_hw4_is_manual_offset = value;
@@ -531,10 +531,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 config_lua->airspeed_offset = value;
                 break;
             case 0x5140:
-                config_lua->airspeed_vcc = value / 100;
+                config_lua->airspeed_vcc = value / 100.0;
                 break;
             case 0x5141:
-                config_lua->fuel_flow_ml_per_pulse = value / 10000;
+                config_lua->fuel_flow_ml_per_pulse = value / 10000.0;
                 break;
             case 0x5142:
                 config_lua->enable_fuel_flow = value;

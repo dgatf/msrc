@@ -91,8 +91,8 @@ static void process(esc_hw4_parameters_t *parameter, uint *current_raw) {
             }
             else
                 parameter->current_offset = 0;
-            debug("\nEsc HW4 signature (%u): Divisor: %.2f CurrMult: %.4f CurrOff: %u",
-                  uxTaskGetStackHighWaterMark(NULL), 1 / parameter->voltage_multiplier, parameter->current_multiplier,
+            debug("\nEsc HW4 signature (%u): VoltMult: %.0f CurrMult: %.0f CurrOff: %u",
+                  uxTaskGetStackHighWaterMark(NULL), parameter->voltage_multiplier * 10000, parameter->current_multiplier * 10000,
                   parameter->current_offset);
         } else {
             debug("\nEsc HW4 signature error (%u): ", uxTaskGetStackHighWaterMark(NULL));
@@ -126,11 +126,11 @@ static void process(esc_hw4_parameters_t *parameter, uint *current_raw) {
             uint32_t packet = (uint32_t)data[1] << 16 | (uint16_t)data[2] << 8 | data[3];
             debug(
                 "\nEsc HW4 (%u) < Packet: %i Thr: %u Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f Cons: %.0f "
-                "CellV: %.2f CRaw: %i CRawOffset: %u CurrMult: %.4f VoltMult: %.4f",
+                "CellV: %.2f CRaw: %i CRawOffset: %u CurrMult: %.0f VoltMult: %.0f",
                 uxTaskGetStackHighWaterMark(NULL), packet, throttle, *parameter->rpm, *parameter->voltage, *parameter->current,
                 *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption,
-                *parameter->cell_voltage, *current_raw, parameter->current_offset, parameter->current_multiplier,
-                parameter->voltage_multiplier);
+                *parameter->cell_voltage, *current_raw, parameter->current_offset, parameter->current_multiplier * 10000,
+                parameter->voltage_multiplier * 10000);
         } else {
             debug("\nEsc HW4 packet error (%u) 0x%X", uxTaskGetStackHighWaterMark(NULL), data[0]);
         }
