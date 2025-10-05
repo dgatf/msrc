@@ -84,9 +84,9 @@ local avgAirspeed = { "Airspeed", nil, 1, 16, 1, 0x5111 }
 local page_avg = { avgRpm, avgVolt, avgCurr, avgTemp, avgVario, avgAirspeed }
 
 -- Page 4 - ESC
-local pairPoles = { "Pair of Poles", nil, 1, 16, 1, 0x5122 }
-local mainGear = { "Main Gear", nil, 1, 16, 1, 0x5123 }
-local pinionGear = { "Pinion Gear", nil, 1, 16, 1, 0x5124 }
+local pairPoles = { "Pair of Poles", nil, 1, 20, 1, 0x5122 }
+local mainGear = { "Main Gear", nil, 1, 1000, 1, 0x5123 }
+local pinionGear = { "Pinion Gear", nil, 1, 1000, 1, 0x5124 }
 local escProtocolStr = {
 	"None",
 	"Hobbywing V3",
@@ -105,10 +105,10 @@ local escProtocol = { "Protocol", nil, 0, 11, 1, 0x5103, escProtocolStr }
 local hw4InitDelay = { "Init Delay", nil, 0, 1, 1, 0x512E, onOffStr }
 local hw4AutoDetect = { "Auto detect", nil, 0, 1, 1, 0x514B, onOffStr }
 
-local hw4VoltMult = { "Volt divisor", nil, 0, 1000, 1, 0x5131 }
-local hw4CurrMult = { "Curr mult", nil, 0, 1000, 1, 0x5132 }
+local hw4VoltMult = { "Volt mult", nil, 0, 10000, 1, 0x5131 }
+local hw4CurrMult = { "Curr mult", nil, 0, 10000, 1, 0x5132 }
 local hw4AutoOffset = { "Auto offset", nil, 0, 1, 1, 0x5135, onOffStr }
-local hw4Offset = { "Offset", nil, 0, 2000, 1, 0x5139 }
+local hw4Offset = { "Curr offset", nil, 0, 2000, 1, 0x5139 }
 
 local smartEscConsumption = { "Calc cons", nil, 0, 1, 1, 0x5145, onOffStr }
 
@@ -128,7 +128,7 @@ local page_esc = {
 
 -- Page 5 - GPS
 local gpsEnable = { "Enable", nil, 0, 1, 1, 0x5104, onOffStr }
-local gpsProtocolStr = { "UBLOX", "NMEA" } --
+local gpsProtocolStr = { "UBLOX", "NMEA" }
 local gpsProtocol = { "Protocol", nil, 0, 1, 1, 0x5149, gpsProtocolStr }
 local gpsBaudrateVal = { 9600, 38400, 57600, 115200 }
 local gpsBaudrate = { "Baudrate", nil, 0, 3, 1, 0x5105, gpsBaudrateVal }
@@ -148,7 +148,7 @@ local page_vario = { varioModel, varioAddress, varioFilter }
 
 -- Page 7 - Fuel meter
 local fuelMeter = { "Enable", nil, 0, 1, 1, 0x5142, onOffStr }
-local mlPulse = { "ml/pulse", nil, 1, 100, 0.1, 0x5141 }
+local mlPulse = { "ml/pulse", nil, 0, 1, 0.0001, 0x5141 }
 
 local page_fuelmeter = { fuelMeter, mlPulse }
 
@@ -175,25 +175,25 @@ local page_analogTemp = { analogTemp }
 
 -- Page 11 - Voltage analog
 local analogVolt = { "Enable", nil, 0, 1, 1, 0x5106, onOffStr }
-local analogVoltMult = { "Multiplier", nil, 1, 1000, 0.1, 0x511B }
+local analogVoltMult = { "Multiplier", nil, 1, 1000, 0.01, 0x511B }
 
 local page_analogVolt = { analogVolt, analogVoltMult }
 
 -- Page 12 - Current analog
 local analogCurr = { "Enable", nil, 0, 1, 1, 0x5107, onOffStr }
 local analogCurrTypeStr = { "Hall Effect", "Shunt Resistor" }
-local analogCurrType = { "Type", nil, 0, 1, 1, 0x512D, analogCurrTypeStr }
-local analogCurrMult = { "Mult", nil, 0, 100, 0.1, 0x512E }
-local analogCurrSens = { "Sens(mV/A)", 0, 0, 100, 0.1, 0 }
+local analogCurrType = { "Type", nil, 0, 1, 1, 0x511C, analogCurrTypeStr }
+local analogCurrMult = { "Mult", nil, 0, 100, 0.01, 0x511F }
+local analogCurrSens = { "Sens(mV/A)", 0, 0, 100, 0.01, 0 }
 local analogCurrAutoOffset = { "Auto Offset", nil, 0, 1, 1, 0x5121, onOffStr }
-local analogCurrOffset = { "Offset", nil, 0, 99, 0.1, 0x5120 }
+local analogCurrOffset = { "Offset", nil, 0, 3.3, 0.01, 0x5120 }
 
 local page_analogCurr = { analogCurr, analogCurrType, analogCurrMult, analogCurrAutoOffset, analogCurrOffset }
 
 -- Page 13 - Airspeed analog
 local analogAirspeed = { "Enable", nil, 0, 1, 1, 0x5109, onOffStr }
-local analogAirspeedVcc = { "Vcc", nil, 3.3, 5.25, 0.01, 0x5140 }
-local analogAirspeedOffset = { "Offset", nil, -1000, 1000, 1, 0x513F }
+local analogAirspeedVcc = { "Vcc(V)", nil, 3, 6, 0.01, 0x5140 }
+local analogAirspeedOffset = { "Offset(mV)", nil, -1000, 1000, 1, 0x513F }
 
 local page_analogAirspeed = { analogAirspeed, analogAirspeedVcc, analogAirspeedOffset }
 
@@ -225,20 +225,26 @@ local function getTextFlags(itemPos)
 end
 
 local function changeValue(isIncremented)
+    local mult = 1
+    if getRotEncSpeed() == ROTENC_MIDSPEED then
+        mult = 10
+    elseif getRotEncSpeed() == ROTENC_HIGHSPEED then
+        mult = 100
+    end
 	if isIncremented == true then
-		vars[page][pagePos][2] = vars[page][pagePos][2] + vars[page][pagePos][5]
+		vars[page][pagePos][2] = vars[page][pagePos][2] + vars[page][pagePos][5] * mult
 		if vars[page][pagePos][2] > vars[page][pagePos][4] then
 			vars[page][pagePos][2] = vars[page][pagePos][4]
 		end
 	else
-		vars[page][pagePos][2] = vars[page][pagePos][2] - vars[page][pagePos][5]
+		vars[page][pagePos][2] = vars[page][pagePos][2] - vars[page][pagePos][5] * mult
 		if vars[page][pagePos][2] < vars[page][pagePos][3] then
 			vars[page][pagePos][2] = vars[page][pagePos][3]
 		end
 	end
 end
 
-local function getValue(list, index)
+local function getValue(list, index) -- index starts at 1
 	if index > #list then
 		return list[1]
 	end
@@ -345,16 +351,20 @@ local function getConfig()
 			ts = getTime()
 		end
 	elseif dataId ~= nil and dataId == vars[page][varIndex][6] then
-		if dataId == 0x5131 or dataId == 0x5132 or dataId == 0x5140 or dataId == 0x511B or dataId == 0x5120 then
-			vars[page][varIndex][2] = value / 100
+		if dataId == 0x511E or dataId == 0x5140 or dataId == 0x511B or dataId == 0x5120 then
+			value = value / 100.0
 		elseif dataId == 0x5141 then
-			vars[page][varIndex][2] = value / 10000
-		elseif dataId == 0x512E then
-			analogCurrSens[2] = 1000 / value
+			value = value / 10000.0
+		elseif dataId == 0x511F then
+            value = value / 100.0
+            if analogCurrTypeStr[analogCurrType[2] + 1] == "Hall Effect" then
+                value = 1000.0 / value
+                analogCurrSens[2] = value
+            end
 		elseif dataId == 0x5105 then
-			vars[page][varIndex][2] = getIndex(gpsBaudrateVal, value) - 1
+			value = getIndex(gpsBaudrateVal, value) - 1
 		elseif dataId == 0x5147 then
-			vars[page][varIndex][2] = getIndex(gpsRateVal, value) - 1
+			value = getIndex(gpsRateVal, value) - 1
 		elseif dataId == 0x5138 then
 			gpio17[2] = bit32.extract(value, 0)
 			gpio18[2] = bit32.extract(value, 1)
@@ -363,18 +373,23 @@ local function getConfig()
 			gpio21[2] = bit32.extract(value, 4)
 			gpio22[2] = bit32.extract(value, 5)
 		elseif dataId == 0x5126 then
-			vars[page][varIndex][2] = value - 1
+			value = value - 1
 		elseif dataId == 0x5135 then
 			if value == 0 then
-				vars[page][varIndex][2] = 1
+				value = 1
 			else
-				vars[page][varIndex][2] = 0
+				value = 0
 			end
-		elseif dataId == 0x5131 or dataId == 0x5132 then
-			vars[page][varIndex][2] = math.trunc(value * 10000)
-        else
-			vars[page][varIndex][2] = value
-		end
+        elseif dataId == 0x513F then
+            value = value - 1000
+        end
+        if value < vars[page][varIndex][3] then
+            value = vars[page][varIndex][3]
+        end
+        if value > vars[page][varIndex][4] then
+            value = vars[page][varIndex][4]
+        end
+        vars[page][varIndex][2] = value
 		varIndex = varIndex + 1
 		ts = 0
 		if varIndex > #vars[page] then
@@ -407,14 +422,14 @@ local function saveConfig()
 	local value = vars[page][varIndex][2]
 	local dataId = vars[page][varIndex][6]
 	if value ~= nil and dataId ~= 0 then
-		if dataId == 0x5131 or dataId == 0x5132 or dataId == 0x5140 or dataId == 0x511B then
+		if dataId == 0x511E or dataId == 0x511F or dataId == 0x5140 or dataId == 0x511B then
 			value = value * 100
 		elseif dataId == 0x5141 then
 			value = value * 10000
 		elseif dataId == 0x5105 then
-			value = getValue(gpsBaudrateVal, vars[page][varIndex][2])
+			value = getValue(gpsBaudrateVal, gpsBaudrate[2] + 1)
 		elseif dataId == 0x5147 then
-			value = getValue(gpsRateVal, vars[page][varIndex][2])
+			value = getValue(gpsRateVal, gpsRate[2] + 1)
 		elseif dataId == 0x5138 then
 			value = gpio17[2] -- bit 1
 			value = bit32.bor(value, bit32.lshift(gpio18[2], 1)) -- bit 2
@@ -430,9 +445,10 @@ local function saveConfig()
 			else
 				value = 1
 			end
-		elseif dataId == 0x5131 or dataId == 0x5132 then
-			value = vars[page][varIndex][2] / 10000
+        elseif dataId == 0x513F then
+            value = vars[page][varIndex][2] + 1000
         end
+        value = math.floor(value)
 		if sportTelemetryPush(sensorIdTx - 1, 0x31, dataId, value) then
 			varIndex = varIndex + 1
 		end
@@ -555,12 +571,20 @@ local function drawPage()
 			for i = 1, #vars[page] - scroll do
 				lcd.drawText(1, 9 + 7 * (i - 1), vars[page][i + scroll][1], SMLSIZE)
 				if #vars[page][i + scroll] == 6 then
-					lcd.drawText(60, 9 + 7 * (i - 1), vars[page][i + scroll][2], SMLSIZE + getTextFlags(i + scroll))
+                    local val = vars[page][i + scroll][2]
+                    if val == nil then
+                        val = -1
+                    end
+					lcd.drawText(60, 9 + 7 * (i - 1), val, SMLSIZE + getTextFlags(i + scroll))
 				elseif #vars[page][i + scroll] == 7 then
+                    local val = 1
+                    if vars[page][i + scroll][2] ~= nil then
+                        val = vars[page][i + scroll][2] + 1
+                    end
 					lcd.drawText(
 						60,
 						9 + 7 * (i - 1),
-						getValue(vars[page][i + scroll][7], vars[page][i + scroll][2] + 1),
+						getValue(vars[page][i + scroll][7], val),
 						SMLSIZE + getTextFlags(i + scroll)
 					)
 				end
@@ -571,10 +595,14 @@ local function drawPage()
 				if #vars[page][i] == 6 then
 					lcd.drawText(200, 20 + 15 * (i - 1), vars[page][i][2], SMLSIZE + getTextFlags(i))
 				elseif #vars[page][i] == 7 then
-					lcd.drawText(
+					local val = 1
+                    if vars[page][i][2] ~= nil then
+                        val = vars[page][i][2] + 1
+                    end
+                    lcd.drawText(
 						200,
 						20 + 15 * (i - 1),
-						getValue(vars[page][i][7], vars[page][i][2] + 1),
+						getValue(vars[page][i][7], val),
 						SMLSIZE + getTextFlags(i)
 					)
 				end
@@ -594,8 +622,8 @@ local function drawPage()
 		lcd.drawText(60, 30, "Cancel", SMLSIZE + flag_cancel)
 	elseif status == statusEnum.startSave then
 		drawTitle("Saving ", 0, 0)
-		if page <= #vars then
-			lcd.drawText(1, 20, "Send dataId " .. vars[page][varIndex][6], SMLSIZE)
+		if page <= #vars and vars[page][varIndex][2] ~= nil and vars[page][varIndex][6] then
+			lcd.drawText(1, 20, "Update: " .. vars[page][varIndex][1], SMLSIZE)
 		end
 	elseif status == statusEnum.exit then
 		drawTitle("MSRC " .. scriptVersion, 0, 0)

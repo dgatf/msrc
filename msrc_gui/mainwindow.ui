@@ -78,7 +78,7 @@
           <property name="currentIndex">
            <number>1</number>
           </property>
-          <widget class="QWidget" name="tab_7">
+          <widget class="QWidget" name="tbReceiver">
            <attribute name="title">
             <string>Receiver</string>
            </attribute>
@@ -562,7 +562,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_8">
+          <widget class="QWidget" name="tbSensors">
            <attribute name="title">
             <string>Sensors</string>
            </attribute>
@@ -738,7 +738,7 @@
                          <number>0</number>
                         </property>
                         <property name="maximum">
-                         <double>1000.000000000000000</double>
+                         <double>10000.000000000000000</double>
                         </property>
                         <property name="value">
                          <double>1.000000000000000</double>
@@ -767,7 +767,7 @@
                          <double>0.000000000000000</double>
                         </property>
                         <property name="maximum">
-                         <double>1000.000000000000000</double>
+                         <double>10000.000000000000000</double>
                         </property>
                         <property name="value">
                          <double>1.000000000000000</double>
@@ -809,7 +809,7 @@
                          <number>0</number>
                         </property>
                         <property name="maximum">
-                         <double>1000.000000000000000</double>
+                         <double>2000.000000000000000</double>
                         </property>
                        </widget>
                       </item>
@@ -1196,6 +1196,12 @@
                         <property name="decimals">
                          <number>2</number>
                         </property>
+                        <property name="maximum">
+                         <double>3.300000000000000</double>
+                        </property>
+                        <property name="singleStep">
+                         <double>0.010000000000000</double>
+                        </property>
                        </widget>
                       </item>
                       <item row="2" column="0">
@@ -1243,6 +1249,9 @@
                         <property name="enabled">
                          <bool>false</bool>
                         </property>
+                        <property name="singleStep">
+                         <double>0.010000000000000</double>
+                        </property>
                        </widget>
                       </item>
                       <item row="1" column="1">
@@ -1283,10 +1292,10 @@
                          <number>2</number>
                         </property>
                         <property name="minimum">
-                         <double>3.300000000000000</double>
+                         <double>3.000000000000000</double>
                         </property>
                         <property name="maximum">
-                         <double>5.250000000000000</double>
+                         <double>6.000000000000000</double>
                         </property>
                         <property name="singleStep">
                          <double>0.010000000000000</double>
@@ -1348,6 +1357,9 @@
                        <widget class="QDoubleSpinBox" name="sbMlPulse">
                         <property name="decimals">
                          <number>4</number>
+                        </property>
+                        <property name="singleStep">
+                         <double>0.000100000000000</double>
                         </property>
                        </widget>
                       </item>

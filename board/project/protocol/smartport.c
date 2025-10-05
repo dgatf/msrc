@@ -169,10 +169,13 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 memmove(version, version + 1, strlen(version));
                 char *token;
                 token = strtok(version, " . ");
+                uint cont = 0;
                 while (token != NULL) {
                     packet.value = packet.value << 8 | atoi(token);
                     token = strtok(NULL, " . ");
+                    cont++;
                 }
+                packet.value = packet.value << 8 * (3 - cont);
                 break;
             }
             case 0x5103:
@@ -257,7 +260,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 packet.value = config->gpio_interval;
                 break;
             case 0x511E:
-                packet.value = config->analog_current_quiescent_voltage;
+                packet.value = config->analog_current_quiescent_voltage * 100;
+                break;
+            case 0x511F:
+                packet.value = config->analog_current_multiplier * 100;
                 break;
             case 0x5120:
                 packet.value = config->analog_current_offset * 100;
@@ -302,10 +308,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 packet.value = config->esc_hw4_current_max;
                 break;
             case 0x5131:
-                packet.value = config->esc_hw4_voltage_multiplier;
+                packet.value = config->esc_hw4_voltage_multiplier * 10000;
                 break;
             case 0x5132:
-                packet.value = config->esc_hw4_current_multiplier;
+                packet.value = config->esc_hw4_current_multiplier * 10000;
                 break;
             case 0x5135:
                 packet.value = config->esc_hw4_is_manual_offset;
@@ -320,10 +326,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 packet.value = config->esc_hw4_offset;
                 break;
             case 0x513F:
-                packet.value = config->airspeed_offset;
+                packet.value = config->airspeed_offset + 1000;
                 break;
             case 0x5140:
-                packet.value = config->airspeed_vcc * 100;
+                packet.value = config->airspeed_vcc;
                 break;
             case 0x5141:
                 packet.value = config->fuel_flow_ml_per_pulse * 10000;
@@ -366,12 +372,14 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
         config_lua = malloc(sizeof(config_t));
         memcpy(config_lua, config_read(), sizeof(config_t));
         debug("\nSmartport. Start saving...");
+        return packet;
     }
     if (frame_id == 0x31 && data_id == 0x5201 && value == 1) {
         config_write(config_lua);
         sleep_ms(10);
         free(config_lua);
         debug("\nSmartport. Complete save config");
+        return packet;
     }
     if (frame_id == 0x31) {
         uint8_t frame_id_send = 0x32;
@@ -405,22 +413,22 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 config_lua->i2c_address = value;
                 break;
             case 0x510C:
-                config_lua->alpha_rpm = value;
+                config_lua->alpha_rpm = ALPHA(value);
                 break;
             case 0x510D:
-                config_lua->alpha_voltage = value;
+                config_lua->alpha_voltage = ALPHA(value);
                 break;
             case 0x510E:
-                config_lua->alpha_current = value;
+                config_lua->alpha_current = ALPHA(value);
                 break;
             case 0x510F:
-                config_lua->alpha_temperature = value;
+                config_lua->alpha_temperature = ALPHA(value);
                 break;
             case 0x5110:
-                config_lua->alpha_vario = value;
+                config_lua->alpha_vario = ALPHA(value);
                 break;
             case 0x5111:
-                config_lua->alpha_airspeed = value;
+                config_lua->alpha_airspeed = ALPHA(value);
                 break;
             case 0x513A:
                 config_lua->refresh_rate_rpm = value;
@@ -459,10 +467,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 config_lua->gpio_interval = value;
                 break;
             case 0x511E:
-                config_lua->analog_current_quiescent_voltage = value;
+                config_lua->analog_current_quiescent_voltage = value / 100.0;
                 break;
             case 0x511F:
-                config_lua->analog_current_multiplier = value;
+                config_lua->analog_current_multiplier = value / 100.0;
                 break;
             case 0x5120:
                 config_lua->analog_current_offset = value / 100.0;
@@ -510,10 +518,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 config_lua->esc_hw4_current_max = value;
                 break;
             case 0x5131:
-                config_lua->esc_hw4_voltage_multiplier = value;
+                config_lua->esc_hw4_voltage_multiplier = value / 10000.0;
                 break;
             case 0x5132:
-                config_lua->esc_hw4_current_multiplier = value;
+                config_lua->esc_hw4_current_multiplier = value / 10000.0;
                 break;
             case 0x5135:
                 config_lua->esc_hw4_is_manual_offset = value;
@@ -528,10 +536,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 config_lua->esc_hw4_offset = value;
                 break;
             case 0x513F:
-                config_lua->airspeed_offset = value;
+                config_lua->airspeed_offset = value - 1000;
                 break;
             case 0x5140:
-                config_lua->airspeed_vcc = value / 100.0;
+                config_lua->airspeed_vcc = value;
                 break;
             case 0x5141:
                 config_lua->fuel_flow_ml_per_pulse = value / 10000.0;
