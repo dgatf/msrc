@@ -14,8 +14,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->tbConfig->setCurrentIndex(0);
     ui->btDebug->setDisabled(true);
     ui->btUpdate->setDisabled(true);
-    enableWidgets(ui->tbReceiver, false);
-    enableWidgets(ui->scrollArea, false);
+    enableWidgets(ui->scrollAreaWidgetContentsReceiver, false);
+    enableWidgets(ui->scrollAreaWidgetContentsSensors, false);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
                          "Kiss", "APD HV", "HobbyWing V5", "Smart ESC/BAT", "OMP M4", "ZTW"});
 
@@ -286,8 +286,8 @@ void MainWindow::openSerialPort() {
         ui->btConnect->setText("Disconnect");
         ui->actionUpdateConfig->setEnabled(true);
         ui->actionDefaultConfig->setEnabled(true);
-        enableWidgets(ui->tbReceiver, true);
-        enableWidgets(ui->scrollArea, true);
+        enableWidgets(ui->scrollAreaWidgetContentsReceiver, true);
+        enableWidgets(ui->scrollAreaWidgetContentsSensors, true);
         ui->cbPortList->setDisabled(true);
         ui->btDebug->setEnabled(true);
         ui->btDebug->setText("Enable Log");
@@ -298,8 +298,8 @@ void MainWindow::openSerialPort() {
         ui->btConnect->setText("Connect");
         ui->actionUpdateConfig->setEnabled(false);
         ui->actionDefaultConfig->setEnabled(false);
-        enableWidgets(ui->tbReceiver, false);
-        enableWidgets(ui->scrollArea, false);
+        enableWidgets(ui->scrollAreaWidgetContentsReceiver, false);
+        enableWidgets(ui->scrollAreaWidgetContentsSensors, false);
         ui->btDebug->setEnabled(false);
         ui->btDebug->setText("Enable Log");
     }
@@ -313,8 +313,8 @@ void MainWindow::closeSerialPort() {
     ui->btConnect->setText("Connect");
     ui->actionUpdateConfig->setEnabled(false);
     ui->actionDefaultConfig->setEnabled(false);
-    enableWidgets(ui->tbReceiver, false);
-    enableWidgets(ui->scrollArea, false);
+    enableWidgets(ui->scrollAreaWidgetContentsReceiver, false);
+    enableWidgets(ui->scrollAreaWidgetContentsSensors, false);
     ui->cbPortList->setDisabled(false);
     ui->btDebug->setDisabled(true);
     ui->btDebug->setText("Enable Log");

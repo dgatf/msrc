@@ -84,11 +84,11 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <widget class="QScrollArea" name="scrollArea">
+             <widget class="QScrollArea" name="scrollAreaReceiver">
               <property name="widgetResizable">
                <bool>true</bool>
               </property>
-              <widget class="QWidget" name="scrollAreaWidgetContents">
+              <widget class="QWidget" name="scrollAreaWidgetContentsReceiver">
                <property name="geometry">
                 <rect>
                  <x>0</x>
@@ -568,11 +568,11 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
-             <widget class="QScrollArea" name="scrollArea_2">
+             <widget class="QScrollArea" name="scrollAreaSensors">
               <property name="widgetResizable">
                <bool>true</bool>
               </property>
-              <widget class="QWidget" name="scrollAreaWidgetContents_2">
+              <widget class="QWidget" name="scrollAreaWidgetContentsSensors">
                <property name="geometry">
                 <rect>
                  <x>0</x>
