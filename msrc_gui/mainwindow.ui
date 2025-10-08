@@ -738,7 +738,7 @@
                          <number>0</number>
                         </property>
                         <property name="maximum">
-                         <double>10000.000000000000000</double>
+                         <double>100000.000000000000000</double>
                         </property>
                         <property name="value">
                          <double>1.000000000000000</double>
@@ -751,7 +751,7 @@
                          <bool>false</bool>
                         </property>
                         <property name="text">
-                         <string>Current multiplier</string>
+                         <string>Current multiplier (x1e5)</string>
                         </property>
                        </widget>
                       </item>
@@ -767,7 +767,7 @@
                          <double>0.000000000000000</double>
                         </property>
                         <property name="maximum">
-                         <double>10000.000000000000000</double>
+                         <double>100000.000000000000000</double>
                         </property>
                         <property name="value">
                          <double>1.000000000000000</double>
@@ -793,7 +793,7 @@
                          <bool>false</bool>
                         </property>
                         <property name="text">
-                         <string>Voltage multiplier</string>
+                         <string>Voltage multiplier (x1e5)</string>
                         </property>
                        </widget>
                       </item>

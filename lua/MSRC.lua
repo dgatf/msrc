@@ -1,19 +1,3 @@
---[[
-radio frameId: set = 0x31, get = 0x30
-msrc frameId: 0x32. dataId DIY: 5100 - 52FF (to get into lua environment)
-
-cmd        | sender | frameId | dataId  | value (4B)    | sensorId
------------|--------|---------|---------|---------------|---------
-set var    | radio  | 0x33    | 0x51nn  | value         |
-get var    | radio  | 0x34    | 0x51nn  | 0             |
-send var   | msrc   | 0x32    | 0x51nn  | value         |
-ack        | msrc   | 0x32    | 0x5201  | ack=1, nack=0 |
-ack        | radio  | 0x??    | 0x5201  | ack=1, nack=0 |
-start save | radio  | 0x35    | 0x5201  | 0             |
-end save   | radio  | 0x35    | 0x5201  | 1             |
-]]
---
-
 local scriptVersion = "v1.1"
 local firmwareVersion
 local sensorIdTx = 18
@@ -57,8 +41,7 @@ local pageName = {
 }
 
 -- Page 1 - SensorId
---                 str, val, min, max, incr, dataId
-local sensorId = { "Sensor Id", nil, 1, 28, 1, 0x5128 }
+local sensorId = { "Sensor Id", nil, 1, 28, 1, 0x5128 } -- str, val, min, max, incr, dataId
 local page_sensorId = { sensorId }
 
 -- Page 2 - Refresh interval (ms 1-2000)
@@ -105,8 +88,8 @@ local escProtocol = { "Protocol", nil, 0, 11, 1, 0x5103, escProtocolStr }
 local hw4InitDelay = { "Init Delay", nil, 0, 1, 1, 0x512E, onOffStr }
 local hw4AutoDetect = { "Auto detect", nil, 0, 1, 1, 0x514B, onOffStr }
 
-local hw4VoltMult = { "Volt mult", nil, 0, 10000, 1, 0x5131 }
-local hw4CurrMult = { "Curr mult", nil, 0, 10000, 1, 0x5132 }
+local hw4VoltMult = { "Volt mult", nil, 0, 100000, 1, 0x5131 }
+local hw4CurrMult = { "Curr mult", nil, 0, 100000, 1, 0x5132 }
 local hw4AutoOffset = { "Auto offset", nil, 0, 1, 1, 0x5135, onOffStr }
 local hw4Offset = { "Curr offset", nil, 0, 2000, 1, 0x5139 }
 

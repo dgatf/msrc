@@ -82,6 +82,17 @@ void smartport_task(void *parameters) {
 
 smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, uint8_t frame_id, uint16_t data_id,
                                             uint32_t value) {
+    /*
+    Protocol:
+
+    cmd        | sender | frameId | dataId  | value (4B)    | sensorId
+    -----------|--------|---------|---------|---------------|---------
+    get var    | radio  | 0x30    | 0x51nn  | 0             |
+    set var    | radio  | 0x31    | 0x51nn  | value         |
+    start save | radio  | 0x31    | 0x5201  | 0             |
+    end save   | radio  | 0x31    | 0x5201  | 1             |
+    */
+
     smartport_packet_t packet = {0};
     // set maintenance mode on
     if (frame_id == 0x21 && (data_id == 0xFFFF || data_id == parameter->data_id) && value == 0x80) {
@@ -308,10 +319,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 packet.value = config->esc_hw4_current_max;
                 break;
             case 0x5131:
-                packet.value = config->esc_hw4_voltage_multiplier * 10000;
+                packet.value = config->esc_hw4_voltage_multiplier * 100000;
                 break;
             case 0x5132:
-                packet.value = config->esc_hw4_current_multiplier * 10000;
+                packet.value = config->esc_hw4_current_multiplier * 100000;
                 break;
             case 0x5135:
                 packet.value = config->esc_hw4_is_manual_offset;
@@ -518,10 +529,10 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 config_lua->esc_hw4_current_max = value;
                 break;
             case 0x5131:
-                config_lua->esc_hw4_voltage_multiplier = value / 10000.0;
+                config_lua->esc_hw4_voltage_multiplier = value / 100000.0;
                 break;
             case 0x5132:
-                config_lua->esc_hw4_current_multiplier = value / 10000.0;
+                config_lua->esc_hw4_current_multiplier = value / 100000.0;
                 break;
             case 0x5135:
                 config_lua->esc_hw4_is_manual_offset = value;
