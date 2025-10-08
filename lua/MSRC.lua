@@ -1,3 +1,5 @@
+local toolName = "TNS|MSRC config|TNE"
+
 local scriptVersion = "v1.2"
 local firmwareVersion
 local sensorIdTx = 18
@@ -548,48 +550,38 @@ local function drawPage()
 		lcd.drawText(60, 30, varIndex .. "/" .. #vars[page], 0)
 	elseif status == statusEnum.config then
 		drawTitle(pageName[page], page, #vars)
+		local scroll, fileHeight, fileStart
 		if LCD_H == 64 then
-			local scroll = pagePos - 8
+			scroll = pagePos - 8
 			if scroll < 0 then
 				scroll = 0
 			end
-			for i = 1, #vars[page] - scroll do
-				lcd.drawText(1, 9 + 7 * (i - 1), vars[page][i + scroll][1], SMLSIZE)
-				if #vars[page][i + scroll] == 6 then
-					local val = vars[page][i + scroll][2]
-					if val == nil then
-						val = -1
-					end
-					lcd.drawText(60, 9 + 7 * (i - 1), val, SMLSIZE + getTextFlags(i + scroll))
-				elseif #vars[page][i + scroll] == 7 then
-					local val = 1
-					if vars[page][i + scroll][2] ~= nil then
-						val = vars[page][i + scroll][2] + 1
-					end
-					lcd.drawText(
-						60,
-						9 + 7 * (i - 1),
-						getValue(vars[page][i + scroll][7], val),
-						SMLSIZE + getTextFlags(i + scroll)
-					)
-				end
-			end
+			fileStart = 9
+			fileHeight = 7
 		else
-			for i = 1, #vars[page] do
-				lcd.drawText(1, 20 + 15 * (i - 1), vars[page][i][1], SMLSIZE)
-				if #vars[page][i] == 6 then
-                    local val = vars[page][i][2]
-					if val == nil then
-						val = -1
-					end
-					lcd.drawText(200, 20 + 15 * (i - 1), val, SMLSIZE + getTextFlags(i))
-				elseif #vars[page][i] == 7 then
-					local val = 1
-					if vars[page][i][2] ~= nil then
-						val = vars[page][i][2] + 1
-					end
-					lcd.drawText(200, 20 + 15 * (i - 1), getValue(vars[page][i][7], val), SMLSIZE + getTextFlags(i))
+			scroll = 0
+			fileStart = 20
+			fileHeight = 15
+		end
+		for i = 1, #vars[page] - scroll do
+			lcd.drawText(1, fileStart + fileHeight * (i - 1), vars[page][i + scroll][1], SMLSIZE)
+			if #vars[page][i + scroll] == 6 then
+				local val = vars[page][i + scroll][2]
+				if val == nil then
+					val = -1
 				end
+				lcd.drawText(LCD_W / 2, fileStart + fileHeight * (i - 1), val, SMLSIZE + getTextFlags(i + scroll))
+			elseif #vars[page][i + scroll] == 7 then
+				local val = 1
+				if vars[page][i + scroll][2] ~= nil then
+					val = vars[page][i + scroll][2] + 1
+				end
+				lcd.drawText(
+					LCD_W / 2,
+					fileStart + fileHeight * (i - 1),
+					getValue(vars[page][i + scroll][7], val),
+					SMLSIZE + getTextFlags(i + scroll)
+				)
 			end
 		end
 	elseif status == statusEnum.exitScr then
