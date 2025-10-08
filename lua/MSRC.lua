@@ -1,4 +1,4 @@
-local scriptVersion = "v1.1"
+local scriptVersion = "v1.2"
 local firmwareVersion
 local sensorIdTx = 18
 local page = 0
@@ -137,14 +137,15 @@ local page_fuelmeter = { fuelMeter, mlPulse }
 
 -- Page 8 - GPIO
 local gpioInterval = { "Interval(ms)", nil, 10, 10000, 1, 0x511D }
-local gpio17 = { "17", nil, 0, 1, 1, 0x5138, onOffStr }
+local gpio = { "", nil, 0, 0x3F, 1, 0x5138 }
+local gpio17 = { "17", 0, 0, 1, 1, 0, onOffStr }
 local gpio18 = { "18", 0, 0, 1, 1, 0, onOffStr }
 local gpio19 = { "19", 0, 0, 1, 1, 0, onOffStr }
 local gpio20 = { "20", 0, 0, 1, 1, 0, onOffStr }
 local gpio21 = { "21", 0, 0, 1, 1, 0, onOffStr }
 local gpio22 = { "22", 0, 0, 1, 1, 0, onOffStr }
 
-local page_gpio = { gpioInterval, gpio17, gpio18, gpio19, gpio20, gpio21, gpio22 }
+local page_gpio = { gpioInterval, gpio }
 
 -- Page 9 - Analog rate
 local analogRate = { "Rate(Hz)", nil, 1, 100, 1, 0x5136 }
@@ -208,12 +209,12 @@ local function getTextFlags(itemPos)
 end
 
 local function changeValue(isIncremented)
-    local mult = 1
-    if getRotEncSpeed() == ROTENC_MIDSPEED then
-        mult = 10
-    elseif getRotEncSpeed() == ROTENC_HIGHSPEED then
-        mult = 100
-    end
+	local mult = 1
+	if getRotEncSpeed() == ROTENC_MIDSPEED then
+		mult = 10
+	elseif getRotEncSpeed() == ROTENC_HIGHSPEED then
+		mult = 100
+	end
 	if isIncremented == true then
 		vars[page][pagePos][2] = vars[page][pagePos][2] + vars[page][pagePos][5] * mult
 		if vars[page][pagePos][2] > vars[page][pagePos][4] then
@@ -311,7 +312,7 @@ local function handleEvents(event)
 			else
 				saveChanges = true
 				status = statusEnum.getConfig
-                varIndex = 1
+				varIndex = 1
 			end
 		else
 			isSelected = not isSelected
@@ -339,11 +340,11 @@ local function getConfig()
 		elseif dataId == 0x5141 then
 			value = value / 10000.0
 		elseif dataId == 0x511F then
-            value = value / 100.0
-            if analogCurrTypeStr[analogCurrType[2] + 1] == "Hall Effect" then
-                value = 1000.0 / value
-                analogCurrSens[2] = value
-            end
+			value = value / 100.0
+			if analogCurrTypeStr[analogCurrType[2] + 1] == "Hall Effect" then
+				value = 1000.0 / value
+				analogCurrSens[2] = value
+			end
 		elseif dataId == 0x5105 then
 			value = getIndex(gpsBaudrateVal, value) - 1
 		elseif dataId == 0x5147 then
@@ -355,6 +356,7 @@ local function getConfig()
 			gpio20[2] = bit32.extract(value, 3)
 			gpio21[2] = bit32.extract(value, 4)
 			gpio22[2] = bit32.extract(value, 5)
+			vars[8] = { gpioInterval, gpio17, gpio18, gpio19, gpio20, gpio21, gpio22 }
 		elseif dataId == 0x5126 then
 			value = value - 1
 		elseif dataId == 0x5135 then
@@ -363,16 +365,16 @@ local function getConfig()
 			else
 				value = 0
 			end
-        elseif dataId == 0x513F then
-            value = value - 1000
-        end
-        if value < vars[page][varIndex][3] then
-            value = vars[page][varIndex][3]
-        end
-        if value > vars[page][varIndex][4] then
-            value = vars[page][varIndex][4]
-        end
-        vars[page][varIndex][2] = value
+		elseif dataId == 0x513F then
+			value = value - 1000
+		end
+		if value < vars[page][varIndex][3] then
+			value = vars[page][varIndex][3]
+		end
+		if value > vars[page][varIndex][4] then
+			value = vars[page][varIndex][4]
+		end
+		vars[page][varIndex][2] = value
 		varIndex = varIndex + 1
 		ts = 0
 		if varIndex > #vars[page] then
@@ -414,7 +416,7 @@ local function saveConfig()
 		elseif dataId == 0x5147 then
 			value = getValue(gpsRateVal, gpsRate[2] + 1)
 		elseif dataId == 0x5138 then
-			value = gpio17[2] -- bit 1
+			value = bit32.bor(value, bit32.lshift(gpio17[2], 0)) -- bit 1
 			value = bit32.bor(value, bit32.lshift(gpio18[2], 1)) -- bit 2
 			value = bit32.bor(value, bit32.lshift(gpio19[2], 2)) -- bit 3
 			value = bit32.bor(value, bit32.lshift(gpio20[2], 3)) -- bit 4
@@ -428,10 +430,10 @@ local function saveConfig()
 			else
 				value = 1
 			end
-        elseif dataId == 0x513F then
-            value = vars[page][varIndex][2] + 1000
-        end
-        value = math.floor(value)
+		elseif dataId == 0x513F then
+			value = vars[page][varIndex][2] + 1000
+		end
+		value = math.floor(value)
 		if sportTelemetryPush(sensorIdTx - 1, 0x31, dataId, value) then
 			varIndex = varIndex + 1
 		end
@@ -496,7 +498,7 @@ local function setPageItems()
 			vars[page] = { pairPoles, mainGear, pinionGear, escProtocol, smartEscConsumption }
 		end
 	elseif page == 6 then -- Vario
-        if varioModel[2] + 1 > #varioModelStr then
+		if varioModel[2] + 1 > #varioModelStr then
 			varioModel[2] = 0
 		end
 		if varioModelStr[varioModel[2] + 1] == "BMP280" then
@@ -505,10 +507,10 @@ local function setPageItems()
 			vars[page] = { varioModel, varioAddress }
 		end
 	elseif page == 12 then -- Analog current
-        if analogCurrType[2] + 1 > #analogCurrTypeStr then
+		if analogCurrType[2] + 1 > #analogCurrTypeStr then
 			analogCurrType[2] = 0
 		end
-        if analogCurrAutoOffset[2] + 1 > #onOffStr then
+		if analogCurrAutoOffset[2] + 1 > #onOffStr then
 			analogCurrAutoOffset[2] = 0
 		end
 		if analogCurrTypeStr[analogCurrType[2] + 1] == "Hall Effect" then
@@ -554,16 +556,16 @@ local function drawPage()
 			for i = 1, #vars[page] - scroll do
 				lcd.drawText(1, 9 + 7 * (i - 1), vars[page][i + scroll][1], SMLSIZE)
 				if #vars[page][i + scroll] == 6 then
-                    local val = vars[page][i + scroll][2]
-                    if val == nil then
-                        val = -1
-                    end
+					local val = vars[page][i + scroll][2]
+					if val == nil then
+						val = -1
+					end
 					lcd.drawText(60, 9 + 7 * (i - 1), val, SMLSIZE + getTextFlags(i + scroll))
 				elseif #vars[page][i + scroll] == 7 then
-                    local val = 1
-                    if vars[page][i + scroll][2] ~= nil then
-                        val = vars[page][i + scroll][2] + 1
-                    end
+					local val = 1
+					if vars[page][i + scroll][2] ~= nil then
+						val = vars[page][i + scroll][2] + 1
+					end
 					lcd.drawText(
 						60,
 						9 + 7 * (i - 1),
@@ -576,18 +578,17 @@ local function drawPage()
 			for i = 1, #vars[page] do
 				lcd.drawText(1, 20 + 15 * (i - 1), vars[page][i][1], SMLSIZE)
 				if #vars[page][i] == 6 then
-					lcd.drawText(200, 20 + 15 * (i - 1), vars[page][i][2], SMLSIZE + getTextFlags(i))
+                    local val = vars[page][i][2]
+					if val == nil then
+						val = -1
+					end
+					lcd.drawText(200, 20 + 15 * (i - 1), val, SMLSIZE + getTextFlags(i))
 				elseif #vars[page][i] == 7 then
 					local val = 1
-                    if vars[page][i][2] ~= nil then
-                        val = vars[page][i][2] + 1
-                    end
-                    lcd.drawText(
-						200,
-						20 + 15 * (i - 1),
-						getValue(vars[page][i][7], val),
-						SMLSIZE + getTextFlags(i)
-					)
+					if vars[page][i][2] ~= nil then
+						val = vars[page][i][2] + 1
+					end
+					lcd.drawText(200, 20 + 15 * (i - 1), getValue(vars[page][i][7], val), SMLSIZE + getTextFlags(i))
 				end
 			end
 		end
@@ -605,9 +606,7 @@ local function drawPage()
 		lcd.drawText(60, 30, "Cancel", SMLSIZE + flag_cancel)
 	elseif status == statusEnum.startSave then
 		drawTitle("Saving ", 0, 0)
-		if page <= #vars and vars[page][varIndex][2] ~= nil and vars[page][varIndex][6] then
-			lcd.drawText(1, 20, "Update: " .. vars[page][varIndex][1], SMLSIZE)
-		end
+		lcd.drawText(1, 20, "Update " .. page .. "/" .. #vars, SMLSIZE)
 	elseif status == statusEnum.exit then
 		drawTitle("MSRC " .. scriptVersion, 0, 0)
 		lcd.drawText(1, 20, "Completed!", SMLSIZE)
@@ -625,7 +624,9 @@ local function run_func(event)
 		getConfig()
 	elseif status == statusEnum.config or status == statusEnum.exitScr then
 		handleEvents(event)
-		if status == statusEnum.config then setPageItems() end
+		if status == statusEnum.config then
+			setPageItems()
+		end
 	elseif status == statusEnum.saveConfig or status == statusEnum.startSave then
 		saveConfig()
 	elseif status == statusEnum.maintOff then
