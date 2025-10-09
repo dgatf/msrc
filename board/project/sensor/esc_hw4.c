@@ -92,7 +92,7 @@ static void process(esc_hw4_parameters_t *parameter, uint *current_raw) {
             else
                 parameter->current_offset = 0;
             debug("\nEsc HW4 signature (%u): VoltMult: %.0f CurrMult: %.0f CurrOff: %u",
-                  uxTaskGetStackHighWaterMark(NULL), parameter->voltage_multiplier * 10000, parameter->current_multiplier * 10000,
+                  uxTaskGetStackHighWaterMark(NULL), parameter->voltage_multiplier * 100000, parameter->current_multiplier * 100000,
                   parameter->current_offset);
         } else {
             debug("\nEsc HW4 signature error (%u): ", uxTaskGetStackHighWaterMark(NULL));
@@ -129,8 +129,8 @@ static void process(esc_hw4_parameters_t *parameter, uint *current_raw) {
                 "CellV: %.2f CRaw: %i CRawOffset: %u CurrMult: %.0f VoltMult: %.0f",
                 uxTaskGetStackHighWaterMark(NULL), packet, throttle, *parameter->rpm, *parameter->voltage, *parameter->current,
                 *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption,
-                *parameter->cell_voltage, *current_raw, parameter->current_offset, parameter->current_multiplier * 10000,
-                parameter->voltage_multiplier * 10000);
+                *parameter->cell_voltage, *current_raw, parameter->current_offset, parameter->current_multiplier * 100000,
+                parameter->voltage_multiplier * 100000);
         } else {
             debug("\nEsc HW4 packet error (%u) 0x%X", uxTaskGetStackHighWaterMark(NULL), data[0]);
         }
