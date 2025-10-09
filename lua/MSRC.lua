@@ -311,6 +311,7 @@ local function handleEvents(event)
 				status = statusEnum.saveConfig
 				page = 1
 				varIndex = 1
+		        vars[8] = { gpioInterval, gpio }
 			else
 				saveChanges = true
 				status = statusEnum.getConfig
@@ -345,7 +346,7 @@ local function getConfig()
 			value = value / 100.0
 			if analogCurrTypeStr[analogCurrType[2] + 1] == "Hall Effect" then
 				value = 1000.0 / value
-				analogCurrSens[2] = value
+				analogCurrSens[2] = math.floor(value * 100) / 100.0
 			end
 		elseif dataId == 0x5105 then
 			value = getIndex(gpsBaudrateVal, value) - 1
@@ -358,7 +359,6 @@ local function getConfig()
 			gpio20[2] = bit32.extract(value, 3)
 			gpio21[2] = bit32.extract(value, 4)
 			gpio22[2] = bit32.extract(value, 5)
-			vars[8] = { gpioInterval, gpio17, gpio18, gpio19, gpio20, gpio21, gpio22 }
 		elseif dataId == 0x5126 then
 			value = value - 1
 		elseif dataId == 0x5135 then
@@ -391,6 +391,9 @@ local function getConfig()
 	elseif (getTime() - ts > 200) and sportTelemetryPush(sensorIdTx - 1, 0x30, vars[page][varIndex][6], 1) then
 		ts = getTime()
 	end
+	if page == 8 and status == statusEnum.config then
+		vars[8] = { gpioInterval, gpio17, gpio18, gpio19, gpio20, gpio21, gpio22 }
+	end
 end
 
 local function saveConfig()
@@ -418,7 +421,7 @@ local function saveConfig()
 		elseif dataId == 0x5147 then
 			value = getValue(gpsRateVal, gpsRate[2] + 1)
 		elseif dataId == 0x5138 then
-			value = bit32.bor(value, bit32.lshift(gpio17[2], 0)) -- bit 1
+			value = gpio17[2] -- bit 1
 			value = bit32.bor(value, bit32.lshift(gpio18[2], 1)) -- bit 2
 			value = bit32.bor(value, bit32.lshift(gpio19[2], 2)) -- bit 3
 			value = bit32.bor(value, bit32.lshift(gpio20[2], 3)) -- bit 4
