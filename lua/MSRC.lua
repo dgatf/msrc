@@ -1,28 +1,51 @@
 local toolName = "TNS|MSRC config|TNE"
 
-local scriptVersion = "v1.2"
+local scriptVersion = "v1.3"
+
+local statusEnum = {
+	start = 1,
+	getConfig = 2,
+	config = 3,
+	exitScr = 4,
+	saveConfig = 5,
+	startSave = 6,
+	maintOff = 7,
+	exit = 8,
+}
+local pageEnum = {
+	sensorId = 1,
+	rate = 2,
+	avg = 3,
+	esc = 4,
+	gps = 5,
+	vario = 6,
+	fuelmeter = 7,
+	gpio = 8,
+	analogRate = 9,
+	analogTemp = 10,
+	analogVolt = 11,
+	analogCurr = 12,
+	analogAirspeed = 13,
+}
+local varEnum = {
+	str = 1,
+	val = 2,
+	min = 3,
+	max = 4,
+	incr = 5,
+	dataId = 6,
+	list = 7,
+}
 local firmwareVersion
 local sensorIdTx = 18
 local page = 0
 local pageLong = false
-local pagePos = 1
+local pageItem = 1
 local isSelected = false
-local statusEnum = {
-	maintOn = 1,
-	getConfig = 2,
-	config = 3,
-	saveConfig = 4,
-	startSave = 5,
-	maintOff = 6,
-	exitScr = 7,
-	exit = 8,
-}
-local status = statusEnum.maintOn
+local status = statusEnum.start
 local saveChanges = true
 local ts = 0
-local newValue = true
-local varIndex = 1
-local drawPage
+local vars = {}
 
 local onOffStr = { "Off", "On" }
 
@@ -44,7 +67,7 @@ local pageName = {
 
 -- Page 1 - SensorId
 local sensorId = { "Sensor Id", nil, 1, 28, 1, 0x5128 } -- str, val, min, max, incr, dataId
-local page_sensorId = { sensorId }
+vars[pageEnum.sensorId] = { sensorId }
 
 -- Page 2 - Refresh interval (ms 1-2000)
 local rateRpm = { "RPM", nil, 1, 2000, 1, 0x513A }
@@ -55,8 +78,7 @@ local rateGps = { "GPS", nil, 1, 2000, 1, 0x5116 }
 local rateCons = { "Consumption", nil, 1, 2000, 1, 0x5117 }
 local rateVario = { "Vario", nil, 1, 2000, 1, 0x5118 }
 local rateAirspeed = { "Airspeed", nil, 1, 2000, 1, 0x5119 }
-
-local page_rate = { rateRpm, rateVolt, rateCurr, rateTemp, rateGps, rateCons, rateVario, rateAirspeed }
+vars[pageEnum.rate] = { rateRpm, rateVolt, rateCurr, rateTemp, rateGps, rateCons, rateVario, rateAirspeed }
 
 -- Page 3 - Averaging elements (1-16)
 local avgRpm = { "RPM", nil, 1, 16, 1, 0x510C }
@@ -65,8 +87,7 @@ local avgCurr = { "Current", nil, 1, 16, 1, 0x510E }
 local avgTemp = { "Temperature", nil, 1, 16, 1, 0x510F }
 local avgVario = { "Vario", nil, 1, 16, 1, 0x5110 }
 local avgAirspeed = { "Airspeed", nil, 1, 16, 1, 0x5111 }
-
-local page_avg = { avgRpm, avgVolt, avgCurr, avgTemp, avgVario, avgAirspeed }
+vars[pageEnum.avg] = { avgRpm, avgVolt, avgCurr, avgTemp, avgVario, avgAirspeed }
 
 -- Page 4 - ESC
 local pairPoles = { "Pair of Poles", nil, 1, 20, 1, 0x5122 }
@@ -89,15 +110,12 @@ local escProtocolStr = {
 local escProtocol = { "Protocol", nil, 0, 11, 1, 0x5103, escProtocolStr }
 local hw4InitDelay = { "Init Delay", nil, 0, 1, 1, 0x512E, onOffStr }
 local hw4AutoDetect = { "Auto detect", nil, 0, 1, 1, 0x514B, onOffStr }
-
 local hw4VoltMult = { "Volt mult", nil, 0, 100000, 1, 0x5131 }
 local hw4CurrMult = { "Curr mult", nil, 0, 100000, 1, 0x5132 }
 local hw4AutoOffset = { "Auto offset", nil, 0, 1, 1, 0x5135, onOffStr }
 local hw4Offset = { "Curr offset", nil, 0, 2000, 1, 0x5139 }
-
 local smartEscConsumption = { "Calc cons", nil, 0, 1, 1, 0x5145, onOffStr }
-
-local page_esc = {
+vars[pageEnum.esc] = {
 	pairPoles,
 	mainGear,
 	pinionGear,
@@ -119,8 +137,7 @@ local gpsBaudrateVal = { 9600, 38400, 57600, 115200 }
 local gpsBaudrate = { "Baudrate", nil, 0, 3, 1, 0x5105, gpsBaudrateVal }
 local gpsRateVal = { 1, 5, 10, 20 }
 local gpsRate = { "Rate", nil, 0, 3, 1, 0x5147, gpsRateVal }
-
-local page_gps = { gpsEnable, gpsProtocol, gpsBaudrate, gpsRate }
+vars[pageEnum.gps] = { gpsEnable, gpsProtocol, gpsBaudrate, gpsRate }
 
 -- Page 6 - Vario
 local varioModelStr = { "None", "BMP280", "MS5611", "BMP180" }
@@ -128,14 +145,12 @@ local varioModel = { "Model", nil, 0, 3, 1, 0x510A, varioModelStr }
 local varioAddress = { "Address", nil, 0x76, 0x77, 1, 0x510B }
 local varioFilterStr = { "Low", "Medium", "High" }
 local varioFilter = { "Filter", nil, 1, 3, 1, 0x5126, varioFilterStr }
-
-local page_vario = { varioModel, varioAddress, varioFilter }
+vars[pageEnum.vario] = { varioModel, varioAddress, varioFilter }
 
 -- Page 7 - Fuel meter
 local fuelMeter = { "Enable", nil, 0, 1, 1, 0x5142, onOffStr }
 local mlPulse = { "ml/pulse", nil, 0, 1, 0.0001, 0x5141 }
-
-local page_fuelmeter = { fuelMeter, mlPulse }
+vars[pageEnum.fuelmeter] = { fuelMeter, mlPulse }
 
 -- Page 8 - GPIO
 local gpioInterval = { "Interval(ms)", nil, 10, 10000, 1, 0x511D }
@@ -146,24 +161,20 @@ local gpio19 = { "19", 0, 0, 1, 1, 0, onOffStr }
 local gpio20 = { "20", 0, 0, 1, 1, 0, onOffStr }
 local gpio21 = { "21", 0, 0, 1, 1, 0, onOffStr }
 local gpio22 = { "22", 0, 0, 1, 1, 0, onOffStr }
-
-local page_gpio = { gpioInterval, gpio }
+vars[pageEnum.gpio] = { gpioInterval, gpio }
 
 -- Page 9 - Analog rate
 local analogRate = { "Rate(Hz)", nil, 1, 100, 1, 0x5136 }
-
-local page_analogRate = { analogRate }
+vars[pageEnum.analogRate] = { analogRate }
 
 -- Page 10 - Temperature analog
 local analogTemp = { "Enable", nil, 0, 1, 1, 0x5108, onOffStr }
-
-local page_analogTemp = { analogTemp }
+vars[pageEnum.analogTemp] = { analogTemp }
 
 -- Page 11 - Voltage analog
 local analogVolt = { "Enable", nil, 0, 1, 1, 0x5106, onOffStr }
 local analogVoltMult = { "Multiplier", nil, 1, 1000, 0.01, 0x511B }
-
-local page_analogVolt = { analogVolt, analogVoltMult }
+vars[pageEnum.analogVolt] = { analogVolt, analogVoltMult }
 
 -- Page 12 - Current analog
 local analogCurr = { "Enable", nil, 0, 1, 1, 0x5107, onOffStr }
@@ -173,35 +184,17 @@ local analogCurrMult = { "Mult", nil, 0, 100, 0.01, 0x511F }
 local analogCurrSens = { "Sens(mV/A)", 0, 0, 100, 0.01, 0 }
 local analogCurrAutoOffset = { "Auto Offset", nil, 0, 1, 1, 0x5121, onOffStr }
 local analogCurrOffset = { "Offset", nil, 0, 3.3, 0.01, 0x5120 }
-
-local page_analogCurr = { analogCurr, analogCurrType, analogCurrMult, analogCurrAutoOffset, analogCurrOffset }
+vars[pageEnum.analogCurr] = { analogCurr, analogCurrType, analogCurrMult, analogCurrAutoOffset, analogCurrOffset }
 
 -- Page 13 - Airspeed analog
 local analogAirspeed = { "Enable", nil, 0, 1, 1, 0x5109, onOffStr }
 local analogAirspeedVcc = { "Vcc(V)", nil, 3, 6, 0.01, 0x5140 }
 local analogAirspeedOffset = { "Offset(mV)", nil, -1000, 1000, 1, 0x513F }
+vars[pageEnum.analogAirspeed] = { analogAirspeed, analogAirspeedVcc, analogAirspeedOffset }
 
-local page_analogAirspeed = { analogAirspeed, analogAirspeedVcc, analogAirspeedOffset }
-
-local vars = {
-	page_sensorId,
-	page_rate,
-	page_avg,
-	page_esc,
-	page_gps,
-	page_vario,
-	page_fuelmeter,
-	page_gpio,
-	page_analogRate,
-	page_analogTemp,
-	page_analogVolt,
-	page_analogCurr,
-	page_analogAirspeed,
-}
-
-local function getTextFlags(itemPos)
+local function getTextFlags(item)
 	local value = 0
-	if itemPos == pagePos then
+	if item == pageItem then
 		value = INVERS
 		if isSelected == true then
 			value = value + BLINK
@@ -218,14 +211,16 @@ local function changeValue(isIncremented)
 		mult = 100
 	end
 	if isIncremented == true then
-		vars[page][pagePos][2] = vars[page][pagePos][2] + vars[page][pagePos][5] * mult
-		if vars[page][pagePos][2] > vars[page][pagePos][4] then
-			vars[page][pagePos][2] = vars[page][pagePos][4]
+		vars[page][pageItem][varEnum.val] = vars[page][pageItem][varEnum.val]
+			+ vars[page][pageItem][varEnum.incr] * mult
+		if vars[page][pageItem][varEnum.val] > vars[page][pageItem][varEnum.max] then
+			vars[page][pageItem][varEnum.val] = vars[page][pageItem][varEnum.max]
 		end
 	else
-		vars[page][pagePos][2] = vars[page][pagePos][2] - vars[page][pagePos][5] * mult
-		if vars[page][pagePos][2] < vars[page][pagePos][3] then
-			vars[page][pagePos][2] = vars[page][pagePos][3]
+		vars[page][pageItem][varEnum.val] = vars[page][pageItem][varEnum.val]
+			- vars[page][pageItem][varEnum.incr] * mult
+		if vars[page][pageItem][varEnum.val] < vars[page][pageItem][varEnum.min] then
+			vars[page][pageItem][varEnum.val] = vars[page][pageItem][varEnum.min]
 		end
 	end
 end
@@ -275,20 +270,19 @@ local function handleEvents(event)
 			page = #vars
 		end
 		pageLong = false
-		pagePos = 1
+		pageItem = 1
 		isSelected = false
 		status = statusEnum.getConfig
 		ts = 0
-		varIndex = 1
 	elseif event == EVT_PAGE_LONG or event == 2049 then
 		pageLong = true
 	elseif event == EVT_ROT_RIGHT then
 		if status == statusEnum.exitScr then
 			saveChanges = not saveChanges
 		elseif isSelected == false then
-			pagePos = pagePos + 1
-			if pagePos > #vars[page] then
-				pagePos = 1
+			pageItem = pageItem + 1
+			if pageItem > #vars[page] then
+				pageItem = 1
 			end
 		else
 			changeValue(true)
@@ -298,24 +292,23 @@ local function handleEvents(event)
 			saveChanges = not saveChanges
 		end
 		if isSelected == false then
-			pagePos = pagePos - 1
-			if pagePos < 1 then
-				pagePos = #vars[page]
+			pageItem = pageItem - 1
+			if pageItem < 1 then
+				pageItem = #vars[page]
 			end
 		else
 			changeValue(false)
 		end
 	elseif event == EVT_ROT_BREAK then
 		if status == statusEnum.exitScr then
+			pageItem = 1
 			if saveChanges == true then
 				status = statusEnum.saveConfig
 				page = 1
-				varIndex = 1
-		        vars[8] = { gpioInterval, gpio }
+				vars[pageEnum.gpio] = { gpioInterval, gpio }
 			else
 				saveChanges = true
 				status = statusEnum.getConfig
-				varIndex = 1
 			end
 		else
 			isSelected = not isSelected
@@ -337,28 +330,28 @@ local function getConfig()
 		elseif (getTime() - ts > 200) and sportTelemetryPush(sensorIdTx - 1, 0x30, 0x5101, 1) then
 			ts = getTime()
 		end
-	elseif dataId ~= nil and dataId == vars[page][varIndex][6] then
+	elseif dataId ~= nil and dataId == vars[page][pageItem][varEnum.dataId] then
 		if dataId == 0x511E or dataId == 0x5140 or dataId == 0x511B or dataId == 0x5120 then
 			value = value / 100.0
 		elseif dataId == 0x5141 then
 			value = value / 10000.0
 		elseif dataId == 0x511F then
 			value = value / 100.0
-			if analogCurrTypeStr[analogCurrType[2] + 1] == "Hall Effect" then
+			if analogCurrTypeStr[analogCurrType[varEnum.val] + 1] == "Hall Effect" then
 				value = 1000.0 / value
-				analogCurrSens[2] = math.floor(value * 100) / 100.0
+				analogCurrSens[varEnum.val] = math.floor(value * 100) / 100.0
 			end
 		elseif dataId == 0x5105 then
 			value = getIndex(gpsBaudrateVal, value) - 1
 		elseif dataId == 0x5147 then
 			value = getIndex(gpsRateVal, value) - 1
 		elseif dataId == 0x5138 then
-			gpio17[2] = bit32.extract(value, 0)
-			gpio18[2] = bit32.extract(value, 1)
-			gpio19[2] = bit32.extract(value, 2)
-			gpio20[2] = bit32.extract(value, 3)
-			gpio21[2] = bit32.extract(value, 4)
-			gpio22[2] = bit32.extract(value, 5)
+			gpio17[varEnum.val] = bit32.extract(value, 0)
+			gpio18[varEnum.val] = bit32.extract(value, 1)
+			gpio19[varEnum.val] = bit32.extract(value, 2)
+			gpio20[varEnum.val] = bit32.extract(value, 3)
+			gpio21[varEnum.val] = bit32.extract(value, 4)
+			gpio22[varEnum.val] = bit32.extract(value, 5)
 		elseif dataId == 0x5126 then
 			value = value - 1
 		elseif dataId == 0x5135 then
@@ -370,29 +363,33 @@ local function getConfig()
 		elseif dataId == 0x513F then
 			value = value - 1000
 		end
-		if value < vars[page][varIndex][3] then
-			value = vars[page][varIndex][3]
+		if value < vars[page][pageItem][varEnum.min] then
+			value = vars[page][pageItem][varEnum.min]
 		end
-		if value > vars[page][varIndex][4] then
-			value = vars[page][varIndex][4]
+		if value > vars[page][pageItem][varEnum.max] then
+			value = vars[page][pageItem][varEnum.max]
 		end
-		vars[page][varIndex][2] = value
-		varIndex = varIndex + 1
+		vars[page][pageItem][varEnum.val] = value
+		pageItem = pageItem + 1
 		ts = 0
-		if varIndex > #vars[page] then
+		if pageItem > #vars[page] then
+			pageItem = 1
 			status = statusEnum.config
 		end
-	elseif vars[page][varIndex][2] ~= nil then
-		varIndex = varIndex + 1
+	elseif vars[page][pageItem][varEnum.val] ~= nil then
+		pageItem = pageItem + 1
 		ts = 0
-		if varIndex > #vars[page] then
+		if pageItem > #vars[page] then
+			pageItem = 1
 			status = statusEnum.config
 		end
-	elseif (getTime() - ts > 200) and sportTelemetryPush(sensorIdTx - 1, 0x30, vars[page][varIndex][6], 1) then
+	elseif
+		(getTime() - ts > 200) and sportTelemetryPush(sensorIdTx - 1, 0x30, vars[page][pageItem][varEnum.dataId], 1)
+	then
 		ts = getTime()
 	end
-	if page == 8 and status == statusEnum.config then
-		vars[8] = { gpioInterval, gpio17, gpio18, gpio19, gpio20, gpio21, gpio22 }
+	if page == pageEnum.gpio and status == statusEnum.config then
+		vars[pageEnum.gpio] = { gpioInterval, gpio17, gpio18, gpio19, gpio20, gpio21, gpio22 }
 	end
 end
 
@@ -409,61 +406,61 @@ local function saveConfig()
 		end
 		return
 	end
-	local value = vars[page][varIndex][2]
-	local dataId = vars[page][varIndex][6]
+	local value = vars[page][pageItem][varEnum.val]
+	local dataId = vars[page][pageItem][varEnum.dataId]
 	if value ~= nil and dataId ~= 0 then
 		if dataId == 0x511E or dataId == 0x511F or dataId == 0x5140 or dataId == 0x511B then
 			value = value * 100
 		elseif dataId == 0x5141 then
 			value = value * 10000
 		elseif dataId == 0x5105 then
-			value = getValue(gpsBaudrateVal, gpsBaudrate[2] + 1)
+			value = getValue(gpsBaudrateVal, gpsBaudrate[varEnum.val] + 1)
 		elseif dataId == 0x5147 then
-			value = getValue(gpsRateVal, gpsRate[2] + 1)
+			value = getValue(gpsRateVal, gpsRate[varEnum.val] + 1)
 		elseif dataId == 0x5138 then
-			value = gpio17[2] -- bit 1
-			value = bit32.bor(value, bit32.lshift(gpio18[2], 1)) -- bit 2
-			value = bit32.bor(value, bit32.lshift(gpio19[2], 2)) -- bit 3
-			value = bit32.bor(value, bit32.lshift(gpio20[2], 3)) -- bit 4
-			value = bit32.bor(value, bit32.lshift(gpio21[2], 4)) -- bit 5
-			value = bit32.bor(value, bit32.lshift(gpio22[2], 5)) -- bit 6
+			value = gpio17[varEnum.val] -- bit 1
+			value = bit32.bor(value, bit32.lshift(gpio18[varEnum.val], 1)) -- bit 2
+			value = bit32.bor(value, bit32.lshift(gpio19[varEnum.val], 2)) -- bit 3
+			value = bit32.bor(value, bit32.lshift(gpio20[varEnum.val], 3)) -- bit 4
+			value = bit32.bor(value, bit32.lshift(gpio21[varEnum.val], 4)) -- bit 5
+			value = bit32.bor(value, bit32.lshift(gpio22[varEnum.val], 5)) -- bit 6
 		elseif dataId == 0x5126 then
-			value = vars[page][varIndex][2] + 1
+			value = vars[page][pageItem][varEnum.val] + 1
 		elseif dataId == 0x5135 then
-			if vars[page][varIndex][2] == 1 then
+			if vars[page][pageItem][varEnum.val] == 1 then
 				value = 0
 			else
 				value = 1
 			end
 		elseif dataId == 0x513F then
-			value = vars[page][varIndex][2] + 1000
+			value = vars[page][pageItem][varEnum.val] + 1000
 		end
 		value = math.floor(value)
 		if sportTelemetryPush(sensorIdTx - 1, 0x31, dataId, value) then
-			varIndex = varIndex + 1
+			pageItem = pageItem + 1
 		end
 	else
-		varIndex = varIndex + 1
+		pageItem = pageItem + 1
 	end
-	if varIndex > #vars[page] then
+	if pageItem > #vars[page] then
 		page = page + 1
-		varIndex = 1
+		pageItem = 1
 	end
 end
 
 local function setPageItems()
-	if page == 4 then -- ESC
-		if escProtocol[2] + 1 > #escProtocolStr then
-			escProtocol[2] = 0
+	if page == pageEnum.esc then
+		if escProtocol[varEnum.val] + 1 > #escProtocolStr then
+			escProtocol[varEnum.val] = 0
 		end
-		if hw4AutoDetect[2] + 1 > #onOffStr then
-			hw4AutoDetect[2] = 0
+		if hw4AutoDetect[varEnum.val] + 1 > #onOffStr then
+			hw4AutoDetect[varEnum.val] = 0
 		end
-		if hw4AutoOffset[2] + 1 > #onOffStr then
-			hw4AutoOffset[2] = 0
+		if hw4AutoOffset[varEnum.val] + 1 > #onOffStr then
+			hw4AutoOffset[varEnum.val] = 0
 		end
 		vars[page] = { pairPoles, mainGear, pinionGear, escProtocol }
-		if escProtocolStr[escProtocol[2] + 1] == "Hobbywing V4" then
+		if escProtocolStr[escProtocol[varEnum.val] + 1] == "Hobbywing V4" then
 			vars[page] = {
 				pairPoles,
 				mainGear,
@@ -472,7 +469,7 @@ local function setPageItems()
 				hw4InitDelay,
 				hw4AutoDetect,
 			}
-			if getValue(onOffStr, hw4AutoDetect[2] + 1) == "Off" then
+			if getValue(onOffStr, hw4AutoDetect[varEnum.val] + 1) == "Off" then
 				vars[page] = {
 					pairPoles,
 					mainGear,
@@ -484,7 +481,7 @@ local function setPageItems()
 					hw4CurrMult,
 					hw4AutoOffset,
 				}
-				if getValue(onOffStr, hw4AutoOffset[2] + 1) == "Off" then
+				if getValue(onOffStr, hw4AutoOffset[varEnum.val] + 1) == "Off" then
 					vars[page] = {
 						pairPoles,
 						mainGear,
@@ -499,28 +496,28 @@ local function setPageItems()
 					}
 				end
 			end
-		elseif escProtocolStr[escProtocol[2] + 1] == "Smart ESC/BAT" then
+		elseif escProtocolStr[escProtocol[varEnum.val] + 1] == "Smart ESC/BAT" then
 			vars[page] = { pairPoles, mainGear, pinionGear, escProtocol, smartEscConsumption }
 		end
-	elseif page == 6 then -- Vario
-		if varioModel[2] + 1 > #varioModelStr then
-			varioModel[2] = 0
+	elseif page == pageEnum.vario then
+		if varioModel[varEnum.val] + 1 > #varioModelStr then
+			varioModel[varEnum.val] = 0
 		end
-		if varioModelStr[varioModel[2] + 1] == "BMP280" then
+		if varioModelStr[varioModel[varEnum.val] + 1] == "BMP280" then
 			vars[page] = { varioModel, varioAddress, varioFilter }
 		else
 			vars[page] = { varioModel, varioAddress }
 		end
-	elseif page == 12 then -- Analog current
-		if analogCurrType[2] + 1 > #analogCurrTypeStr then
-			analogCurrType[2] = 0
+	elseif page == pageEnum.analogCurr then
+		if analogCurrType[varEnum.val] + 1 > #analogCurrTypeStr then
+			analogCurrType[varEnum.val] = 0
 		end
-		if analogCurrAutoOffset[2] + 1 > #onOffStr then
-			analogCurrAutoOffset[2] = 0
+		if analogCurrAutoOffset[varEnum.val] + 1 > #onOffStr then
+			analogCurrAutoOffset[varEnum.val] = 0
 		end
-		if analogCurrTypeStr[analogCurrType[2] + 1] == "Hall Effect" then
+		if analogCurrTypeStr[analogCurrType[varEnum.val] + 1] == "Hall Effect" then
 			vars[page] = { analogCurr, analogCurrType, analogCurrSens, analogCurrAutoOffset }
-			if getValue(onOffStr, analogCurrAutoOffset[2] + 1) == "Off" then
+			if getValue(onOffStr, analogCurrAutoOffset[varEnum.val] + 1) == "Off" then
 				vars[page] = { analogCurr, analogCurrType, analogCurrSens, analogCurrAutoOffset, analogCurrOffset }
 			end
 		else
@@ -550,12 +547,12 @@ local function drawPage()
 		end
 	elseif status == statusEnum.getConfig then
 		drawTitle(pageName[page], page, #vars)
-		lcd.drawText(60, 30, varIndex .. "/" .. #vars[page], 0)
+		lcd.drawText(60, 30, pageItem .. "/" .. #vars[page], 0)
 	elseif status == statusEnum.config then
 		drawTitle(pageName[page], page, #vars)
 		local scroll, fileHeight, fileStart
 		if LCD_H == 64 then
-			scroll = pagePos - 8
+			scroll = pageItem - 8
 			if scroll < 0 then
 				scroll = 0
 			end
@@ -569,20 +566,20 @@ local function drawPage()
 		for i = 1, #vars[page] - scroll do
 			lcd.drawText(1, fileStart + fileHeight * (i - 1), vars[page][i + scroll][1], SMLSIZE)
 			if #vars[page][i + scroll] == 6 then
-				local val = vars[page][i + scroll][2]
+				local val = vars[page][i + scroll][varEnum.val]
 				if val == nil then
 					val = -1
 				end
 				lcd.drawText(LCD_W / 2, fileStart + fileHeight * (i - 1), val, SMLSIZE + getTextFlags(i + scroll))
 			elseif #vars[page][i + scroll] == 7 then
 				local val = 1
-				if vars[page][i + scroll][2] ~= nil then
-					val = vars[page][i + scroll][2] + 1
+				if vars[page][i + scroll][varEnum.val] ~= nil then
+					val = vars[page][i + scroll][varEnum.val] + 1
 				end
 				lcd.drawText(
 					LCD_W / 2,
 					fileStart + fileHeight * (i - 1),
-					getValue(vars[page][i + scroll][7], val),
+					getValue(vars[page][i + scroll][varEnum.list], val),
 					SMLSIZE + getTextFlags(i + scroll)
 				)
 			end
@@ -610,7 +607,7 @@ local function drawPage()
 end
 
 local function run_func(event)
-	if status == statusEnum.maintOn then
+	if status == statusEnum.start then
 		if sportTelemetryPush(sensorIdTx - 1, 0x21, 0xFFFF, 0x80) then
 			status = statusEnum.getConfig
 		end
