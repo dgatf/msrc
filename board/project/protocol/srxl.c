@@ -31,6 +31,7 @@
 #include "fuel_meter.h"
 #include "xgzp68xxd.h"
 #include "esc_omp_m4.h"
+#include "esc_openyge.h"
 #include "esc_ztw.h"
 
 #define SRXL_HEADER 0xA5
@@ -385,6 +386,38 @@ static void set_config(void) {
         sensor->esc[XBUS_ESC_VOLTAGE] = parameter.voltage;
         sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
         sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temp_esc;
+        sensor->is_enabled[XBUS_ESC] = true;
+        sensor_formatted->esc = malloc(sizeof(xbus_esc_t));
+        *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OPENYGE) {
+        esc_openyge_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.pwm_out = config->enable_pwm_out;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temperature_fet = malloc(sizeof(float));
+        parameter.temperature_bec = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.voltage_bec = malloc(sizeof(float));
+        parameter.current_bec = malloc(sizeof(float));
+        parameter.throttle = malloc(sizeof(float));
+        parameter.pwm_percent = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_openyge_task, "esc_openyge_task", STACK_ESC_OPENYGE, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        sensor->esc[XBUS_ESC_RPM] = parameter.rpm;
+        sensor->esc[XBUS_ESC_VOLTAGE] = parameter.voltage;
+        sensor->esc[XBUS_ESC_CURRENT] = parameter.current;
+        sensor->esc[XBUS_ESC_TEMPERATURE_FET] = parameter.temperature_fet;
         sensor->is_enabled[XBUS_ESC] = true;
         sensor_formatted->esc = malloc(sizeof(xbus_esc_t));
         *sensor_formatted->esc = (xbus_esc_t){XBUS_ESC_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
