@@ -7,7 +7,7 @@
 
 #include "pico/stdlib.h"
 
-#define CONFIG_FLASH_TARGET_OFFSET (512 * 1024)
+#define CONFIG_OLD_FLASH_TARGET_OFFSET (512 * 1024)  // 512kB after start of flash for program (uf2) + 512kB for config
 
 /* Receiver protocol */
 #define RX_PROTOCOL \
@@ -122,7 +122,19 @@
 config_t *config_read() {
     uint16_t *version = (uint16_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET);
     if (*version != CONFIG_VERSION) {
-        config_forze_write();
+        uint16_t *version_old = (uint16_t *)(XIP_BASE + CONFIG_OLD_FLASH_TARGET_OFFSET);
+        if (*version_old == CONFIG_VERSION) {
+            // migrate old config
+            uint8_t flash[FLASH_PAGE_SIZE] = {0};
+            memcpy(flash, (uint8_t *)version_old, sizeof(config_t));
+            uint32_t ints = save_and_disable_interrupts();
+            flash_range_erase(CONFIG_FLASH_TARGET_OFFSET, FLASH_SECTOR_SIZE);
+            flash_range_program(CONFIG_FLASH_TARGET_OFFSET, flash, FLASH_PAGE_SIZE);
+            restore_interrupts(ints);
+        } else {
+            // write default config
+            config_forze_write();
+        }
     }
     return (config_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET);
 }
