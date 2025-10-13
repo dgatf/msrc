@@ -1626,7 +1626,7 @@
            <bool>true</bool>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">
@@ -1677,6 +1677,11 @@
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
              <widget class="QPlainTextEdit" name="ptDebug">
+              <property name="font">
+               <font>
+                <family>Ubuntu Mono</family>
+               </font>
+              </property>
               <property name="readOnly">
                <bool>true</bool>
               </property>
