@@ -23,6 +23,7 @@
 #include "fuel_meter.h"
 #include "gpio.h"
 #include "gps.h"
+#include "mpu6050.h"
 #include "ms5611.h"
 #include "ntc.h"
 #include "pwm_out.h"
@@ -1128,6 +1129,67 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor.gpio_mask = config->gpio_mask;
         xTaskCreate(sensor_gpio_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3,
                     &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_gyro) {
+        mpu6050_parameters_t parameter = {1,
+                                          config->i2c_address_mpu6050,
+                                          config->mpu6050_acc_scale,
+                                          config->mpu6050_gyro_scale,
+                                          config->mpu6050_gyro_weighting,
+                                          config->mpu6050_filter,
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float))};
+        xTaskCreate(mpu6050_task, "mpu6050_task", STACK_MPU6050, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        smartport_sensor_parameters_t parameter_sensor;
+        parameter_sensor.data_id = DIY_FIRST_ID + 6;
+        parameter_sensor.value = parameter.pitch;
+        parameter_sensor.rate = config->refresh_rate_default;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = DIY_FIRST_ID + 7;
+        parameter_sensor.value = parameter.roll;
+        parameter_sensor.rate = config->refresh_rate_default;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = DIY_FIRST_ID + 8;
+        parameter_sensor.value = parameter.yaw;
+        parameter_sensor.rate = config->refresh_rate_default;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = ACCX_FIRST_ID;
+        parameter_sensor.value = parameter.acc_x;
+        parameter_sensor.rate = config->refresh_rate_default;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = ACCY_FIRST_ID;
+        parameter_sensor.value = parameter.acc_y;
+        parameter_sensor.rate = config->refresh_rate_default;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = ACCZ_FIRST_ID;
+        parameter_sensor.value = parameter.acc_z;
+        parameter_sensor.rate = config->refresh_rate_default;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor.data_id = DIY_FIRST_ID + 12;
+        parameter_sensor.value = parameter.acc;
+        parameter_sensor.rate = config->refresh_rate_default;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

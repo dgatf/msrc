@@ -26,6 +26,8 @@
 // #define SIM_SMARTPORT_SEND_SENSOR_ID
 // #define SIM_SMARTPORT_RECEIVE_SENSOR_ID
 
+#define PI 3.14159265358979323846
+
 #define swap_16(value) (((value & 0xFF) << 8) | (value & 0xFF00) >> 8)
 #define swap_24(value) (((value & 0xFF) << 16) | (value & 0xFF00) | (value & 0xFF0000) >> 16)
 #define swap_32(value) \

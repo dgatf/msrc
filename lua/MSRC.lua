@@ -1,6 +1,6 @@
 local toolName = "TNS|MSRC config|TNE"
 
-local scriptVersion = "v1.3"
+local scriptVersion = "v1.4"
 
 local statusEnum = {
 	start = 1,
@@ -26,6 +26,7 @@ local pageEnum = {
 	analogVolt = 11,
 	analogCurr = 12,
 	analogAirspeed = 13,
+	gyro = 14,
 }
 local varEnum = {
 	str = 1,
@@ -191,6 +192,15 @@ local analogAirspeed = { "Enable", nil, 0, 1, 1, 0x5109, onOffStr }
 local analogAirspeedVcc = { "Vcc(V)", nil, 3, 6, 0.01, 0x5140 }
 local analogAirspeedOffset = { "Offset(mV)", nil, -1000, 1000, 1, 0x513F }
 vars[pageEnum.analogAirspeed] = { analogAirspeed, analogAirspeedVcc, analogAirspeedOffset }
+
+-- Page 14 - Gyro
+local gyro = { "Enable", nil, 0, 1, 1, 0x514F, onOffStr }
+local gyroAddress = { "Address", nil, 0x68, 0x69, 1, 0x5150 }
+local gyroAccSens = { "Acc sens", nil, 0, 3, 1, 0x514C, { 2, 4, 8, 16 } }
+local gyroGyroSens = { "Gyro sens", nil, 0, 3, 1, 0x514D, { 250, 500, 1000, 2000 } }
+local gyroGyroWeight = { "Gyro weight", nil, 0, 100, 1, 0x514E }
+local gyroFilter = { "Filter", nil, 0, 6, 1, 0x5151 }
+vars[pageEnum.gyro] = { gyro, gyroAddress, gyroAccSens, gyroGyroSens, gyroGyroWeight, gyroFilter }
 
 local function getTextFlags(item)
 	local value = 0

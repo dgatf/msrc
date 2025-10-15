@@ -119,6 +119,13 @@
 /* GPS */
 #define GPS_RATE 1
 
+/* Gyro */
+#define GYRO_ADDRESS 0x68    // 0x68 or 0x69
+#define ACCEL_SENSITIVITY 0  // 0 = 2g, 1 = 4g, 2 = 8g, 3 = 16g
+#define GYRO_SENSITIVITY 0   // 0 = 250 dps, 1 = 500 dps, 2 = 1000 dps, 3 = 2000 dps
+#define GYRO_WEIGHTING 96    // 0 - 100%
+#define GYRO_FILTER 0        // 0 = no filter, 1 = 184Hz, 2 = 92Hz, 3 = 41Hz, 4 = 20Hz, 5 = 10Hz, 6 = 5Hz
+
 config_t *config_read() {
     uint16_t *version = (uint16_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET);
     if (*version != CONFIG_VERSION) {
@@ -227,5 +234,11 @@ void config_forze_write() {
     config.sbus_battery_slot = true;
     config.fport_inverted = false;
     config.esc_hw4_auto_detect = true;
+    config.enable_gyro = false;
+    config.i2c_address_mpu6050 = GYRO_ADDRESS;
+    config.mpu6050_acc_scale = ACCEL_SENSITIVITY;
+    config.mpu6050_gyro_scale = GYRO_SENSITIVITY;
+    config.mpu6050_gyro_weighting = GYRO_WEIGHTING;
+    //config.gyro_rate = GYRO_RATE;
     config_write(&config);
 }

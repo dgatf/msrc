@@ -175,8 +175,12 @@ typedef struct config_t {                            // smartport data_id
     bool fport_inverted;
     bool fbus_inverted;
     int16_t airspeed_offset;                         // 0x513F
-    uint16_t spare5;
-    uint32_t spare6;
+    uint8_t mpu6050_acc_scale;                       // 0x514C
+    uint8_t mpu6050_gyro_scale;                      // 0x514D
+    uint8_t mpu6050_gyro_weighting;                  // 0x514E
+    bool enable_gyro;                                // 0x514F
+    uint8_t i2c_address_mpu6050;                     // 0x5150
+    uint8_t mpu6050_filter;                          // 0x5151
     uint32_t spare7;
     uint32_t spare8;
     uint32_t spare9;

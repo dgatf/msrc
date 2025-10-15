@@ -23,6 +23,7 @@
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
+#include "mpu6050.h"
 #include "ms5611.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
@@ -625,11 +626,43 @@ static void set_config(void) {
         xTaskCreate(xgzp68xxd_task, "fuel_pressure_task", STACK_FUEL_PRESSURE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE] = parameter.pressure;
+        sensor->stru_tele_digital_air[XBUS_DIGITAL_AIR_FUEL_PRESSURE] = parameter.pressure;
         sensor->is_enabled[XBUS_STRU_TELE_DIGITAL_AIR] = true;
         sensor_formatted->stru_tele_digital_air = calloc(1, 16);
         *sensor_formatted->stru_tele_digital_air =
             (xbus_stru_tele_digital_air_t){XBUS_STRU_TELE_DIGITAL_AIR_ID, 0, 0, 0};
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_gyro) {
+        mpu6050_parameters_t parameter = {1,
+                                          config->i2c_address_mpu6050,
+                                          config->mpu6050_acc_scale,
+                                          config->mpu6050_gyro_scale,
+                                          config->mpu6050_gyro_weighting,
+                                          config->mpu6050_filter,
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float))};
+        xTaskCreate(mpu6050_task, "mpu6050_task", STACK_MPU6050, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        sensor->is_enabled[XBUS_TELE_G_METER] = true;
+        sensor->tele_g_meter[XBUS_TELE_G_METER_X] = parameter.acc_x;
+        sensor->tele_g_meter[XBUS_TELE_G_METER_Y] = parameter.acc_y;
+        sensor->tele_g_meter[XBUS_TELE_G_METER_Z] = parameter.acc_z;
+        sensor_formatted->tele_g_meter = calloc(1, 16);
+        *sensor_formatted->tele_g_meter = (xbus_tele_g_meter_t){XBUS_TELE_G_METER_ID, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_TELE_G_METER_ID);
+        sensor->is_enabled[XBUS_TELE_GYRO] = true;
+        sensor->tele_gyro[XBUS_TELE_GYRO_PITCH] = parameter.pitch;
+        sensor->tele_gyro[XBUS_TELE_GYRO_ROLL] = parameter.roll;
+        sensor->tele_gyro[XBUS_TELE_GYRO_YAW] = parameter.yaw;
+        sensor_formatted->tele_gyro = calloc(1, 16);
+        *sensor_formatted->tele_gyro = (xbus_tele_gyro_t){XBUS_TELE_GYRO_ID, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_TELE_GYRO_ID);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }
