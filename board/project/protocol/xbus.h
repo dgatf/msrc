@@ -15,7 +15,8 @@
 #define XBUS_FUEL_FLOW_ID 0x22
 #define XBUS_STRU_TELE_DIGITAL_AIR_ID 0x36
 #define XBUS_TELE_LIPOMON_ID 0x3A  // 6S Cell Monitor
-
+#define XBUS_TELE_G_METER_ID 0x3B  // 3-axis accelerometer
+#define XBUS_TELE_GYRO_ID 0x1A     // 3D gyro sensor
 #define XBUS_GPS_INFO_FLAGS_IS_NORTH_BIT 0
 #define XBUS_GPS_INFO_FLAGS_IS_EAST_BIT 1
 #define XBUS_GPS_INFO_FLAGS_LONG_GREATER_99_BIT 2
@@ -33,26 +34,31 @@ typedef enum xbus_sensors_t {
     XBUS_ENERGY,
     XBUS_FUEL_FLOW,
     XBUS_STRU_TELE_DIGITAL_AIR,
-    XBUS_TELE_LIPOMON
+    XBUS_TELE_LIPOMON,
+    XBUS_TELE_G_METER,
+    XBUS_TELE_GYRO,
+    XBUS_SENSORS_COUNT
 } xbus_sensors_t;
 
-typedef enum xbus_airspeed_enum_t { XBUS_AIRSPEED_AIRSPEED } xbus_airspeed_enum_t;
+typedef enum xbus_airspeed_enum_t { XBUS_AIRSPEED_AIRSPEED, XBUS_AIRSPEED_COUNT } xbus_airspeed_enum_t;
 
-typedef enum xbus_altitude_enum_t { XBUS_ALTITUDE } xbus_altitude_enum_t;
+typedef enum xbus_altitude_enum_t { XBUS_ALTITUDE, XBUS_ALTITUDE_COUNT } xbus_altitude_enum_t;
 
 typedef enum xbus_gps_loc_enum_t {
     XBUS_GPS_LOC_ALTITUDE,
     XBUS_GPS_LOC_LATITUDE,
     XBUS_GPS_LOC_LONGITUDE,
     XBUS_GPS_LOC_COURSE,
-    XBUS_GPS_LOC_HDOP
+    XBUS_GPS_LOC_HDOP,
+    XBUS_GPS_LOC_COUNT
 } xbus_gps_loc_enum_t;
 
 typedef enum xbus_gps_stat_enum_t {
     XBUS_GPS_STAT_SPEED,
     XBUS_GPS_STAT_TIME,
     XBUS_GPS_STAT_SATS,
-    XBUS_GPS_STAT_ALTITUDE
+    XBUS_GPS_STAT_ALTITUDE,
+    XBUS_GPS_STAT_COUNT
 } xbus_gps_stat_enum_t;
 
 typedef enum xbus_energy_enum_t {
@@ -61,7 +67,8 @@ typedef enum xbus_energy_enum_t {
     XBUS_ENERGY_VOLTAGE1,
     XBUS_ENERGY_CURRENT2,
     XBUS_ENERGY_CONSUMPTION2,
-    XBUS_ENERGY_VOLTAGE2
+    XBUS_ENERGY_VOLTAGE2,
+    XBUS_ENERGY_COUNT
 } xbus_energy_enum_t;
 
 typedef enum xbus_esc_enum_t {
@@ -71,7 +78,8 @@ typedef enum xbus_esc_enum_t {
     XBUS_ESC_TEMPERATURE_FET,
     XBUS_ESC_TEMPERATURE_BEC,
     XBUS_ESC_VOLTAGE_BEC,
-    XBUS_ESC_CURRENT_BEC
+    XBUS_ESC_CURRENT_BEC,
+    XBUS_ESC_COUNT
 } xbus_esc_enum_t;
 
 typedef enum xbus_battery_enum_t {
@@ -80,22 +88,57 @@ typedef enum xbus_battery_enum_t {
     XBUS_BATTERY_TEMP1,
     XBUS_BATTERY_CURRENT2,
     XBUS_BATTERY_CONSUMPTION2,
-    XBUS_BATTERY_TEMP2
+    XBUS_BATTERY_TEMP2,
+    XBUS_BATTERY_COUNT
 } xbus_battery_enum_t;
 
-typedef enum xbus_vario_enum_t { XBUS_VARIO_ALTITUDE } xbus_vario_enum_t;
+typedef enum xbus_vario_enum_t { XBUS_VARIO_ALTITUDE, XBUS_VARIO_COUNT } xbus_vario_enum_t;
 
 typedef enum xbus_rpm_volt_temp_enum_t {
     XBUS_RPMVOLTTEMP_MS,
     XBUS_RPMVOLTTEMP_VOLT,
-    XBUS_RPMVOLTTEMP_TEMP
+    XBUS_RPMVOLTTEMP_TEMP,
+    XBUS_RPMVOLTTEMP_COUNT
 } xbus_rpm_volt_temp_enum_t;
 
-typedef enum xbus_fuel_flow_enum_t { XBUS_FUEL_FLOW_CONSUMED, XBUS_FUEL_FLOW_RATE } xbus_fuel_flow_enum_t;
+typedef enum xbus_fuel_flow_enum_t {
+    XBUS_FUEL_FLOW_CONSUMED,
+    XBUS_FUEL_FLOW_RATE,
+    XBUS_FUEL_FLOW_COUNT
+} xbus_fuel_flow_enum_t;
 
-typedef enum xbus_stru_tele_digital_air_enum_t { XBUS_FUEL_PRESSURE } xbus_stru_tele_digital_air_enum_t;
+typedef enum xbus_stru_tele_digital_air_enum_t {
+    XBUS_DIGITAL_AIR_FUEL_PRESSURE,
+    XBUS_DIGITAL_AIR_COUNT
+} xbus_stru_tele_digital_air_enum_t;
 
-typedef enum xbus_tele_lipomon_enum_t { LIPOMON_CELL1, LIPOMON_CELL2, LIPOMON_CELL3, LIPOMON_CELL4, LIPOMON_CELL5, LIPOMON_CELL6 } xbus_tele_lipomon_enum_t;
+typedef enum xbus_tele_lipomon_enum_t {
+    XBUS_TELE_LIPOMON_CELL1,
+    XBUS_TELE_LIPOMON_CELL2,
+    XBUS_TELE_LIPOMON_CELL3,
+    XBUS_TELE_LIPOMON_CELL4,
+    XBUS_TELE_LIPOMON_CELL5,
+    XBUS_TELE_LIPOMON_CELL6,
+    XBUS_TELE_LIPOMON_COUNT
+} xbus_tele_lipomon_enum_t;
+
+typedef enum xbus_tele_g_meter_enum_t {
+    XBUS_TELE_G_METER_X,
+    XBUS_TELE_G_METER_Y,
+    XBUS_TELE_G_METER_Z,
+    XBUS_TELE_G_METER_MAX_X,
+    XBUS_TELE_G_METER_MAX_Y,
+    XBUS_TELE_G_METER_MAX_Z,
+    XBUS_TELE_G_METER_MIN_Z,
+    XBUS_TELE_G_METER_COUNT
+} xbus_tele_g_meter_enum_t;
+
+typedef enum xbus_tele_gyro_enum_t {
+    XBUS_TELE_GYRO_PITCH,
+    XBUS_TELE_GYRO_ROLL,
+    XBUS_TELE_GYRO_YAW,
+    XBUS_TELE_GYRO_COUNT
+} xbus_tele_gyro_enum_t;
 
 typedef struct xbus_airspeed_t {
     uint8_t identifier;     // Source device 0x11
@@ -213,6 +256,29 @@ typedef struct xbus_tele_lipomon_t {
     uint8_t temp;        // Temperature, 0.1C (0-655.34C)
 } xbus_tele_lipomon_t;
 
+typedef struct xbus_tele_g_meter_t {
+    uint8_t identifier;  // Source device = 0x14
+    uint8_t sID;         // Secondary ID
+    int16_t GForceX;     // force is reported as .01G increments
+    int16_t GForceY;     // 		Range = +/-4000 (+/- 40G) in Pro model
+    int16_t GForceZ;     // 		Range = +/-800 (+/- 8G) in Standard model
+    int16_t maxGForceX;  // abs(max G X-axis)   FORE/AFT
+    int16_t maxGForceY;  // abs (max G Y-axis)  LEFT/RIGHT
+    int16_t maxGForceZ;  // max G Z-axis        WING SPAR LOAD
+    int16_t minGForceZ;  // min G Z-axis        WING SPAR LOAD
+} xbus_tele_g_meter_t;
+
+typedef struct xbus_tele_gyro_t {
+    uint8_t identifier;  // Source device = 0x1A
+    uint8_t sID;         // Secondary ID
+    int16_t gyroX;       // Units are 0.1 deg/sec  - Rate is about the X Axis which is defined out the nose of the vehicle.
+    int16_t gyroY;       // Rate is about the Y Axis which is define out the right wing of the vehicle.
+    int16_t gyroZ;       // Rate is about the Z axis which is defined down from the vehicle.
+    int16_t maxGyroX;    // Max rates (absolute value)
+    int16_t maxGyroY;
+    int16_t maxGyroZ;
+} xbus_tele_gyro_t;
+
 typedef struct xbus_sensor_formatted_t {
     xbus_airspeed_t *airspeed;
     xbus_altitude_t *altitude;
@@ -226,22 +292,26 @@ typedef struct xbus_sensor_formatted_t {
     xbus_fuel_flow_t *fuel_flow;
     xbus_stru_tele_digital_air_t *stru_tele_digital_air;
     xbus_tele_lipomon_t *tele_lipomon;
+    xbus_tele_g_meter_t *tele_g_meter;
+    xbus_tele_gyro_t *tele_gyro;
 } xbus_sensor_formatted_t;
 
 typedef struct xbus_sensor_t {
-    bool is_enabled[12];
-    float *airspeed[1];
-    float *altimeter[1];
-    float *gps_loc[5];
-    float *gps_stat[4];
-    float *esc[7];
-    float *battery[6];
-    float *vario[1];
-    float *rpm_volt_temp[3];
-    float *energy[6];
-    float *fuel_flow[2];
-    float *stru_tele_digital_air[1];
-    float *tele_lipomon[7];
+    bool is_enabled[XBUS_SENSORS_COUNT];
+    float *airspeed[XBUS_AIRSPEED_COUNT];
+    float *altimeter[XBUS_ALTITUDE_COUNT];
+    float *gps_loc[XBUS_GPS_LOC_COUNT];
+    float *gps_stat[XBUS_GPS_STAT_COUNT];
+    float *esc[XBUS_ESC_COUNT];
+    float *battery[XBUS_BATTERY_COUNT];
+    float *vario[XBUS_VARIO_COUNT];
+    float *rpm_volt_temp[XBUS_RPMVOLTTEMP_COUNT];
+    float *energy[XBUS_ENERGY_COUNT];
+    float *fuel_flow[XBUS_FUEL_FLOW_COUNT];
+    float *stru_tele_digital_air[XBUS_DIGITAL_AIR_COUNT];
+    float *tele_lipomon[XBUS_TELE_LIPOMON_COUNT];
+    float *tele_g_meter[XBUS_TELE_G_METER_COUNT];
+    float *tele_gyro[XBUS_TELE_GYRO_COUNT];
 } xbus_sensor_t;
 
 extern context_t context;

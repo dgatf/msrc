@@ -15,10 +15,13 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
 #include "esc_pwm.h"
+#include "esc_ztw.h"
 #include "fuel_meter.h"
-#include "ms5611.h"
 #include "gps.h"
+#include "mpu6050.h"
+#include "ms5611.h"
 #include "ntc.h"
 #include "pwm_out.h"
 #include "smart_esc.h"
@@ -28,8 +31,6 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "xgzp68xxd.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 #define JETIEX_TYPE_INT6 0
 #define JETIEX_TYPE_INT14 1
@@ -931,7 +932,8 @@ static void set_config(sensor_jetiex_t **sensor) {
             (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current", "A", parameter.current};
         add_sensor(new_sensor, sensor);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
-        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Consumption", "mAh", parameter.consumption};
+        *new_sensor = (sensor_jetiex_t){0,     JETIEX_TYPE_INT22,    JETIEX_FORMAT_0_DECIMAL, "Consumption",
+                                        "mAh", parameter.consumption};
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -1065,6 +1067,47 @@ static void set_config(sensor_jetiex_t **sensor) {
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor =
             (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Tank pressure", "Pa", parameter.pressure};
+        add_sensor(new_sensor, sensor);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_gyro) {
+        mpu6050_parameters_t parameter = {
+            1,
+            config->i2c_address_mpu6050,
+            config->mpu6050_acc_scale,
+            config->mpu6050_gyro_scale,
+            config->mpu6050_gyro_weighting,
+            config->mpu6050_filter,
+            malloc(sizeof(float)),
+            malloc(sizeof(float)),
+            malloc(sizeof(float)),
+            malloc(sizeof(float)),
+            malloc(sizeof(float)),
+            malloc(sizeof(float)),
+            malloc(sizeof(float))
+        };
+        xTaskCreate(mpu6050_task, "mpu6050_task", STACK_MPU6050, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Pitch", "dps", parameter.pitch};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Roll", "dps", parameter.roll};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Yaw", "dps", parameter.yaw};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Acc X", "g", parameter.acc_x};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Acc Y", "g", parameter.acc_y};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Acc Z", "g", parameter.acc_z};
+        add_sensor(new_sensor, sensor);
+        new_sensor = malloc(sizeof(sensor_jetiex_t));
+        *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Acc", "g", parameter.acc};
         add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

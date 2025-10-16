@@ -22,6 +22,7 @@
 #include "esc_ztw.h"
 #include "gps.h"
 #include "ibus.h"
+#include "mpu6050.h"
 #include "ms5611.h"
 #include "ntc.h"
 #include "pwm_out.h"
@@ -51,18 +52,29 @@
 
 #define CRSF_TIMEOUT_US 1000
 
-#define TYPE_GPS 0
-#define TYPE_VARIO 1
-#define TYPE_BATERY 2
-#define TYPE_BARO 3
-#define TYPE_AIRSPEED 4
-#define TYPE_RPM 5
-#define TYPE_TEMP 6
-#define TYPE_CELLS 7
-#define TYPE_GPS_TIME 8
-#define TYPE_GPS_EXTENDED 9
+typedef enum crsf_sensor_type_t {
+    TYPE_GPS,
+    TYPE_VARIO,
+    TYPE_BATERY,
+    TYPE_BARO,
+    TYPE_AIRSPEED,
+    TYPE_RPM,
+    TYPE_TEMP,
+    TYPE_CELLS,
+    TYPE_GPS_TIME,
+    TYPE_GPS_EXTENDED,
+    TYPE_ATTITUDE,
+    MAX_SENSORS
+} crsf_sensor_type_t;
 
-#define MAX_SENSORS 10
+/*
+CRSF frame has the structure:
+<Device address> <Frame length> <Type> <Payload> <CRC>
+Device address: (uint8_t)
+Frame length:   length in  bytes including Type (uint8_t)
+Type:           (uint8_t)
+CRC:            (uint8_t), crc of <Type> and <Payload>
+*/
 
 typedef struct crsf_sensor_gps_formatted_t {
     int32_t latitude;      // degree / 10,000,000 big endian
@@ -142,6 +154,12 @@ typedef struct crsf_sensor_gps_t {
     float *satellites;   // satellites
 } crsf_sensor_gps_t;
 
+typedef struct crsf_sensor_attitude_formatted_t {
+    int16_t pitch;  // angle ( rad / 10000 )
+    int16_t roll;   // angle ( rad / 10000 )
+    int16_t yaw;    // angle ( rad / 10000 )
+} __attribute__((packed)) crsf_sensor_attitude_formatted_t;
+
 typedef struct crsf_sensor_vario_t {
     float *vspeed;  // cm/s
 } crsf_sensor_vario_t;
@@ -195,6 +213,12 @@ typedef struct crsf_sensor_gps_extended_t {
     float *vdop;
 } crsf_sensor_gps_extended_t;
 
+typedef struct crsf_sensor_attitude_t {
+    float *pitch;
+    float *roll;
+    float *yaw;
+} crsf_sensor_attitude_t;
+
 typedef struct crsf_sensors_t {
     bool enabled_sensors[MAX_SENSORS];
     crsf_sensor_gps_t gps;
@@ -207,6 +231,7 @@ typedef struct crsf_sensors_t {
     crsf_sensor_cells_t cells;
     crsf_sensor_gps_time_t gps_time;
     crsf_sensor_gps_extended_t gps_extended;
+    crsf_sensor_attitude_t attitude;
 } crsf_sensors_t;
 
 static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buffer);
@@ -388,6 +413,19 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             buffer[3 + sizeof(crsf_sensor_gps_extended_formatted_t)] =
                 get_crc(&buffer[2], sizeof(crsf_sensor_gps_extended_formatted_t) + 1);
             len = sizeof(crsf_sensor_gps_extended_formatted_t) + 4;
+            break;
+        }
+        case TYPE_ATTITUDE: {
+            buffer[1] = sizeof(crsf_sensor_attitude_formatted_t) + 2;
+            buffer[2] = CRSF_FRAMETYPE_ATTITUDE;
+            crsf_sensor_attitude_formatted_t sensor = {0};
+            if (sensors->attitude.pitch) sensor.pitch = swap_16((int16_t)(*sensors->attitude.pitch * 10000));
+            if (sensors->attitude.roll) sensor.roll = swap_16((int16_t)(*sensors->attitude.roll * 10000));
+            if (sensors->attitude.yaw) sensor.yaw = swap_16((int16_t)(*sensors->attitude.yaw * 10000));
+            memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_attitude_formatted_t));
+            buffer[3 + sizeof(crsf_sensor_attitude_formatted_t)] =
+                get_crc(&buffer[2], sizeof(crsf_sensor_attitude_formatted_t) + 1);
+            len = sizeof(crsf_sensor_attitude_formatted_t) + 4;
             break;
         }
     }
@@ -938,6 +976,32 @@ static void set_config(crsf_sensors_t *sensors) {
 
         sensors->enabled_sensors[TYPE_AIRSPEED] = true;
         sensors->airspeed.speed = parameter.airspeed;
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_gyro) {
+        mpu6050_parameters_t parameter = {
+            1,
+            config->i2c_address_mpu6050,
+            config->mpu6050_acc_scale,
+            config->mpu6050_gyro_scale,
+            config->mpu6050_gyro_weighting,
+            config->mpu6050_filter,
+            malloc(sizeof(float)),
+            malloc(sizeof(float)),
+            malloc(sizeof(float)),
+            malloc(sizeof(float)),
+            malloc(sizeof(float)),
+            malloc(sizeof(float)),
+            malloc(sizeof(float))
+        };
+        xTaskCreate(mpu6050_task, "mpu6050_task", STACK_MPU6050, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensors->enabled_sensors[TYPE_ATTITUDE] = true;
+        sensors->attitude.pitch = parameter.pitch;
+        sensors->attitude.roll = parameter.roll;
+        sensors->attitude.yaw = parameter.yaw;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

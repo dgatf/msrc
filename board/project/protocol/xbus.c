@@ -24,6 +24,7 @@
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
+#include "mpu6050.h"
 #include "ms5611.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
@@ -87,7 +88,6 @@ void xbus_format_sensor(uint8_t address) {
             break;
         }
         case XBUS_GPS_LOC_ID: {
-            
             uint8_t gps_flags = 0;
             float lat = *sensor->gps_loc[XBUS_GPS_LOC_LATITUDE];
             if (lat < 0)  // N=1,+, S=0,-
@@ -209,9 +209,9 @@ void xbus_format_sensor(uint8_t address) {
             break;
         }
         case XBUS_STRU_TELE_DIGITAL_AIR_ID: {
-            if (sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE])
+            if (sensor->stru_tele_digital_air[XBUS_DIGITAL_AIR_FUEL_PRESSURE])
                 sensor_formatted->stru_tele_digital_air->pressure =
-                    swap_16((uint16_t)(*sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE] * 0.000145038 *
+                    swap_16((uint16_t)(*sensor->stru_tele_digital_air[XBUS_DIGITAL_AIR_FUEL_PRESSURE] * 0.000145038 *
                                        10));  // Pa to psi, precision 0.1 psi
             break;
         }
@@ -221,6 +221,57 @@ void xbus_format_sensor(uint8_t address) {
                     sensor_formatted->tele_lipomon->cell[i] = 0xFFFF;
                 else
                     sensor_formatted->tele_lipomon->cell[i] = swap_16((uint16_t)(*sensor->tele_lipomon[i] * 100));
+            }
+            break;
+        }
+        case XBUS_TELE_G_METER_ID: {
+            if (sensor->tele_g_meter[XBUS_TELE_G_METER_X]) {
+                sensor_formatted->tele_g_meter->GForceX =
+                    swap_16((int16_t)(*sensor->tele_g_meter[XBUS_TELE_G_METER_X] * 100));
+                if (swap_16((int16_t)(fabs(sensor_formatted->tele_g_meter->GForceX))) >
+                    swap_16((int16_t)(sensor_formatted->tele_g_meter->maxGForceX))) {
+                    sensor_formatted->tele_g_meter->maxGForceX = sensor_formatted->tele_g_meter->GForceX;
+                }
+            }
+            if (sensor->tele_g_meter[XBUS_TELE_G_METER_Y]) {
+                sensor_formatted->tele_g_meter->GForceY =
+                    swap_16((int16_t)(*sensor->tele_g_meter[XBUS_TELE_G_METER_Y] * 100));
+                if (swap_16((int16_t)(fabs(sensor_formatted->tele_g_meter->GForceY))) >
+                    swap_16((uint16_t)(sensor_formatted->tele_g_meter->maxGForceY))) {
+                    sensor_formatted->tele_g_meter->maxGForceY = sensor_formatted->tele_g_meter->GForceY;
+                }
+            }
+            if (sensor->tele_g_meter[XBUS_TELE_G_METER_Z]) {
+                sensor_formatted->tele_g_meter->GForceZ =
+                    swap_16((int16_t)(*sensor->tele_g_meter[XBUS_TELE_G_METER_Z] * 100));
+                if (swap_16((int16_t)(sensor_formatted->tele_g_meter->GForceZ)) >
+                    swap_16((int16_t)(sensor_formatted->tele_g_meter->maxGForceZ))) {
+                    sensor_formatted->tele_g_meter->maxGForceZ = sensor_formatted->tele_g_meter->GForceZ;
+                }
+                if (swap_16((int16_t)(sensor_formatted->tele_g_meter->GForceZ)) <
+                    swap_16((int16_t)(sensor_formatted->tele_g_meter->minGForceZ))) {
+                    sensor_formatted->tele_g_meter->minGForceZ = sensor_formatted->tele_g_meter->GForceZ;
+                }
+            }
+        }
+        case XBUS_TELE_GYRO_ID: {
+            if (sensor->tele_gyro[XBUS_TELE_GYRO_ROLL])
+                sensor_formatted->tele_gyro->gyroX = swap_16((int16_t)(*sensor->tele_gyro[XBUS_TELE_GYRO_ROLL] * 10));
+            if (swap_16((int16_t)(fabs(sensor_formatted->tele_gyro->gyroX))) >
+                swap_16((int16_t)(sensor_formatted->tele_gyro->maxGyroX))) {
+                sensor_formatted->tele_gyro->maxGyroX = sensor_formatted->tele_gyro->gyroX;
+            }
+            if (sensor->tele_gyro[XBUS_TELE_GYRO_PITCH])
+                sensor_formatted->tele_gyro->gyroY = swap_16((int16_t)(*sensor->tele_gyro[XBUS_TELE_GYRO_PITCH] * 10));
+            if (swap_16((int16_t)(fabs(sensor_formatted->tele_gyro->gyroY))) >
+                swap_16((int16_t)(sensor_formatted->tele_gyro->maxGyroY))) {
+                sensor_formatted->tele_gyro->maxGyroY = sensor_formatted->tele_gyro->gyroY;
+            }
+            if (sensor->tele_gyro[XBUS_TELE_GYRO_YAW])
+                sensor_formatted->tele_gyro->gyroZ = swap_16((int16_t)(*sensor->tele_gyro[XBUS_TELE_GYRO_YAW] * 10));
+            if (swap_16((int16_t)(fabs(sensor_formatted->tele_gyro->gyroZ))) >
+                swap_16((int16_t)(sensor_formatted->tele_gyro->maxGyroZ))) {
+                sensor_formatted->tele_gyro->maxGyroZ = sensor_formatted->tele_gyro->gyroZ;
             }
             break;
         }
@@ -871,7 +922,7 @@ static void set_config() {
         xTaskCreate(xgzp68xxd_task, "fuel_pressure_task", STACK_FUEL_PRESSURE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensor->stru_tele_digital_air[XBUS_FUEL_PRESSURE] = parameter.pressure;
+        sensor->stru_tele_digital_air[XBUS_DIGITAL_AIR_FUEL_PRESSURE] = parameter.pressure;
         sensor->is_enabled[XBUS_STRU_TELE_DIGITAL_AIR] = true;
         sensor_formatted->stru_tele_digital_air = calloc(1, 16);
         *sensor_formatted->stru_tele_digital_air =
@@ -883,6 +934,38 @@ static void set_config() {
     if (config->xbus_clock_stretch) {
         gpio_set_dir(CLOCK_STRETCH_GPIO, true);
         gpio_put(CLOCK_STRETCH_GPIO, false);
+    }
+    if (config->enable_gyro) {
+        mpu6050_parameters_t parameter = {1,
+                                          config->i2c_address_mpu6050,
+                                          config->mpu6050_acc_scale,
+                                          config->mpu6050_gyro_scale,
+                                          config->mpu6050_gyro_weighting,
+                                          config->mpu6050_filter,
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float))};
+        xTaskCreate(mpu6050_task, "mpu6050_task", STACK_MPU6050, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        sensor->is_enabled[XBUS_TELE_G_METER] = true;
+        sensor->tele_g_meter[XBUS_TELE_G_METER_X] = parameter.acc_x;
+        sensor->tele_g_meter[XBUS_TELE_G_METER_Y] = parameter.acc_y;
+        sensor->tele_g_meter[XBUS_TELE_G_METER_Z] = parameter.acc_z;
+        sensor_formatted->tele_g_meter = calloc(1, 16);
+        *sensor_formatted->tele_g_meter = (xbus_tele_g_meter_t){XBUS_TELE_G_METER_ID, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_TELE_G_METER_ID);
+        sensor->is_enabled[XBUS_TELE_GYRO] = true;
+        sensor->tele_gyro[XBUS_TELE_GYRO_PITCH] = parameter.pitch;
+        sensor->tele_gyro[XBUS_TELE_GYRO_ROLL] = parameter.roll;
+        sensor->tele_gyro[XBUS_TELE_GYRO_YAW] = parameter.yaw;
+        sensor_formatted->tele_gyro = calloc(1, 16);
+        *sensor_formatted->tele_gyro = (xbus_tele_gyro_t){XBUS_TELE_GYRO_ID, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_TELE_GYRO_ID);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }
 

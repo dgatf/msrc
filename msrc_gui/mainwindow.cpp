@@ -68,6 +68,48 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                                  "< 260 kPa (K = 32)", "< 500 kPa (K = 16)", "< 1000 kPa (K = 8)",
                                  "> 1000 kPa (K = 4)"});
 
+    ui->cbGyroAddress->addItems({"0x68", "0x69"});
+    ui->cbGyroAccSens->addItems({"2", "4", "8", "16"});
+    ui->cbGyroSens->addItems({"250", "500", "1000", "2000"});
+    ui->cbGyroSamplerate->addItems({"1000", "500", "333", "250", "200", "167", "144", "125"});
+    ui->cbGyroSamplerate->setVisible(false);
+    ui->lbGyroSamplerate->setVisible(false);
+
+    ui->lbConnections->setText( \
+                "| Sensor/Receiver                           | Board GPIO|" \
+                               "\n| :---:                                     | :---:            |" \
+                               "\n| 3.3-5v                                    | 5v               |" \
+                               "\n| GND                                       | GND              |" \
+                               "\n| Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex, Sanwa, Hott, SRXL2, FPort, FBUS, GHST  | 0<sup>(1)</sup> & 1 |" \
+                               "\n| Frsky D, ELRS/CRSF Rx                     | 0                |" \
+                               "\n| Serial monitor                            | 1                |" \
+                               "\n| Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |" \
+                               "\n| Hitec, XBUS SCL                           | 3<sup>(2)</sup>  |" \
+                               "\n| ESC serial, Serial monitor, Smart ESC     | 5                |" \
+                               "\n| Phase sensor (PWM in), Smart ESC          | 4                |" \
+                               "\n| Castle. Receiver signal                   | 4                |" \
+                               "\n| Castle. ESC signal                        | 5<sup>(2)</sup>  |" \
+                               "\n| GPS Tx                                    | 6                |" \
+                               "\n| GPS Rx (3)(4)                             | 14               |" \
+                               "\n| XBUS. NPN clock stretch<sup>(3)</sup>     | 7                |" \
+                               "\n| Sensor SDA                                | 8<sup>(2)</sup>  |" \
+                               "\n| Sensor SCL                                | 9<sup>(2)</sup>  |" \
+                               "\n| PWM out                                   | 10               |" \
+                               "\n| Fuel meter (PWM in)                       | 11               |" \
+                               "\n| Throttle PWM (Smart ESC)                  | 12               |" \
+                               "\n| Reverse PWM (Smart ESC)                   | 13               |" \
+                               "\n| Rsteore default config                    | 15               |" \
+                               "\n| Voltage                                   | 26               |" \
+                               "\n| Current                                   | 27               |" \
+                               "\n| NTC                                       | 28               |" \
+                               "\n| Airspeed                                  | 29               |" \
+                               "\n| GPIOs                                     | 17 to 22         |" \
+                               "\n  " \
+                               "\n(1) with 100Ω resistor. This resistor is optional as RP2040 has internal protection resistors for GPIOs  " \
+                               "\n(2) Pullups. See [6.3 Spektrum XBUS](https://github.com/dgatf/msrc/wiki/06.-Receiver-protocol#63-spektrum-xbus) and [6.9 Hitec](https://github.com/dgatf/msrc/wiki/06.-Receiver-protocol#69-hitec)  " \
+                               "\n(3) Optional  " \
+                               "\n(4) Only UBLOX compatible  " \
+                            );
     connect(ui->btConnect, SIGNAL(released()), this, SLOT(buttonSerialPort()));
     connect(ui->btDebug, SIGNAL(released()), this, SLOT(buttonDebug()));
     connect(ui->btClearDebug, SIGNAL(released()), this, SLOT(buttonClearDebug()));
@@ -480,14 +522,14 @@ void MainWindow::setUiFromConfig() {
     ui->sbAirspeedVcc->setValue(config.airspeed_vcc / 100.0);
     ui->sbAirspeedOffset->setValue(config.airspeed_offset);
 
-    // Altitude
+    // Vario
 
     if (config.i2c_module == i2c_module_t::I2C_NONE)
         ui->gbAltitude->setChecked(false);
     else
         ui->gbAltitude->setChecked(true);
     ui->cbBarometerType->setCurrentIndex(config.i2c_module - 1);
-    ui->cbAddress->setCurrentIndex(config.i2c_address);
+    ui->cbAddress->setCurrentIndex(config.i2c_address == 0x76 ? 0 : 1);
     ui->cbAltitudeFilter->setCurrentIndex(config.bmp280_filter - 1);
     ui->cbVarioAutoOffset->setChecked(config.vario_auto_offset);
 
@@ -562,10 +604,8 @@ void MainWindow::setUiFromConfig() {
     ui->cbEscAutoOffset->setChecked(!config.esc_hw4_is_manual_offset);
     ui->sbEscOffset->setValue(config.esc_hw4_offset);
     // config.esc_hw4_init_delay_duration = 10000;
-    //ui->sbCurrentThresold->setValue(config.esc_hw4_current_thresold);
     ui->sbVoltageMultiplier->setValue(config.esc_hw4_voltage_multiplier * 100000);
     ui->sbCurrentMultiplier->setValue(config.esc_hw4_current_multiplier * 100000);
-    //ui->sbCurrentMax->setValue(config.esc_hw4_current_max);
     ui->cbHw4AutoDetect->setChecked(config.esc_hw4_auto_detect);
 
     // Smart esc
@@ -613,6 +653,15 @@ void MainWindow::setUiFromConfig() {
     ui->cbGpio21->setChecked(config.gpio_mask & (1 << 4));
     ui->cbGpio22->setChecked(config.gpio_mask & (1 << 5));
     ui->sbGpioInterval->setValue(config.gpio_interval);
+
+    // Gyro MPU6050
+    ui->gbGyro->setChecked(config.enable_gyro);
+    ui->cbGyroAddress->setCurrentIndex(config.i2c_address_mpu6050 == 0x68 ? 0 : 1);
+    ui->cbGyroAccSens->setCurrentIndex(config.mpu6050_acc_scale);
+    ui->cbGyroSens->setCurrentIndex(config.mpu6050_gyro_scale);
+    ui->sbGyroWeight->setValue(config.mpu6050_gyro_weighting);
+    ui->sbGyroFilter->setValue(config.mpu6050_filter);
+    //ui->cbGpsRate->setValue
 }
 
 void MainWindow::getConfigFromUi() {
@@ -691,13 +740,13 @@ void MainWindow::getConfigFromUi() {
     config.airspeed_vcc = ui->sbAirspeedVcc->value() * 100;
     config.airspeed_offset = ui->sbAirspeedOffset->value();
 
-    // Altitude
+    // Vario
 
     if (ui->gbAltitude->isChecked())
         config.i2c_module = (i2c_module_t)(ui->cbBarometerType->currentIndex() + 1);
     else
         config.i2c_module = i2c_module_t::I2C_NONE;
-    config.i2c_address = ui->cbAddress->currentIndex();
+    config.i2c_address = ui->cbAddress->currentIndex() + 0x76;
     config.bmp280_filter = ui->cbAltitudeFilter->currentIndex() + 1;
     config.vario_auto_offset = ui->cbVarioAutoOffset->isChecked();
 
@@ -769,11 +818,8 @@ void MainWindow::getConfigFromUi() {
     config.enable_esc_hw4_init_delay = ui->cbInitDelay->isChecked();
     config.esc_hw4_is_manual_offset = !ui->cbEscAutoOffset->isChecked();
     config.esc_hw4_offset = ui->sbEscOffset->value();
-    // config.esc_hw4_init_delay_duration = 10000;
-    //config.esc_hw4_current_thresold = ui->sbCurrentThresold->value();
     config.esc_hw4_voltage_multiplier = ui->sbVoltageMultiplier->value() / 100000.0;
     config.esc_hw4_current_multiplier = ui->sbCurrentMultiplier->value() / 100000.0;
-    //config.esc_hw4_current_max = ui->sbCurrentMax->value();
     config.esc_hw4_auto_detect = ui->cbHw4AutoDetect->isChecked();
 
     // Smart esc
@@ -821,6 +867,15 @@ void MainWindow::getConfigFromUi() {
     config.gpio_mask |= ui->cbGpio21->isChecked() << 4;
     config.gpio_mask |= ui->cbGpio22->isChecked() << 5;
     config.gpio_interval = ui->sbGpioInterval->value();
+
+    // Gyro MPU6050
+    config.enable_gyro = ui->gbGyro->isChecked();
+    config.i2c_address_mpu6050 = ui->cbGyroAddress->currentIndex() + 0x68;
+    config.mpu6050_acc_scale = ui->cbGyroAccSens->currentIndex();
+    config.mpu6050_gyro_scale = ui->cbGyroSens->currentIndex();
+    config.mpu6050_gyro_weighting = ui->sbGyroWeight->value();
+    config.mpu6050_filter = ui->sbGyroFilter->value();
+    //config.mpu6050_rate = ui->cbGyroSamplerate->currentText().toInt();
 
     // Debug
 
