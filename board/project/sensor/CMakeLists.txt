@@ -26,5 +26,6 @@ target_sources(${PROJECT_NAME} PRIVATE
     smart_esc.c
     esc_omp_m4.c
     esc_ztw.c
+    esc_openyge.c
     mpu6050.c
     )
