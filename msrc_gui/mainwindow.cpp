@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     enableWidgets(ui->scrollAreaWidgetContentsReceiver, false);
     enableWidgets(ui->scrollAreaWidgetContentsSensors, false);
     ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
-                         "Kiss", "APD HV", "HobbyWing V5", "Smart ESC/BAT", "OMP M4", "ZTW"});
+                         "Kiss", "APD HV", "HobbyWing V5", "Smart ESC/BAT", "OMP M4", "ZTW", "OpenYGE"});
 
     ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "9600"});
     ui->cbGpsBaudrate->setCurrentIndex(5);
@@ -142,7 +142,8 @@ void MainWindow::generateCircuit(QLabel *label) {
                 ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
                 ui->cbEsc->currentText() == "Kontronic" || ui->cbEsc->currentText() == "Kiss" ||
                 ui->cbEsc->currentText() == "APD HV" || ui->cbEsc->currentText() == "HobbyWing V5" ||
-                ui->cbEsc->currentText() == "OMP M4" || ui->cbEsc->currentText() == "ZTW")
+                ui->cbEsc->currentText() == "OMP M4" || ui->cbEsc->currentText() == "ZTW" ||
+                ui->cbEsc->currentText() == "OpenYGE")
                 image.load(":/res/esc_rp2040_zero.png");
             else if (ui->cbEsc->currentText() == "PWM")
                 image.load(":/res/pwm_rp2040_zero.png");

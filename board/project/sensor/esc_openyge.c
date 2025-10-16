@@ -8,16 +8,16 @@
 #include "uart.h"
 
 #define TIMEOUT_US 2000
-#define PACKET_LENGTH 34
 #define FRAME_START 0xA5
-#define FRAME_VERSION 3
-#define FRAME_TYPE 0
-#define FRAME_LENGTH 34
 #define CRC_POLYNOMIAL 0x1021  // CRC-16-CCITT
 
-static uint16_t calculate_crc16(uint8_t *data, uint8_t length);
+// CRC mode tracking (based on your Arduino code)
+static crc_mode_t g_crc_mode = CRC_MODE_UNKNOWN;
+
+static uint16_t calculate_crc16_with_seed(uint8_t *data, uint8_t length, uint16_t seed);
+static crc_mode_t detect_crc_mode(uint8_t *frame, uint8_t frame_len);
+static bool validate_crc(uint8_t *frame, uint8_t frame_len, crc_mode_t mode);
 static void process(esc_openyge_parameters_t *parameter);
-static float get_temperature_celsius(uint16_t raw_temp);
 
 void esc_openyge_task(void *parameters) {
     esc_openyge_parameters_t parameter = *(esc_openyge_parameters_t *)parameters;
@@ -35,6 +35,8 @@ void esc_openyge_task(void *parameters) {
     *parameter.throttle = 0;
     *parameter.pwm_percent = 0;
     *parameter.cell_count = 1;
+    parameter.crc_errors = 0;
+    parameter.crc_mode = CRC_MODE_UNKNOWN;
     
     xTaskNotifyGive(context.receiver_task_handle);
 
@@ -73,7 +75,7 @@ static void process(esc_openyge_parameters_t *parameter) {
     static uint32_t timestamp = 0;
     uint8_t length = uart1_available();
     
-    if (length < PACKET_LENGTH) {
+    if (length < 8) {  // Minimum frame size
         return;
     }
 
@@ -84,95 +86,119 @@ static void process(esc_openyge_parameters_t *parameter) {
     debug_buffer(data, length, "0x%02X ");
 
     // Look for frame start in the received data
-    for (int i = 0; i <= length - PACKET_LENGTH; i++) {
-        if (data[i] == FRAME_START && (i + PACKET_LENGTH <= length)) {
+    for (int i = 0; i <= length - 8; i++) {  // Minimum 8 bytes needed
+        if (data[i] == FRAME_START) {
             uint8_t *frame = &data[i];
+            uint8_t frame_len = (i + 4 < length) ? frame[3] : 0;
             
-            // Validate frame structure
-            if (frame[1] == FRAME_VERSION && frame[2] == FRAME_TYPE && frame[3] == FRAME_LENGTH) {
+            // Check if we have enough data for complete frame
+            if (frame_len == 0 || (i + frame_len) > length || frame_len < 8) {
+                continue;
+            }
+            
+            // Validate frame structure - version 3, type 0
+            if (frame[1] != 3 || frame[2] != 0 || frame[3] != frame_len) {
+                continue;
+            }
                 
-                // Calculate and verify CRC (bytes 32-33 are CRC)
-                uint16_t received_crc = (uint16_t)frame[32] | ((uint16_t)frame[33] << 8);
-                uint16_t calculated_crc = calculate_crc16(frame, 32);
+            // Auto-detect CRC mode if unknown
+            if (parameter->crc_mode == CRC_MODE_UNKNOWN) {
+                crc_mode_t detected_mode = detect_crc_mode(frame, frame_len);
+                if (detected_mode != CRC_MODE_UNKNOWN) {
+                    parameter->crc_mode = detected_mode;
+                    debug("\nOpenYGE CRC mode auto-detected: %d", detected_mode);
+                }
+            }
+            
+            // Validate CRC using detected or known mode
+            if (parameter->crc_mode != CRC_MODE_UNKNOWN && 
+                validate_crc(frame, frame_len, parameter->crc_mode)) {
+                // Parse telemetry data using correct byte positions from your working code
                 
-                if (received_crc == calculated_crc) {
-                    // Parse telemetry data from the frame
-                    uint8_t sequence = frame[4];
-                    uint8_t device_id = frame[5];
-                    
-                    // Temperature (FET) - bytes 7-8, -40...+215°C
-                    int16_t temp_fet_raw = (int16_t)((uint16_t)frame[7] | ((uint16_t)frame[8] << 8));
-                    float temperature_fet = get_temperature_celsius(temp_fet_raw);
-                    
-                    // Voltage - bytes 9-10, primary voltage (battery)
-                    uint16_t voltage_raw = (uint16_t)frame[9] | ((uint16_t)frame[10] << 8);
-                    float voltage = voltage_raw / 100.0f; // Convert from centivolt to volt
-                    
-                    // Current - bytes 11-12, primary current (battery)
-                    uint16_t current_raw = (uint16_t)frame[11] | ((uint16_t)frame[12] << 8);
-                    float current = current_raw / 10.0f; // Convert from deciampere to ampere
-                    
-                    // Consumption - bytes 13-14, mAh of primary current
-                    uint16_t consumption_raw = (uint16_t)frame[13] | ((uint16_t)frame[14] << 8);
-                    float consumption = consumption_raw; // mAh
-                    
-                    // RPM - bytes 15-16, 0.1erpm
-                    uint16_t rpm_raw = (uint16_t)frame[15] | ((uint16_t)frame[16] << 8);
-                    float rpm = (rpm_raw / 10.0f) * parameter->rpm_multiplier;
-                    
-                    // PWM - byte 17, FET-PWM %
-                    uint8_t pwm_raw = frame[17];
-                    float pwm_percent = pwm_raw; // Already in percentage
-                    
-                    // Throttle - byte 18, input demand %
-                    uint8_t throttle_raw = frame[18];
-                    float throttle = throttle_raw; // Already in percentage
-                    
-                    // BEC voltage - bytes 19-20, in mV
-                    uint16_t bec_voltage_raw = (uint16_t)frame[19] | ((uint16_t)frame[20] << 8);
-                    float voltage_bec = bec_voltage_raw / 1000.0f; // Convert from mV to V
-                    
-                    // BEC current - bytes 21-22, in mA
-                    uint16_t bec_current_raw = (uint16_t)frame[21] | ((uint16_t)frame[22] << 8);
-                    float current_bec = bec_current_raw / 1000.0f; // Convert from mA to A
-                    
-                    // BEC temperature - bytes 23-24, -40...+215°C (if BEC, -40°C else)
-                    int16_t temp_bec_raw = (int16_t)((uint16_t)frame[23] | ((uint16_t)frame[24] << 8));
-                    float temperature_bec = get_temperature_celsius(temp_bec_raw);
-                    
-                    // Update outputs with averaging
-                    if (parameter->pwm_out) xTaskNotifyGive(context.pwm_out_task_handle);
-                    
-                    *parameter->rpm = get_average(parameter->alpha_rpm, *parameter->rpm, rpm);
-                    *parameter->consumption = consumption; // Use direct value, not averaged
-                    *parameter->voltage = get_average(parameter->alpha_voltage, *parameter->voltage, voltage);
-                    *parameter->current = get_average(parameter->alpha_current, *parameter->current, current);
-                    *parameter->temperature_fet = get_average(parameter->alpha_temperature, *parameter->temperature_fet, temperature_fet);
-                    *parameter->temperature_bec = get_average(parameter->alpha_temperature, *parameter->temperature_bec, temperature_bec);
-                    *parameter->cell_voltage = *parameter->voltage / *parameter->cell_count;
-                    *parameter->voltage_bec = voltage_bec;
-                    *parameter->current_bec = current_bec;
-                    *parameter->throttle = throttle;
-                    *parameter->pwm_percent = pwm_percent;
-                    
-                    debug(
-                        "\nOpenYGE (%u) < Seq: %u DevID: %u RPM: %.0f Volt: %.2fV Curr: %.2fA TempFET: %.1f°C "
-                        "TempBEC: %.1f°C Cons: %.0fmAh CellV: %.2fV BECVolt: %.2fV BECCurr: %.3fA Thr: %.0f%% PWM: %.0f%%",
-                        uxTaskGetStackHighWaterMark(NULL), sequence, device_id, *parameter->rpm, *parameter->voltage, 
-                        *parameter->current, *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption,
-                        *parameter->cell_voltage, *parameter->voltage_bec, *parameter->current_bec, *parameter->throttle, *parameter->pwm_percent);
-                    
-                    return; // Successfully processed frame
+                // FET Temperature - byte 7, subtract 40 for actual temperature
+                int temp_fet_raw = (int)frame[7] - 40;
+                float temperature_fet = (temp_fet_raw < -40 || temp_fet_raw > 215) ? 0 : temp_fet_raw;
+                
+                // Voltage - bytes 8-9 (little endian), scale by 0.01 
+                uint16_t voltage_raw = (uint16_t)frame[8] | ((uint16_t)frame[9] << 8);
+                float voltage = voltage_raw * 0.01f;  // V_SCALE from your code
+                
+                // Current - bytes 10-11 (little endian), scale by 0.01
+                uint16_t current_raw = (uint16_t)frame[10] | ((uint16_t)frame[11] << 8);
+                float current = current_raw * 0.01f;  // A_SCALE from your code
+                
+                // Consumption - bytes 12-13 (little endian), direct mAh
+                uint16_t consumption_raw = (uint16_t)frame[12] | ((uint16_t)frame[13] << 8);
+                
+                // eRPM - bytes 14-15 (little endian), scale by 0.1, then apply pole pairs
+                uint16_t erpm_raw = (uint16_t)frame[14] | ((uint16_t)frame[15] << 8);
+                float erpm = erpm_raw * 0.1f;  // ERPM_SCALE from your code
+                float rpm = (erpm / 2.0f) * parameter->rpm_multiplier;  // Assuming 2 pole pairs like your code
+                
+                // PWM - byte 16, direct percentage
+                float pwm_percent = frame[16];
+                
+                // Throttle - byte 17, direct percentage  
+                float throttle = frame[17];
+                
+                // BEC voltage - bytes 18-19 (little endian), in mV
+                uint16_t bec_voltage_raw = (uint16_t)frame[18] | ((uint16_t)frame[19] << 8);
+                float voltage_bec = bec_voltage_raw / 1000.0f;
+                
+                // BEC current - bytes 20-21 (little endian), in mA
+                uint16_t bec_current_raw = (uint16_t)frame[20] | ((uint16_t)frame[21] << 8);
+                float current_bec = bec_current_raw / 1000.0f;
+                
+                // BEC/Cap Temperature - byte 22 or 24, subtract 40 for actual temperature
+                int temp_bec_raw = (int)frame[22] - 40;  // Try byte 22 first
+                float temperature_bec = (temp_bec_raw < -40 || temp_bec_raw > 215) ? 0 : temp_bec_raw;
+                
+                // Update outputs with averaging
+                if (parameter->pwm_out) xTaskNotifyGive(context.pwm_out_task_handle);
+                
+                *parameter->rpm = get_average(parameter->alpha_rpm, *parameter->rpm, rpm);
+                *parameter->consumption += get_consumption(*parameter->current, 65535, &timestamp);
+                *parameter->voltage = get_average(parameter->alpha_voltage, *parameter->voltage, voltage);
+                *parameter->current = get_average(parameter->alpha_current, *parameter->current, current);
+                *parameter->temperature_fet = get_average(parameter->alpha_temperature, *parameter->temperature_fet, temperature_fet);
+                *parameter->temperature_bec = get_average(parameter->alpha_temperature, *parameter->temperature_bec, temperature_bec);
+                *parameter->cell_voltage = *parameter->voltage / *parameter->cell_count;
+                *parameter->voltage_bec = voltage_bec;
+                *parameter->current_bec = current_bec;
+                *parameter->throttle = throttle;
+                *parameter->pwm_percent = pwm_percent;
+                
+                debug(
+                    "\nOpenYGE (%u) < RPM: %.0f Volt: %.2fV Curr: %.2fA TempFET: %.1f°C "
+                    "TempBEC: %.1f°C Cons: %.0fmAh CellV: %.2fV BECVolt: %.2fV BECCurr: %.3fA Thr: %.0f%% PWM: %.0f%%",
+                    uxTaskGetStackHighWaterMark(NULL), *parameter->rpm, *parameter->voltage, 
+                    *parameter->current, *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption,
+                    *parameter->cell_voltage, *parameter->voltage_bec, *parameter->current_bec, *parameter->throttle, *parameter->pwm_percent);
+                
+                return; // Successfully processed frame
+            } else {
+                parameter->crc_errors++;
+                
+                if (parameter->crc_mode == CRC_MODE_UNKNOWN) {
+                    debug("\nOpenYGE CRC mode unknown, trying to detect...");
                 } else {
-                    debug("\nOpenYGE CRC error: expected 0x%04X, got 0x%04X", calculated_crc, received_crc);
+                    debug("\nOpenYGE CRC error with mode %d", parameter->crc_mode);
+                }
+                
+                // Debug frame contents for first few errors
+                if (parameter->crc_errors <= 3) {
+                    debug(" Frame[%d]: ", frame_len);
+                    for (int j = 0; j < frame_len && j < 12; j++) {
+                        debug("%02X ", frame[j]);
+                    }
                 }
             }
         }
     }
 }
 
-static uint16_t calculate_crc16(uint8_t *data, uint8_t length) {
-    uint16_t crc = 0x0000;
+static uint16_t calculate_crc16_with_seed(uint8_t *data, uint8_t length, uint16_t seed) {
+    uint16_t crc = seed;
     
     for (uint8_t i = 0; i < length; i++) {
         crc ^= ((uint16_t)data[i] << 8);
@@ -189,19 +215,80 @@ static uint16_t calculate_crc16(uint8_t *data, uint8_t length) {
     return crc;
 }
 
-static float get_temperature_celsius(uint16_t raw_temp) {
-    // OpenYGE temperature: -40...+215°C
-    // Assuming linear scaling from raw value
-    // Need to verify exact scaling from protocol documentation
-    int16_t signed_temp = (int16_t)raw_temp;
+static crc_mode_t detect_crc_mode(uint8_t *frame, uint8_t frame_len) {
+    if (frame_len < 4) return CRC_MODE_UNKNOWN;
     
-    // If temperature is 0d (-40°C indicator), return 0 for no temperature
-    if (signed_temp == 0) return 0;
+    // Extract CRC from frame in both byte orders
+    uint16_t rx_be = ((uint16_t)frame[frame_len-2] << 8) | frame[frame_len-1];  // Big-endian
+    uint16_t rx_le = ((uint16_t)frame[frame_len-1] << 8) | frame[frame_len-2];  // Little-endian
     
-    // Simple conversion - may need adjustment based on actual protocol spec
-    float temperature = (float)signed_temp / 10.0f - 40.0f;
+    // Try all CRC variants
+    struct {
+        crc_mode_t mode;
+        uint8_t start_offset;
+        uint16_t seed;
+        bool is_big_endian;
+    } variants[] = {
+        {CRC_MODE_INC_SYNC_SEED_FFFF_BE,  0, 0xFFFF, true},
+        {CRC_MODE_INC_SYNC_SEED_FFFF_LE,  0, 0xFFFF, false},
+        {CRC_MODE_SKIP_SYNC_SEED_FFFF_BE, 1, 0xFFFF, true},
+        {CRC_MODE_SKIP_SYNC_SEED_FFFF_LE, 1, 0xFFFF, false},
+        {CRC_MODE_INC_SYNC_SEED_0000_BE,  0, 0x0000, true},
+        {CRC_MODE_INC_SYNC_SEED_0000_LE,  0, 0x0000, false},
+        {CRC_MODE_SKIP_SYNC_SEED_0000_BE, 1, 0x0000, true},
+        {CRC_MODE_SKIP_SYNC_SEED_0000_LE, 1, 0x0000, false},
+    };
     
-    if (temperature < -40.0f || temperature > 215.0f) return 0;
+    for (int i = 0; i < 8; i++) {
+        if (frame_len <= (2 + variants[i].start_offset)) continue;
+        
+        uint16_t calc_crc = calculate_crc16_with_seed(
+            frame + variants[i].start_offset, 
+            frame_len - 2 - variants[i].start_offset, 
+            variants[i].seed
+        );
+        
+        uint16_t expected_crc = variants[i].is_big_endian ? rx_be : rx_le;
+        
+        if (calc_crc == expected_crc) {
+            debug("\nOpenYGE CRC mode detected: %d", variants[i].mode);
+            return variants[i].mode;
+        }
+    }
     
-    return temperature;
+    return CRC_MODE_UNKNOWN;
 }
+
+static bool validate_crc(uint8_t *frame, uint8_t frame_len, crc_mode_t mode) {
+    if (frame_len < 4) return false;
+    
+    uint16_t rx_be = ((uint16_t)frame[frame_len-2] << 8) | frame[frame_len-1];
+    uint16_t rx_le = ((uint16_t)frame[frame_len-1] << 8) | frame[frame_len-2];
+    
+    uint8_t start_offset;
+    uint16_t seed;
+    bool is_big_endian;
+    
+    switch (mode) {
+        case CRC_MODE_INC_SYNC_SEED_FFFF_BE:  start_offset = 0; seed = 0xFFFF; is_big_endian = true; break;
+        case CRC_MODE_INC_SYNC_SEED_FFFF_LE:  start_offset = 0; seed = 0xFFFF; is_big_endian = false; break;
+        case CRC_MODE_SKIP_SYNC_SEED_FFFF_BE: start_offset = 1; seed = 0xFFFF; is_big_endian = true; break;
+        case CRC_MODE_SKIP_SYNC_SEED_FFFF_LE: start_offset = 1; seed = 0xFFFF; is_big_endian = false; break;
+        case CRC_MODE_INC_SYNC_SEED_0000_BE:  start_offset = 0; seed = 0x0000; is_big_endian = true; break;
+        case CRC_MODE_INC_SYNC_SEED_0000_LE:  start_offset = 0; seed = 0x0000; is_big_endian = false; break;
+        case CRC_MODE_SKIP_SYNC_SEED_0000_BE: start_offset = 1; seed = 0x0000; is_big_endian = true; break;
+        case CRC_MODE_SKIP_SYNC_SEED_0000_LE: start_offset = 1; seed = 0x0000; is_big_endian = false; break;
+        default: return false;
+    }
+    
+    uint16_t calc_crc = calculate_crc16_with_seed(
+        frame + start_offset, 
+        frame_len - 2 - start_offset, 
+        seed
+    );
+    
+    uint16_t expected_crc = is_big_endian ? rx_be : rx_le;
+    return calc_crc == expected_crc;
+}
+
+// Temperature function no longer needed - OpenYGE sends direct Celsius values
