@@ -64,6 +64,7 @@ local pageName = {
 	"Voltage analog",
 	"Current analog",
 	"Airspeed analog",
+    "Gyro",
 }
 
 -- Page 1 - SensorId
@@ -107,6 +108,7 @@ local escProtocolStr = {
 	"Smart ESC/BAT",
 	"OMP M4",
 	"ZTW",
+    "OpenYGE",
 }
 local escProtocol = { "Protocol", nil, 0, 11, 1, 0x5103, escProtocolStr }
 local hw4InitDelay = { "Init Delay", nil, 0, 1, 1, 0x512E, onOffStr }
