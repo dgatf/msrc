@@ -16,17 +16,19 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
+#include "esc_openyge.h"
 #include "esc_pwm.h"
-#include "ms5611.h"
+#include "esc_ztw.h"
 #include "gps.h"
+#include "mpu6050.h"
+#include "ms5611.h"
 #include "ntc.h"
 #include "pwm_out.h"
+#include "smart_esc.h"
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
-#include "smart_esc.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 /* Flysky IBUS Data Id */
 #define IBUS_ID_VOLTAGE 0x00       // Internal Voltage
@@ -239,7 +241,8 @@ static int32_t format(uint8_t data_id, float value) {
     if (data_id == IBUS_ID_EXTV || data_id == IBUS_ID_CELL_VOLTAGE || data_id == IBUS_ID_BAT_CURR ||
         data_id == IBUS_ID_CLIMB_RATE || data_id == IBUS_ID_COG || data_id == IBUS_ID_VERTICAL_SPEED ||
         data_id == IBUS_ID_GROUND_SPEED || data_id == IBUS_ID_GPS_ALT || data_id == IBUS_ID_PRES ||
-        data_id == IBUS_ID_ALT)
+        data_id == IBUS_ID_ALT || data_id == IBUS_ID_ACC_X || data_id == IBUS_ID_ACC_Y || data_id == IBUS_ID_ACC_Z ||
+        data_id == IBUS_ID_ROLL || data_id == IBUS_ID_PITCH || data_id == IBUS_ID_YAW)
         return round(value * 100);
 
     if (data_id == IBUS_ID_GPS_LAT || data_id == IBUS_ID_GPS_LON) return round(value * 1e7);
@@ -643,6 +646,58 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
         add_sensor(new_sensor, sensor, sensormask);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
+    if (config->esc_protocol == ESC_OPENYGE) {
+        esc_openyge_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.pwm_out = config->enable_pwm_out;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temperature_fet = malloc(sizeof(float));
+        parameter.temperature_bec = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.voltage_bec = malloc(sizeof(float));
+        parameter.current_bec = malloc(sizeof(float));
+        parameter.throttle = malloc(sizeof(float));
+        parameter.pwm_percent = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_openyge_task, "esc_openyge_task", STACK_ESC_OPENYGE, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_MOT, IBUS_TYPE_U16, parameter.rpm};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_EXTV, IBUS_TYPE_U16, parameter.voltage};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_BAT_CURR, IBUS_TYPE_U16, parameter.current};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_EXTV, IBUS_TYPE_U16, parameter.voltage_bec};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_BAT_CURR, IBUS_TYPE_U16, parameter.current_bec};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temperature_fet};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_TEMPERATURE, IBUS_TYPE_U16, parameter.temperature_bec};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_CELL_VOLTAGE, IBUS_TYPE_U16, parameter.cell_voltage};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_FUEL, IBUS_TYPE_U16, parameter.consumption};
+        add_sensor(new_sensor, sensor, sensormask);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
     if (config->enable_gps) {
         gps_parameters_t parameter;
         parameter.protocol = config->gps_protocol;
@@ -830,5 +885,43 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
         *new_sensor = (sensor_ibus_t){IBUS_ID_SPE, IBUS_TYPE_U16, parameter.airspeed};
         add_sensor(new_sensor, sensor, sensormask);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_gyro) {
+        mpu6050_parameters_t parameter = {1,
+                                          config->i2c_address_mpu6050,
+                                          config->mpu6050_acc_scale,
+                                          config->mpu6050_gyro_scale,
+                                          config->mpu6050_gyro_weighting,
+                                          config->mpu6050_filter,
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float))};
+        xTaskCreate(mpu6050_task, "mpu6050_task", STACK_MPU6050, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_ACC_X, IBUS_TYPE_S16, parameter.acc_x};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_ACC_Y, IBUS_TYPE_S16, parameter.acc_y};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_ACC_Z, IBUS_TYPE_S16, parameter.acc_z};
+        add_sensor(new_sensor, sensor, sensormask);
+
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_PITCH, IBUS_TYPE_S16, parameter.pitch};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_ROLL, IBUS_TYPE_S16, parameter.roll};
+        add_sensor(new_sensor, sensor, sensormask);
+        new_sensor = malloc(sizeof(sensor_ibus_t));
+        *new_sensor = (sensor_ibus_t){IBUS_ID_YAW, IBUS_TYPE_S16, parameter.yaw};
+        add_sensor(new_sensor, sensor, sensormask);
     }
 }

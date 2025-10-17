@@ -15,17 +15,18 @@
 #include "esc_hw4.h"
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
+#include "esc_omp_m4.h"
+#include "esc_openyge.h"
 #include "esc_pwm.h"
+#include "esc_ztw.h"
 #include "ms5611.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
 #include "pwm_out.h"
+#include "smart_esc.h"
 #include "stdlib.h"
 #include "uart.h"
 #include "voltage.h"
-#include "smart_esc.h"
-#include "esc_omp_m4.h"
-#include "esc_ztw.h"
 
 #define JR_DMSS_TEMPERATURE_SENSOR_ID 1
 #define JR_DMSS_RPM_SENSOR_ID 2
@@ -143,7 +144,7 @@ static void send_packet(uint8_t address, float **sensor) {
         case JR_DMSS_VARIO_SENSOR_ID: {
             {
                 static uint8_t index = 0;
-                buffer[0] = JR_DMSS_VARIO_SENSOR_ID  | 0xE0;
+                buffer[0] = JR_DMSS_VARIO_SENSOR_ID | 0xE0;
                 buffer[1] = 0x3;
                 uint16_t value;
                 if ((index % 3) == 0) {
@@ -555,6 +556,46 @@ static void set_config(float **sensor) {
         sensor[CURRENT] = new_sensor;
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.temp_esc;
+        sensor[TEMPERATURE] = new_sensor;
+        new_sensor = malloc(sizeof(float));
+        new_sensor = parameter.consumption;
+        sensor[CAPACITY] = new_sensor;
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OPENYGE) {
+        esc_openyge_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.pwm_out = config->enable_pwm_out;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temperature_fet = malloc(sizeof(float));
+        parameter.temperature_bec = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.voltage_bec = malloc(sizeof(float));
+        parameter.current_bec = malloc(sizeof(float));
+        parameter.throttle = malloc(sizeof(float));
+        parameter.pwm_percent = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_openyge_task, "esc_openyge_task", STACK_ESC_OPENYGE, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        new_sensor = malloc(sizeof(float));
+        new_sensor = parameter.rpm;
+        sensor[RPM] = new_sensor;
+        new_sensor = malloc(sizeof(float));
+        new_sensor = parameter.voltage;
+        sensor[VOLTAGE] = new_sensor;
+        new_sensor = malloc(sizeof(float));
+        new_sensor = parameter.current;
+        sensor[CURRENT] = new_sensor;
+        new_sensor = malloc(sizeof(float));
+        new_sensor = parameter.temperature_fet;
         sensor[TEMPERATURE] = new_sensor;
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.consumption;

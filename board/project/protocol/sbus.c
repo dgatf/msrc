@@ -17,6 +17,7 @@
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_omp_m4.h"
+#include "esc_openyge.h"
 #include "esc_pwm.h"
 #include "esc_ztw.h"
 #include "gps.h"
@@ -653,6 +654,56 @@ static void set_config(void) {
         add_sensor(SLOT_TEMP1, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){SBUS_TEMP, parameter.temp_motor};
+        add_sensor(SLOT_TEMP2, new_sensor);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OPENYGE) {
+        esc_openyge_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.pwm_out = config->enable_pwm_out;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temperature_fet = malloc(sizeof(float));
+        parameter.temperature_bec = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.voltage_bec = malloc(sizeof(float));
+        parameter.current_bec = malloc(sizeof(float));
+        parameter.throttle = malloc(sizeof(float));
+        parameter.pwm_percent = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_openyge_task, "esc_openyge_task", STACK_ESC_OPENYGE, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_RPM, parameter.rpm};
+        add_sensor(SLOT_RPM, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_VOLT, parameter.voltage};
+        add_sensor(SLOT_POWER_VOLT1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_CURR, parameter.current};
+        add_sensor(SLOT_POWER_CURR1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_VOLT, parameter.voltage_bec};
+        add_sensor(SLOT_POWER_VOLT3, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_CURR, parameter.current_bec};
+        add_sensor(SLOT_POWER_CURR3, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_POWER_CONS, parameter.consumption};
+        add_sensor(SLOT_POWER_CONS1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_TEMP, parameter.temperature_fet};
+        add_sensor(SLOT_TEMP1, new_sensor);
+        new_sensor = malloc(sizeof(sensor_sbus_t));
+        *new_sensor = (sensor_sbus_t){SBUS_TEMP, parameter.temperature_bec};
         add_sensor(SLOT_TEMP2, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
