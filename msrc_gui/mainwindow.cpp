@@ -202,6 +202,11 @@ void MainWindow::generateCircuit(QLabel *label) {
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
+        if (ui->gbGyro->isChecked()) {
+            image.load(":/res/vario_rp2040_zero.png");
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
         if (ui->gbFuelPressure->isChecked()) {
             image.load(":/res/fuel_pressure.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
@@ -1280,3 +1285,10 @@ void MainWindow::on_cbHw4AutoDetect_toggled(bool checked) {
         ui->gbEscParameters->setVisible(true);
     }
 }
+
+void MainWindow::on_gbGyro_toggled(bool enabled)
+{
+    enableWidgets(ui->gbGyro, enabled);
+    generateCircuit(ui->lbCircuit);
+}
+
