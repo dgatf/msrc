@@ -6,7 +6,6 @@
 typedef struct bmp180_parameters_t {
     float alpha_vario;
     bool auto_offset;
-    uint8_t address;
     float *temperature, *pressure, *altitude, *vspeed;
 } bmp180_parameters_t;
 

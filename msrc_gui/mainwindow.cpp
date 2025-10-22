@@ -50,13 +50,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbSpeedUnitsGps->addItems({"km/h", "kts"});
     ui->lbQuiescentVoltage->setText("Zero current output voltage, V<sub>IOUT</sub> (V)");
     ui->cbVarioAutoOffset->setVisible(false);
-    for (uint8_t i = 0; i < 127; i++) {
-        QString hex;
-        hex.setNum(i, 16);
-        ui->cbAddress->addItem("0x" + hex);
-    }
-    ui->cbAddress->setCurrentIndex(0x77);
-
     ui->cbSerialMonitorGpio->addItems({"1", "5", "6"});
     ui->cbBaudrate->addItems({"115200", "57600", "38400", "19200", "9600", "4800"});
     ui->cbStopbits->addItems({"1", "2"});
@@ -68,7 +61,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                                  "< 260 kPa (K = 32)", "< 500 kPa (K = 16)", "< 1000 kPa (K = 8)",
                                  "> 1000 kPa (K = 4)"});
 
-    ui->cbGyroAddress->addItems({"0x68", "0x69"});
     ui->cbGyroAccSens->addItems({"2", "4", "8", "16"});
     ui->cbGyroSens->addItems({"250", "500", "1000", "2000"});
     ui->cbGyroSamplerate->addItems({"1000", "500", "333", "250", "200", "167", "144", "125"});
@@ -534,7 +526,6 @@ void MainWindow::setUiFromConfig() {
     else
         ui->gbAltitude->setChecked(true);
     ui->cbBarometerType->setCurrentIndex(config.i2c_module - 1);
-    ui->cbAddress->setCurrentIndex(config.i2c_address == 0x76 ? 0 : 1);
     ui->cbAltitudeFilter->setCurrentIndex(config.bmp280_filter - 1);
     ui->cbVarioAutoOffset->setChecked(config.vario_auto_offset);
 
@@ -661,7 +652,6 @@ void MainWindow::setUiFromConfig() {
 
     // Gyro MPU6050
     ui->gbGyro->setChecked(config.enable_gyro);
-    ui->cbGyroAddress->setCurrentIndex(config.i2c_address_mpu6050 == 0x68 ? 0 : 1);
     ui->cbGyroAccSens->setCurrentIndex(config.mpu6050_acc_scale);
     ui->cbGyroSens->setCurrentIndex(config.mpu6050_gyro_scale);
     ui->sbGyroWeight->setValue(config.mpu6050_gyro_weighting);
@@ -751,7 +741,6 @@ void MainWindow::getConfigFromUi() {
         config.i2c_module = (i2c_module_t)(ui->cbBarometerType->currentIndex() + 1);
     else
         config.i2c_module = i2c_module_t::I2C_NONE;
-    config.i2c_address = ui->cbAddress->currentIndex() + 0x76;
     config.bmp280_filter = ui->cbAltitudeFilter->currentIndex() + 1;
     config.vario_auto_offset = ui->cbVarioAutoOffset->isChecked();
 
@@ -875,7 +864,6 @@ void MainWindow::getConfigFromUi() {
 
     // Gyro MPU6050
     config.enable_gyro = ui->gbGyro->isChecked();
-    config.i2c_address_mpu6050 = ui->cbGyroAddress->currentIndex() + 0x68;
     config.mpu6050_acc_scale = ui->cbGyroAccSens->currentIndex();
     config.mpu6050_gyro_scale = ui->cbGyroSens->currentIndex();
     config.mpu6050_gyro_weighting = ui->sbGyroWeight->value();

@@ -55,6 +55,8 @@
 #define STANDBY_MS_2000 0x06
 #define STANDBY_MS_4000 0x07
 
+#define I2C_ADDRESS_1 0x76
+#define I2C_ADDRESS_2 0x77
 #define SENSOR_INTERVAL_MS 40  // min 30
 #define VSPEED_INTERVAL_MS 500
 
@@ -145,10 +147,14 @@ static void begin(bmp280_parameters_t *parameter, bmp280_calibration_t *calibrat
     gpio_pull_up(I2C0_SCL_GPIO);
 
     uint8_t data[24] = {0};
-    data[0] = REGISTER_CONFIG;
-    data[1] = (STANDBY_MS_1 << 5) | ((parameter->filter + 1) << 2) | 0;
-    i2c_write_blocking(i2c0, parameter->address, data, 2, false);
 
+    // Find sensor address
+    parameter->address = I2C_ADDRESS_1;
+    if (i2c_write_blocking(i2c0, I2C_ADDRESS_1, data, 1, false) == PICO_ERROR_GENERIC) {
+        parameter->address = I2C_ADDRESS_2;
+    }
+
+    // Configure sensor
     data[0] = REGISTER_CONTROL;
     data[1] = (OVERSAMPLING_X2 << 5) | (OVERSAMPLING_X16 << 2) | NORMAL;
     i2c_write_blocking(i2c0, parameter->address, data, 2, false);

@@ -28,6 +28,8 @@
 #define REGISTER_GYRO_ZOUT_L 0x48
 #define REGISTER_WHO_AM_I 0x75
 
+#define I2C_ADDRESS_1 0x68
+#define I2C_ADDRESS_2 0x69
 #define SENSOR_READ_INTERVAL_MS 30
 #define CALIBRATION_READS 50
 
@@ -208,6 +210,12 @@ static void begin(mpu6050_parameters_t *parameter, mpu6050_calibration_t *calibr
     uint8_t data[2] = {REGISTER_PWR_MGMT_1, 0};
     i2c_write_blocking(i2c0, parameter->address, data, 2, true);
     vTaskDelay(100 / portTICK_PERIOD_MS);
+
+    // Find sensor address
+    parameter->address = I2C_ADDRESS_1;
+    if (i2c_write_blocking(i2c0, I2C_ADDRESS_1, data, 1, false) == PICO_ERROR_GENERIC) {
+        parameter->address = I2C_ADDRESS_2;
+    }
 
     // Configure Accelerometer Sensitivity
     data[0] = REGISTER_ACCEL_CONFIG;

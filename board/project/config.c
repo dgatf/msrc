@@ -172,7 +172,6 @@ void config_forze_write() {
     config.enable_analog_ntc = ENABLE_ANALOG_NTC;
     config.enable_analog_airspeed = ENABLE_ANALOG_AIRSPEED;
     config.i2c_module = I2C1_TYPE;
-    config.i2c_address = I2C1_ADDRESS;
     config.alpha_rpm = ALPHA(AVERAGING_ELEMENTS_RPM);
     config.alpha_voltage = ALPHA(AVERAGING_ELEMENTS_VOLTAGE);
     config.alpha_current = ALPHA(AVERAGING_ELEMENTS_CURRENT);
@@ -235,7 +234,6 @@ void config_forze_write() {
     config.fport_inverted = false;
     config.esc_hw4_auto_detect = true;
     config.enable_gyro = false;
-    config.i2c_address_mpu6050 = GYRO_ADDRESS;
     config.mpu6050_acc_scale = ACCEL_SENSITIVITY;
     config.mpu6050_gyro_scale = GYRO_SENSITIVITY;
     config.mpu6050_gyro_weighting = GYRO_WEIGHTING;

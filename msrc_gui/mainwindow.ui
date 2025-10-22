@@ -576,9 +576,9 @@
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-747</y>
+                 <y>-398</y>
                  <width>581</width>
-                 <height>2119</height>
+                 <height>2057</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -948,6 +948,16 @@
                    <bool>false</bool>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_7">
+                   <item row="3" column="1">
+                    <widget class="QCheckBox" name="cbVarioAutoOffset">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Auto offset</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="1" column="2">
                     <widget class="QComboBox" name="cbBarometerType">
                      <property name="enabled">
@@ -955,10 +965,20 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="2">
+                   <item row="2" column="2">
                     <widget class="QComboBox" name="cbAltitudeFilter">
                      <property name="enabled">
                       <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLabel" name="lbAltitudeFilter">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Filter</string>
                      </property>
                     </widget>
                    </item>
@@ -969,43 +989,6 @@
                      </property>
                      <property name="text">
                       <string>Model</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QCheckBox" name="cbVarioAutoOffset">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Auto offset</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QLabel" name="label_13">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Address</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="1">
-                    <widget class="QLabel" name="lbAltitudeFilter">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Filter</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="2">
-                    <widget class="QComboBox" name="cbAddress">
-                     <property name="enabled">
-                      <bool>false</bool>
                      </property>
                     </widget>
                    </item>
@@ -1049,73 +1032,63 @@
                    <bool>false</bool>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_2">
-                   <item row="3" column="1">
-                    <widget class="QSpinBox" name="sbGyroWeight">
-                     <property name="maximum">
-                      <number>100</number>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="4" column="0">
-                    <widget class="QLabel" name="label_12">
-                     <property name="text">
-                      <string>Low pass filter (0 none, 6 max)</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QComboBox" name="cbGyroSens"/>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QSpinBox" name="sbGyroFilter">
-                     <property name="maximum">
-                      <number>6</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="0">
                     <widget class="QLabel" name="lbGyroSamplerate">
                      <property name="text">
                       <string>Sample rate</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_10">
-                     <property name="text">
-                      <string>Gyro sensitivity (°/s)</string>
+                   <item row="3" column="1">
+                    <widget class="QSpinBox" name="sbGyroFilter">
+                     <property name="maximum">
+                      <number>6</number>
                      </property>
                     </widget>
                    </item>
                    <item row="1" column="1">
+                    <widget class="QComboBox" name="cbGyroSens"/>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_12">
+                     <property name="text">
+                      <string>Low pass filter (0 none, 6 max)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
                     <widget class="QComboBox" name="cbGyroAccSens"/>
                    </item>
-                   <item row="1" column="0">
+                   <item row="0" column="0">
                     <widget class="QLabel" name="label_4">
                      <property name="text">
                       <string>Accel sensitivity (g)</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="0">
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_10">
+                     <property name="text">
+                      <string>Gyro sensitivity (°/s)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
                     <widget class="QLabel" name="label_11">
                      <property name="text">
                       <string>Gyro weight (%)</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="5" column="1">
+                   <item row="4" column="1">
                     <widget class="QComboBox" name="cbGyroSamplerate"/>
                    </item>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_15">
-                     <property name="text">
-                      <string>Address</string>
+                   <item row="2" column="1">
+                    <widget class="QSpinBox" name="sbGyroWeight">
+                     <property name="maximum">
+                      <number>100</number>
                      </property>
                     </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QComboBox" name="cbGyroAddress"/>
                    </item>
                   </layout>
                  </widget>

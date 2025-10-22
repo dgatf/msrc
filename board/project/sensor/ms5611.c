@@ -30,6 +30,9 @@
 #define OVERSAMPLING_512 0x02
 #define OVERSAMPLING_256 0x00
 
+#define I2C_ADDRESS_1 0x77
+#define I2C_ADDRESS_2 0x76
+
 #define SENSOR_INTERVAL_MS 20  // min 10
 #define VSPEED_INTERVAL_MS 500
 
@@ -121,6 +124,14 @@ static void begin(ms5611_parameters_t *parameter, ms5611_calibration_t *calibrat
     gpio_pull_up(I2C0_SCL_GPIO);
 
     uint8_t data[12];
+
+    // Find sensor address
+    parameter->address = I2C_ADDRESS_1;
+    if (i2c_write_blocking(i2c0, I2C_ADDRESS_1, data, 1, false) == PICO_ERROR_GENERIC) {
+        parameter->address = I2C_ADDRESS_2;
+    }
+
+    // Read calibration data
     data[0] = CMD_RESET;
     i2c_write_blocking(i2c0, parameter->address, data, 1, false);
     vTaskDelay(SENSOR_INTERVAL_MS / portTICK_PERIOD_MS);

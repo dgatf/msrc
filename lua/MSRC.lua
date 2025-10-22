@@ -145,10 +145,9 @@ vars[pageEnum.gps] = { gpsEnable, gpsProtocol, gpsBaudrate, gpsRate }
 -- Page 6 - Vario
 local varioModelStr = { "None", "BMP280", "MS5611", "BMP180" }
 local varioModel = { "Model", nil, 0, 3, 1, 0x510A, varioModelStr }
-local varioAddress = { "Address", nil, 0x76, 0x77, 1, 0x510B }
 local varioFilterStr = { "Low", "Medium", "High" }
 local varioFilter = { "Filter", nil, 1, 3, 1, 0x5126, varioFilterStr }
-vars[pageEnum.vario] = { varioModel, varioAddress, varioFilter }
+vars[pageEnum.vario] = { varioModel, varioFilter }
 
 -- Page 7 - Fuel meter
 local fuelMeter = { "Enable", nil, 0, 1, 1, 0x5142, onOffStr }
@@ -197,12 +196,11 @@ vars[pageEnum.analogAirspeed] = { analogAirspeed, analogAirspeedVcc, analogAirsp
 
 -- Page 14 - Gyro
 local gyro = { "Enable", nil, 0, 1, 1, 0x514F, onOffStr }
-local gyroAddress = { "Address", nil, 0x68, 0x69, 1, 0x5150 }
 local gyroAccSens = { "Acc sens", nil, 0, 3, 1, 0x514C, { 2, 4, 8, 16 } }
 local gyroGyroSens = { "Gyro sens", nil, 0, 3, 1, 0x514D, { 250, 500, 1000, 2000 } }
 local gyroGyroWeight = { "Gyro weight", nil, 0, 100, 1, 0x514E }
 local gyroFilter = { "Filter", nil, 0, 6, 1, 0x5151 }
-vars[pageEnum.gyro] = { gyro, gyroAddress, gyroAccSens, gyroGyroSens, gyroGyroWeight, gyroFilter }
+vars[pageEnum.gyro] = { gyro, gyroAccSens, gyroGyroSens, gyroGyroWeight, gyroFilter }
 
 local function getTextFlags(item)
 	local value = 0
@@ -516,9 +514,9 @@ local function setPageItems()
 			varioModel[varEnum.val] = 0
 		end
 		if varioModelStr[varioModel[varEnum.val] + 1] == "BMP280" then
-			vars[page] = { varioModel, varioAddress, varioFilter }
+			vars[page] = { varioModel, varioFilter }
 		else
-			vars[page] = { varioModel, varioAddress }
+			vars[page] = { varioModel }
 		end
 	elseif page == pageEnum.analogCurr then
 		if analogCurrType[varEnum.val] + 1 > #analogCurrTypeStr then

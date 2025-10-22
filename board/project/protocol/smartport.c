@@ -215,9 +215,6 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
             case 0x510A:
                 packet.value = config->i2c_module;
                 break;
-            case 0x510B:
-                packet.value = config->i2c_address;
-                break;
             case 0x510C:
                 packet.value = ELEMENTS(config->alpha_rpm);
                 break;
@@ -380,9 +377,6 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
             case 0x514F:
                 packet.value = config->enable_gyro;
                 break;
-            case 0x5150:
-                packet.value = config->i2c_address_mpu6050;
-                break;
             case 0x5151:
                 packet.value = config->mpu6050_filter;
                 break;
@@ -439,9 +433,6 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 break;
             case 0x510A:
                 config_lua->i2c_module = value;
-                break;
-            case 0x510B:
-                config_lua->i2c_address = value;
                 break;
             case 0x510C:
                 config_lua->alpha_rpm = ALPHA(value);
@@ -607,9 +598,6 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 break;
             case 0x514F:
                 config_lua->enable_gyro = value;
-                break;
-            case 0x5150:
-                config_lua->i2c_address_mpu6050 = value;
                 break;
             case 0x5151:
                 config_lua->mpu6050_filter = value;
@@ -1735,7 +1723,7 @@ static void set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP280) {
-        bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
+        bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
@@ -1762,7 +1750,7 @@ static void set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_MS5611) {
-        ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
+        ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
@@ -1789,7 +1777,7 @@ static void set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset,
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
@@ -1889,7 +1877,7 @@ static void set_config(smartport_parameters_t *parameter) {
     if (config->enable_gyro) {
         mpu6050_parameters_t parameter = {
             1,
-            config->i2c_address_mpu6050,
+            0,
             config->mpu6050_acc_scale,
             config->mpu6050_gyro_scale,
             config->mpu6050_gyro_weighting,

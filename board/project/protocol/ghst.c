@@ -338,7 +338,7 @@ static void set_config(ghst_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP280) {
-        bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
+        bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
@@ -351,7 +351,7 @@ static void set_config(ghst_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_MS5611) {
-        ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
+        ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
@@ -364,7 +364,7 @@ static void set_config(ghst_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, config->i2c_address,
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset,
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);

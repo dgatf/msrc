@@ -31,6 +31,8 @@
 #define READ_PRESSURE_OVERSAMPLING_1 0x74
 #define READ_PRESSURE_OVERSAMPLING_2 0xB4
 #define READ_PRESSURE_OVERSAMPLING_3 0xF4
+
+#define I2C_ADDRESS 0x77
 #define PRESSURE_INTERVAL_MS 40     // min 30
 #define TEMPERATURE_INTERVAL_MS 20  // min 10
 #define VSPEED_INTERVAL_MS 500
@@ -69,11 +71,11 @@ static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibrati
 
     data[0] = REGISTER_CONTROL;
     data[1] = READ_TEMPERATURE;
-    i2c_write_blocking(i2c0, parameter->address, data, 2, false);
+    i2c_write_blocking(i2c0, I2C_ADDRESS, data, 2, false);
     vTaskDelay(TEMPERATURE_INTERVAL_MS / portTICK_PERIOD_MS);
     data[0] = REGISTER_DATA;
-    i2c_write_blocking(i2c0, parameter->address, data, 1, true);
-    i2c_read_blocking(i2c0, parameter->address, data, 2, false);
+    i2c_write_blocking(i2c0, I2C_ADDRESS, data, 1, true);
+    i2c_read_blocking(i2c0, I2C_ADDRESS, data, 2, false);
     UT = data[0] << 8 | data[1];
     X1 = ((UT - calibration->AC6) * calibration->AC5) >> 15;
     X2 = (calibration->MC << 11) / (X1 + calibration->MD);
@@ -84,11 +86,11 @@ static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibrati
 
     data[0] = REGISTER_CONTROL;
     data[1] = READ_PRESSURE | (OVERSAMPLING_3 << 6);
-    i2c_write_blocking(i2c0, parameter->address, data, 2, false);
+    i2c_write_blocking(i2c0, I2C_ADDRESS, data, 2, false);
     vTaskDelay(PRESSURE_INTERVAL_MS / portTICK_PERIOD_MS);
     data[0] = REGISTER_DATA;
-    i2c_write_blocking(i2c0, parameter->address, data, 1, true);
-    i2c_read_blocking(i2c0, parameter->address, data, 3, false);
+    i2c_write_blocking(i2c0, I2C_ADDRESS, data, 1, true);
+    i2c_read_blocking(i2c0, I2C_ADDRESS, data, 3, false);
     UP = ((uint32_t)data[0] << 16 | (uint16_t)data[1] << 8 | data[2]) >> (8 - OVERSAMPLING_3);
     B6 = B5 - 4000;
     X1 = (calibration->B2 * ((B6 * B6) >> 12)) >> 11;
@@ -132,8 +134,8 @@ static void begin(bmp180_parameters_t *parameter, bmp180_calibration_t *calibrat
 
     uint8_t data[22];
     data[0] = REGISTER_DIG_AC1;
-    i2c_write_blocking(i2c0, parameter->address, data, 1, true);
-    i2c_read_blocking(i2c0, parameter->address, data, 22, false);
+    i2c_write_blocking(i2c0, I2C_ADDRESS, data, 1, true);
+    i2c_read_blocking(i2c0, I2C_ADDRESS, data, 22, false);
     calibration->AC1 = ((uint16_t)data[0] << 8) | data[1];
     calibration->AC2 = ((uint16_t)data[2] << 8) | data[3];
     calibration->AC3 = ((uint16_t)data[4] << 8) | data[5];
