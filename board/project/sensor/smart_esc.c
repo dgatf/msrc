@@ -333,8 +333,11 @@ static void send_packet(void) {
         packet.crc = swap_16(crc);
         uart1_write_bytes((uint8_t *)&packet, sizeof(packet));
         cont++;
-        debug("\nSmart ESC (%u) Thr: %u Rev: %u > ", uxTaskGetStackHighWaterMark(NULL), throttle, reverse);
+        static uint32_t last_time = 0;
+        uint32_t now = time_us_32();
+        debug("\nSmart ESC (%u) Thr: %u Rev: %u (interval us %i)", uxTaskGetStackHighWaterMark(NULL), throttle, reverse, now - last_time);
         debug_buffer((uint8_t *)&packet, sizeof(packet), " 0x%X");
+        last_time = now;    
     }
 }
 
@@ -350,7 +353,11 @@ static void capture_pwm_throttle_handler(uint counter, edge_type_t edge) {
         if (delta < 0) delta = 0;
         if (delta > 1000) delta = 1000;
         throttle = delta / 1000.0F * 65532;  // 0us->0% 1000us->100%
-        // debug("\nSmart Esc. Thr (%.0f%%) %u us %u", throttle / 65532.0F * 100, throttle, pulse);
+        
+        static uint32_t last_time = 0;
+        uint32_t now = time_us_32();
+        debug("\nSmart Esc. Thr (%.0f%%) %u us %u interval us %i", throttle / 65532.0F * 100, throttle, pulse, now - last_time);
+        last_time = now;
     }
     timeout_throttle_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_throttle_callback, NULL, true);
 }
