@@ -4,6 +4,8 @@ name: CI - MSRC firmware
 
 on:
   workflow_dispatch:
+  schedule:
+      - cron: '0 0 1 * *'
   push:
     branches:
       - master
@@ -13,6 +15,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+        contents: read
+        id-token: write 
+        attestations: write
 
     steps:
       - name: Get actions code
@@ -30,6 +36,19 @@ jobs:
           output_dir: "../build"
           cmake_args: "-DCMAKE_BUILD_TYPE=Release"
         
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: build/project/MSRC-RP2040.uf2
+          github-token: ${{ secrets.TOKEN }}
+
+      #- name: Upload artifact
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    overwrite: 'true'
+      #    name: MSRC-RP2040.uf2
+      #    path: build/project/MSRC-RP2040.uf2]]
+
       - name: Upload to Google Drive
         uses: logickoder/g-drive-upload@main
         with:

@@ -11,6 +11,10 @@ on:
 jobs:
   linux:
     runs-on: ubuntu-22.04
+    permissions:
+        contents: read
+        id-token: write 
+        attestations: write
 
     steps:
       - name: Get actions code
@@ -48,6 +52,12 @@ jobs:
           ../linuxdeployqt-continuous-x86_64.AppImage msrc.desktop -appimage -extra-plugins=iconengines,platformthemes/libqgtk3.so
           mv *.AppImage msrc_gui.AppImage
 
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: msrc_gui/appdir/msrc_gui.AppImage
+          github-token: ${{ secrets.TOKEN }}
+
       - name: Upload to Google Drive
         uses: logickoder/g-drive-upload@main
         with:
@@ -59,6 +69,10 @@ jobs:
 
   macos:
     runs-on: macos-14
+    permissions:
+        contents: read
+        id-token: write 
+        attestations: write
 
     steps:
       - name: Get actions code
@@ -80,6 +94,12 @@ jobs:
           qmake ../msrc_gui
           make
           macdeployqt msrc_gui.app -dmg
+
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: build/msrc_gui.dmg
+          github-token: ${{ secrets.TOKEN }}
         
       - name: Upload to Google Drive
         uses: logickoder/g-drive-upload@main
@@ -92,6 +112,10 @@ jobs:
 
   windows:
     runs-on: windows-2022
+    permissions:
+        contents: read
+        id-token: write 
+        attestations: write
 
     steps:
       - name: Get actions code
@@ -112,6 +136,12 @@ jobs:
           qmake ../msrc_gui
           make
           mingw32-make release
+
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: build/release/msrc_gui.exe
+          github-token: ${{ secrets.TOKEN }}
 
       - name: Upload to Google Drive
         uses: logickoder/g-drive-upload@main

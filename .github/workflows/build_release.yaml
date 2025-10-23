@@ -42,7 +42,7 @@ jobs:
           files: build/project/MSRC-RP2040_${{ github.ref_name }}.uf2
             
       - name: Generate attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: build/project/MSRC-RP2040_${{ github.ref_name }}.uf2
           github-token: ${{ secrets.TOKEN }}
@@ -93,7 +93,7 @@ jobs:
           files: msrc_gui/appdir/msrc_link_${{ github.ref_name }}.AppImage
               
       - name: Generate attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: msrc_gui/appdir/msrc_link_${{ github.ref_name }}.AppImage
           github-token: ${{ secrets.TOKEN }}
@@ -129,7 +129,7 @@ jobs:
           files: build/msrc_link_${{ github.ref_name }}.dmg
                 
       - name: Generate attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: build/msrc_link_${{ github.ref_name }}.dmg
           github-token: ${{ secrets.TOKEN }}
@@ -164,7 +164,7 @@ jobs:
           files: build/release/msrc_link_${{ github.ref_name }}.exe
           
       - name: Generate attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: build/release/msrc_link_${{ github.ref_name }}.exe
           github-token: ${{ secrets.TOKEN }}
