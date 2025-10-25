@@ -161,7 +161,7 @@ void config_get(config_t *config) {
 }
 
 void config_forze_write() {
-    config_t config;
+    config_t config = {0};
     config.version = CONFIG_VERSION;
     config.rx_protocol = RX_PROTOCOL;
     config.esc_protocol = ESC_PROTOCOL;
