@@ -46,7 +46,7 @@
 #define CRSF_FRAMETYPE_AIRSPEED 0x0A
 #define CRSF_FRAMETYPE_RPM 0x0C
 #define CRSF_FRAMETYPE_TEMP 0x0D
-#define CRSF_FRAMETYPE_CELLS 0x0E
+#define CRSF_FRAMETYPE_VOLTAGES 0x0E
 #define CRSF_FRAMETYPE_GPS_TIME 0x03
 #define CRSF_FRAMETYPE_GPS_EXTENDED 0x06
 
@@ -60,7 +60,7 @@ typedef enum crsf_sensor_type_t {
     TYPE_AIRSPEED,
     TYPE_RPM,
     TYPE_TEMP,
-    TYPE_CELLS,
+    TYPE_VOLTAGES,
     TYPE_GPS_TIME,
     TYPE_GPS_EXTENDED,
     TYPE_ATTITUDE,
@@ -112,13 +112,13 @@ typedef struct crsf_sensor_rpm_formatted_t {
 
 typedef struct crsf_sensor_temp_formatted_t {
     uint8_t source;
-    int16_t temp[4];
+    int16_t temp;
 } __attribute__((packed)) crsf_sensor_temp_formatted_t;
 
-typedef struct crsf_sensor_cells_formatted_t {
+typedef struct crsf_sensor_voltages_formatted_t {
     uint8_t source;
-    uint16_t cells[18];
-} __attribute__((packed)) crsf_sensor_cells_formatted_t;
+    uint16_t voltage;
+} __attribute__((packed)) crsf_sensor_voltages_formatted_t;
 
 typedef struct crsf_sensor_gps_time_formatted_t {
     uint16_t year;
@@ -185,14 +185,17 @@ typedef struct crsf_sensor_rpm_t {
 } crsf_sensor_rpm_t;
 
 typedef struct crsf_sensor_temp_t {
-    float *temperature[4];  // V * 10 big endian
+    uint8_t temperature_count;
+    float *temperature[5];  // V * 10 big endian
 } crsf_sensor_temp_t;
 
-typedef struct crsf_sensor_cells_t {
-    bool is_average;
+typedef struct crsf_sensor_voltages_t {
+    bool is_cell_average;
     uint8_t *cell_count;
     float *cell[18];
-} crsf_sensor_cells_t;
+    uint8_t voltage_count;
+    float *voltage[10];
+} crsf_sensor_voltages_t;
 
 typedef struct crsf_sensor_gps_time_t {
     float *date;
@@ -228,7 +231,7 @@ typedef struct crsf_sensors_t {
     crsf_sensor_airspeed_t airspeed;
     crsf_sensor_rpm_t rpm;
     crsf_sensor_temp_t temperature;
-    crsf_sensor_cells_t cells;
+    crsf_sensor_voltages_t voltages;
     crsf_sensor_gps_time_t gps_time;
     crsf_sensor_gps_extended_t gps_extended;
     crsf_sensor_attitude_t attitude;
@@ -255,7 +258,7 @@ void crsf_task(void *parameters) {
 }
 
 static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buffer) {
-    // Packet format: [sync] [len] [type] [payload] [crc8 from type]
+    // Packet format: [sync] [len (from type)] [type] [payload] [crc8 from type]
     uint len = 0;
     buffer[0] = 0xC8;
     switch (type) {
@@ -345,38 +348,54 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             break;
         }
         case TYPE_TEMP: {
+            static uint8_t count = 0;
             buffer[1] = sizeof(crsf_sensor_temp_formatted_t) + 2;
             buffer[2] = CRSF_FRAMETYPE_TEMP;
             crsf_sensor_temp_formatted_t sensor = {0};
-            if (sensors->temperature.temperature[0])
-                sensor.temp[0] = swap_16((int16_t)(*sensors->temperature.temperature[0] * 10));
-            if (sensors->temperature.temperature[1])
-                sensor.temp[1] = swap_16((int16_t)(*sensors->temperature.temperature[1] * 10));
-            if (sensors->temperature.temperature[2])
-                sensor.temp[2] = swap_16((int16_t)(*sensors->temperature.temperature[2] * 10));
-            if (sensors->temperature.temperature[3])
-                sensor.temp[3] = swap_16((int16_t)(*sensors->temperature.temperature[3] * 10));
+            sensor.source = count;
+            if (sensors->temperature.temperature[count])
+                sensor.temp = swap_16((int16_t)(*sensors->temperature.temperature[count] * 10));
             memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_temp_formatted_t));
             buffer[3 + sizeof(crsf_sensor_temp_formatted_t)] =
                 get_crc(&buffer[2], sizeof(crsf_sensor_temp_formatted_t) + 1);
             len = sizeof(crsf_sensor_temp_formatted_t) + 4;
+            count++;
+            if (count >= sensors->temperature.temperature_count) count = 0;
             break;
         }
-        case TYPE_CELLS: {
-            buffer[2] = CRSF_FRAMETYPE_CELLS;
-            crsf_sensor_cells_formatted_t sensor = {0};
-            if (sensors->cells.is_average) {
-                for (uint i = 0; i < *sensors->cells.cell_count; i++)
-                    sensor.cells[i] = swap_16((uint16_t)(*sensors->cells.cell[0] * 1000));
+        case TYPE_VOLTAGES: {
+            static uint8_t cell_index = 0;
+            static uint8_t voltage_index = 0;
+            static bool send_cell = true;
+            buffer[2] = CRSF_FRAMETYPE_VOLTAGES;
+            crsf_sensor_voltages_formatted_t sensor = {0};
+            buffer[1] = sizeof(crsf_sensor_voltages_formatted_t) + 2;
+            if (send_cell) {
+                sensor.source = cell_index;
+                if (sensors->voltages.is_cell_average && sensors->voltages.cell[0]) {
+                    sensor.voltage = swap_16((uint16_t)(*sensors->voltages.cell[0] * 1000));
+                } else if (sensors->voltages.cell[cell_index]) {
+                    sensor.voltage = swap_16((uint16_t)(*sensors->voltages.cell[cell_index] * 1000));
+                }
+                cell_index++;
+                if (cell_index >= *sensors->voltages.cell_count) {
+                    cell_index = 0;
+                    send_cell = false;
+                }
             } else {
-                for (uint i = 0; i < *sensors->cells.cell_count; i++)
-                    sensor.cells[i] = swap_16((uint16_t)(*sensors->cells.cell[i] * 1000));
+                sensor.source = voltage_index + 128;
+                sensor.voltage = swap_16((uint16_t)(*sensors->voltages.cell[voltage_index] * 1000));
+                voltage_index++;
+                if (voltage_index >= *sensors->voltages.cell_count) {
+                    voltage_index = 0;
+                    send_cell = true;
+                }
             }
-            uint8_t size = sizeof(sensor.source) + sizeof(sensor.cells[0]) * *sensors->cells.cell_count;
-            memcpy(&buffer[3], &sensor, size);
-            buffer[3 + size] = get_crc(&buffer[2], size + 1);
-            len = size + 4;
-            buffer[1] = size + 2;
+            memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_voltages_formatted_t));
+            buffer[3 + sizeof(crsf_sensor_voltages_formatted_t)] =
+                get_crc(&buffer[2], sizeof(crsf_sensor_voltages_formatted_t) + 1);
+            len = sizeof(crsf_sensor_voltages_formatted_t) + 4;
+            buffer[1] = sizeof(crsf_sensor_voltages_formatted_t) + 2;
             break;
         }
         case TYPE_GPS_TIME: {
@@ -542,13 +561,16 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->rpm.rpm = parameter.rpm;
 
         sensors->enabled_sensors[TYPE_TEMP] = true;
-        sensors->temperature.temperature[0] = parameter.temperature_fet;
-        sensors->temperature.temperature[1] = parameter.temperature_bec;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature_fet;
+        sensors->temperature.temperature_count++;
 
-        sensors->enabled_sensors[TYPE_CELLS] = true;
-        sensors->cells.is_average = true;
-        sensors->cells.cell_count = parameter.cell_count;
-        sensors->cells.cell[0] = parameter.cell_voltage;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature_bec;
+        sensors->temperature.temperature_count++;
+
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        sensors->voltages.is_cell_average = true;
+        sensors->voltages.cell_count = parameter.cell_count;
+        sensors->voltages.cell[0] = parameter.cell_voltage;
     }
     if (config->esc_protocol == ESC_HW5) {
         esc_hw5_parameters_t parameter = {
@@ -570,13 +592,19 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->rpm.rpm = parameter.rpm;
 
         sensors->enabled_sensors[TYPE_TEMP] = true;
-        sensors->temperature.temperature[0] = parameter.temperature_fet;
-        sensors->temperature.temperature[1] = parameter.temperature_bec;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature_fet;
+        sensors->temperature.temperature_count++;
 
-        sensors->enabled_sensors[TYPE_CELLS] = true;
-        sensors->cells.is_average = true;
-        sensors->cells.cell_count = parameter.cell_count;
-        sensors->cells.cell[0] = parameter.cell_voltage;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature_bec;
+        sensors->temperature.temperature_count++;
+
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        sensors->voltages.is_cell_average = true;
+        sensors->voltages.cell_count = parameter.cell_count;
+        sensors->voltages.cell[0] = parameter.cell_voltage;
+
+        sensors->voltages.voltage[sensors->voltages.voltage_count] = parameter.voltage_bec;
+        sensors->voltages.voltage_count++;
     }
     if (config->esc_protocol == ESC_CASTLE) {
         esc_castle_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm,         config->alpha_voltage,
@@ -597,12 +625,18 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->rpm.rpm = parameter.rpm;
 
         sensors->enabled_sensors[TYPE_TEMP] = true;
-        sensors->temperature.temperature[0] = parameter.temperature;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature;
+        sensors->temperature.temperature_count++;
 
-        sensors->enabled_sensors[TYPE_CELLS] = true;
-        sensors->cells.is_average = true;
-        sensors->cells.cell_count = parameter.cell_count;
-        sensors->cells.cell[0] = parameter.cell_voltage;
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        sensors->voltages.is_cell_average = true;
+        sensors->voltages.cell_count = parameter.cell_count;
+        sensors->voltages.cell[0] = parameter.cell_voltage;
+
+        sensors->voltages.voltage[sensors->voltages.voltage_count] = parameter.voltage_bec;
+        sensors->voltages.voltage_count++;
+        sensors->voltages.voltage[sensors->voltages.voltage_count] = parameter.ripple_voltage;
+        sensors->voltages.voltage_count++;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -625,13 +659,19 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->rpm.rpm = parameter.rpm;
 
         sensors->enabled_sensors[TYPE_TEMP] = true;
-        sensors->temperature.temperature[0] = parameter.temperature_fet;
-        sensors->temperature.temperature[1] = parameter.temperature_bec;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature_fet;
+        sensors->temperature.temperature_count++;
 
-        sensors->enabled_sensors[TYPE_CELLS] = true;
-        sensors->cells.is_average = true;
-        sensors->cells.cell_count = parameter.cell_count;
-        sensors->cells.cell[0] = parameter.cell_voltage;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature_bec;
+        sensors->temperature.temperature_count++;
+
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        sensors->voltages.is_cell_average = true;
+        sensors->voltages.cell_count = parameter.cell_count;
+        sensors->voltages.cell[0] = parameter.cell_voltage;
+
+        sensors->voltages.voltage[sensors->voltages.voltage_count] = parameter.voltage_bec;
+        sensors->voltages.voltage_count++;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -653,12 +693,13 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->rpm.rpm = parameter.rpm;
 
         sensors->enabled_sensors[TYPE_TEMP] = true;
-        sensors->temperature.temperature[0] = parameter.temperature;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature;
+        sensors->temperature.temperature_count++;
 
-        sensors->enabled_sensors[TYPE_CELLS] = true;
-        sensors->cells.is_average = true;
-        sensors->cells.cell_count = parameter.cell_count;
-        sensors->cells.cell[0] = parameter.cell_voltage;
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        sensors->voltages.is_cell_average = true;
+        sensors->voltages.cell_count = parameter.cell_count;
+        sensors->voltages.cell[0] = parameter.cell_voltage;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -680,12 +721,13 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->rpm.rpm = parameter.rpm;
 
         sensors->enabled_sensors[TYPE_TEMP] = true;
-        sensors->temperature.temperature[0] = parameter.temperature;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature;
+        sensors->temperature.temperature_count++;
 
-        sensors->enabled_sensors[TYPE_CELLS] = true;
-        sensors->cells.is_average = true;
-        sensors->cells.cell_count = parameter.cell_count;
-        sensors->cells.cell[0] = parameter.cell_voltage;
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        sensors->voltages.is_cell_average = true;
+        sensors->voltages.cell_count = parameter.cell_count;
+        sensors->voltages.cell[0] = parameter.cell_voltage;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -722,14 +764,22 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->rpm.rpm = parameter.rpm;
 
         sensors->enabled_sensors[TYPE_TEMP] = true;
-        sensors->temperature.temperature[0] = parameter.temperature_fet;
-        sensors->temperature.temperature[1] = parameter.temperature_bec;
-        sensors->temperature.temperature[2] = parameter.temperature_bat;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature_fet;
+        sensors->temperature.temperature_count++;
 
-        sensors->enabled_sensors[TYPE_CELLS] = true;
-        sensors->cells.is_average = false;
-        sensors->cells.cell_count = parameter.cells;
-        for (uint i = 0; i < 18; i++) sensors->cells.cell[i] = parameter.cell[i];
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature_bec;
+        sensors->temperature.temperature_count++;
+
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temperature_bat;
+        sensors->temperature.temperature_count++;
+
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        sensors->voltages.is_cell_average = false;
+        sensors->voltages.cell_count = parameter.cells;
+        for (uint i = 0; i < 18; i++) sensors->voltages.cell[i] = parameter.cell[i];
+
+        sensors->voltages.voltage[sensors->voltages.voltage_count] = parameter.voltage_bec;
+        sensors->voltages.voltage_count++;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -761,13 +811,16 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->rpm.rpm = parameter.rpm;
 
         sensors->enabled_sensors[TYPE_TEMP] = true;
-        sensors->temperature.temperature[0] = parameter.temp_esc;
-        sensors->temperature.temperature[1] = parameter.temp_motor;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temp_esc;
+        sensors->temperature.temperature_count++;
 
-        sensors->enabled_sensors[TYPE_CELLS] = true;
-        sensors->cells.is_average = true;
-        sensors->cells.cell_count = parameter.cell_count;
-        sensors->cells.cell[0] = parameter.cell_voltage;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temp_motor;
+        sensors->temperature.temperature_count++;
+
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        sensors->voltages.is_cell_average = true;
+        sensors->voltages.cell_count = parameter.cell_count;
+        sensors->voltages.cell[0] = parameter.cell_voltage;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -800,13 +853,19 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->rpm.rpm = parameter.rpm;
 
         sensors->enabled_sensors[TYPE_TEMP] = true;
-        sensors->temperature.temperature[0] = parameter.temp_esc;
-        sensors->temperature.temperature[1] = parameter.temp_motor;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temp_esc;
+        sensors->temperature.temperature_count++;
 
-        sensors->enabled_sensors[TYPE_CELLS] = true;
-        sensors->cells.is_average = true;
-        sensors->cells.cell_count = parameter.cell_count;
-        sensors->cells.cell[0] = parameter.cell_voltage;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.temp_motor;
+        sensors->temperature.temperature_count++;
+
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        sensors->voltages.is_cell_average = true;
+        sensors->voltages.cell_count = parameter.cell_count;
+        sensors->voltages.cell[0] = parameter.cell_voltage;
+
+        sensors->voltages.voltage[sensors->voltages.voltage_count] = parameter.bec_voltage;
+        sensors->voltages.voltage_count++;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -874,8 +933,9 @@ static void set_config(crsf_sensors_t *sensors) {
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
-        sensors->enabled_sensors[TYPE_BATERY] = true;
-        sensors->battery.voltage = parameter.voltage;
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        sensors->voltages.voltage[sensors->voltages.voltage_count] = parameter.voltage;
+        sensors->voltages.voltage_count++;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -904,7 +964,8 @@ static void set_config(crsf_sensors_t *sensors) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         sensors->enabled_sensors[TYPE_TEMP] = true;
-        sensors->temperature.temperature[3] = parameter.ntc;
+        sensors->temperature.temperature[sensors->temperature.temperature_count] = parameter.ntc;
+        sensors->temperature.temperature_count++;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

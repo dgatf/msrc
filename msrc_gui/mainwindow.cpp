@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbReceiver->addItem("Futaba SBUS2", RX_SBUS);
     ui->cbReceiver->addItem("Jeti Ex Bus", RX_JETIEX);
     ui->cbReceiver->addItem("Multiplex Sensor Bus", RX_MULTIPLEX);
-    ui->cbReceiver->addItem("CRSF", RX_CRSF);
+    ui->cbReceiver->addItem("ELRS/CRSF", RX_CRSF);
     ui->cbReceiver->addItem("Sanwa", RX_SANWA);
     ui->cbReceiver->addItem("HOTT", RX_HOTT);
     ui->cbReceiver->addItem("Hitec", RX_HITEC);
@@ -209,7 +209,7 @@ void MainWindow::generateCircuit(QLabel *label) {
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if (ui->cbReceiver->currentText() == "Frsky D" || ui->cbReceiver->currentText() == "CRSF") {
+        if (ui->cbReceiver->currentText() == "Frsky D" || ui->cbReceiver->currentText() == "ELRS/CRSF") {
             image.load(":/res/receiver_frsky_d_rp2040_zero.png");
         } else if (ui->cbReceiver->currentText() == "Spektrum XBUS") {
             image.load(":/res/receiver_xbus_rp2040_zero.png");
