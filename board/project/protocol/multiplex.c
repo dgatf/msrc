@@ -394,7 +394,7 @@ static void set_config(sensor_multiplex_t **sensors) {
         for (uint i = 0; i < 18; i++) parameter.cell[i] = malloc(sizeof(float));
         parameter.cells = malloc(sizeof(uint8_t));
         parameter.cycles = malloc(sizeof(uint16_t));
-        xTaskCreate(smart_esc_task, "smart_esc_task", STACK_SMART_ESC, (void *)&parameter, 2, &task_handle);
+        xTaskCreate(smart_esc_task, "smart_esc_task", STACK_SMART_ESC, (void *)&parameter, 4, &task_handle);
         context.uart1_notify_task_handle = task_handle;
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_multiplex_t));
