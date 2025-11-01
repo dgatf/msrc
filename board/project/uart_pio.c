@@ -13,7 +13,8 @@ static uint uart_pio_sm;
 static int64_t uart_pio_timeout_callback(alarm_id_t id, void *user_data);
 static void uart_pio_handler(uint8_t data);
 
-void uart_pio_begin(uint baudrate, int gpio_tx, int gpio_rx, uint timeout, PIO pio, uint irq) {
+void uart_pio_begin(uint baudrate, int gpio_tx, int gpio_rx, uint timeout, PIO pio, uint irq, uint8_t data_bits,
+                    uint8_t stop_bits, uint8_t parity) {
     if (gpio_rx != UART_GPIO_NONE) {
         if (context.uart_alarm_pool == NULL) context.uart_alarm_pool = alarm_pool_create(2, 10);
         uart_pio_sm = uart_rx_init(pio, gpio_rx, baudrate, irq);
@@ -22,7 +23,7 @@ void uart_pio_begin(uint baudrate, int gpio_tx, int gpio_rx, uint timeout, PIO p
         context.uart_rx_pio_queue_handle = xQueueCreate(UART_PIO_BUFFER_SIZE, sizeof(uint8_t));
     }
     if (gpio_tx != UART_GPIO_NONE) {
-        uart_pio_sm = uart_tx_init(pio, gpio_tx, baudrate);
+        uart_pio_sm = uart_tx_init(pio, gpio_tx, baudrate, data_bits, stop_bits, parity);
         context.uart_rx_pio_queue_handle = xQueueCreate(UART_PIO_BUFFER_SIZE, sizeof(uint8_t));
     }
 }
@@ -71,9 +72,9 @@ void uart_pio_read_bytes(uint8_t *data, uint8_t lenght) {
     }
 }
 
-void uart_pio_write(uint8_t c) { uart_tx_write(c); }
+void uart_pio_write(uint32_t c) { uart_tx_write(c); }
 
-void uart_pio_write_bytes(uint8_t *data, uint8_t lenght) { uart_tx_write_bytes(data, lenght); }
+void uart_pio_write_bytes(void *data, uint8_t lenght) { uart_tx_write_bytes(data, lenght); }
 
 uint8_t uart_pio_available(void) { return uxQueueMessagesWaiting(context.uart_rx_pio_queue_handle); }
 

@@ -16,4 +16,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     fport.c
     fbus.c
     ghst.c
+    jetiex_sensor.c
 )

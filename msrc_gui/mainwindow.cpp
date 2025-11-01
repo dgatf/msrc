@@ -31,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbReceiver->addItem("Flysky IBUS", RX_IBUS);
     ui->cbReceiver->addItem("Futaba SBUS2", RX_SBUS);
     ui->cbReceiver->addItem("Jeti Ex Bus", RX_JETIEX);
+    ui->cbReceiver->addItem("Jeti Ex Sensor", RX_JETIEX_SENSOR);
     ui->cbReceiver->addItem("Multiplex Sensor Bus", RX_MULTIPLEX);
     ui->cbReceiver->addItem("ELRS/CRSF", RX_CRSF);
     ui->cbReceiver->addItem("Sanwa", RX_SANWA);
@@ -67,41 +68,42 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbGyroSamplerate->setVisible(false);
     ui->lbGyroSamplerate->setVisible(false);
 
-    ui->lbConnections->setText( \
-                "| Sensor/Receiver                           | Board GPIO|" \
-                               "\n| :---:                                     | :---:            |" \
-                               "\n| 3.3-5v                                    | 5v               |" \
-                               "\n| GND                                       | GND              |" \
-                               "\n| Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex, Sanwa, Hott, SRXL2, FPort, FBUS, GHST  | 0<sup>(1)</sup> & 1 |" \
-                               "\n| Frsky D, ELRS/CRSF Rx                     | 0                |" \
-                               "\n| Serial monitor                            | 1                |" \
-                               "\n| Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |" \
-                               "\n| Hitec, XBUS SCL                           | 3<sup>(2)</sup>  |" \
-                               "\n| ESC serial, Serial monitor, Smart ESC     | 5                |" \
-                               "\n| Phase sensor (PWM in), Smart ESC          | 4                |" \
-                               "\n| Castle. Receiver signal                   | 4                |" \
-                               "\n| Castle. ESC signal                        | 5<sup>(2)</sup>  |" \
-                               "\n| GPS Tx                                    | 6                |" \
-                               "\n| GPS Rx (3)(4)                             | 14               |" \
-                               "\n| XBUS. NPN clock stretch<sup>(3)</sup>     | 7                |" \
-                               "\n| Sensor SDA                                | 8<sup>(2)</sup>  |" \
-                               "\n| Sensor SCL                                | 9<sup>(2)</sup>  |" \
-                               "\n| PWM out                                   | 10               |" \
-                               "\n| Fuel meter (PWM in)                       | 11               |" \
-                               "\n| Throttle PWM (Smart ESC)                  | 12               |" \
-                               "\n| Reverse PWM (Smart ESC)                   | 13               |" \
-                               "\n| Rsteore default config                    | 15               |" \
-                               "\n| Voltage                                   | 26               |" \
-                               "\n| Current                                   | 27               |" \
-                               "\n| NTC                                       | 28               |" \
-                               "\n| Airspeed                                  | 29               |" \
-                               "\n| GPIOs                                     | 17 to 22         |" \
-                               "\n  " \
-                               "\n(1) with 100Ω resistor. This resistor is optional as RP2040 has internal protection resistors for GPIOs  " \
-                               "\n(2) Pullups. See [6.3 Spektrum XBUS](https://github.com/dgatf/msrc/wiki/06.-Receiver-protocol#63-spektrum-xbus) and [6.9 Hitec](https://github.com/dgatf/msrc/wiki/06.-Receiver-protocol#69-hitec)  " \
-                               "\n(3) Optional  " \
-                               "\n(4) Only UBLOX compatible  " \
-                            );
+    ui->lbConnections->setText(
+        "| Sensor/Receiver                           | Board GPIO|"
+        "\n| :---:                                     | :---:            |"
+        "\n| 3.3-5v                                    | 5v               |"
+        "\n| GND                                       | GND              |"
+        "\n| Smartport, SBUS, SRXL, IBUS, SB, Jeti Ex, Sanwa, Hott, SRXL2, FPort, FBUS, GHST  | 0<sup>(1)</sup> & 1 |"
+        "\n| Frsky D, ELRS/CRSF Rx                     | 0                |"
+        "\n| Serial monitor                            | 1                |"
+        "\n| Hitec, XBUS SDA                           | 2<sup>(2)</sup>  |"
+        "\n| Hitec, XBUS SCL                           | 3<sup>(2)</sup>  |"
+        "\n| ESC serial, Serial monitor, Smart ESC     | 5                |"
+        "\n| Phase sensor (PWM in), Smart ESC          | 4                |"
+        "\n| Castle. Receiver signal                   | 4                |"
+        "\n| Castle. ESC signal                        | 5<sup>(2)</sup>  |"
+        "\n| GPS Tx                                    | 6                |"
+        "\n| GPS Rx (3)(4)                             | 14               |"
+        "\n| XBUS. NPN clock stretch<sup>(3)</sup>     | 7                |"
+        "\n| Sensor SDA                                | 8<sup>(2)</sup>  |"
+        "\n| Sensor SCL                                | 9<sup>(2)</sup>  |"
+        "\n| PWM out                                   | 10               |"
+        "\n| Fuel meter (PWM in)                       | 11               |"
+        "\n| Throttle PWM (Smart ESC)                  | 12               |"
+        "\n| Reverse PWM (Smart ESC)                   | 13               |"
+        "\n| Rsteore default config                    | 15               |"
+        "\n| Voltage                                   | 26               |"
+        "\n| Current                                   | 27               |"
+        "\n| NTC                                       | 28               |"
+        "\n| Airspeed                                  | 29               |"
+        "\n| GPIOs                                     | 17 to 22         |"
+        "\n  "
+        "\n(1) with 100Ω resistor. This resistor is optional as RP2040 has internal protection resistors for GPIOs  "
+        "\n(2) Pullups. See [6.3 Spektrum "
+        "XBUS](https://github.com/dgatf/msrc/wiki/06.-Receiver-protocol#63-spektrum-xbus) and [6.9 "
+        "Hitec](https://github.com/dgatf/msrc/wiki/06.-Receiver-protocol#69-hitec)  "
+        "\n(3) Optional  "
+        "\n(4) Only UBLOX compatible  ");
     connect(ui->btConnect, SIGNAL(released()), this, SLOT(buttonSerialPort()));
     connect(ui->btDebug, SIGNAL(released()), this, SLOT(buttonDebug()));
     connect(ui->btClearDebug, SIGNAL(released()), this, SLOT(buttonClearDebug()));
@@ -209,7 +211,7 @@ void MainWindow::generateCircuit(QLabel *label) {
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if (ui->cbReceiver->currentText() == "Frsky D" || ui->cbReceiver->currentText() == "ELRS/CRSF") {
+        if (ui->cbReceiver->currentText() == "Frsky D" || ui->cbReceiver->currentText() == "ELRS/CRSF" || ui->cbReceiver->currentText() == "Jeti Ex Sensor") {
             image.load(":/res/receiver_frsky_d_rp2040_zero.png");
         } else if (ui->cbReceiver->currentText() == "Spektrum XBUS") {
             image.load(":/res/receiver_xbus_rp2040_zero.png");
@@ -656,7 +658,7 @@ void MainWindow::setUiFromConfig() {
     ui->cbGyroSens->setCurrentIndex(config.mpu6050_gyro_scale);
     ui->sbGyroWeight->setValue(config.mpu6050_gyro_weighting);
     ui->sbGyroFilter->setValue(config.mpu6050_filter);
-    //ui->cbGpsRate->setValue
+    // ui->cbGpsRate->setValue
 }
 
 void MainWindow::getConfigFromUi() {
@@ -868,7 +870,7 @@ void MainWindow::getConfigFromUi() {
     config.mpu6050_gyro_scale = ui->cbGyroSens->currentIndex();
     config.mpu6050_gyro_weighting = ui->sbGyroWeight->value();
     config.mpu6050_filter = ui->sbGyroFilter->value();
-    //config.mpu6050_rate = ui->cbGyroSamplerate->currentText().toInt();
+    // config.mpu6050_rate = ui->cbGyroSamplerate->currentText().toInt();
 
     // Debug
 
@@ -974,7 +976,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->cbAlternativeCoordinates->setVisible(false);
     }
 
-    if (arg1 == "Jeti Ex Bus") {
+    if (arg1 == "Jeti Ex Bus" || arg1 == "Jeti Ex Sensor") {
         ui->cbSpeedUnitsGps->setVisible(true);
         ui->lbSpeedUnitsGps->setVisible(true);
     } else {
@@ -1025,16 +1027,16 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     }
 
     // Fuel meter
-    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" || arg1 == "HOTT" ||
-        arg1 == "Frsky FPort" || arg1 == "Frsky FBUS") {
+    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Jeti Ex Sensor" || arg1 == "Spektrum XBUS" ||
+        arg1 == "HOTT" || arg1 == "Frsky FPort" || arg1 == "Frsky FBUS") {
         ui->gbFuelmeter->setVisible(true);
     } else {
         ui->gbFuelmeter->setVisible(false);
     }
 
     // Fuel pressure
-    if (arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2" || arg1 == "Jeti Ex Bus" || arg1 == "Spektrum XBUS" ||
-        arg1 == "HOTT") {
+    if (arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2" || arg1 == "Jeti Ex Bus" || arg1 == "Jeti Ex Sensor" ||
+        arg1 == "Spektrum XBUS" || arg1 == "HOTT") {
         ui->gbFuelPressure->setVisible(true);
     } else {
         ui->gbFuelPressure->setVisible(false);
@@ -1274,9 +1276,7 @@ void MainWindow::on_cbHw4AutoDetect_toggled(bool checked) {
     }
 }
 
-void MainWindow::on_gbGyro_toggled(bool enabled)
-{
+void MainWindow::on_gbGyro_toggled(bool enabled) {
     enableWidgets(ui->gbGyro, enabled);
     generateCircuit(ui->lbCircuit);
 }
-

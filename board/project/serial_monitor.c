@@ -29,7 +29,7 @@ void serial_monitor_task(void *parameters) {
             break;
         case 6:
             uart_pio_begin(config->serial_monitor_baudrate, UART_GPIO_NONE, 6, config->serial_monitor_timeout_ms * 1000,
-                           pio0, PIO0_IRQ_0);
+                           pio0, PIO0_IRQ_0, 8, config->serial_monitor_stop_bits, config->serial_monitor_parity);
     }
 
     while (1) {

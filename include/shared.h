@@ -23,7 +23,8 @@ typedef enum rx_protocol_t : uint8_t {
     RX_JR_PROPO,
     RX_FPORT,
     RX_FBUS,
-    RX_GHST
+    RX_GHST,
+    RX_JETIEX_SENSOR
 } rx_protocol_t;
 
 typedef enum esc_protocol_t : uint8_t {
@@ -70,7 +71,8 @@ typedef enum rx_protocol_t {
     RX_JR_PROPO,
     RX_FPORT,
     RX_FBUS,
-    RX_GHST
+    RX_GHST,
+    RX_JETIEX_SENSOR
 } rx_protocol_t;
 
 typedef enum esc_protocol_t {
