@@ -162,7 +162,8 @@ void gps_task(void *parameters) {
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     set_baudrate(parameter.baudrate);
-    uart_pio_begin(parameter.baudrate, UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1);
+    uart_pio_begin(parameter.baudrate, UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1, 8, 1,
+                   UART_PARITY_NONE);
     if (parameter.protocol == UBLOX)
         set_ublox_config(parameter.rate);
     else
@@ -357,7 +358,8 @@ static void set_baudrate(uint baudrate) {
     uint baudrates[] = {115200, 57600, 38400, 9600};
     sprintf(msg, "$PUBX,41,1,3,3,%u,0\r\n", baudrate);
     for (uint i = 0; i < sizeof(baudrates) / sizeof(uint); i++) {
-        uart_pio_begin(baudrates[i], UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1);
+        uart_pio_begin(baudrates[i], UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1, 8, 1,
+                       UART_PARITY_NONE);
         vTaskDelay(10 / portTICK_PERIOD_MS);
         uart_pio_write_bytes(msg, strlen(msg));
         vTaskDelay(200 / portTICK_PERIOD_MS);
