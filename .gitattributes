@@ -1,0 +1,2 @@
+case/** filter=lfs diff=lfs merge=lfs -text
+case/** linguist-detectable=false
