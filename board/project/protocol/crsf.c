@@ -370,32 +370,41 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             buffer[2] = CRSF_FRAMETYPE_VOLTAGES;
             crsf_sensor_voltages_formatted_t sensor = {0};
             buffer[1] = sizeof(crsf_sensor_voltages_formatted_t) + 2;
-            if (send_cell) {
+            if (send_cell && *sensors->voltages.cell_count > 0) {
                 sensor.source = cell_index;
                 if (sensors->voltages.is_cell_average && sensors->voltages.cell[0]) {
                     sensor.voltage = swap_16((uint16_t)(*sensors->voltages.cell[0] * 1000));
                 } else if (sensors->voltages.cell[cell_index]) {
                     sensor.voltage = swap_16((uint16_t)(*sensors->voltages.cell[cell_index] * 1000));
                 }
+                
+                memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_voltages_formatted_t));
+                buffer[3 + sizeof(crsf_sensor_voltages_formatted_t)] =
+                    get_crc(&buffer[2], sizeof(crsf_sensor_voltages_formatted_t) + 1);
+                len = sizeof(crsf_sensor_voltages_formatted_t) + 4;
+                buffer[1] = sizeof(crsf_sensor_voltages_formatted_t) + 2;
+                
                 cell_index++;
                 if (cell_index >= *sensors->voltages.cell_count) {
                     cell_index = 0;
                     send_cell = false;
                 }
-            } else {
+            } else if (sensors->voltages.voltage_count > 0) {
                 sensor.source = voltage_index + 128;
-                sensor.voltage = swap_16((uint16_t)(*sensors->voltages.cell[voltage_index] * 1000));
+                sensor.voltage = swap_16((uint16_t)(*sensors->voltages.voltage[voltage_index] * 1000));
+                
+                memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_voltages_formatted_t));
+                buffer[3 + sizeof(crsf_sensor_voltages_formatted_t)] =
+                    get_crc(&buffer[2], sizeof(crsf_sensor_voltages_formatted_t) + 1);
+                len = sizeof(crsf_sensor_voltages_formatted_t) + 4;
+                buffer[1] = sizeof(crsf_sensor_voltages_formatted_t) + 2;
+                
                 voltage_index++;
-                if (voltage_index >= *sensors->voltages.cell_count) {
+                if (voltage_index >= sensors->voltages.voltage_count) {
                     voltage_index = 0;
                     send_cell = true;
                 }
             }
-            memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_voltages_formatted_t));
-            buffer[3 + sizeof(crsf_sensor_voltages_formatted_t)] =
-                get_crc(&buffer[2], sizeof(crsf_sensor_voltages_formatted_t) + 1);
-            len = sizeof(crsf_sensor_voltages_formatted_t) + 4;
-            buffer[1] = sizeof(crsf_sensor_voltages_formatted_t) + 2;
             break;
         }
         case TYPE_GPS_TIME: {
