@@ -32,7 +32,7 @@
 #include "voltage.h"
 #include "xgzp68xxd.h"
 
-#define JETIEX_SENSOR_INTERVAL_MS 100
+#define JETIEX_SENSOR_INTERVAL_MS 150
 
 static int64_t alarm_packet(alarm_id_t id, void *user_data);
 static void process(uint *baudrate, sensor_jetiex_t **sensor);
@@ -41,11 +41,10 @@ static int64_t timeout_callback(alarm_id_t id, void *parameters);
 
 void jetiex_sensor_task(void *parameters) {
     uint baudrate = 9600;
-    sensor_jetiex_t *sensor[32] = {NULL};
+    sensor_jetiex_t *sensor[16] = {NULL};
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
-    uart_pio_begin(baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, 0, pio1, PIO1_IRQ_0, 9, 2,
-                   UART_PARITY_ODD);
+    uart_pio_begin(baudrate, UART_RECEIVER_TX, UART_GPIO_NONE, 0, pio1, PIO1_IRQ_0, 9, 2, UART_PARITY_ODD);
     jeti_set_config(sensor);
     add_alarm_in_us(0, alarm_packet, NULL, true);
     debug("\nJeti Ex Sensor init");
@@ -57,12 +56,18 @@ void jetiex_sensor_task(void *parameters) {
 
 static void send_packet(sensor_jetiex_t **sensor) {
     static uint8_t packet_count = 0;
+
+    // send telemetry frame
     uint8_t buffer[36] = {0};
     uint length_telemetry_buffer = jeti_create_telemetry_buffer(buffer, packet_count % 16, sensor);
     uart_pio_write(0x7E);
-    for (uint8_t i = 0; i < length_telemetry_buffer; i++) {
-        uart_pio_write((uint32_t)buffer[i] | 0x100);
-    }
+    for (uint8_t i = 0; i < length_telemetry_buffer; i++) uart_pio_write((uint32_t)buffer[i] | 0x100);
+
+    // send simple text frame
+    uart_pio_write(0xFE);
+    for (uint8_t i = 0; i < 32; i++) uart_pio_write(0x100);
+    uart_pio_write(0xFF);
+
     debug("\nJeti Ex Sensor %s (%u) > ", packet_count % 16 ? "Values " : "Text ", uxTaskGetStackHighWaterMark(NULL));
     debug_buffer(buffer, length_telemetry_buffer, "0x%X ");
     packet_count++;

@@ -41,8 +41,8 @@
 
 static void process(uint *baudrate, sensor_jetiex_t **sensor);
 static void send_packet(uint8_t packet_id, sensor_jetiex_t **sensor);
-static bool add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor);
-static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor);
+static void add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor);
+static void add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor);
 static int64_t timeout_callback(alarm_id_t id, void *parameters);
 static uint8_t crc8(uint8_t *crc, uint8_t crc_length);
 static uint8_t update_crc8(uint8_t crc, uint8_t crc_seed);
@@ -51,7 +51,7 @@ static uint16_t update_crc16(uint16_t crc, uint8_t data);
 
 void jetiex_task(void *parameters) {
     uint baudrate = 125000L;
-    sensor_jetiex_t *sensor[32] = {NULL};
+    sensor_jetiex_t *sensor[16] = {NULL};
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
     uart0_begin(baudrate, UART_RECEIVER_TX, UART_RECEIVER_RX, JETIEX_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
@@ -65,20 +65,26 @@ void jetiex_task(void *parameters) {
 
 uint8_t jeti_create_telemetry_buffer(uint8_t *buffer, bool packet_type, sensor_jetiex_t **sensor) {
     static uint8_t sensor_index_value = 0;
-    static uint8_t sensor_index_text = 0;
+    static int8_t sensor_index_text = -1;
     uint8_t buffer_index = 7;
     if (sensor[0] == NULL) return 0;
     if (packet_type) {
-        /*while*/ (add_sensor_value(buffer, &buffer_index, sensor_index_value + 1, sensor[sensor_index_value]) &&
-                   sensor[sensor_index_value] != NULL);
-        sensor_index_value++;
-        if (sensor[sensor_index_value] == NULL) sensor_index_value = 0;
         buffer[1] = 0x40;
+
+        add_sensor_value(buffer, &buffer_index, sensor_index_value + 1, sensor[sensor_index_value]);
+        sensor_index_value++;
+        if (sensor_index_value >= 16 || sensor[sensor_index_value] == NULL)
+            sensor_index_value = 0;
+        else {
+            add_sensor_value(buffer, &buffer_index, sensor_index_value + 1, sensor[sensor_index_value]);
+            sensor_index_value++;
+            if (sensor_index_value >= 16 || sensor[sensor_index_value] == NULL) sensor_index_value = 0;
+        }
     } else {
-        /*while*/ (add_sensor_text(buffer, &buffer_index, sensor_index_text + 1, sensor[sensor_index_text]) &&
-                   sensor[sensor_index_text] != NULL);
+        add_sensor_text(buffer, &buffer_index, sensor_index_text + 1,
+                        sensor_index_text == -1 ? NULL : sensor[sensor_index_text]);
         sensor_index_text++;
-        if (sensor[sensor_index_text] == NULL) sensor_index_text = 0;
+        if (sensor_index_text >= 16 || sensor[sensor_index_text] == NULL) sensor_index_text = -1;
     }
     buffer[0] = 0x0F;
     buffer[1] |= buffer_index - 1;
@@ -891,140 +897,112 @@ static void send_packet(uint8_t packet_id, sensor_jetiex_t **sensor) {
     vTaskResume(context.led_task_handle);
 }
 
-static bool add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor) {
+static void add_sensor_value(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor) {
     if (sensor) {
         uint8_t format = sensor->format << 5;
         if (sensor->type == JETIEX_TYPE_INT6) {
-            if (*buffer_index > 25)  // 29 bytes max:  25+2=pos27=byte28 +1crc=byte29
-                return false;
-            else {
-                int8_t value = *sensor->value * pow(10, sensor->format);
-                if (value > 0x1F)
-                    value = 0x1F;
-                else if (value < -0x1F)
-                    value = -0x1F;
-                value &= ~(3 << 5);
-                value |= format;
-                *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
-                *(buffer + *buffer_index + 1) = value;
-                *buffer_index += 2;
-            }
-        } else if (sensor->type == JETIEX_TYPE_INT14) {
-            if (*buffer_index > 24)
-                return false;
-            else {
-                int16_t value = *sensor->value * pow(10, sensor->format);
-                if (value > 0x1FFF) value = 0x1FFF;
-                if (value < -0x1FFF) value = -0x1FFF;
-                value &= ~((uint16_t)3 << (5 + 8));
-                value |= (uint16_t)format << 8;
-                *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
-                *(buffer + *buffer_index + 1) = value;
-                *(buffer + *buffer_index + 2) = value >> 8;
-                *buffer_index += 3;
-            }
-        } else if (sensor->type == JETIEX_TYPE_INT22) {
-            if (*buffer_index > 23)
-                return false;
-            else {
-                int32_t value = *sensor->value * pow(10, sensor->format);
-                if (value > 0x1FFFFF)
-                    value = 0x1FFFFF;
-                else if (value < -0x1FFFFF)
-                    value = -0x1FFFFF;
-                value &= ~((uint32_t)3 << (5 + 16));
-                value |= (uint32_t)format << 16;
-                *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
-                *(buffer + *buffer_index + 1) = value;
-                *(buffer + *buffer_index + 2) = value >> 8;
-                *(buffer + *buffer_index + 3) = value >> 16;
-                *buffer_index += 4;
-            }
-        } else if (sensor->type == JETIEX_TYPE_INT30) {
-            if (*buffer_index > 22)
-                return false;
-            else {
-                int32_t value = *sensor->value * pow(10, sensor->format);
-                if (value > 0x1FFFFFFF)
-                    value = 0x1FFFFFFF;
-                else if (value < -0x1FFFFFFF)
-                    value = -0x1FFFFFFF;
-                value &= ~((uint32_t)3 << (5 + 24));
-                value |= (uint32_t)format << 24;
-                *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
-                *(buffer + *buffer_index + 1) = value;
-                *(buffer + *buffer_index + 2) = value >> 8;
-                *(buffer + *buffer_index + 3) = value >> 16;
-                *(buffer + *buffer_index + 4) = value >> 24;
-                *buffer_index += 5;
-            }
-        } else if (sensor->type == JETIEX_TYPE_TIMEDATE) {
-            if (*buffer_index > 23)
-                return false;
-            else {
-                // rawvalue: yymmdd/hhmmss
-                // byte 1: day/second
-                // byte 2: month/minute
-                // byte 3(bits 1-5): year/hour
-                // byte 3(bit 6): 0=time 1=date
-                uint32_t value = *sensor->value;
-                uint8_t hourYearFormat = format;
-                hourYearFormat |= value / 10000;                              // hour, year
-                uint8_t minuteMonth = (value / 100 - (value / 10000) * 100);  // minute, month
-                uint8_t secondDay = value - (value / 100) * 100;              // second, day
-                *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
-                *(buffer + *buffer_index + 1) = secondDay;
-                *(buffer + *buffer_index + 2) = minuteMonth;
-                *(buffer + *buffer_index + 3) = hourYearFormat;
-                *buffer_index += 4;
-            }
-        } else if (sensor->type == JETIEX_TYPE_COORDINATES) {
-            if (*buffer_index > 22)
-                return false;
-            else {
-                // rawvalue: minutes
-                // byte 1-2: MMmmm
-                // byte 3: DD
-                // byte 4(bit 6): 0=lat 1=lon
-                // byte 4(bit 7): 0=+(N,E), 1=-(S,W)
-                float value = *sensor->value;
-                if (value < 0) {
-                    format |= 1 << 6;
-                    value *= -1;
-                }
-                *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
-                uint8_t degrees = value;
-                uint16_t minutes = (value - degrees) * 60 * 1000;
-                *(buffer + *buffer_index + 1) = minutes;
-                *(buffer + *buffer_index + 2) = minutes >> 8;
-                *(buffer + *buffer_index + 3) = degrees;
-                *(buffer + *buffer_index + 4) = format;
-                *buffer_index += 5;
-            }
-        }
-    } else
-        return false;
-    return true;
-}
-
-static bool add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor) {
-    if (sensor) {
-        uint8_t lenText = strlen(sensor->text);
-        uint8_t lenUnit = strlen(sensor->unit);
-
-        if (*buffer_index + lenText + lenUnit + 2 < 28) {
-            *(buffer + *buffer_index) = sensor_index;
-            *(buffer + *buffer_index + 1) = lenText << 3 | lenUnit;
+            int8_t value = *sensor->value * pow(10, sensor->format);
+            if (value > 0x1F)
+                value = 0x1F;
+            else if (value < -0x1F)
+                value = -0x1F;
+            value &= ~(3 << 5);
+            value |= format;
+            *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
+            *(buffer + *buffer_index + 1) = value;
             *buffer_index += 2;
-            strcpy((char *)buffer + *buffer_index, sensor->text);
-            *buffer_index += lenText;
-            strcpy((char *)buffer + *buffer_index, sensor->unit);
-            *buffer_index += lenUnit;
-            // printf("[%i %s]", sensor_index, sensor->text);
-            return true;
+        } else if (sensor->type == JETIEX_TYPE_INT14) {
+            int16_t value = *sensor->value * pow(10, sensor->format);
+            if (value > 0x1FFF) value = 0x1FFF;
+            if (value < -0x1FFF) value = -0x1FFF;
+            value &= ~((uint16_t)3 << (5 + 8));
+            value |= (uint16_t)format << 8;
+            *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
+            *(buffer + *buffer_index + 1) = value;
+            *(buffer + *buffer_index + 2) = value >> 8;
+            *buffer_index += 3;
+        } else if (sensor->type == JETIEX_TYPE_INT22) {
+            int32_t value = *sensor->value * pow(10, sensor->format);
+            if (value > 0x1FFFFF)
+                value = 0x1FFFFF;
+            else if (value < -0x1FFFFF)
+                value = -0x1FFFFF;
+            value &= ~((uint32_t)3 << (5 + 16));
+            value |= (uint32_t)format << 16;
+            *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
+            *(buffer + *buffer_index + 1) = value;
+            *(buffer + *buffer_index + 2) = value >> 8;
+            *(buffer + *buffer_index + 3) = value >> 16;
+            *buffer_index += 4;
+        } else if (sensor->type == JETIEX_TYPE_INT30) {
+            int32_t value = *sensor->value * pow(10, sensor->format);
+            if (value > 0x1FFFFFFF)
+                value = 0x1FFFFFFF;
+            else if (value < -0x1FFFFFFF)
+                value = -0x1FFFFFFF;
+            value &= ~((uint32_t)3 << (5 + 24));
+            value |= (uint32_t)format << 24;
+            *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
+            *(buffer + *buffer_index + 1) = value;
+            *(buffer + *buffer_index + 2) = value >> 8;
+            *(buffer + *buffer_index + 3) = value >> 16;
+            *(buffer + *buffer_index + 4) = value >> 24;
+            *buffer_index += 5;
+        } else if (sensor->type == JETIEX_TYPE_TIMEDATE) {
+            // rawvalue: yymmdd/hhmmss
+            // byte 1: day/second
+            // byte 2: month/minute
+            // byte 3(bits 1-5): year/hour
+            // byte 3(bit 6): 0=time 1=date
+            uint32_t value = *sensor->value;
+            uint8_t hourYearFormat = format;
+            hourYearFormat |= value / 10000;                              // hour, year
+            uint8_t minuteMonth = (value / 100 - (value / 10000) * 100);  // minute, month
+            uint8_t secondDay = value - (value / 100) * 100;              // second, day
+            *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
+            *(buffer + *buffer_index + 1) = secondDay;
+            *(buffer + *buffer_index + 2) = minuteMonth;
+            *(buffer + *buffer_index + 3) = hourYearFormat;
+            *buffer_index += 4;
+        } else if (sensor->type == JETIEX_TYPE_COORDINATES) {
+            // rawvalue: minutes
+            // byte 1-2: MMmmm
+            // byte 3: DD
+            // byte 4(bit 6): 0=lat 1=lon
+            // byte 4(bit 7): 0=+(N,E), 1=-(S,W)
+            float value = *sensor->value;
+            if (value < 0) {
+                format |= 1 << 6;
+                value *= -1;
+            }
+            *(buffer + *buffer_index) = sensor_index << 4 | sensor->type;
+            uint8_t degrees = value;
+            uint16_t minutes = (value - degrees) * 60 * 1000;
+            *(buffer + *buffer_index + 1) = minutes;
+            *(buffer + *buffer_index + 2) = minutes >> 8;
+            *(buffer + *buffer_index + 3) = degrees;
+            *(buffer + *buffer_index + 4) = format;
+            *buffer_index += 5;
         }
     }
-    return false;
+}
+
+static void add_sensor_text(uint8_t *buffer, uint8_t *buffer_index, uint8_t sensor_index, sensor_jetiex_t *sensor) {
+    uint8_t lenText, lenUnit;
+    if (sensor) {
+        lenText = strlen(sensor->text);
+        lenUnit = strlen(sensor->unit);
+    } else {
+        lenText = strlen("MSRC");
+        lenUnit = strlen("");
+    }
+    *(buffer + *buffer_index) = sensor_index;
+    *(buffer + *buffer_index + 1) = lenText << 3 | lenUnit;
+    *buffer_index += 2;
+    strcpy((char *)buffer + *buffer_index, sensor ? sensor->text : "MSRC");
+    *buffer_index += lenText;
+    strcpy((char *)buffer + *buffer_index, sensor ? sensor->unit : "");
+    *buffer_index += lenUnit;
 }
 
 static int64_t timeout_callback(alarm_id_t id, void *parameters) {

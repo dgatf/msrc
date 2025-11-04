@@ -10,10 +10,13 @@
 
 .program uart_tx  // 1 bit every 16 cycles
 start:
-    nop // set x n (1 to 32). Number of data bits
+    nop // set x n (0 to 31). Number of data bits
     pull block
-    set pins 0 [16-1]  // start bit
+    set pindirs 1 // take control of pin
+    set pins 0 [16-2]  // start bit
 bit_loop:
     out pins 1
     jmp x-- bit_loop [16-2]
-    nop // set pins 1 [16*stop-3]. Stop bits (1-2)
+    nop // set pins 1 [16*stop-1]. Stop bits (1-2)
+    nop [16]
+    set pindirs 0 // release pin
