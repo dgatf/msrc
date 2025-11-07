@@ -1,6 +1,7 @@
 #include "hitec.h"
 
 #include <math.h>
+#include <pico/i2c_slave.h>
 #include <stdio.h>
 
 #include "airspeed.h"
@@ -93,13 +94,13 @@ typedef struct sensor_hitec_t {
 
 static sensor_hitec_t *sensor;
 
-static void i2c_request_handler(uint8_t address);
-static void i2c_stop_handler(uint8_t length);
-static void set_config(void);
-static int next_frame(void);
-static void format_packet(uint8_t frame, uint8_t *buffer);
+static void i2c_handler(i2c_inst_t *i2c, i2c_slave_event_t event);
+static void set_config();
+static int64_t alarm_packet(alarm_id_t id, void *user_data);
 
-void hitec_i2c_handler(void) { i2c_request_handler(I2C_ADDRESS); }
+static volatile uint8_t cont = 0;
+static volatile alarm_id_t alarm_id = 0;
+static uint8_t packet[] = {0x17, 0x0, 0x0, 0x0, 0x34, 0x0, 0x17};
 
 void hitec_task(void *parameters) {
     sensor = malloc(sizeof(sensor_hitec_t));
@@ -111,222 +112,48 @@ void hitec_task(void *parameters) {
 
     set_config();
 
-    PIO pio = pio1;
-    uint pin = I2C1_SDA_GPIO;
-    i2c_multi_init(pio, pin);
-    i2c_multi_set_request_handler(i2c_request_handler);
-    i2c_multi_set_stop_handler(i2c_stop_handler);
-    i2c_multi_enable_address(I2C_ADDRESS);
-    i2c_multi_fixed_length(FRAME_LENGTH);
-    gpio_set_drive_strength(I2C1_SDA_GPIO, GPIO_DRIVE_STRENGTH_12MA);
-    gpio_set_drive_strength(I2C1_SDA_GPIO + 1, GPIO_DRIVE_STRENGTH_12MA);
+    i2c_init(i2c1, 100000L);
+    i2c_slave_init(i2c1, I2C_ADDRESS, i2c_handler);
+    gpio_set_function(I2C1_SDA_GPIO, GPIO_FUNC_I2C);
+    gpio_set_function(I2C1_SCL_GPIO, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C1_SDA_GPIO);
+    gpio_pull_up(I2C1_SCL_GPIO);
 
     debug("\nHitec init");
+
     vTaskSuspend(NULL);
 }
 
-static void i2c_stop_handler(uint8_t length) { debug(" - STOP (%u)", length); }
-
-static void i2c_request_handler(uint8_t address) {
-    uint8_t buffer[7] = {0};
-    uint8_t frame = next_frame();
-    if (frame < 0) return;
-    format_packet(frame, buffer);
-    i2c_multi_set_write_buffer(buffer);
-
-    // blink led
+static void i2c_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
+    switch (event) {
+        case I2C_SLAVE_REQUEST:
+            if (cont >= 7) {
+                cont = 0;
+                i2c_slave_deinit(i2c1);
+                i2c_init(i2c1, 100000L);
+                i2c_slave_init(i2c1, I2C_ADDRESS, i2c_handler);
+            } else {
+                i2c_write_byte_raw(i2c1, packet[cont++]);
+                if (alarm_id != 0) cancel_alarm(alarm_id);
+                alarm_id = add_alarm_in_us(5 * 1000, alarm_packet, NULL, true);
+            }
+            break;
+    }
     vTaskResume(context.led_task_handle);
 
-    debug("\nHitec (%u) > ", uxTaskGetStackHighWaterMark(context.receiver_task_handle));
-    debug_buffer(buffer, sizeof(buffer), "%X ");
+    // debug("\nHitec (%u) > ", uxTaskGetStackHighWaterMark(context.receiver_task_handle));
 }
 
-static int next_frame(void) {
-    static uint8_t frame = 0;
-    uint cont = 0;
-    frame++;
-    frame %= 11;
-    while (!sensor->is_enabled_frame[frame] && cont < 12) {
-        frame++;
-        frame %= 11;
-        cont++;
-    }
-    if (cont == 12) return -1;
-    return frame;
-}
-
-static void format_packet(uint8_t frame, uint8_t *buffer) {
-    int32_t valueS32;
-    uint16_t valueU16;
-    uint16_t valueS16;
-    uint8_t valueU8;
-    buffer[0] = frame + 0x11;
-    buffer[1] = 0;
-    buffer[2] = 0;
-    buffer[3] = 0;
-    buffer[4] = 0;
-    buffer[5] = 0;
-    buffer[6] = frame + 0x11;
-    switch (frame) {
-        case FRAME_0X11:
-            buffer[1] = 0xAF;
-            buffer[3] = 0x2D;
-            if (sensor->frame_0x11[FRAME_0X11_RX_BATT]) {
-                valueU16 = *sensor->frame_0x11[FRAME_0X11_RX_BATT] * 28;
-                buffer[4] = valueU16 >> 8;
-                buffer[5] = valueU16;
-            }
-            break;
-        case FRAME_0X12:
-            if (sensor->frame_0x12[FRAME_0X12_GPS_LAT]) {
-                double degrees = *sensor->frame_0x12[FRAME_0X12_GPS_LAT];
-                int8_t deg = degrees;
-                int8_t min = (degrees - deg) * 60;
-                double sec = ((degrees - deg) * 60 - min) * 60;
-                int16_t sec_x_100 = sec * 100;
-                int16_t deg_min = deg * 100 + min;
-                buffer[1] = sec_x_100 >> 8;
-                buffer[2] = sec_x_100;
-                buffer[3] = deg_min >> 8;
-                buffer[4] = deg_min;
-            }
-            if (sensor->frame_0x12[FRAME_0X12_TIME]) {
-                valueU8 = *sensor->frame_0x12[FRAME_0X12_TIME];
-            }
-            break;
-        case FRAME_0X13:
-            if (sensor->frame_0x13[FRAME_0X13_GPS_LON]) {
-                float degrees = *sensor->frame_0x13[FRAME_0X13_GPS_LON];
-                int8_t deg = degrees;
-                int8_t min = (degrees - deg) * 60;
-                float sec = ((degrees - deg) * 60 - min) * 60;
-                int16_t sec_x_100 = sec * 100;
-                int16_t deg_min = deg * 100 + min;
-                buffer[1] = sec_x_100 >> 8;
-                buffer[2] = sec_x_100;
-                buffer[3] = deg_min >> 8;
-                buffer[4] = deg_min;
-            }
-            if (sensor->frame_0x13[FRAME_0X13_TEMP2]) {
-                valueU8 = round(*sensor->frame_0x13[FRAME_0X13_TEMP2] + 40);
-                buffer[5] = valueU8;
-            }
-            break;
-        case FRAME_0X14:
-            if (sensor->frame_0x14[FRAME_0X14_GPS_SPD]) {
-                valueU16 = round(*sensor->frame_0x14[FRAME_0X14_GPS_SPD] * 1.852);
-                buffer[1] = valueU16 >> 8;
-                buffer[2] = valueU16;
-            }
-            if (sensor->frame_0x14[FRAME_0X14_GPS_ALT]) {
-                valueS16 = round(*sensor->frame_0x14[FRAME_0X14_GPS_ALT]);
-                buffer[3] = valueS16 >> 8;
-                buffer[4] = valueS16;
-            }
-            if (sensor->frame_0x14[FRAME_0X14_TEMP1]) {
-                valueU8 = round(*sensor->frame_0x14[FRAME_0X14_TEMP1] + 40);
-                buffer[5] = valueU8;
-            }
-            break;
-        case FRAME_0X15:
-            if (sensor->frame_0x15[FRAME_0X15_RPM1]) {
-                valueU16 = round(*sensor->frame_0x15[FRAME_0X15_RPM1]);
-                buffer[2] = valueU16;
-                buffer[3] = valueU16 >> 8;
-            }
-            if (sensor->frame_0x15[FRAME_0X15_RPM2]) {
-                valueU16 = round(*sensor->frame_0x15[FRAME_0X15_RPM2]);
-                buffer[4] = valueU16;
-                buffer[5] = valueU16 >> 8;
-            }
-            break;
-        case FRAME_0X16:
-            if (sensor->frame_0x16[FRAME_0X16_DATE]) {
-                valueS32 = *sensor->frame_0x16[FRAME_0X16_DATE];
-                buffer[3] = valueS32 / 10000;                                  // year
-                buffer[2] = (valueS32 - buffer[3] * 10000UL) / 100;            // month
-                buffer[1] = valueS32 - buffer[3] * 10000UL - buffer[2] * 100;  // day
-            }
-            if (sensor->frame_0x16[FRAME_0X16_TIME]) {
-                valueS32 = *sensor->frame_0x16[FRAME_0X16_TIME];
-                buffer[4] = valueS32 / 10000;                        // hour
-                buffer[5] = (valueS32 - buffer[4] * 10000UL) / 100;  // minute
-            }
-            break;
-        case FRAME_0X17:
-            if (sensor->frame_0x17[FRAME_0X17_COG]) {
-                valueU16 = round(*sensor->frame_0x17[FRAME_0X17_COG]);
-                buffer[1] = valueU16 >> 8;
-                buffer[2] = valueU16;
-            }
-            if (sensor->frame_0x17[FRAME_0X17_SATS]) {
-                valueU8 = *sensor->frame_0x17[FRAME_0X17_SATS];
-                buffer[3] = valueU8;
-            }
-            if (sensor->frame_0x17[FRAME_0X17_TEMP3]) {
-                valueU8 = round(*sensor->frame_0x17[FRAME_0X17_TEMP3] + 40);
-                buffer[4] = valueU8;
-            }
-            if (sensor->frame_0x17[FRAME_0X17_TEMP4]) {
-                valueU8 = round(*sensor->frame_0x17[FRAME_0X17_TEMP4] + 40);
-                buffer[5] = valueU8;
-            }
-            break;
-        case FRAME_0X18:
-            if (sensor->frame_0x18[FRAME_0X18_VOLT]) {
-                valueU16 = round((*sensor->frame_0x18[FRAME_0X18_VOLT] - 0.2) * 10);
-                buffer[1] = valueU16;
-                buffer[2] = valueU16 >> 8;
-            }
-            if (sensor->frame_0x18[FRAME_0X18_AMP]) {
-                /* value for stock transmitter (tbc) */
-                // valueU16 = (*sensor->frame_0x18[FRAME_0X18_AMP] + 114.875) * 1.441;
-
-                /* value for opentx transmitter  */
-                valueU16 = round(*sensor->frame_0x18[FRAME_0X18_AMP]);
-
-                buffer[3] = valueU16;
-                buffer[4] = valueU16 >> 8;
-            }
-            break;
-        case FRAME_0X19:
-            if (sensor->frame_0x19[FRAME_0X19_AMP1]) {
-                valueU8 = round(*sensor->frame_0x19[FRAME_0X19_AMP1] * 10);
-                buffer[5] = valueU8;
-            }
-            if (sensor->frame_0x19[FRAME_0X19_AMP2]) {
-                valueU8 = round(*sensor->frame_0x19[FRAME_0X19_AMP2] * 10);
-                buffer[5] = valueU8;
-            }
-            if (sensor->frame_0x19[FRAME_0X19_AMP3]) {
-                valueU8 = round(*sensor->frame_0x19[FRAME_0X19_AMP3] * 10);
-                buffer[5] = valueU8;
-            }
-            if (sensor->frame_0x19[FRAME_0X19_AMP4]) {
-                valueU8 = round(*sensor->frame_0x19[FRAME_0X19_AMP4] * 10);
-                buffer[5] = valueU8;
-            }
-            break;
-        case FRAME_0X1A:
-            if (sensor->frame_0x1A[FRAME_0X1A_ASPD]) {
-                valueU16 = round(*sensor->frame_0x1A[FRAME_0X1A_ASPD]);
-                buffer[3] = valueU16 >> 8;
-                buffer[4] = valueU16;
-            }
-            break;
-        case FRAME_0X1B:
-            if (sensor->frame_0x1B[FRAME_0X1B_ALTU]) {
-                valueU16 = round(*sensor->frame_0x1B[FRAME_0X1B_ALTU]);
-                buffer[1] = valueU16 >> 8;
-                buffer[2] = valueU16;
-            }
-            if (sensor->frame_0x1B[FRAME_0X1B_ALTF]) {
-                valueU16 = round(*sensor->frame_0x1B[FRAME_0X1B_ALTF]);
-                buffer[3] = valueU16 >> 8;
-                buffer[4] = valueU16;
-            }
-            break;
-    }
+static int64_t alarm_packet(alarm_id_t id, void *user_data) {
+    // BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    // vTaskNotifyGiveIndexedFromISR(context.receiver_task_handle, 1, &xHigherPriorityTaskWoken);
+    // portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    // reset_i2c = true;
+    //i2c_slave_deinit(i2c1);
+    //i2c_init(i2c1, 100000L);
+    //i2c_slave_init(i2c1, I2C_ADDRESS, i2c_handler);
+    cont = 0;
+    return 0;
 }
 
 static void set_config(void) {
@@ -711,9 +538,8 @@ static void set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset,
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float))};
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
