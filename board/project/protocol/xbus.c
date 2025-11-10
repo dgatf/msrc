@@ -24,6 +24,7 @@
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
+#include "ina3221.h"
 #include "mpu6050.h"
 #include "ms5611.h"
 #include "ntc.h"
@@ -35,7 +36,6 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "xgzp68xxd.h"
-
 xbus_sensor_t *sensor;
 xbus_sensor_formatted_t *sensor_formatted;
 
@@ -857,9 +857,8 @@ static void set_config() {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset,
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float))};
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         add_alarm_in_ms(250, interval_250_callback, NULL, false);
@@ -966,6 +965,29 @@ static void set_config() {
         *sensor_formatted->tele_gyro = (xbus_tele_gyro_t){XBUS_TELE_GYRO_ID, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_TELE_GYRO_ID);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_lipo) {
+        ina3221_parameters_t parameter = {
+            .filter = config->ina3221_filter,
+            .cell_count = config->lipo_cells,
+            .cell[0] = malloc(sizeof(float)),
+            .cell[1] = malloc(sizeof(float)),
+            .cell[2] = malloc(sizeof(float)),
+        };
+        xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        sensor->is_enabled[XBUS_TELE_LIPOMON] = true;
+        for (uint8_t i = 0; i < parameter.cell_count; i++) {    
+            sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = parameter.cell[i];
+        }
+        for (uint8_t i = parameter.cell_count; i < 6; i++) {
+            *sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = 0x7FFF;
+        }   
+        sensor_formatted->tele_lipomon = calloc(1, 16);
+        *sensor_formatted->tele_lipomon = (xbus_tele_lipomon_t){XBUS_TELE_LIPOMON_ID, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_TELE_LIPOMON_ID);
     }
 }
 

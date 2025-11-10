@@ -576,9 +576,9 @@
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-398</y>
+                 <y>-840</y>
                  <width>581</width>
-                 <height>2057</height>
+                 <height>2195</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -1087,6 +1087,55 @@
                     <widget class="QSpinBox" name="sbGyroWeight">
                      <property name="maximum">
                       <number>100</number>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="gbLipo">
+                  <property name="title">
+                   <string>Lipo</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_5">
+                   <item row="2" column="1">
+                    <widget class="QComboBox" name="cbIna3221Filter"/>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_13">
+                     <property name="text">
+                      <string>Type</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QComboBox" name="cbLipoType"/>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>Filter</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_15">
+                     <property name="text">
+                      <string>Cells</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QSpinBox" name="sbLipoCells">
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>3</number>
                      </property>
                     </widget>
                    </item>

@@ -36,6 +36,7 @@
 #include "esc_omp_m4.h"
 #include "esc_openyge.h"
 #include "esc_ztw.h"
+#include "ina3221.h"
 
 #define SRXL_HEADER 0xA5
 #define SRXL_FRAMELEN 18
@@ -631,14 +632,35 @@ static void set_config(void) {
         sensor->tele_g_meter[XBUS_TELE_G_METER_Z] = parameter.acc_z;
         sensor_formatted->tele_g_meter = calloc(1, 16);
         *sensor_formatted->tele_g_meter = (xbus_tele_g_meter_t){XBUS_TELE_G_METER_ID, 0, 0, 0, 0, 0, 0, 0};
-        i2c_multi_enable_address(XBUS_TELE_G_METER_ID);
         sensor->is_enabled[XBUS_TELE_GYRO] = true;
         sensor->tele_gyro[XBUS_TELE_GYRO_PITCH] = parameter.pitch;
         sensor->tele_gyro[XBUS_TELE_GYRO_ROLL] = parameter.roll;
         sensor->tele_gyro[XBUS_TELE_GYRO_YAW] = parameter.yaw;
         sensor_formatted->tele_gyro = calloc(1, 16);
         *sensor_formatted->tele_gyro = (xbus_tele_gyro_t){XBUS_TELE_GYRO_ID, 0, 0, 0, 0, 0, 0, 0};
-        i2c_multi_enable_address(XBUS_TELE_GYRO_ID);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_lipo) {
+        ina3221_parameters_t parameter = {
+            .filter = config->ina3221_filter,
+            .cell_count = config->lipo_cells,
+            .cell[0] = malloc(sizeof(float)),
+            .cell[1] = malloc(sizeof(float)),
+            .cell[2] = malloc(sizeof(float)),
+        };
+        xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensor->is_enabled[XBUS_TELE_LIPOMON] = true;
+        for (uint8_t i = 0; i < parameter.cell_count; i++) {    
+            sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = parameter.cell[i];
+        }
+        for (uint8_t i = parameter.cell_count; i < 6; i++) {
+            *sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = 0x7FFF;
+        }   
+        sensor_formatted->tele_lipomon = calloc(1, 16);
+        *sensor_formatted->tele_lipomon = (xbus_tele_lipomon_t){XBUS_TELE_LIPOMON_ID, 0, 0, 0, 0, 0, 0, 0};
+        i2c_multi_enable_address(XBUS_TELE_LIPOMON_ID);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }

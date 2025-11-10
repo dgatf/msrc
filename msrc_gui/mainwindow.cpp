@@ -56,7 +56,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbStopbits->addItems({"1", "2"});
     ui->cbParity->addItems({"None", "Odd", "Even"});
     ui->cbSerialFormat->addItems({"Hex", "String"});
-
+    ui->cbLipoType->addItem({"INA3221"});
+    ui->cbIna3221Filter->addItem("1", 0B000);
+    ui->cbIna3221Filter->addItem("4", 0B001);
+    ui->cbIna3221Filter->addItem("16", 0B010);
+    ui->cbIna3221Filter->addItem("64", 0B011);
+    ui->cbIna3221Filter->addItem("128", 0B100);
+    ui->cbIna3221Filter->addItem("256", 0B101);
+    ui->cbIna3221Filter->addItem("512", 0B110);
+    ui->cbIna3221Filter->addItem("1024", 0B111);
     ui->cbMaxPressure->addItems({"< 1 kPa (K = 8192)", "< 2 kPa (K = 4096)", "< 4 kPa (K = 2048)", "< 8 kPa (K = 1024)",
                                  "< 16 kPa (K = 512)", "< 32 kPa (K = 256)", "< 65 kPa (K = 128)", "< 130 kPa (K = 64)",
                                  "< 260 kPa (K = 32)", "< 500 kPa (K = 16)", "< 1000 kPa (K = 8)",
@@ -208,6 +216,11 @@ void MainWindow::generateCircuit(QLabel *label) {
 
         if (ui->gbFuelmeter->isChecked()) {
             image.load(":/res/fuel_meter.png");
+            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+        }
+
+        if (ui->gbLipo->isChecked()) {
+            image.load(":/res/vario_rp2040_zero.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
@@ -659,6 +672,10 @@ void MainWindow::setUiFromConfig() {
     ui->sbGyroWeight->setValue(config.mpu6050_gyro_weighting);
     ui->sbGyroFilter->setValue(config.mpu6050_filter);
     // ui->cbGpsRate->setValue
+
+    // INA3221 (lipo)
+    ui->cbIna3221Filter->currentData(config.ina3221_filter);
+    ui->sbLipoCells->setValue(config.lipo_cells);
 }
 
 void MainWindow::getConfigFromUi() {
@@ -871,6 +888,10 @@ void MainWindow::getConfigFromUi() {
     config.mpu6050_gyro_weighting = ui->sbGyroWeight->value();
     config.mpu6050_filter = ui->sbGyroFilter->value();
     // config.mpu6050_rate = ui->cbGyroSamplerate->currentText().toInt();
+
+    // INA3221 (lipo)
+    config.ina3221_filter = ui->cbIna3221Filter->itemData(ui->cbIna3221Filter->currentIndex()).toUInt();
+    config.lipo_cells = ui->sbLipoCells->value();
 
     // Debug
 

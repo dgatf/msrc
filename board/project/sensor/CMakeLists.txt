@@ -28,4 +28,5 @@ target_sources(${PROJECT_NAME} PRIVATE
     esc_ztw.c
     esc_openyge.c
     mpu6050.c
+    ina3221.c
     )

@@ -22,6 +22,7 @@
 #include "esc_ztw.h"
 #include "gps.h"
 #include "ibus.h"
+#include "ina3221.h"
 #include "mpu6050.h"
 #include "ms5611.h"
 #include "ntc.h"
@@ -377,13 +378,13 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
                 } else if (sensors->voltages.cell[cell_index]) {
                     sensor.voltage = swap_16((uint16_t)(*sensors->voltages.cell[cell_index] * 1000));
                 }
-                
+
                 memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_voltages_formatted_t));
                 buffer[3 + sizeof(crsf_sensor_voltages_formatted_t)] =
                     get_crc(&buffer[2], sizeof(crsf_sensor_voltages_formatted_t) + 1);
                 len = sizeof(crsf_sensor_voltages_formatted_t) + 4;
                 buffer[1] = sizeof(crsf_sensor_voltages_formatted_t) + 2;
-                
+
                 cell_index++;
                 if (cell_index >= *sensors->voltages.cell_count) {
                     cell_index = 0;
@@ -392,13 +393,13 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             } else if (sensors->voltages.voltage_count > 0) {
                 sensor.source = voltage_index + 128;
                 sensor.voltage = swap_16((uint16_t)(*sensors->voltages.voltage[voltage_index] * 1000));
-                
+
                 memcpy(&buffer[3], &sensor, sizeof(crsf_sensor_voltages_formatted_t));
                 buffer[3 + sizeof(crsf_sensor_voltages_formatted_t)] =
                     get_crc(&buffer[2], sizeof(crsf_sensor_voltages_formatted_t) + 1);
                 len = sizeof(crsf_sensor_voltages_formatted_t) + 4;
                 buffer[1] = sizeof(crsf_sensor_voltages_formatted_t) + 2;
-                
+
                 voltage_index++;
                 if (voltage_index >= sensors->voltages.voltage_count) {
                     voltage_index = 0;
@@ -1069,6 +1070,25 @@ static void set_config(crsf_sensors_t *sensors) {
         sensors->attitude.pitch = parameter.pitch;
         sensors->attitude.roll = parameter.roll;
         sensors->attitude.yaw = parameter.yaw;
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_lipo) {
+        ina3221_parameters_t parameter = {
+            .filter = config->ina3221_filter,
+            .cell_count = config->lipo_cells,
+            .cell[0] = malloc(sizeof(float)),
+            .cell[1] = malloc(sizeof(float)),
+            .cell[2] = malloc(sizeof(float)),
+        };
+        xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
+        *sensors->voltages.cell_count = parameter.cell_count;
+        for (uint i = 0; i < parameter.cell_count; i++) {
+            sensors->voltages.cell[i] = parameter.cell[i];
+        }
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }

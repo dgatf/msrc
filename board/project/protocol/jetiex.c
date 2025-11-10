@@ -20,6 +20,7 @@
 #include "esc_ztw.h"
 #include "fuel_meter.h"
 #include "gps.h"
+#include "ina3221.h"
 #include "mpu6050.h"
 #include "ms5611.h"
 #include "ntc.h"
@@ -838,6 +839,27 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Acc", "g", parameter.acc};
         jeti_add_sensor(new_sensor, sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->enable_lipo) {
+        ina3221_parameters_t parameter = {
+            .filter = config->ina3221_filter,
+            .cell_count = config->lipo_cells,
+            .cell[0] = malloc(sizeof(float)),
+            .cell[1] = malloc(sizeof(float)),
+            .cell[2] = malloc(sizeof(float)),
+        };
+        xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
+        for (uint8_t i = 0; i < parameter.cell_count; i++) {
+            new_sensor = malloc(sizeof(sensor_jetiex_t));
+            new_sensor->data_id = 0;
+            new_sensor->type = JETIEX_TYPE_INT14;
+            new_sensor->format = JETIEX_FORMAT_2_DECIMAL;
+            sprintf(new_sensor->text, "Cell %d", i + 1);
+            jeti_add_sensor(new_sensor, sensor);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        }
     }
 }
 

@@ -112,7 +112,7 @@ typedef struct config_t {                            // smartport data_id
     bool enable_analog_ntc;                          // 0x5108
     bool enable_analog_airspeed;                     // 0x5109
     enum i2c_module_t i2c_module;                    // 0x510A
-    uint8_t spare0;
+    uint8_t ina3221_filter;                          // 0x510B
     float alpha_rpm;                                 // 0x510C
     float alpha_voltage;                             // 0x510D
     float alpha_current;                             // 0x510E
@@ -183,9 +183,11 @@ typedef struct config_t {                            // smartport data_id
     uint8_t mpu6050_gyro_scale;                      // 0x514D
     uint8_t mpu6050_gyro_weighting;                  // 0x514E
     bool enable_gyro;                                // 0x514F
-    uint8_t spare1;
+    uint8_t enable_lipo;                             // 0x5150
     uint8_t mpu6050_filter;                          // 0x5151
-    uint32_t spare7;
+    uint8_t lipo_cells;                              // 0x5152
+    uint8_t spare72;
+    uint16_t spare73;
     uint32_t spare8;
     uint32_t spare9;
     uint32_t spare10;
