@@ -967,27 +967,36 @@ static void set_config() {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_lipo) {
+        i2c_multi_enable_address(XBUS_TELE_LIPOMON_ID);
         ina3221_parameters_t parameter = {
             .filter = config->ina3221_filter,
-            .cell_count = config->lipo_cells,
             .cell[0] = malloc(sizeof(float)),
             .cell[1] = malloc(sizeof(float)),
             .cell[2] = malloc(sizeof(float)),
         };
-        xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
         sensor->is_enabled[XBUS_TELE_LIPOMON] = true;
-        for (uint8_t i = 0; i < parameter.cell_count; i++) {    
-            sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = parameter.cell[i];
+        if (config->lipo_cells > 0) {
+            parameter.i2c_address = 0x40;
+            parameter.cell_count = MIN(config->lipo_cells, 3);
+            xTaskCreate(ina3221_task, "ina3221_1_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            for (uint8_t i = 0; i < MIN(parameter.cell_count, 3); i++) {
+                sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = parameter.cell[i];
+            }
         }
-        for (uint8_t i = parameter.cell_count; i < 6; i++) {
-            *sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = 0x7FFF;
-        }   
+        if (config->lipo_cells > 3) {
+            parameter.i2c_address = 0x41;
+            parameter.cell_count = MIN(config->lipo_cells - 3, 3);
+            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            for (uint8_t i = 0; i < MIN(parameter.cell_count - 3, 3); i++) {
+                sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL4 + i] = parameter.cell[i];
+            }
+        }
         sensor_formatted->tele_lipomon = calloc(1, 16);
         *sensor_formatted->tele_lipomon = (xbus_tele_lipomon_t){XBUS_TELE_LIPOMON_ID, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_TELE_LIPOMON_ID);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }
 

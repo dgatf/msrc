@@ -16,6 +16,7 @@
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_omp_m4.h"
+#include "esc_openyge.h"
 #include "esc_pwm.h"
 #include "esc_ztw.h"
 #include "fuel_meter.h"
@@ -23,6 +24,7 @@
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "i2c_multi.h"
+#include "ina3221.h"
 #include "mpu6050.h"
 #include "ms5611.h"
 #include "ntc.h"
@@ -33,10 +35,6 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "xgzp68xxd.h"
-#include "esc_omp_m4.h"
-#include "esc_openyge.h"
-#include "esc_ztw.h"
-#include "ina3221.h"
 
 #define SRXL_HEADER 0xA5
 #define SRXL_FRAMELEN 18
@@ -551,9 +549,8 @@ static void set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset,
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float))};
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
@@ -643,24 +640,33 @@ static void set_config(void) {
     if (config->enable_lipo) {
         ina3221_parameters_t parameter = {
             .filter = config->ina3221_filter,
-            .cell_count = config->lipo_cells,
             .cell[0] = malloc(sizeof(float)),
             .cell[1] = malloc(sizeof(float)),
             .cell[2] = malloc(sizeof(float)),
         };
-        xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-
         sensor->is_enabled[XBUS_TELE_LIPOMON] = true;
-        for (uint8_t i = 0; i < parameter.cell_count; i++) {    
-            sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = parameter.cell[i];
+        if (config->lipo_cells > 0) {
+            parameter.i2c_address = 0x40;
+            parameter.cell_count = MIN(config->lipo_cells - 3, 3);
+            xTaskCreate(ina3221_task, "ina3221_1_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            for (uint8_t i = 0; i < MIN(parameter.cell_count, 3); i++) {
+                sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = parameter.cell[i];
+            }
         }
-        for (uint8_t i = parameter.cell_count; i < 6; i++) {
-            *sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = 0x7FFF;
-        }   
+        if (config->lipo_cells > 3) {
+            parameter.i2c_address = 0x41;
+            parameter.cell_count = MIN(config->lipo_cells - 6, 3);
+            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            for (uint8_t i = 0; i < MIN(parameter.cell_count - 3, 3); i++) {
+                sensor->tele_lipomon[XBUS_TELE_LIPOMON_CELL4 + i] = parameter.cell[i];
+            }
+        }
         sensor_formatted->tele_lipomon = calloc(1, 16);
         *sensor_formatted->tele_lipomon = (xbus_tele_lipomon_t){XBUS_TELE_LIPOMON_ID, 0, 0, 0, 0, 0, 0, 0};
         i2c_multi_enable_address(XBUS_TELE_LIPOMON_ID);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
+
 }

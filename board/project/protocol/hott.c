@@ -28,6 +28,7 @@
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
 #include "ibus.h"
+#include "ina3221.h"
 #include "ms5611.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
@@ -39,7 +40,6 @@
 #include "uart_pio.h"
 #include "voltage.h"
 #include "xgzp68xxd.h"
-#include "ina3221.h"
 
 #define HOTT_VARIO_MODULE_ID 0x89
 #define HOTT_GPS_MODULE_ID 0x8A
@@ -1509,9 +1509,8 @@ static void set_config(hott_sensors_t *sensors) {
         add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset,
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float))};
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -1560,21 +1559,39 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->general_air[HOTT_GENERAL_PRESSURE] = parameter.pressure;
     }
     if (config->enable_lipo) {
-        ina3221_parameters_t parameter = {
-            .filter = config->ina3221_filter,
-            .cell_count = config->lipo_cells,
-            .cell[0] = malloc(sizeof(float)),
-            .cell[1] = malloc(sizeof(float)),
-            .cell[2] = malloc(sizeof(float)),
-        };
-        xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
         sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
-        sensors->general_air[HOTT_GENERAL_CELL_1] = parameter.cell[0];
-        sensors->general_air[HOTT_GENERAL_CELL_2] = parameter.cell[1];
-        sensors->general_air[HOTT_GENERAL_CELL_3] = parameter.cell[2];
+        if (config->lipo_cells > 0) {
+            ina3221_parameters_t parameter = {
+                .i2c_address = 0x40,
+                .filter = config->ina3221_filter,
+                .cell_count = config->lipo_cells,
+                .cell[0] = malloc(sizeof(float)),
+                .cell[1] = malloc(sizeof(float)),
+                .cell[2] = malloc(sizeof(float)),
+            };
+            xTaskCreate(ina3221_task, "ina3221_1_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+            sensors->general_air[HOTT_GENERAL_CELL_1] = parameter.cell[0];
+            sensors->general_air[HOTT_GENERAL_CELL_2] = parameter.cell[1];
+            sensors->general_air[HOTT_GENERAL_CELL_3] = parameter.cell[2];
+        }
+        if (config->lipo_cells > 3) {
+            ina3221_parameters_t parameter = {
+                .i2c_address = 0x41,
+                .filter = config->ina3221_filter,
+                .cell_count = config->lipo_cells - 3,
+                .cell[0] = malloc(sizeof(float)),
+                .cell[1] = malloc(sizeof(float)),
+                .cell[2] = malloc(sizeof(float)),
+            };
+            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+            sensors->general_air[HOTT_GENERAL_CELL_4] = parameter.cell[0];
+            sensors->general_air[HOTT_GENERAL_CELL_5] = parameter.cell[1];
+            sensors->general_air[HOTT_GENERAL_CELL_6] = parameter.cell[2];
+        }
     }
 }
 

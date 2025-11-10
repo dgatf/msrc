@@ -44,7 +44,7 @@ void ina3221_task(void *parameters) {
 
     while (1) {
         read(&parameter);
-        debug("\nINA3221 (%u) < Addr: 0x%02X", uxTaskGetStackHighWaterMark(NULL), parameter.i2c_address[0]);
+        debug("\nINA3221 (%u) < Addr: 0x%02X", uxTaskGetStackHighWaterMark(NULL), parameter.i2c_address);
         for (uint8_t i = 0; i < parameter.cell_count; i++) {
             debug(" Cell %u: %.2fV", i + 1, *parameter.cell[i]);
         }
@@ -61,14 +61,6 @@ static void begin(ina3221_parameters_t *parameter) {
 
     uint8_t data[2] = {0};
 
-    // Find sensor address
-    parameter->i2c_address[0] = I2C_ADDRESS;
-    for (uint8_t i = 1; i < 4; i++) {
-        if (i2c_write_blocking(i2c0, I2C_ADDRESS, data, 1, false) == PICO_ERROR_GENERIC) {
-            parameter->i2c_address[i] = I2C_ADDRESS + i;
-        }
-    }
-
     // Configure sensor
     data[0] = INA3221_CONFIGURATION;
     data[1] = MODE_VOLTAGE_CONTINUOUS | VOLTAGE_CONVERSION_TIME | (parameter->filter << 9);
@@ -77,7 +69,7 @@ static void begin(ina3221_parameters_t *parameter) {
     for (uint8_t i = 1; i < parameter->cell_count; i++) {
         data[1] |= (1 << (i + 12));
     }
-    i2c_write_blocking(i2c0, parameter->i2c_address[0], data, 2, false);
+    i2c_write_blocking(i2c0, parameter->i2c_address, data, 2, false);
 }
 
 static void read(ina3221_parameters_t *parameter) {
@@ -87,8 +79,8 @@ static void read(ina3221_parameters_t *parameter) {
     for (uint8_t channel = 0; channel < 3; channel++) {
         // Read bus voltage
         data[0] = INA3221_BUS_VOLTAGE(channel);
-        i2c_write_blocking(i2c0, parameter->i2c_address[0], data, 1, true);
-        i2c_read_blocking(i2c0, parameter->i2c_address[0], data, 2, false);
+        i2c_write_blocking(i2c0, parameter->i2c_address, data, 1, true);
+        i2c_read_blocking(i2c0, parameter->i2c_address, data, 2, false);
         bus_voltage = ((int16_t)data[0] << 8) | data[1];
         // Calculate voltage in volts
         *parameter->cell[channel] = (float)bus_voltage * 0.001f * 3.3 / 5;  // Bus voltage LSB = 1mV

@@ -4,7 +4,7 @@
 #include "common.h"
 
 typedef struct ina3221_parameters_t {
-    uint8_t i2c_address[4];
+    uint8_t i2c_address;
     uint8_t filter;
     uint8_t conversion_time;
     uint8_t cell_count;

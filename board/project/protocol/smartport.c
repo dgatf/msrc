@@ -24,6 +24,7 @@
 #include "fuel_meter.h"
 #include "gpio.h"
 #include "gps.h"
+#include "ina3221.h"
 #include "mpu6050.h"
 #include "ms5611.h"
 #include "ntc.h"
@@ -33,7 +34,6 @@
 #include "uart.h"
 #include "uart_pio.h"
 #include "voltage.h"
-#include "ina3221.h"
 
 #define AIRCR_Register (*((volatile uint32_t *)(PPB_BASE + 0x0ED0C)))
 #define POLL_LENGHT 2
@@ -1524,7 +1524,7 @@ static void set_config(smartport_parameters_t *parameter) {
         smartport_sensor_parameters_t parameter_sensor;
         smartport_sensor_double_parameters_t parameter_sensor_double;
         smartport_sensor_cell_parameters_t parameter_sensor_cell;
-        
+
         // RPM and Consumption sensor
         parameter_sensor_double.data_id = ESC_RPM_CONS_FIRST_ID;
         parameter_sensor_double.value_l = parameter.rpm;
@@ -1534,7 +1534,7 @@ static void set_config(smartport_parameters_t *parameter) {
                     (void *)&parameter_sensor_double, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
+
         // Main voltage and current sensor
         parameter_sensor_double.data_id = ESC_POWER_FIRST_ID;
         parameter_sensor_double.value_l = parameter.voltage;
@@ -1544,7 +1544,7 @@ static void set_config(smartport_parameters_t *parameter) {
                     (void *)&parameter_sensor_double, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
+
         // FET Temperature sensor
         parameter_sensor.data_id = ESC_TEMPERATURE_FIRST_ID;
         parameter_sensor.value = parameter.temperature_fet;
@@ -1552,7 +1552,7 @@ static void set_config(smartport_parameters_t *parameter) {
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
+
         // BEC Temperature sensor
         parameter_sensor.data_id = ESC_TEMPERATURE_FIRST_ID + 2;
         parameter_sensor.value = parameter.temperature_bec;
@@ -1560,7 +1560,7 @@ static void set_config(smartport_parameters_t *parameter) {
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
+
         // BEC voltage and current sensor
         parameter_sensor_double.data_id = ESC_POWER_FIRST_ID + 2;
         parameter_sensor_double.value_l = parameter.voltage_bec;
@@ -1570,7 +1570,7 @@ static void set_config(smartport_parameters_t *parameter) {
                     (void *)&parameter_sensor_double, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
+
         // Cell voltage sensor
         parameter_sensor_cell.cell_count = parameter.cell_count;
         parameter_sensor_cell.cell_voltage = parameter.cell_voltage;
@@ -1778,9 +1778,8 @@ static void set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset,
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float))};
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -1876,21 +1875,19 @@ static void set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gyro) {
-        mpu6050_parameters_t parameter = {
-            1,
-            0,
-            config->mpu6050_acc_scale,
-            config->mpu6050_gyro_scale,
-            config->mpu6050_gyro_weighting,
-            config->mpu6050_filter,
-            malloc(sizeof(float)),
-            malloc(sizeof(float)),
-            malloc(sizeof(float)),
-            malloc(sizeof(float)),
-            malloc(sizeof(float)),
-            malloc(sizeof(float)),
-            malloc(sizeof(float))
-        };
+        mpu6050_parameters_t parameter = {1,
+                                          0,
+                                          config->mpu6050_acc_scale,
+                                          config->mpu6050_gyro_scale,
+                                          config->mpu6050_gyro_weighting,
+                                          config->mpu6050_filter,
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float)),
+                                          malloc(sizeof(float))};
         xTaskCreate(mpu6050_task, "mpu6050_task", STACK_MPU6050, (void *)&parameter, 2, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -1939,23 +1936,87 @@ static void set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_lipo) {
-        ina3221_parameters_t parameter = {
-            .filter = config->ina3221_filter,
-            .cell_count = config->lipo_cells,
-            .cell[0] = malloc(sizeof(float)),
-            .cell[1] = malloc(sizeof(float)),
-            .cell[2] = malloc(sizeof(float)),
-        };
-        xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
         smartport_sensor_cell_individual_parameters_t parameter_sensor_cell;
-        for (uint i = 0; i < parameter.cell_count; i++) parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
-        parameter_sensor_cell.rate = config->refresh_rate_voltage;
-        xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        if (config->lipo_cells > 0) {
+            ina3221_parameters_t parameter = {
+                .i2c_address = 0x40,
+                .filter = config->ina3221_filter,
+                .cell_count = config->lipo_cells,
+                .cell[0] = malloc(sizeof(float)),
+                .cell[1] = malloc(sizeof(float)),
+                .cell[2] = malloc(sizeof(float)),
+            };
+            xTaskCreate(ina3221_task, "ina3221_1_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+            for (uint i = 0; i < parameter.cell_count; i++) parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
+            parameter_sensor_cell.rate = config->refresh_rate_voltage;
+            xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
+                        &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        }
+        if (config->lipo_cells > 3) {
+            ina3221_parameters_t parameter = {
+                .i2c_address = 0x41,
+                .filter = config->ina3221_filter,
+                .cell_count = MIN(config->lipo_cells - 3, 3),
+                .cell[0] = malloc(sizeof(float)),
+                .cell[1] = malloc(sizeof(float)),
+                .cell[2] = malloc(sizeof(float)),
+            };
+            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+            for (uint i = 0; i < MIN(parameter.cell_count - 3, 3); i++) parameter_sensor_cell.cell_voltage[i + 3] = parameter.cell[i];
+            parameter_sensor_cell.rate = config->refresh_rate_voltage;
+            xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
+                        &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        }
+        if (config->lipo_cells > 6) {
+            ina3221_parameters_t parameter = {
+                .i2c_address = 0x42,
+                .filter = config->ina3221_filter,
+                .cell_count = MIN(config->lipo_cells - 6, 3),
+                .cell[0] = malloc(sizeof(float)),
+                .cell[1] = malloc(sizeof(float)),
+                .cell[2] = malloc(sizeof(float)),
+            };
+            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+            for (uint i = 0; i < MIN(parameter.cell_count - 6, 3); i++) parameter_sensor_cell.cell_voltage[i + 6] = parameter.cell[i];
+            parameter_sensor_cell.rate = config->refresh_rate_voltage;
+            xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
+                        &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        }
+        if (config->lipo_cells > 9) {
+            ina3221_parameters_t parameter = {
+                .i2c_address = 0x43,
+                .filter = config->ina3221_filter,
+                .cell_count = MIN(config->lipo_cells - 9, 3),
+                .cell[0] = malloc(sizeof(float)),
+                .cell[1] = malloc(sizeof(float)),
+                .cell[2] = malloc(sizeof(float)),
+            };
+            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+            for (uint i = 0; i < MIN(parameter.cell_count - 9, 3); i++) parameter_sensor_cell.cell_voltage[i + 9] = parameter.cell[i];
+            parameter_sensor_cell.rate = config->refresh_rate_voltage;
+            xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
+                        &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        }
     }
 }
 
