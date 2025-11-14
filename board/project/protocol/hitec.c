@@ -104,7 +104,8 @@ static int next_frame(void);
 static void format_packet(uint8_t frame, uint8_t *buffer);
 
 static volatile uint8_t cont = 0;
-static volatile alarm_id_t alarm_id = 0;;
+static volatile alarm_id_t alarm_id = 0;
+;
 static bool is_received = false;
 
 void hitec_task(void *parameters) {
@@ -130,6 +131,12 @@ void hitec_task(void *parameters) {
     vTaskSuspend(NULL);
 }
 
+void hitec_i2c_handler(void) {
+    for (uint i = 0; i < FRAME_LENGTH + 1; i++) {
+        i2c_handler(i2c1, I2C_SLAVE_REQUEST);
+    }
+}
+
 static void i2c_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
     uint8_t frame = next_frame();
     if (frame < 0) return;
@@ -142,13 +149,16 @@ static void i2c_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
                 i2c_slave_deinit(i2c1);
                 i2c_init(i2c1, 100000L);
                 i2c_slave_init(i2c1, I2C_ADDRESS, i2c_handler);
-                debug("\nHitec (%u) > ", uxTaskGetStackHighWaterMark(context.receiver_task_handle));
-                debug_buffer(packet, FRAME_LENGTH, "0x%X ");
+
             } else {
                 is_received = true;
                 i2c_write_byte_raw(i2c1, packet[cont++]);
                 if (alarm_id != 0) cancel_alarm(alarm_id);
                 alarm_id = add_alarm_in_us(5 * 1000, alarm_packet, NULL, true);
+                if (cont == FRAME_LENGTH) {
+                    debug("\nHitec (%u) > ", uxTaskGetStackHighWaterMark(context.receiver_task_handle));
+                    debug_buffer(packet, FRAME_LENGTH, "0x%X ");
+                }
             }
             break;
     }

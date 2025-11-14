@@ -303,7 +303,7 @@ static void process(rx_protocol_t rx_protocol) {
     }
 
     else if (rx_protocol == RX_HITEC) {
-        // hitec_i2c_handler();
+        hitec_i2c_handler();
     }
 
     else if (rx_protocol == RX_CRSF) {
