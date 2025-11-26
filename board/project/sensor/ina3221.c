@@ -61,6 +61,11 @@ static void begin(ina3221_parameters_t *parameter) {
 
     uint8_t data[2] = {0};
 
+    if (i2c_write_blocking(i2c0, parameter->i2c_address, data, 1, false) == PICO_ERROR_GENERIC) {
+        debug("\nINA3221 not found at address 0x%02X", parameter->i2c_address);
+        vTaskSuspend(NULL);
+    }
+
     // Configure sensor
     data[0] = INA3221_CONFIGURATION;
     data[1] = MODE_VOLTAGE_CONTINUOUS | VOLTAGE_CONVERSION_TIME | (parameter->filter << 9);
