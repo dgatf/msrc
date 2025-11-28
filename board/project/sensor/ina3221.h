@@ -8,7 +8,8 @@ typedef struct ina3221_parameters_t {
     uint8_t filter;
     uint8_t conversion_time;
     uint8_t cell_count;
-    float *cell[12];
+    float *cell[3];
+    float *cell_prev;
 } ina3221_parameters_t;
 
 extern context_t context;

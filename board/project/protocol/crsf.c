@@ -1074,59 +1074,46 @@ static void set_config(crsf_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_lipo) {
-        ina3221_parameters_t parameter = {
-            .filter = config->ina3221_filter,
-            .cell[0] = malloc(sizeof(float)),
-            .cell[1] = malloc(sizeof(float)),
-            .cell[2] = malloc(sizeof(float)),
-        };
-        sensors->enabled_sensors[TYPE_VOLTAGES] = true;
-        *sensors->voltages.cell_count = config->lipo_cells;
+        float *cell_prev = 0;
         if (config->lipo_cells > 0) {
-            parameter.i2c_address = 0x40;
-            parameter.cell_count = MIN(config->lipo_cells, 3);
-            xTaskCreate(ina3221_task, "ina3221_1_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            ina3221_parameters_t parameter = {
+                .i2c_address = 0x40,
+                .filter = config->ina3221_filter,
+                .cell_count = MIN(config->lipo_cells, 3),
+                .cell[0] = malloc(sizeof(float)),
+                .cell[1] = malloc(sizeof(float)),
+                .cell[2] = malloc(sizeof(float)),
+                .cell_prev = malloc(sizeof(float)),
+            };
+            *parameter.cell_prev = 0;
+            cell_prev = parameter.cell[2];
+            xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
             sensors->enabled_sensors[TYPE_VOLTAGES] = true;
             *sensors->voltages.cell_count = parameter.cell_count;
-            for (uint i = 0; i < MIN(parameter.cell_count, 3); i++) {
+            for (uint i = 0; i < 3; i++) {
                 sensors->voltages.cell[i] = parameter.cell[i];
             }
         }
         if (config->lipo_cells > 3) {
-            parameter.i2c_address = 0x41;
-            parameter.cell_count = MIN(config->lipo_cells - 3, 3);
-            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-            *sensors->voltages.cell_count = config->lipo_cells;
+            ina3221_parameters_t parameter = {
+                .i2c_address = 0x41,
+                .filter = config->ina3221_filter,
+                .cell_count = MIN(config->lipo_cells - 3, 3),
+                .cell[0] = malloc(sizeof(float)),
+                .cell[1] = malloc(sizeof(float)),
+                .cell[2] = malloc(sizeof(float)),
+                .cell_prev = malloc(sizeof(float)),
+            };
+            parameter.cell_prev = cell_prev;
+            cell_prev = parameter.cell[2];
+            xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
             for (uint i = 0; i < 3; i++) {
                 sensors->voltages.cell[i + 3] = parameter.cell[i];
             }
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        }
-        if (config->lipo_cells > 6) {
-            parameter.i2c_address = 0x42;
-            parameter.cell_count = MIN(config->lipo_cells - 6, 3);
-            xTaskCreate(ina3221_task, "ina3221_3_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-            *sensors->voltages.cell_count = config->lipo_cells;
-            for (uint i = 0; i < 3; i++) {
-                sensors->voltages.cell[i + 6] = parameter.cell[i];
-            }
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        }
-        if (config->lipo_cells > 9) {
-            parameter.i2c_address = 0x43;
-            parameter.cell_count = MIN(config->lipo_cells - 6, 3);
-            xTaskCreate(ina3221_task, "ina3221_4_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-            *sensors->voltages.cell_count = config->lipo_cells;
-            for (uint i = 0; i < 3; i++) {
-                sensors->voltages.cell[i + 9] = parameter.cell[i];
-            }
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
     }
 }

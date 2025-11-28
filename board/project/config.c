@@ -126,6 +126,10 @@
 #define GYRO_WEIGHTING 96    // 0 - 100%
 #define GYRO_FILTER 0        // 0 = no filter, 1 = 184Hz, 2 = 92Hz, 3 = 41Hz, 4 = 20Hz, 5 = 10Hz, 6 = 5Hz
 
+/* INA3221 */
+#define INA3221_FILTER 1  // 1 - 1024
+#define INA3221_CELLS 3   // 1 to 12
+
 config_t *config_read() {
     uint16_t *version = (uint16_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET);
     if (*version != CONFIG_VERSION) {
@@ -238,5 +242,8 @@ void config_forze_write() {
     config.mpu6050_gyro_scale = GYRO_SENSITIVITY;
     config.mpu6050_gyro_weighting = GYRO_WEIGHTING;
     //config.gyro_rate = GYRO_RATE;
+    config.ina3221_filter = INA3221_FILTER;
+    config.lipo_cells = INA3221_CELLS;
+    config.enable_lipo = false;
     config_write(&config);
 }

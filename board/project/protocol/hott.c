@@ -1559,19 +1559,23 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->general_air[HOTT_GENERAL_PRESSURE] = parameter.pressure;
     }
     if (config->enable_lipo) {
-        sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+        float *cell_prev = 0;
         if (config->lipo_cells > 0) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x40,
                 .filter = config->ina3221_filter,
-                .cell_count = config->lipo_cells,
+                .cell_count = MIN(config->lipo_cells, 3),
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
+                .cell_prev = malloc(sizeof(float)),
             };
-            xTaskCreate(ina3221_task, "ina3221_1_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            *parameter.cell_prev = 0;
+            cell_prev = parameter.cell[2];
+            xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+            sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
             sensors->general_air[HOTT_GENERAL_CELL_1] = parameter.cell[0];
             sensors->general_air[HOTT_GENERAL_CELL_2] = parameter.cell[1];
             sensors->general_air[HOTT_GENERAL_CELL_3] = parameter.cell[2];
@@ -1580,17 +1584,20 @@ static void set_config(hott_sensors_t *sensors) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x41,
                 .filter = config->ina3221_filter,
-                .cell_count = config->lipo_cells - 3,
+                .cell_count = MIN(config->lipo_cells - 3, 3),
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
+                .cell_prev = malloc(sizeof(float)),
             };
-            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            parameter.cell_prev = cell_prev;
+            cell_prev = parameter.cell[2];
+            xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-            sensors->general_air[HOTT_GENERAL_CELL_4] = parameter.cell[0];
-            sensors->general_air[HOTT_GENERAL_CELL_5] = parameter.cell[1];
-            sensors->general_air[HOTT_GENERAL_CELL_6] = parameter.cell[2];
+            sensors->general_air[HOTT_GENERAL_CELL_1] = parameter.cell[0];
+            sensors->general_air[HOTT_GENERAL_CELL_2] = parameter.cell[1];
+            sensors->general_air[HOTT_GENERAL_CELL_3] = parameter.cell[2];
         }
     }
 }

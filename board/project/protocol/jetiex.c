@@ -841,69 +841,55 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_lipo) {
-        ina3221_parameters_t parameter = {
-            .filter = config->ina3221_filter,
-            .cell[0] = malloc(sizeof(float)),
-            .cell[1] = malloc(sizeof(float)),
-            .cell[2] = malloc(sizeof(float)),
-        };
+        float *cell_prev = 0;
         if (config->lipo_cells > 0) {
-            parameter.i2c_address = 0x40;
-            parameter.cell_count = MIN(config->lipo_cells, 3);
-            xTaskCreate(ina3221_task, "ina3221_1_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            ina3221_parameters_t parameter = {
+                .i2c_address = 0x40,
+                .filter = config->ina3221_filter,
+                .cell_count = MIN(config->lipo_cells, 3),
+                .cell[0] = malloc(sizeof(float)),
+                .cell[1] = malloc(sizeof(float)),
+                .cell[2] = malloc(sizeof(float)),
+                .cell_prev = malloc(sizeof(float)),
+            };
+            *parameter.cell_prev = 0;
+            cell_prev = parameter.cell[2];
+            xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             for (uint8_t i = 0; i < MIN(parameter.cell_count, 3); i++) {
                 new_sensor = malloc(sizeof(sensor_jetiex_t));
                 new_sensor->data_id = 0;
                 new_sensor->type = JETIEX_TYPE_INT14;
                 new_sensor->format = JETIEX_FORMAT_2_DECIMAL;
-                sprintf(new_sensor->text, "Cell %d", i + 1);
                 jeti_add_sensor(new_sensor, sensor);
             }
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
         }
         if (config->lipo_cells > 3) {
-            parameter.i2c_address = 0x41;
-            parameter.cell_count = MIN(config->lipo_cells - 3, 3);
-            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            ina3221_parameters_t parameter = {
+                .i2c_address = 0x41,
+                .filter = config->ina3221_filter,
+                .cell_count = MIN(config->lipo_cells - 3, 3),
+                .cell[0] = malloc(sizeof(float)),
+                .cell[1] = malloc(sizeof(float)),
+                .cell[2] = malloc(sizeof(float)),
+                .cell_prev = malloc(sizeof(float)),
+            };
+            parameter.cell_prev = cell_prev;
+            cell_prev = parameter.cell[2];
+            xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
             for (uint8_t i = 0; i < MIN(parameter.cell_count - 3, 3); i++) {
                 new_sensor = malloc(sizeof(sensor_jetiex_t));
                 new_sensor->data_id = 0;
                 new_sensor->type = JETIEX_TYPE_INT14;
                 new_sensor->format = JETIEX_FORMAT_2_DECIMAL;
-                sprintf(new_sensor->text, "Cell %d", i + 1);
                 jeti_add_sensor(new_sensor, sensor);
             }
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
-        if (config->lipo_cells > 6) {
-            parameter.i2c_address = 0x42;
-            parameter.cell_count = MIN(config->lipo_cells - 6, 3);
-            xTaskCreate(ina3221_task, "ina3221_1_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            for (uint8_t i = 0; i < MIN(parameter.cell_count - 6, 3); i++) {
-                new_sensor = malloc(sizeof(sensor_jetiex_t));
-                new_sensor->data_id = 0;
-                new_sensor->type = JETIEX_TYPE_INT14;
-                new_sensor->format = JETIEX_FORMAT_2_DECIMAL;
-                sprintf(new_sensor->text, "Cell %d", i + 1);
-                jeti_add_sensor(new_sensor, sensor);
-            }
-        }
-        if (config->lipo_cells > 9) {
-            parameter.i2c_address = 0x43;
-            parameter.cell_count = MIN(config->lipo_cells - 9, 3);
-            xTaskCreate(ina3221_task, "ina3221_1_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            for (uint8_t i = 0; i < MIN(parameter.cell_count - 9, 3); i++) {
-                new_sensor = malloc(sizeof(sensor_jetiex_t));
-                new_sensor->data_id = 0;
-                new_sensor->type = JETIEX_TYPE_INT14;
-                new_sensor->format = JETIEX_FORMAT_2_DECIMAL;
-                sprintf(new_sensor->text, "Cell %d", i + 1);
-                jeti_add_sensor(new_sensor, sensor);
-            }
-        }
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }
 

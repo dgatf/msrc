@@ -676,6 +676,7 @@ void MainWindow::setUiFromConfig() {
     // INA3221 (lipo)
     ui->cbIna3221Filter->currentData(config.ina3221_filter);
     ui->sbLipoCells->setValue(config.lipo_cells);
+    ui->gbLipo->setChecked(config.enable_lipo);
 }
 
 void MainWindow::getConfigFromUi() {
@@ -892,6 +893,7 @@ void MainWindow::getConfigFromUi() {
     // INA3221 (lipo)
     config.ina3221_filter = ui->cbIna3221Filter->itemData(ui->cbIna3221Filter->currentIndex()).toUInt();
     config.lipo_cells = ui->sbLipoCells->value();
+    config.enable_lipo = ui->gbLipo->isChecked();
 
     // Debug
 
@@ -1094,6 +1096,14 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->gbCurrent->setVisible(true);
         ui->gbAltitude->setVisible(true);
     }
+
+    // Lipo
+    if (arg1 == "ELRS/CRSF" || arg1 == "Frsky Smartport" || arg1 == "Frsky FPort" || arg1 == "Frsky FBUS" || arg1 == "HOTT" || arg1 == "JetiEx Bus" || arg1 == "JetiEx Bus" || arg1 == "JetiEx Sensor" || arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2") {
+        ui->gbLipo->setVisible(true);
+    } else {
+        ui->gbLipo->setVisible(false);
+    }
+
     // Average elements
     if (arg1 == "Sanwa") {
         ui->lbRpmAvg->setVisible(true);

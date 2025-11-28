@@ -34,7 +34,7 @@ static void read(ina3221_parameters_t *parameter);
 void ina3221_task(void *parameters) {
     ina3221_parameters_t parameter = *(ina3221_parameters_t *)parameters;
     xTaskNotifyGive(context.receiver_task_handle);
-    for (uint8_t i = 0; i < 12; i++) {
+    for (uint8_t i = 0; i < parameter.cell_count; i++) {
         *parameter.cell[i] = 0;
     }
 
@@ -61,9 +61,11 @@ static void begin(ina3221_parameters_t *parameter) {
 
     uint8_t data[2] = {0};
 
-    if (i2c_write_blocking(i2c0, parameter->i2c_address, data, 1, false) == PICO_ERROR_GENERIC) {
-        debug("\nINA3221 not found at address 0x%02X", parameter->i2c_address);
-        vTaskSuspend(NULL);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    while (i2c_write_blocking_until(i2c0, parameter->i2c_address, data, 1, false, make_timeout_time_ms(1000)) ==
+           PICO_ERROR_GENERIC) {
+        debug("\nINA3221 not found at address 0x%02X. Connect and reboot", parameter->i2c_address);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
     // Configure sensor
@@ -81,16 +83,24 @@ static void read(ina3221_parameters_t *parameter) {
     uint8_t data[3];
     int16_t bus_voltage;
 
-    for (uint8_t channel = 0; channel < 3; channel++) {
+    float cell_total[3] = {0};
+    for (uint8_t channel = 0; channel < parameter->cell_count; channel++) {
         // Read bus voltage
         data[0] = INA3221_BUS_VOLTAGE(channel);
         i2c_write_blocking(i2c0, parameter->i2c_address, data, 1, true);
         i2c_read_blocking(i2c0, parameter->i2c_address, data, 2, false);
         bus_voltage = ((int16_t)data[0] << 8) | data[1];
         // Calculate voltage in volts
-        *parameter->cell[channel] = (float)bus_voltage * 0.001f * 3.3 / 5;  // Bus voltage LSB = 1mV
+        cell_total[channel] = (float)bus_voltage * 0.001f;  // Bus voltage LSB = 1mV
 #ifdef SIM_SENSORS
         *parameter->cell[channel] = 3 + channel * 0.01;
 #endif
+    }
+    for (uint8_t i = 0; i < parameter->cell_count; i++) {
+        if (i == 0) {
+            *parameter->cell[i] = cell_total[i] - *parameter->cell_prev;
+        } else {
+            *parameter->cell[i] = cell_total[i] - cell_total[i - 1];
+        }
     }
 }

@@ -576,7 +576,7 @@
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-840</y>
+                 <y>-926</y>
                  <width>581</width>
                  <height>2195</height>
                 </rect>
@@ -1101,6 +1101,9 @@
                   <property name="checkable">
                    <bool>true</bool>
                   </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
                   <layout class="QGridLayout" name="gridLayout_5">
                    <item row="2" column="1">
                     <widget class="QComboBox" name="cbIna3221Filter"/>
@@ -1135,7 +1138,7 @@
                       <number>1</number>
                      </property>
                      <property name="maximum">
-                      <number>12</number>
+                      <number>6</number>
                      </property>
                     </widget>
                    </item>

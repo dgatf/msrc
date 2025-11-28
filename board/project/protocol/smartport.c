@@ -1937,21 +1937,25 @@ static void set_config(smartport_parameters_t *parameter) {
     }
     if (config->enable_lipo) {
         smartport_sensor_cell_individual_parameters_t parameter_sensor_cell;
+        float *cell_prev = 0;
         if (config->lipo_cells > 0) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x40,
                 .filter = config->ina3221_filter,
-                .cell_count = config->lipo_cells,
+                .cell_count = MIN(config->lipo_cells, 3),
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
+                .cell_prev = malloc(sizeof(float)),
             };
-            xTaskCreate(ina3221_task, "ina3221_1_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            *parameter.cell_prev = 0;
+            cell_prev = parameter.cell[2];
+            xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-            for (uint i = 0; i < parameter.cell_count; i++) parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
             parameter_sensor_cell.rate = config->refresh_rate_voltage;
+            for (uint i = 0; i < 3; i++) parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
             xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
                         &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
@@ -1965,53 +1969,15 @@ static void set_config(smartport_parameters_t *parameter) {
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
+                .cell_prev = malloc(sizeof(float)),
             };
-            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
+            parameter.cell_prev = cell_prev;
+            cell_prev = parameter.cell[2];
+            xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-            for (uint i = 0; i < MIN(parameter.cell_count - 3, 3); i++) parameter_sensor_cell.cell_voltage[i + 3] = parameter.cell[i];
-            parameter_sensor_cell.rate = config->refresh_rate_voltage;
-            xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
-                        &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        }
-        if (config->lipo_cells > 6) {
-            ina3221_parameters_t parameter = {
-                .i2c_address = 0x42,
-                .filter = config->ina3221_filter,
-                .cell_count = MIN(config->lipo_cells - 6, 3),
-                .cell[0] = malloc(sizeof(float)),
-                .cell[1] = malloc(sizeof(float)),
-                .cell[2] = malloc(sizeof(float)),
-            };
-            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-            for (uint i = 0; i < MIN(parameter.cell_count - 6, 3); i++) parameter_sensor_cell.cell_voltage[i + 6] = parameter.cell[i];
-            parameter_sensor_cell.rate = config->refresh_rate_voltage;
-            xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
-                        &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        }
-        if (config->lipo_cells > 9) {
-            ina3221_parameters_t parameter = {
-                .i2c_address = 0x43,
-                .filter = config->ina3221_filter,
-                .cell_count = MIN(config->lipo_cells - 9, 3),
-                .cell[0] = malloc(sizeof(float)),
-                .cell[1] = malloc(sizeof(float)),
-                .cell[2] = malloc(sizeof(float)),
-            };
-            xTaskCreate(ina3221_task, "ina3221_2_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-            for (uint i = 0; i < MIN(parameter.cell_count - 9, 3); i++) parameter_sensor_cell.cell_voltage[i + 9] = parameter.cell[i];
-            parameter_sensor_cell.rate = config->refresh_rate_voltage;
+            for (uint i = 0; i < 3; i++) parameter_sensor_cell.cell_voltage[i + 3] = parameter.cell[i];
             xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
                         &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
