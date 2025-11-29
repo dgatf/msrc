@@ -18,6 +18,7 @@
 #include "esc_hw5.h"
 #include "esc_kontronik.h"
 #include "esc_omp_m4.h"
+#include "esc_openyge.h"
 #include "esc_pwm.h"
 #include "esc_ztw.h"
 #include "fuel_meter.h"
@@ -261,13 +262,10 @@ static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
 
 static void set_config(smartport_parameters_t *parameter) {
     config_t *config = config_read();
-    uart0_begin(460800, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, config->fbus_inverted,
-                true);
     TaskHandle_t task_handle;
     float *baro_temp = NULL, *baro_pressure = NULL;
     parameter->sensor_id = config->smartport_sensor_id;
     parameter->data_id = 0x5100;
-    sensor_id = parameter->sensor_id;
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
@@ -718,10 +716,20 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor_cell.cell_count = parameter.cells;
         for (uint i = 0; i < 18; i++) parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
-        xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell,
-                    3, &task_handle);
+        parameter_sensor_cell.cell_count = malloc(sizeof(uint8_t));
+        *parameter_sensor_cell.cell_count = config->lipo_cells;
+        xTaskCreate(sensor_cell_individual_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL,
+                    (void *)&parameter_sensor_cell, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        // cycles
+        /*parameter_sensor.data_id = DIY_FIRST_ID + 100;
+        parameter_sensor.value = parameter.cycles;
+        parameter_sensor.rate = config->refresh_rate_default;
+        xTaskCreate(sensor_cell_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor,
+                    3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);*/
     }
     if (config->esc_protocol == ESC_OMP_M4) {
         esc_omp_m4_parameters_t parameter;
@@ -834,6 +842,90 @@ static void set_config(smartport_parameters_t *parameter) {
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        parameter_sensor_cell.cell_count = parameter.cell_count;
+        parameter_sensor_cell.cell_voltage = parameter.cell_voltage;
+        parameter_sensor_cell.rate = config->refresh_rate_voltage;
+        xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell,
+                    3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    if (config->esc_protocol == ESC_OPENYGE) {
+        esc_openyge_parameters_t parameter;
+        parameter.rpm_multiplier = config->rpm_multiplier;
+        parameter.pwm_out = config->enable_pwm_out;
+        parameter.alpha_rpm = config->alpha_rpm;
+        parameter.alpha_voltage = config->alpha_voltage;
+        parameter.alpha_current = config->alpha_current;
+        parameter.alpha_temperature = config->alpha_temperature;
+        parameter.rpm = malloc(sizeof(float));
+        parameter.voltage = malloc(sizeof(float));
+        parameter.current = malloc(sizeof(float));
+        parameter.temperature_fet = malloc(sizeof(float));
+        parameter.temperature_bec = malloc(sizeof(float));
+        parameter.cell_voltage = malloc(sizeof(float));
+        parameter.consumption = malloc(sizeof(float));
+        parameter.voltage_bec = malloc(sizeof(float));
+        parameter.current_bec = malloc(sizeof(float));
+        parameter.throttle = malloc(sizeof(float));
+        parameter.pwm_percent = malloc(sizeof(float));
+        parameter.cell_count = malloc(sizeof(uint8_t));
+        xTaskCreate(esc_openyge_task, "esc_openyge_task", STACK_ESC_OPENYGE, (void *)&parameter, 2, &task_handle);
+        context.uart1_notify_task_handle = task_handle;
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        smartport_sensor_parameters_t parameter_sensor;
+        smartport_sensor_double_parameters_t parameter_sensor_double;
+        smartport_sensor_cell_parameters_t parameter_sensor_cell;
+
+        // RPM and Consumption sensor
+        parameter_sensor_double.data_id = ESC_RPM_CONS_FIRST_ID;
+        parameter_sensor_double.value_l = parameter.rpm;
+        parameter_sensor_double.value_h = parameter.consumption;
+        parameter_sensor_double.rate = config->refresh_rate_rpm;
+        xTaskCreate(sensor_double_task, "sensor_double_task", STACK_SENSOR_SMARTPORT_DOUBLE,
+                    (void *)&parameter_sensor_double, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        // Main voltage and current sensor
+        parameter_sensor_double.data_id = ESC_POWER_FIRST_ID;
+        parameter_sensor_double.value_l = parameter.voltage;
+        parameter_sensor_double.value_h = parameter.current;
+        parameter_sensor_double.rate = config->refresh_rate_voltage;
+        xTaskCreate(sensor_double_task, "sensor_double_task", STACK_SENSOR_SMARTPORT_DOUBLE,
+                    (void *)&parameter_sensor_double, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        // FET Temperature sensor
+        parameter_sensor.data_id = ESC_TEMPERATURE_FIRST_ID;
+        parameter_sensor.value = parameter.temperature_fet;
+        parameter_sensor.rate = config->refresh_rate_temperature;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        // BEC Temperature sensor
+        parameter_sensor.data_id = ESC_TEMPERATURE_FIRST_ID + 2;
+        parameter_sensor.value = parameter.temperature_bec;
+        parameter_sensor.rate = config->refresh_rate_temperature;
+        xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        // BEC voltage and current sensor
+        parameter_sensor_double.data_id = ESC_POWER_FIRST_ID + 2;
+        parameter_sensor_double.value_l = parameter.voltage_bec;
+        parameter_sensor_double.value_h = parameter.current_bec;
+        parameter_sensor_double.rate = config->refresh_rate_voltage;
+        xTaskCreate(sensor_double_task, "sensor_double_task", STACK_SENSOR_SMARTPORT_DOUBLE,
+                    (void *)&parameter_sensor_double, 3, &task_handle);
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        // Cell voltage sensor
         parameter_sensor_cell.cell_count = parameter.cell_count;
         parameter_sensor_cell.cell_voltage = parameter.cell_voltage;
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
@@ -1190,7 +1282,7 @@ static void set_config(smartport_parameters_t *parameter) {
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        parameter_sensor.data_id = DIY_FIRST_ID + 12;
+        parameter_sensor.data_id = DIY_FIRST_ID + 9;
         parameter_sensor.value = parameter.acc;
         parameter_sensor.rate = config->refresh_rate_default;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
@@ -1217,9 +1309,11 @@ static void set_config(smartport_parameters_t *parameter) {
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
             parameter_sensor_cell.rate = config->refresh_rate_voltage;
+            parameter_sensor_cell.cell_count = malloc(sizeof(uint8_t));
+            *parameter_sensor_cell.cell_count = config->lipo_cells;
             for (uint i = 0; i < 3; i++) parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
-            xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
-                        &task_handle);
+            xTaskCreate(sensor_cell_individual_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL,
+                        (void *)&parameter_sensor_cell, 3, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
@@ -1238,12 +1332,7 @@ static void set_config(smartport_parameters_t *parameter) {
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
             for (uint i = 0; i < 3; i++) parameter_sensor_cell.cell_voltage[i + 3] = parameter.cell[i];
-            xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
-                        &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
     }
 }

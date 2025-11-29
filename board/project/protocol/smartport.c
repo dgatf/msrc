@@ -891,7 +891,7 @@ static void sensor_cell_individual_task(void *parameters) {
         uint32_t data_formatted = smartport_format_cell(cell_index, *parameter.cell_voltage[cell_index]);
         cell_index++;
         if (cell_index > *parameter.cell_count - 1) cell_index = 0;
-        debug("\nSmartport. Sensor cell (%u) > ", uxTaskGetStackHighWaterMark(NULL));
+        debug("\nSmartport. Sensor cell (%u) Index %d > ", uxTaskGetStackHighWaterMark(NULL), cell_index);
         send_packet(0x10, CELLS_FIRST_ID, data_formatted);
     }
 }
@@ -1364,8 +1364,10 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor_cell.cell_count = parameter.cells;
         for (uint i = 0; i < 18; i++) parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
-        xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell,
-                    3, &task_handle);
+        parameter_sensor_cell.cell_count = malloc(sizeof(uint8_t));
+        *parameter_sensor_cell.cell_count = config->lipo_cells;
+        xTaskCreate(sensor_cell_individual_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL,
+                    (void *)&parameter_sensor_cell, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         // cycles
@@ -1955,9 +1957,11 @@ static void set_config(smartport_parameters_t *parameter) {
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
             parameter_sensor_cell.rate = config->refresh_rate_voltage;
+            parameter_sensor_cell.cell_count = malloc(sizeof(uint8_t));
+            *parameter_sensor_cell.cell_count = config->lipo_cells;
             for (uint i = 0; i < 3; i++) parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
-            xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
-                        &task_handle);
+            xTaskCreate(sensor_cell_individual_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL,
+                        (void *)&parameter_sensor_cell, 3, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
@@ -1976,12 +1980,7 @@ static void set_config(smartport_parameters_t *parameter) {
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
             for (uint i = 0; i < 3; i++) parameter_sensor_cell.cell_voltage[i + 3] = parameter.cell[i];
-            xTaskCreate(sensor_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell, 3,
-                        &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
     }
 }
