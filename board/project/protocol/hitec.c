@@ -22,7 +22,6 @@
 #include "gps.h"
 #include "hardware/i2c.h"
 #include "hardware/irq.h"
-#include "i2c_multi.h"
 #include "ms5611.h"
 #include "ntc.h"
 #include "pico/stdlib.h"
@@ -102,6 +101,7 @@ static int64_t alarm_packet(alarm_id_t id, void *user_data);
 static int64_t alarm_init(alarm_id_t id, void *user_data);
 static int next_frame(void);
 static void format_packet(uint8_t frame, uint8_t *buffer);
+static void i2c_bus_recovery(void);
 
 static volatile uint8_t cont = 0;
 static volatile alarm_id_t alarm_id = 0;
@@ -118,13 +118,8 @@ void hitec_task(void *parameters) {
 
     set_config();
 
-    i2c_init(i2c1, 100000L);
-    i2c_slave_init(i2c1, I2C_ADDRESS, i2c_handler);
-    gpio_set_function(I2C1_SDA_GPIO, GPIO_FUNC_I2C);
-    gpio_set_function(I2C1_SCL_GPIO, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C1_SDA_GPIO);
-    gpio_pull_up(I2C1_SCL_GPIO);
-    add_alarm_in_us(10 * 1000, alarm_init, NULL, true);
+    i2c_bus_recovery();
+    // add_alarm_in_us(10 * 1000, alarm_init, NULL, true);
 
     debug("\nHitec init");
 
@@ -138,20 +133,15 @@ void hitec_i2c_handler(void) {
 }
 
 static void i2c_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
-    uint8_t frame = next_frame();
-    if (frame < 0) return;
-    format_packet(frame, packet);
-    i2c_multi_set_write_buffer(packet);
     switch (event) {
         case I2C_SLAVE_REQUEST:
-            if (cont >= 7) {
-                cont = 0;
-                i2c_slave_deinit(i2c1);
-                i2c_init(i2c1, 100000L);
-                i2c_slave_init(i2c1, I2C_ADDRESS, i2c_handler);
-
-            } else {
-                is_received = true;
+            if (cont == 0) {
+                uint8_t frame = next_frame();
+                if (frame < 0) return;
+                format_packet(frame, packet);
+            }
+            if (cont < 7) {
+                // is_received = true;
                 i2c_write_byte_raw(i2c1, packet[cont++]);
                 if (alarm_id != 0) cancel_alarm(alarm_id);
                 alarm_id = add_alarm_in_us(5 * 1000, alarm_packet, NULL, true);
@@ -159,6 +149,10 @@ static void i2c_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
                     debug("\nHitec (%u) > ", uxTaskGetStackHighWaterMark(context.receiver_task_handle));
                     debug_buffer(packet, FRAME_LENGTH, "0x%X ");
                 }
+
+            } else if (cont >= 7) {
+                cont = 0;
+                i2c_bus_recovery();
             }
             break;
     }
@@ -166,19 +160,52 @@ static void i2c_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
 }
 
 static int64_t alarm_packet(alarm_id_t id, void *user_data) {
-    uint8_t frame = next_frame();
-    if (frame < 0) return 0;
-    format_packet(frame, packet);
+    // uint8_t frame = next_frame();
+    // if (frame < 0) return 0;
+    // format_packet(frame, packet);
     cont = 0;
     return 0;
 }
 
-static int64_t alarm_init(alarm_id_t id, void *user_data) {
-    if (is_received == false) {
-        i2c_slave_deinit(i2c1);
-        i2c_init(i2c1, 100000L);
-        i2c_slave_init(i2c1, I2C_ADDRESS, i2c_handler);
+static void i2c_bus_recovery(void) {
+    // Deinitialize I2C peripheral to release control of the bus
+    i2c_slave_deinit(i2c1);
+    // Initialize GPIO pins for I2C bus recovery
+    gpio_init(I2C1_SDA_GPIO);
+    gpio_init(I2C1_SCL_GPIO);
+    gpio_set_dir(I2C1_SDA_GPIO, GPIO_OUT);
+    gpio_set_dir(I2C1_SCL_GPIO, GPIO_OUT);
+    gpio_put(I2C1_SDA_GPIO, 1);
+    gpio_put(I2C1_SCL_GPIO, 1);
+    sleep_us(5);
+
+    // Clock out any stuck bits on the SDA line
+    if (!gpio_get(I2C1_SDA_GPIO)) {
+        for (int i = 0; i < 9; i++) {
+            gpio_put(I2C1_SCL_GPIO, 0);
+            sleep_us(5);
+            gpio_put(I2C1_SCL_GPIO, 1);
+            sleep_us(5);
+            if (gpio_get(I2C1_SDA_GPIO)) break;
+        }
     }
+
+    // Send a STOP condition
+    gpio_put(I2C1_SCL_GPIO, 1);
+    sleep_us(5);
+    gpio_put(I2C1_SDA_GPIO, 0);
+    sleep_us(5);
+
+    // Reinitialize I2C peripheral after bus recovery
+    gpio_set_function(I2C1_SDA_GPIO, GPIO_FUNC_I2C);
+    gpio_set_function(I2C1_SCL_GPIO, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C1_SDA_GPIO);
+    gpio_pull_up(I2C1_SCL_GPIO);
+    i2c_slave_init(i2c1, I2C_ADDRESS, i2c_handler);
+}
+
+static int64_t alarm_init(alarm_id_t id, void *user_data) {
+    if (is_received == false) i2c_bus_recovery();
     return 0;
 }
 
