@@ -75,6 +75,7 @@
 #define HOTT_VARIO_M1S 1
 #define HOTT_VARIO_M3S 2
 #define HOTT_VARIO_M10S 3
+#define HOTT_VARIO_COUNT 4
 
 //  ESC
 #define HOTT_ESC_VOLTAGE 0
@@ -88,6 +89,7 @@
 #define HOTT_ESC_BEC_CURRENT 8
 #define HOTT_ESC_BEC_TEMPERATURE 9
 #define HOTT_ESC_EXT_TEMPERATURE 10
+#define HOTT_ESC_COUNT 11
 
 // ELECTRIC - used by internal receiver vario (shouldnt be used)
 #define HOTT_ELECTRIC_EXT_TEMPERATURE 0
@@ -106,6 +108,7 @@
 #define HOTT_ELECTRIC_MINUTES 13
 #define HOTT_ELECTRIC_SECONDS 14
 #define HOTT_ELECTRIC_SPEED 15
+#define HOTT_ELECTRIC_COUNT 16
 
 // GPS
 #define HOTT_GPS_DIRECTION 0
@@ -119,6 +122,7 @@
 #define HOTT_GPS_SATS 8
 #define HOTT_GPS_FIX 9
 #define HOTT_GPS_TIME 10
+#define HOTT_GPS_COUNT 11
 
 // GENERAL
 #define HOTT_GENERAL_CELL_1 0
@@ -142,6 +146,7 @@
 #define HOTT_GENERAL_SPEED 18
 #define HOTT_GENERAL_RPM_2 19
 #define HOTT_GENERAL_PRESSURE 20
+#define HOTT_GENERAL_COUNT 21
 
 #define HOTT_KEY_RIGHT 0xE
 #define HOTT_KEY_DOWN 0xB
@@ -493,10 +498,10 @@ typedef struct hott_text_msg_t {
 
 typedef struct hott_sensors_t {
     bool is_enabled[4];
-    float *gps[11];
-    float *vario[4];
-    float *esc[11];
-    float *general_air[21];
+    float *gps[HOTT_GPS_COUNT];
+    float *vario[HOTT_VARIO_COUNT];
+    float *esc[HOTT_ESC_COUNT];
+    float *general_air[HOTT_GENERAL_COUNT];
 } hott_sensors_t;
 
 typedef struct trigger_t {
@@ -843,6 +848,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                     packet.alarmInverse |= 1 << ALARM_BITMASK_AIRESC_TEMPERATURE;
                     packet.alarmInverse |= 1 << ALARM_BITMASK_AIRESC_MAX_TEMPERATURE;
                 }
+            } else {
+                packet.escTemperature = 20;
             }
             if (sensors->esc[HOTT_ESC_CURRENT]) {
                 packet.current = *sensors->esc[HOTT_ESC_CURRENT] * 10;
@@ -971,6 +978,14 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                     packet.warningID = ALARM_VOICE_MAX_SENSOR_1_TEMP;
                     packet.alarmInverse |= 1 << ALARM_BITMASK_GENERAL_AIR_TEMPERATURE_1;
                 }
+            } else {
+                packet.temperature1 = 20;
+            }
+            if (sensors->general_air[HOTT_GENERAL_TEMP_2]) {
+                packet.temperature2 = *sensors->general_air[HOTT_GENERAL_TEMP_2] + 20;
+
+            } else {
+                packet.temperature2 = 20;
             }
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
@@ -1019,13 +1034,13 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             if (climbrate < 0) climbrate = 0;
             packet.climbrate = climbrate;  // 30000, 0.00
             // packet.climbrate3s = *sensors->gps[HOTT_GPS_ALTITUDE];  // 120, 0
-            packet.GPSNumSat = *sensors->gps[HOTT_GPS_SATS];
-            packet.GPSFixChar = *sensors->gps[HOTT_GPS_FIX];  // (GPS fix character. display, if DGPS, 2D oder 3D)
+            packet.GPSNumSat = *sensors->gps[HOTT_GPS_SATS] == 0 ? 0xFF : *sensors->gps[HOTT_GPS_SATS];
+            packet.GPS_fix = *sensors->gps[HOTT_GPS_FIX];
             // (1 byte) uint8_t homeDirection;   // Byte 29: HomeDirection (direction from starting point to Model
             // position) (1 byte)
             uint hour = (uint)(*sensors->gps[HOTT_GPS_TIME]) / 10000;
             uint min = (uint)(*sensors->gps[HOTT_GPS_TIME]) / 100 - hour * 100;
-            uint sec = (uint)(*sensors->gps[HOTT_GPS_TIME]) - hour * 10000 - sec * 100;
+            uint sec = (uint)(*sensors->gps[HOTT_GPS_TIME]) - hour * 10000 - min * 100;
             packet.gps_time_h = hour;
             packet.gps_time_m = min;
             packet.gps_time_s = sec;
