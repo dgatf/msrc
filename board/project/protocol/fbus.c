@@ -48,9 +48,7 @@ typedef struct fbus_packet_t {
 } __attribute__((packed)) fbus_packet_t;
 
 static SemaphoreHandle_t semaphore_sensor = NULL;
-static bool is_maintenance_mode = false;
-static config_t *config_lua;
-uint8_t sensor_id;
+static uint8_t sensor_id;
 
 static void process(smartport_parameters_t *parameter);
 static void sensor_task(void *parameters);
@@ -59,6 +57,7 @@ static void sensor_double_task(void *parameters);
 static void sensor_coordinates_task(void *parameters);
 static void sensor_datetime_task(void *parameters);
 static void sensor_cell_task(void *parameters);
+static void sensor_cell_individual_task(void *parameters);
 static void sensor_gpio_task(void *parameters);
 static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value);
 static void set_config(smartport_parameters_t *parameter);
@@ -67,6 +66,7 @@ void fbus_task(void *parameters) {
     smartport_parameters_t parameter;
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
+    uart0_begin(460800, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
     semaphore_sensor = xSemaphoreCreateBinary();
     xSemaphoreTake(semaphore_sensor, 0);
     set_config(&parameter);
@@ -127,7 +127,9 @@ static void sensor_double_task(void *parameters) {
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
         xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
-        uint32_t data_formatted = smartport_format_double(parameter.data_id, *parameter.value_l, *parameter.value_h);
+        float v_l = parameter.value_l ? *parameter.value_l : 0.0f;
+        float v_h = parameter.value_h ? *parameter.value_h : 0.0f;
+        uint32_t data_formatted = smartport_format_double(parameter.data_id, v_l, v_h);
         debug("\nFBUS. Sensor double (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, parameter.data_id, data_formatted);
     }
@@ -186,17 +188,36 @@ static void sensor_cell_task(void *parameters) {
 static void sensor_cell_individual_task(void *parameters) {
     smartport_sensor_cell_individual_parameters_t parameter =
         *(smartport_sensor_cell_individual_parameters_t *)parameters;
+
     xTaskNotifyGive(context.receiver_task_handle);
     uint8_t cell_index = 0;
+
     while (1) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
         xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
-        if (!*parameter.cell_count) return;
-        uint32_t data_formatted = smartport_format_cell(cell_index, *parameter.cell_voltage[cell_index]);
-        cell_index++;
-        if (cell_index > *parameter.cell_count - 1) cell_index = 0;
+
+        // No cells configured → skip
+        if (!parameter.cell_count || *parameter.cell_count == 0) {
+            continue;
+        }
+
+        float value = 0.0f;
+
+        // Safety: check index and pointer before dereferencing
+        if (cell_index < *parameter.cell_count && parameter.cell_voltage[cell_index] != NULL) {
+            value = *parameter.cell_voltage[cell_index];
+        }
+
+        uint32_t data_formatted = smartport_format_cell(cell_index, value);
+
         debug("\nFBUS. Sensor cell (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, CELLS_FIRST_ID, data_formatted);
+
+        // Next cell
+        cell_index++;
+        if (cell_index >= *parameter.cell_count) {
+            cell_index = 0;
+        }
     }
 }
 
@@ -220,14 +241,12 @@ static void process(smartport_parameters_t *parameter) {
             return;
         }
         // send telemetry
-        uint16_t data_id = 8 << data[4] | data[3];
-        if (data[0] == 0x08 && data[1] == smartport_sensor_id_to_crc(parameter->sensor_id) &&
+        uint16_t data_id = ((uint16_t)data[4] << 8) | data[3];
+        if (data[0] == 0x08 && data[1] == smartport_sensor_id_to_crc(sensor_id) &&
             (data[2] == 0x00 || data[2] == 0x10)) {
-            if (!is_maintenance_mode) {
-                xSemaphoreGive(semaphore_sensor);
-                vTaskDelay(4 / portTICK_PERIOD_MS);
-                xSemaphoreTake(semaphore_sensor, 0);
-            }
+            xSemaphoreGive(semaphore_sensor);
+            vTaskDelay(4 / portTICK_PERIOD_MS);
+            xSemaphoreTake(semaphore_sensor, 0);
         }
         // receive & send packet
         else if (data[0] == 0x08 && (data_id == parameter->data_id || data_id == 0xFFFF)) {
@@ -240,7 +259,7 @@ static void process(smartport_parameters_t *parameter) {
             if (packet.data_id != 0) {
                 send_packet(packet.frame_id, packet.data_id, packet.value);
                 debug("\nFBUS. Send packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X", uxTaskGetStackHighWaterMark(NULL),
-                      frame_id, data_id, value);
+                      packet.frame_id, packet.data_id, packet.value);
             }
         }
     }
@@ -265,6 +284,7 @@ static void set_config(smartport_parameters_t *parameter) {
     TaskHandle_t task_handle;
     float *baro_temp = NULL, *baro_pressure = NULL;
     parameter->sensor_id = config->smartport_sensor_id;
+    sensor_id = config->smartport_sensor_id;
     parameter->data_id = 0x5100;
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
@@ -713,11 +733,12 @@ static void set_config(smartport_parameters_t *parameter) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         // cells
-        parameter_sensor_cell.cell_count = parameter.cells;
-        for (uint i = 0; i < 18; i++) parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
+        parameter_sensor_cell.cell_count = parameter.cells;  // Pointer provided by ESC_SMART task
+        for (uint i = 0; i < 18; i++) {
+            parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];  // One pointer per cell
+        }
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
-        parameter_sensor_cell.cell_count = malloc(sizeof(uint8_t));
-        *parameter_sensor_cell.cell_count = config->lipo_cells;
+
         xTaskCreate(sensor_cell_individual_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL,
                     (void *)&parameter_sensor_cell, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
@@ -1072,8 +1093,8 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor_double.value_l = NULL;
         parameter_sensor_double.value_h = parameter.consumption;
         parameter_sensor_double.rate = config->refresh_rate_current;
-        xTaskCreate(sensor_double_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor_double, 3,
-                    &task_handle);
+        xTaskCreate(sensor_double_task, "sensor_task", STACK_SENSOR_SMARTPORT_DOUBLE, (void *)&parameter_sensor_double,
+                    3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -1289,50 +1310,80 @@ static void set_config(smartport_parameters_t *parameter) {
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
-    if (config->enable_lipo) {
+    if (config->enable_lipo && config->lipo_cells > 0) {
         smartport_sensor_cell_individual_parameters_t parameter_sensor_cell;
-        float *cell_prev = 0;
-        if (config->lipo_cells > 0) {
+        float *cell_prev = NULL;
+
+        // Maximum supported cells: 6 (two INA3221 devices)
+        uint8_t lipo_cells = MIN(config->lipo_cells, 6);
+
+        // Initialize all cell pointers to NULL (safety)
+        for (uint i = 0; i < 18; i++) {
+            parameter_sensor_cell.cell_voltage[i] = NULL;
+        }
+
+        // Configure task parameters
+        parameter_sensor_cell.rate = config->refresh_rate_voltage;
+        parameter_sensor_cell.cell_count = malloc(sizeof(uint8_t));
+        *parameter_sensor_cell.cell_count = lipo_cells;
+
+        // --- First INA3221: cells 0–2 -----------------------------------------
+        uint8_t cells_first = MIN(lipo_cells, 3);
+
+        if (cells_first > 0) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x40,
                 .filter = config->ina3221_filter,
-                .cell_count = MIN(config->lipo_cells, 3),
+                .cell_count = cells_first,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
             };
+
+            // First INA has no previous cell reference
             *parameter.cell_prev = 0;
             cell_prev = parameter.cell[2];
+
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-            parameter_sensor_cell.rate = config->refresh_rate_voltage;
-            parameter_sensor_cell.cell_count = malloc(sizeof(uint8_t));
-            *parameter_sensor_cell.cell_count = config->lipo_cells;
-            for (uint i = 0; i < 3; i++) parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
-            xTaskCreate(sensor_cell_individual_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL,
-                        (void *)&parameter_sensor_cell, 3, &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+            // Store cell pointers for SmartPort
+            for (uint i = 0; i < cells_first; i++) {
+                parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
+            }
         }
-        if (config->lipo_cells > 3) {
+
+        // --- Second INA3221: cells 3–5 ----------------------------------------
+        if (lipo_cells > 3) {
+            uint8_t cells_second = MIN((uint8_t)(lipo_cells - 3), (uint8_t)3);
+
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x41,
                 .filter = config->ina3221_filter,
-                .cell_count = MIN(config->lipo_cells - 3, 3),
+                .cell_count = cells_second,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
-                .cell_prev = malloc(sizeof(float)),
+                .cell_prev = cell_prev,  // Link to the last cell of the previous INA
             };
-            parameter.cell_prev = cell_prev;
-            cell_prev = parameter.cell[2];
+
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-            for (uint i = 0; i < 3; i++) parameter_sensor_cell.cell_voltage[i + 3] = parameter.cell[i];
+
+            // Store cell pointers for SmartPort
+            for (uint i = 0; i < cells_second; i++) {
+                parameter_sensor_cell.cell_voltage[i + 3] = parameter.cell[i];
+            }
         }
+
+        // --- Start SmartPort task: cycle through individual cells -------------
+        xTaskCreate(sensor_cell_individual_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL,
+                    (void *)&parameter_sensor_cell, 3, &task_handle);
+
+        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }
