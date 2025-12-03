@@ -56,7 +56,6 @@ void fport_task(void *parameters) {
     smartport_parameters_t parameter;
     context.led_cycle_duration = 6;
     context.led_cycles = 1;
-    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
     semaphore_sensor = xSemaphoreCreateBinary();
     xSemaphoreTake(semaphore_sensor, 0);
     set_config(&parameter);
@@ -278,6 +277,7 @@ static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
 
 static void set_config(smartport_parameters_t *parameter) {
     config_t *config = config_read();
+    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, config->fport_inverted, true);
     TaskHandle_t task_handle;
     float *baro_temp = NULL, *baro_pressure = NULL;
     parameter->sensor_id = config->smartport_sensor_id;
