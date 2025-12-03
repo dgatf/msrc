@@ -93,18 +93,17 @@ typedef struct sensor_hitec_t {
 
 static sensor_hitec_t *sensor;
 static uint8_t packet[FRAME_LENGTH] = {0};
+static volatile uint8_t cont = 0;
+static volatile alarm_id_t alarm_id_recovery = 0;  // For bus recovery timeout
+static volatile alarm_id_t alarm_id_reinit = 0;    // For mandatory deinit/init after each frame
 
 static void i2c_handler(i2c_inst_t *i2c, i2c_slave_event_t event);
 static void set_config();
-static int64_t alarm_packet(alarm_id_t id, void *user_data);
-//static int64_t alarm_init(alarm_id_t id, void *user_data);
+static int64_t alarm_recovery(alarm_id_t id, void *user_data);  // I2C bus recovery alarm
+static int64_t alarm_reinit(alarm_id_t id, void *user_data);    // Periodic deinit/init after each frame
 static int next_frame(void);
 static void format_packet(uint8_t frame, uint8_t *buffer);
 static void i2c_bus_recovery(void);
-
-static volatile uint8_t cont = 0;
-static volatile alarm_id_t alarm_id = 0;
-//static bool is_received = false;
 
 void hitec_task(void *parameters) {
     sensor = malloc(sizeof(sensor_hitec_t));
@@ -117,7 +116,9 @@ void hitec_task(void *parameters) {
     set_config();
 
     i2c_bus_recovery();
-    //add_alarm_in_us(10 * 1000, alarm_init, NULL, true);
+    // Arm initial I2C bus watchdog: if no requests arrive soon after startup,
+    // perform another bus recovery to handle a receiver that powers up later.
+    alarm_id_recovery = add_alarm_in_us(1000 * 1000, alarm_recovery, NULL, true);
 
     debug("\nHitec init");
 
@@ -142,18 +143,31 @@ static void i2c_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
             }
 
             if (cont < FRAME_LENGTH) {
+                // Send next byte
                 i2c_write_byte_raw(i2c1, packet[cont++]);
 
-                if (alarm_id != 0) {
-                    cancel_alarm(alarm_id);
+                // Refresh I2C bus watchdog timeout (1 s).
+                // As long as requests keep coming, the watchdog will never fire.
+                if (alarm_id_recovery != 0) {
+                    cancel_alarm(alarm_id_recovery);
                 }
-                alarm_id = add_alarm_in_us(100 * 1000, alarm_packet, NULL, true);
+                alarm_id_recovery = add_alarm_in_us(1000 * 1000, alarm_recovery, NULL, true);
 
+                // If we have just sent the last valid byte of the frame,
+                // schedule a deinit/init after a short delay.
                 if (cont == FRAME_LENGTH) {
+                    // This handles the extra dummy read from Hitec master.
+                    if (alarm_id_reinit != 0) {
+                        cancel_alarm(alarm_id_reinit);
+                    }
+                    // 5 ms after frame end should be enough for master to finish its extra read
+                    alarm_id_reinit = add_alarm_in_us(5 * 1000, alarm_reinit, NULL, true);
+
                     debug("\nHitec (%u) > ", uxTaskGetStackHighWaterMark(context.receiver_task_handle));
                     debug_buffer(packet, FRAME_LENGTH, "0x%X ");
                 }
             } else {
+                // Extra read from Hitec master: we just NACK and reset frame counter.
                 cont = 0;
             }
             break;
@@ -161,13 +175,33 @@ static void i2c_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
     vTaskResume(context.led_task_handle);
 }
 
-static int64_t alarm_packet(alarm_id_t id, void *user_data) {
-    // Mark current alarm as consumed
-    alarm_id = 0;
-    
-    i2c_bus_recovery();
+static int64_t alarm_reinit(alarm_id_t id, void *user_data) {
+    // Mark current reinit alarm as consumed
+    alarm_id_reinit = 0;
+
+    // Short deinit/init sequence after each telemetry frame.
+    // This is required because Hitec master always performs one extra read,
+    // leaving the RP2040 I2C slave state machine in a bad state.
+    i2c_slave_deinit(i2c1);
+    sleep_us(5);  // Small delay to ensure peripheral is fully stopped
+    i2c_slave_init(i2c1, I2C_ADDRESS, i2c_handler);
+
+    // Reset frame counter just in case
+    cont = 0;
+
     return 0;
 }
+
+static int64_t alarm_recovery(alarm_id_t id, void *user_data) {
+    // I2C bus watchdog callback.
+    // This is only reached if no I2C requests have been seen for the whole timeout
+    // interval (1 s), because each request cancels and re-arms the watchdog.
+    // While the bus is inactive/stuck, this function will keep running once per
+    // second until a new request arrives and the handler cancels the alarm.
+    i2c_bus_recovery();
+    return 1000 * 1000;  // Keep watchdog running: retry bus recovery every 1 s
+}
+
 
 static void i2c_bus_recovery(void) {
     // Reset frame
@@ -213,11 +247,6 @@ static void i2c_bus_recovery(void) {
     // Reinitialize the slave
     i2c_slave_init(i2c1, I2C_ADDRESS, i2c_handler);
 }
-
-//static int64_t alarm_init(alarm_id_t id, void *user_data) {
-//    if (is_received == false) i2c_bus_recovery();
-//    return 0;
-//}
 
 static int next_frame(void) {
     static uint8_t frame = 0;
