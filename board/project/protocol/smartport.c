@@ -1682,9 +1682,9 @@ static void set_config(smartport_parameters_t *parameter) {
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        parameter_sensor.data_id = DIY_FIRST_ID + 3;
+        parameter_sensor.data_id = GPS_SATE_FIRST_ID;
         parameter_sensor.value = parameter.sat;
-        parameter_sensor.rate = config->refresh_rate_gps;
+        parameter_sensor.rate = 1000;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
         xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);

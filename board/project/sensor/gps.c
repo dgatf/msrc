@@ -253,8 +253,8 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->time = navpvt.hour * 10000L + navpvt.min * 100 + navpvt.sec;
                 *parameter->date = navpvt.day * 10000L + navpvt.month * 100 + (navpvt.year - 2000);
                 *parameter->vspeed = navpvt.velD / 1000.0F;
-                *parameter->spd_kmh = navpvt.gSpeed * 3600L / 1000000.0F;
-                *parameter->spd = 0.5144444F * navpvt.gSpeed * 3600L / 1000000.0F;
+                *parameter->spd_kmh = navpvt.gSpeed * 3600.0F / 1000000.0F;
+                *parameter->spd = navpvt.gSpeed * 0.001943844F; // 1 mm/s = 0.001943844 Knot
                 *parameter->fix = navpvt.fixType;
                 *parameter->n_vel = navpvt.velN / 1000.0F;
                 *parameter->e_vel = navpvt.velE / 1000.0F;
