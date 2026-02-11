@@ -153,8 +153,12 @@ void gps_task(void *parameters) {
 #endif
     TaskHandle_t task_handle;
 
-    distance_parameters_t parameters_distance = {parameter.dist, parameter.alt, parameter.sat, parameter.lat,
-                                                 parameter.lon};
+    static distance_parameters_t parameters_distance;
+    parameters_distance.distance  = parameter.dist;
+    parameters_distance.altitude  = parameter.alt;
+    parameters_distance.sat       = parameter.sat;
+    parameters_distance.latitude  = parameter.lat;
+    parameters_distance.longitude = parameter.lon;
     xTaskCreate(distance_task, "distance_task", STACK_DISTANCE, (void *)&parameters_distance, 2, &task_handle);
     // xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
