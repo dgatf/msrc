@@ -111,18 +111,19 @@ static void process(esc_hw5_parameters_t *parameter) {
                 *parameter->consumption += get_consumption(*parameter->current, 0, &timestamp);
 
                 debug(
-                    "\nEsc VBAR (%u) < Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f TempMotor: %.0f "
+                    "\nEsc HW5 (%u) < Rpm: %.0f Volt: %0.2f Curr: %.2f TempFet: %.0f TempBec: %.0f TempMotor: %.0f "
                     "Vbec: %.1f Cbec: %.1f Cons: %.0f CellCount: %u CellV: %.2f",
                     uxTaskGetStackHighWaterMark(NULL), *parameter->rpm, *parameter->voltage, *parameter->current,
                     *parameter->temperature_fet, *parameter->temperature_bec, *parameter->temperature_motor,
                     *parameter->voltage_bec, *parameter->current_bec, *parameter->consumption, *parameter->cell_count,
                     *parameter->cell_voltage, *parameter->cell_voltage);
+            } else {
+                debug("\nEsc HW5 CRC error (%u): ", uxTaskGetStackHighWaterMark(NULL));
+                debug_buffer(data, lenght, "0x%X ");
+                debug("\nCalculated CRC: %u", crc);
             }
-            debug("\nEsc VBAR CRC error (%u): ", uxTaskGetStackHighWaterMark(NULL));
-            debug_buffer(data, lenght, "0x%X ");
-            debug("\nCalculated CRC: ", crc);
         } else {
-            debug("\nEsc VBAR packet error (%u): ", uxTaskGetStackHighWaterMark(NULL));
+            debug("\nEsc HW5 packet error (%u): ", uxTaskGetStackHighWaterMark(NULL));
             debug_buffer(data, lenght, "0x%X ");
         }
     }
