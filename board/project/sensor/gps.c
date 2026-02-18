@@ -153,8 +153,12 @@ void gps_task(void *parameters) {
 #endif
     TaskHandle_t task_handle;
 
-    distance_parameters_t parameters_distance = {parameter.dist, parameter.alt, parameter.sat, parameter.lat,
-                                                 parameter.lon};
+    static distance_parameters_t parameters_distance;
+    parameters_distance.distance  = parameter.dist;
+    parameters_distance.altitude  = parameter.alt;
+    parameters_distance.sat       = parameter.sat;
+    parameters_distance.latitude  = parameter.lat;
+    parameters_distance.longitude = parameter.lon;
     xTaskCreate(distance_task, "distance_task", STACK_DISTANCE, (void *)&parameters_distance, 2, &task_handle);
     // xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
@@ -249,8 +253,8 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->time = navpvt.hour * 10000L + navpvt.min * 100 + navpvt.sec;
                 *parameter->date = navpvt.day * 10000L + navpvt.month * 100 + (navpvt.year - 2000);
                 *parameter->vspeed = navpvt.velD / 1000.0F;
-                *parameter->spd_kmh = navpvt.gSpeed * 3600L / 1000000.0F;
-                *parameter->spd = 0.5144444F * navpvt.gSpeed * 3600L / 1000000.0F;
+                *parameter->spd_kmh = navpvt.gSpeed * 3600.0F / 1000000.0F;
+                *parameter->spd = navpvt.gSpeed * 0.001943844F; // 1 mm/s = 0.001943844 Knot
                 *parameter->fix = navpvt.fixType;
                 *parameter->n_vel = navpvt.velN / 1000.0F;
                 *parameter->e_vel = navpvt.velE / 1000.0F;

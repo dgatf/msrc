@@ -39,6 +39,8 @@
 #define GPS_COURS_LAST_ID 0x084f
 #define GPS_TIME_DATE_FIRST_ID 0x0850  // Date: Y M D 0xFF or Time: H M S 0x00
 #define GPS_TIME_DATE_LAST_ID 0x085f
+#define GPS_SATE_FIRST_ID 0x0860  // Satellites, max 32
+#define GPS_SATE_LAST_ID 0x086f
 #define A3_FIRST_ID 0x0900  // 100 v
 #define A3_LAST_ID 0x090f
 #define A4_FIRST_ID 0x0910  // 100 v
