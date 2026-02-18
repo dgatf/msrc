@@ -253,7 +253,7 @@ void crsf_task(void *parameters) {
     uart0_begin(416666L, UART_RECEIVER_TX, UART_RECEIVER_RX, CRSF_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, false);
     debug("\nCRSF init");
     while (1) {
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(20 / portTICK_PERIOD_MS);
         send_packet(&sensors);
     }
 }
@@ -368,6 +368,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
             static uint8_t cell_index = 0;
             static uint8_t voltage_index = 0;
             static bool send_cell = true;
+            if (*sensors->voltages.cell_count == 0) send_cell = false;
             buffer[2] = CRSF_FRAMETYPE_VOLTAGES;
             crsf_sensor_voltages_formatted_t sensor = {0};
             buffer[1] = sizeof(crsf_sensor_voltages_formatted_t) + 2;
@@ -388,7 +389,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
                 cell_index++;
                 if (cell_index >= *sensors->voltages.cell_count) {
                     cell_index = 0;
-                    send_cell = false;
+                    if (sensors->voltages.voltage_count) send_cell = false;
                 }
             } else if (sensors->voltages.voltage_count > 0) {
                 sensor.source = voltage_index + 128;
@@ -404,6 +405,7 @@ static uint8_t format_sensor(crsf_sensors_t *sensors, uint8_t type, uint8_t *buf
                 if (voltage_index >= sensors->voltages.voltage_count) {
                     voltage_index = 0;
                     send_cell = true;
+                    if (*sensors->voltages.cell_count) send_cell = true;
                 }
             }
             break;
@@ -1075,6 +1077,7 @@ static void set_config(crsf_sensors_t *sensors) {
     }
     if (config->enable_lipo) {
         float *cell_prev = 0;
+        sensors->voltages.cell_count = malloc(sizeof(uint8_t));
         if (config->lipo_cells > 0) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x40,
