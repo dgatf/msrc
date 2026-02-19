@@ -204,6 +204,7 @@ static inline void send_slot(uint8_t slot) {
 }
 
 static uint16_t format(uint8_t data_id, float value) {
+    static float coord = 0;
     if (data_id == SBUS_RPM) {
         return (uint16_t)round(value / 6);
     }
@@ -244,24 +245,21 @@ static uint16_t format(uint8_t data_id, float value) {
         // bits 1-4: bits 17-20 from minutes precision 4 (minutes*10000 = 20 bits)
         // bit 5: S/W bit
         // bits 9-16: degrees
-        float coord = value;
+        coord = value;
         uint16_t lat_lon = 0;
         if (coord < 0) {
             lat_lon = 1 << SBUS_SOUTH_WEST_BIT;
             coord *= -1;
         }
-        int8_t degrees = coord;
+        uint8_t degrees = coord;
         lat_lon |= degrees << 8;
-        int32_t minutes = (coord - degrees) * 60 * 10000;  // minutes precision 4
-        lat_lon |= minutes >> 16;
+        uint32_t minutes = (coord - degrees) * 60 * 10000;  // minutes precision 4
+        lat_lon |= (minutes >> 16) & 0xf;
         return __builtin_bswap16(lat_lon);
     }
     if (data_id == SBUS_GPS_LATITUDE2 || data_id == SBUS_GPS_LONGITUDE2) {
         // bits 1-16 from minutes precision 4 (minutes*10000 = 20 bits)
-        if (value < 0) {
-            value *= -1;
-        }
-        uint32_t minutes = (value - (int)value) * 60 * 10000;  // minutes precision 4
+        uint32_t minutes = (coord - (int)coord) * 60 * 10000;  // minutes precision 4
         return __builtin_bswap16(minutes);
     }
     if (data_id == SBUS_GPS_TIME) {
