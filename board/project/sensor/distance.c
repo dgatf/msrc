@@ -28,7 +28,8 @@ void distance_task(void *parameters) {
 #ifdef SIM_SENSORS
         *parameter.distance = 1234.56;
 #endif
-        debug("\nDistance (%u): %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.distance);
+        debug("\nDistance (%u): %.2f (Lat: %.6f, Lon: %.6f, Alt: %.2f) -> Home (Lat: %.6f, Lon: %.6f, Alt: %.2f)", uxTaskGetStackHighWaterMark(NULL), *parameter.distance, *parameter.latitude, *parameter.longitude, *parameter.altitude, latitude_init,
+                                     longitude_init, altitude_init);
         vTaskDelay(INTERVAL_MS / portTICK_PERIOD_MS);
     }
 }
