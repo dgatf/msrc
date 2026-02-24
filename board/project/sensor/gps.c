@@ -159,8 +159,10 @@ void gps_task(void *parameters) {
     parameters_distance.sat       = parameter.sat;
     parameters_distance.latitude  = parameter.lat;
     parameters_distance.longitude = parameter.lon;
+    parameters_distance.fix = parameter.fix;
+    parameters_distance.hdop = parameter.hdop;
     xTaskCreate(distance_task, "distance_task", STACK_DISTANCE, (void *)&parameters_distance, 2, &task_handle);
-    // xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+    //  
 
     /* Change GPS config. For ublox compatible devices */
 
@@ -255,7 +257,7 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->vspeed = navpvt.velD / 1000.0F;
                 *parameter->spd_kmh = navpvt.gSpeed * 3600.0F / 1000000.0F;
                 *parameter->spd = navpvt.gSpeed * 0.001943844F; // 1 mm/s = 0.001943844 Knot
-                *parameter->fix = navpvt.fixType;
+                *parameter->fix = navpvt.fixType == 2 || navpvt.fixType == 3 ? 1 : 0;
                 *parameter->n_vel = navpvt.velN / 1000.0F;
                 *parameter->e_vel = navpvt.velE / 1000.0F;
                 *parameter->v_vel = navpvt.velD / 1000.0F;
@@ -324,6 +326,9 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
             lon_dir = (buffer[0] == 'E') ? 1 : -1;
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_HDOP) {
             *parameter->hdop = atof(buffer);
+        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_FIX) {
+            uint fix = atoi(buffer);
+            *parameter->fix = fix == 1 || fix == 2 ? 1 : 0;
         }
         debug("%s(%i),", buffer, nmea_field[nmea_cmd][cmd_field]);
     }

@@ -54,7 +54,7 @@ void esc_hw4_task(void *parameters) {
     uint cell_count_delay = 15000;
     cell_count_parameters_t cell_count_parameters = {cell_count_delay, parameter.voltage, parameter.cell_count};
     xTaskCreate(cell_count_task, "cell_count_task", STACK_CELL_COUNT, (void *)&cell_count_parameters, 1, &task_handle);
-    xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
 
     uint current_raw = 0;
     if (!parameter.auto_detect && !parameter.current_is_manual_offset) {
@@ -63,7 +63,7 @@ void esc_hw4_task(void *parameters) {
                                                                   &parameter.current_offset};
         xTaskCreate(auto_offset_int_task, "esc_hw4_current_offset_task", STACK_AUTO_OFFSET, &current_offset_parameters,
                     1, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
+
     }
 
     uart1_begin(19200, UART1_TX_GPIO, UART_ESC_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, false);

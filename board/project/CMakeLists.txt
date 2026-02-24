@@ -16,6 +16,8 @@ target_sources(${PROJECT_NAME} PRIVATE
     uart_pio.c
     usb.c
     serial_monitor.c
+    dbg_rb.c
+    dbg_task.c
 )
 
 target_link_libraries(${PROJECT_NAME}

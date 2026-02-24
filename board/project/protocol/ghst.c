@@ -254,7 +254,6 @@ static void set_config(ghst_sensors_t *sensors) {
                                             malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(uint8_t))};
         xTaskCreate(esc_apd_f_task, "esc_apd_f_task", STACK_ESC_APD_F, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         sensors->enabled_sensors[TYPE_PACK_STAT] = true;
         sensors->pack_stat.voltage = parameter.voltage;
@@ -311,7 +310,6 @@ static void set_config(ghst_sensors_t *sensors) {
         voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage,
                                           config->analog_voltage_multiplier, malloc(sizeof(float))};
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         sensors->enabled_sensors[TYPE_PACK_STAT] = true;
         sensors->pack_stat.voltage = parameter.voltage;
@@ -329,7 +327,6 @@ static void set_config(ghst_sensors_t *sensors) {
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float))};
         xTaskCreate(current_task, "current_task", STACK_CURRENT, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         sensors->enabled_sensors[TYPE_PACK_STAT] = true;
         sensors->pack_stat.current = parameter.current;
@@ -342,7 +339,6 @@ static void set_config(ghst_sensors_t *sensors) {
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         sensors->enabled_sensors[TYPE_MAGBARO] = true;
         sensors->magbaro.altitude = parameter.altitude;
@@ -355,7 +351,6 @@ static void set_config(ghst_sensors_t *sensors) {
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         sensors->enabled_sensors[TYPE_MAGBARO] = true;
         sensors->magbaro.altitude = parameter.altitude;
@@ -368,7 +363,6 @@ static void set_config(ghst_sensors_t *sensors) {
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         sensors->enabled_sensors[TYPE_MAGBARO] = true;
         sensors->magbaro.altitude = parameter.altitude;

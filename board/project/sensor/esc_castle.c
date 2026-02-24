@@ -50,7 +50,6 @@ void esc_castle_task(void *parameters) {
     uint cell_count_delay = 15000;
     cell_count_parameters_t cell_count_parameters = {cell_count_delay, parameter.voltage, parameter.cell_count};
     xTaskCreate(cell_count_task, "cell_count_task", STACK_CELL_COUNT, (void *)&cell_count_parameters, 1, &task_handle);
-    xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
     vTaskSuspend(NULL);
     vTaskDelete(NULL);

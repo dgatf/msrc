@@ -257,7 +257,6 @@ static void set_config(float **sensor) {
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
         sensor[RPM] = new_sensor;
@@ -267,7 +266,6 @@ static void set_config(float **sensor) {
         esc_hw3_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_hw3_task, "esc_hw3_task", STACK_ESC_HW3, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
         sensor[VOLTAGE] = new_sensor;
@@ -298,13 +296,11 @@ static void set_config(float **sensor) {
                                           malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw4_task, "esc_hw4_task", STACK_ESC_HW4, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         if (config->enable_pwm_out) {
             xTaskCreate(pwm_out_task, "pwm_out", STACK_PWM_OUT, (void *)parameter.rpm, 2, &task_handle);
             context.pwm_out_task_handle = task_handle;
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
         new_sensor = malloc(sizeof(float));
@@ -331,7 +327,6 @@ static void set_config(float **sensor) {
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw5_task, "esc_hw5_task", STACK_ESC_HW5, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
@@ -357,7 +352,6 @@ static void set_config(float **sensor) {
                                              malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(float)),
                                              malloc(sizeof(float)),  malloc(sizeof(uint8_t))};
         xTaskCreate(esc_castle_task, "esc_castle_task", STACK_ESC_CASTLE, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
         sensor[RPM] = new_sensor;
@@ -383,7 +377,6 @@ static void set_config(float **sensor) {
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_kontronik_task, "esc_kontronik_task", STACK_ESC_KONTRONIK, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
         sensor[RPM] = new_sensor;
@@ -408,7 +401,6 @@ static void set_config(float **sensor) {
                                             malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(uint8_t))};
         xTaskCreate(esc_apd_f_task, "esc_apd_f_task", STACK_ESC_APD_F, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
         sensor[RPM] = new_sensor;
@@ -433,7 +425,6 @@ static void set_config(float **sensor) {
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_apd_hv_task, "esc_apd_hv_task", STACK_ESC_APD_HV, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
         sensor[RPM] = new_sensor;
@@ -473,7 +464,6 @@ static void set_config(float **sensor) {
         parameter.cycles = malloc(sizeof(uint16_t));
         xTaskCreate(smart_esc_task, "smart_esc_task", STACK_SMART_ESC, (void *)&parameter, 4, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
         sensor[RPM] = new_sensor;
@@ -508,7 +498,6 @@ static void set_config(float **sensor) {
         parameter.cell_count = malloc(sizeof(uint8_t));
         xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
         sensor[RPM] = new_sensor;
@@ -544,7 +533,6 @@ static void set_config(float **sensor) {
         parameter.cell_count = malloc(sizeof(uint8_t));
         xTaskCreate(esc_ztw_task, "esc_ztw_task", STACK_ESC_ZTW, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
         sensor[RPM] = new_sensor;
@@ -584,7 +572,6 @@ static void set_config(float **sensor) {
         parameter.cell_count = malloc(sizeof(uint8_t));
         xTaskCreate(esc_openyge_task, "esc_openyge_task", STACK_ESC_OPENYGE, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.rpm;
         sensor[RPM] = new_sensor;
@@ -606,7 +593,6 @@ static void set_config(float **sensor) {
         voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage,
                                           config->analog_voltage_multiplier, malloc(sizeof(float))};
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.voltage;
         sensor[VOLTAGE] = new_sensor;
@@ -623,7 +609,6 @@ static void set_config(float **sensor) {
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float))};
         xTaskCreate(current_task, "current_task", STACK_CURRENT, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.current;
         sensor[CURRENT] = new_sensor;
@@ -635,7 +620,6 @@ static void set_config(float **sensor) {
     if (config->enable_analog_ntc) {
         ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.ntc;
         sensor[TEMPERATURE] = new_sensor;
@@ -646,7 +630,6 @@ static void set_config(float **sensor) {
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
@@ -668,7 +651,6 @@ static void set_config(float **sensor) {
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
@@ -691,7 +673,6 @@ static void set_config(float **sensor) {
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
@@ -719,7 +700,6 @@ static void set_config(float **sensor) {
                                            baro_pressure,
                                            malloc(sizeof(float))};
         xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(float));
         new_sensor = parameter.airspeed;
         sensor[AIRSPEED] = new_sensor;

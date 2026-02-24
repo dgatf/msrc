@@ -353,7 +353,7 @@ static void capture_pwm_throttle_handler(uint counter, edge_type_t edge) {
         if (delta < 0) delta = 0;
         if (delta > 1000) delta = 1000;
         throttle = delta / 1000.0F * 65532;  // 0us->0% 1000us->100%
-        
+
         static uint32_t last_time = 0;
         uint32_t now = time_us_32();
         debug("\nSmart Esc. Thr (%.0f%%) %u us %u interval us %i", throttle / 65532.0F * 100, throttle, pulse, now - last_time);

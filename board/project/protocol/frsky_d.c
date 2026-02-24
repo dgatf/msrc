@@ -229,28 +229,24 @@ static void set_config() {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
 
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_HW3) {
         esc_hw3_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_hw3_task, "esc_hw3_task", STACK_ESC_HW3, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_HW4) {
@@ -278,63 +274,53 @@ static void set_config() {
                                           malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw4_task, "esc_hw4_task", STACK_ESC_HW4, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         if (config->enable_pwm_out) {
             xTaskCreate(pwm_out_task, "pwm_out", STACK_PWM_OUT, (void *)parameter.rpm, 2, &task_handle);
             context.pwm_out_task_handle = task_handle;
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.temperature_fet;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP2_ID;
         parameter_sensor.value = parameter.temperature_bec;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor_cell.voltage = parameter.cell_voltage;
         parameter_sensor_cell.count = parameter.cell_count;
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_FUEL_ID;
         parameter_sensor.value = parameter.consumption;
         parameter_sensor.rate = config->refresh_rate_consumption;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_HW5) {
@@ -345,57 +331,48 @@ static void set_config() {
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw5_task, "esc_hw5_task", STACK_ESC_HW5, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.temperature_fet;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP2_ID;
         parameter_sensor.value = parameter.temperature_bec;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor_cell.voltage = parameter.cell_voltage;
         parameter_sensor_cell.count = parameter.cell_count;
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_FUEL_ID;
         parameter_sensor.value = parameter.consumption;
         parameter_sensor.rate = config->refresh_rate_consumption;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_CASTLE) {
@@ -406,51 +383,43 @@ static void set_config() {
                                              malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(float)),
                                              malloc(sizeof(float)),  malloc(sizeof(uint8_t))};
         xTaskCreate(esc_castle_task, "esc_castle_task", STACK_ESC_CASTLE, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.temperature;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor_cell.voltage = parameter.cell_voltage;
         parameter_sensor_cell.count = parameter.cell_count;
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_FUEL_ID;
         parameter_sensor.value = parameter.consumption;
         parameter_sensor.rate = config->refresh_rate_consumption;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_KONTRONIK) {
@@ -461,57 +430,48 @@ static void set_config() {
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_kontronik_task, "esc_kontronik_task", STACK_ESC_KONTRONIK, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.temperature_fet;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP2_ID;
         parameter_sensor.value = parameter.temperature_bec;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor_cell.voltage = parameter.cell_voltage;
         parameter_sensor_cell.count = parameter.cell_count;
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_FUEL_ID;
         parameter_sensor.value = parameter.consumption;
         parameter_sensor.rate = config->refresh_rate_consumption;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_APD_F) {
@@ -521,51 +481,43 @@ static void set_config() {
                                             malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(uint8_t))};
         xTaskCreate(esc_apd_f_task, "esc_apd_f_task", STACK_ESC_APD_F, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.temperature;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor_cell.voltage = parameter.cell_voltage;
         parameter_sensor_cell.count = parameter.cell_count;
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_FUEL_ID;
         parameter_sensor.value = parameter.consumption;
         parameter_sensor.rate = config->refresh_rate_consumption;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_APD_HV) {
@@ -575,51 +527,43 @@ static void set_config() {
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_apd_hv_task, "esc_apd_hv_task", STACK_ESC_APD_HV, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.temperature;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor_cell.voltage = parameter.cell_voltage;
         parameter_sensor_cell.count = parameter.cell_count;
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_FUEL_ID;
         parameter_sensor.value = parameter.consumption;
         parameter_sensor.rate = config->refresh_rate_consumption;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_SMART) {
@@ -644,51 +588,43 @@ static void set_config() {
         parameter.cycles = malloc(sizeof(uint16_t));
         xTaskCreate(smart_esc_task, "smart_esc_task", STACK_SMART_ESC, (void *)&parameter, 4, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.temperature_fet;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         /*parameter_sensor_cell.voltage = parameter.cell_voltage;
         parameter_sensor_cell.count = parameter.cell_count;
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);*/
         parameter_sensor.data_id = FRSKY_D_FUEL_ID;
         parameter_sensor.value = parameter.consumption;
         parameter_sensor.rate = config->refresh_rate_consumption;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_OMP_M4) {
@@ -708,57 +644,48 @@ static void set_config() {
         parameter.cell_count = malloc(sizeof(uint8_t));
         xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.temp_esc;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP2_ID;
         parameter_sensor.value = parameter.temp_motor;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor_cell.voltage = parameter.cell_voltage;
         parameter_sensor_cell.count = parameter.cell_count;
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_FUEL_ID;
         parameter_sensor.value = parameter.consumption;
         parameter_sensor.rate = config->refresh_rate_consumption;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_ZTW) {
@@ -779,57 +706,48 @@ static void set_config() {
         parameter.cell_count = malloc(sizeof(uint8_t));
         xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_ZTW, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_RPM_ID;
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.temp_esc;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_TEMP2_ID;
         parameter_sensor.value = parameter.temp_motor;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor_cell.voltage = parameter.cell_voltage;
         parameter_sensor_cell.count = parameter.cell_count;
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_FUEL_ID;
         parameter_sensor.value = parameter.consumption;
         parameter_sensor.rate = config->refresh_rate_consumption;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_OPENYGE) {
@@ -854,7 +772,6 @@ static void set_config() {
         parameter.cell_count = malloc(sizeof(uint8_t));
         xTaskCreate(esc_openyge_task, "esc_openyge_task", STACK_ESC_OPENYGE, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         frsky_d_sensor_parameters_t parameter_sensor;
@@ -864,35 +781,30 @@ static void set_config() {
         parameter_sensor.value = parameter.rpm;
         parameter_sensor.rate = config->refresh_rate_rpm;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.temperature_fet;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_TEMP2_ID;
         parameter_sensor.value = parameter.temperature_bec;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor_cell.voltage = parameter.cell_voltage;
@@ -900,14 +812,12 @@ static void set_config() {
         parameter_sensor_cell.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_FRSKY_D_CELL, (void *)&parameter_sensor_cell, 2,
                     &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_FUEL_ID;
         parameter_sensor.value = parameter.consumption;
         parameter_sensor.rate = config->refresh_rate_consumption;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gps) {
@@ -946,123 +856,103 @@ static void set_config() {
         parameter_sensor.value = parameter.lon;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_LONG_AP_ID;
         parameter_sensor.value = parameter.lon;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_LONG_EW_ID;
         parameter_sensor.value = parameter.lon;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_LAT_BP_ID;
         parameter_sensor.value = parameter.lat;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_LAT_AP_ID;
         parameter_sensor.value = parameter.lat;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_LAT_NS_ID;
         parameter_sensor.value = parameter.lat;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_ALT_BP_ID;
         parameter_sensor.value = parameter.alt;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_ALT_AP_ID;
         parameter_sensor.value = parameter.alt;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_SPEED_BP_ID;
         parameter_sensor.value = parameter.spd;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_SPEED_AP_ID;
         parameter_sensor.value = parameter.spd;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_COURS_BP_ID;
         parameter_sensor.value = parameter.cog;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_COURS_AP_ID;
         parameter_sensor.value = parameter.cog;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_YEAR_ID;
         parameter_sensor.value = parameter.date;
         parameter_sensor.rate = 1000;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_DAY_MONTH_ID;
         parameter_sensor.value = parameter.date;
         parameter_sensor.rate = 1000;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_HOUR_MIN_ID;
         parameter_sensor.value = parameter.time;
         parameter_sensor.rate = 1000;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_SEC_ID;
         parameter_sensor.value = parameter.time;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VARIO_ID;
         parameter_sensor.value = parameter.vspeed;
         parameter_sensor.rate = config->refresh_rate_gps;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_voltage) {
         voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage,
                                           config->analog_voltage_multiplier, malloc(sizeof(float))};
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_BP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VOLTS_AP_ID;
         parameter_sensor.value = parameter.voltage;
         parameter_sensor.rate = config->refresh_rate_voltage;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_current) {
@@ -1076,32 +966,27 @@ static void set_config() {
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float))};
         xTaskCreate(current_task, "current_task", STACK_CURRENT, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_CURRENT_ID;
         parameter_sensor.value = parameter.current;
         parameter_sensor.rate = config->refresh_rate_current;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         /**new_sensor = (sensor_frsky_d_t){FRSKY_D_FUEL_ID, parameter.consumption, config->refresh_rate_consumption};
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);*/
     }
     if (config->enable_analog_ntc) {
         ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_TEMP1_ID;
         parameter_sensor.value = parameter.ntc;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP280) {
@@ -1109,7 +994,6 @@ static void set_config() {
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         if (config->enable_analog_airspeed) {
@@ -1121,19 +1005,16 @@ static void set_config() {
         parameter_sensor.value = parameter.altitude;
         parameter_sensor.rate = config->refresh_rate_vario;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_BARO_ALT_AP_ID;
         parameter_sensor.value = parameter.altitude;
         parameter_sensor.rate = config->refresh_rate_vario;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VARIO_ID;
         parameter_sensor.value = parameter.vspeed;
         parameter_sensor.rate = config->refresh_rate_vario;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_MS5611) {
@@ -1141,20 +1022,17 @@ static void set_config() {
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_BARO_ALT_BP_ID;
         parameter_sensor.value = parameter.altitude;
         parameter_sensor.rate = config->refresh_rate_vario;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_BARO_ALT_AP_ID;
         parameter_sensor.value = parameter.altitude;
         parameter_sensor.rate = config->refresh_rate_vario;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         if (config->enable_analog_airspeed) {
@@ -1166,7 +1044,6 @@ static void set_config() {
         parameter_sensor.value = parameter.vspeed;
         parameter_sensor.rate = config->refresh_rate_vario;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
@@ -1174,7 +1051,6 @@ static void set_config() {
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         if (config->enable_analog_airspeed) {
@@ -1186,19 +1062,16 @@ static void set_config() {
         parameter_sensor.value = parameter.altitude;
         parameter_sensor.rate = config->refresh_rate_vario;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_BARO_ALT_AP_ID;
         parameter_sensor.value = parameter.altitude;
         parameter_sensor.rate = config->refresh_rate_vario;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_VARIO_ID;
         parameter_sensor.value = parameter.vspeed;
         parameter_sensor.rate = config->refresh_rate_vario;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_airspeed) {
@@ -1211,20 +1084,17 @@ static void set_config() {
                                            baro_pressure,
                                            malloc(sizeof(float))};
         xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_GPS_SPEED_BP_ID;
         parameter_sensor.value = parameter.airspeed;
         parameter_sensor.rate = config->refresh_rate_airspeed;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_GPS_SPEED_AP_ID;
         parameter_sensor.value = parameter.airspeed;
         parameter_sensor.rate = config->refresh_rate_airspeed;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_FRSKY_D, (void *)&parameter_sensor, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_gyro) {
@@ -1242,26 +1112,22 @@ static void set_config() {
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float))};
         xTaskCreate(mpu6050_task, "mpu6050_task", STACK_MPU6050, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         parameter_sensor.data_id = FRSKY_D_ACCEL_X_ID;
         parameter_sensor.value = parameter.acc_x;
         parameter_sensor.rate = config->refresh_rate_default;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_ACCEL_Y_ID;
         parameter_sensor.value = parameter.acc_y;
         parameter_sensor.rate = config->refresh_rate_default;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         parameter_sensor.data_id = FRSKY_D_ACCEL_Z_ID;
         parameter_sensor.value = parameter.acc_z;
         parameter_sensor.rate = config->refresh_rate_default;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }

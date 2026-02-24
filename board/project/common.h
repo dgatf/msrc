@@ -9,6 +9,7 @@
 #include "pico/stdlib.h"
 #include "pico/types.h"
 #include "shared.h"
+#include "dbg_task.h"
 
 /*
    Debug
@@ -32,12 +33,18 @@
 #define swap_24(value) (((value & 0xFF) << 16) | (value & 0xFF00) | (value & 0xFF0000) >> 16)
 #define swap_32(value) \
     (((value & 0xFF) << 24) | ((value & 0xFF00) << 8) | ((value & 0xFF0000) >> 8) | ((value & 0xFF000000) >> 24))
-    
+
 #define debug(...) \
-    if (context.debug == 1) printf(__VA_ARGS__)
+    do { \
+        if (context.debug) dbg_write(__VA_ARGS__); \
+    } while (0)
+
 #define debug_buffer(buffer, length, format) \
-    if (context.debug)                       \
-        for (int i = 0; i < (length); i++) printf((format), (buffer)[i])
+    do { \
+        if (context.debug) \
+            dbg_write_buffer((const uint8_t *)(buffer), (length), (format)); \
+    } while (0)
+
 #define debug2(...) \
     if (context.debug == 2) printf(__VA_ARGS__)
 #define debug_buffer2(buffer, length, format) \

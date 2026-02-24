@@ -26,7 +26,7 @@ void esc_pwm_task(void *parameters) {
     xTaskNotifyGive(context.receiver_task_handle);
 
     gpio_pull_up(PWM_CAPTURE_GPIO);
-    
+
     capture_edge_init(pio0, PWM_CAPTURE_GPIO, 1, CLOCK_DIV, PIO0_IRQ_0);
     capture_edge_set_handler(0, capture_pin_0_handler);
 

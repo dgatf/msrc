@@ -116,7 +116,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
@@ -127,7 +126,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         esc_hw3_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_hw3_task, "esc_hw3_task", STACK_ESC_HW3, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
@@ -159,13 +157,11 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                                           malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw4_task, "esc_hw4_task", STACK_ESC_HW4, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         if (config->enable_pwm_out) {
             xTaskCreate(pwm_out_task, "pwm_out", STACK_PWM_OUT, (void *)parameter.rpm, 2, &task_handle);
             context.pwm_out_task_handle = task_handle;
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
 
@@ -205,7 +201,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw5_task, "esc_hw5_task", STACK_ESC_HW5, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         new_sensor = malloc(sizeof(sensor_jetiex_t));
@@ -256,7 +251,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                                              malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(float)),
                                              malloc(sizeof(float)),  malloc(sizeof(uint8_t))};
         xTaskCreate(esc_hw4_task, "esc_castle_task", STACK_ESC_CASTLE, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
         jeti_add_sensor(new_sensor, sensor);
@@ -302,7 +296,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_kontronik_task, "esc_kontronik_task", STACK_ESC_KONTRONIK, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
@@ -348,7 +341,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                                             malloc(sizeof(float)),  malloc(sizeof(float)),     malloc(sizeof(uint8_t))};
         xTaskCreate(esc_apd_f_task, "esc_apd_f_task", STACK_ESC_APD_F, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
         jeti_add_sensor(new_sensor, sensor);
@@ -381,7 +373,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
             malloc(sizeof(float)),     malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint8_t))};
         xTaskCreate(esc_apd_hv_task, "esc_apd_hv_task", STACK_ESC_APD_HV, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
         jeti_add_sensor(new_sensor, sensor);
@@ -424,7 +415,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         parameter.cell_count = malloc(sizeof(uint8_t));
         xTaskCreate(esc_omp_m4_task, "esc_omp_m4_task", STACK_ESC_OMP_M4, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
         jeti_add_sensor(new_sensor, sensor);
@@ -472,7 +462,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         parameter.cell_count = malloc(sizeof(uint8_t));
         xTaskCreate(esc_omp_m4_task, "esc_ztw_task", STACK_ESC_ZTW, (void *)&parameter, 2, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
         jeti_add_sensor(new_sensor, sensor);
@@ -528,7 +517,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         parameter.cycles = malloc(sizeof(uint16_t));
         xTaskCreate(smart_esc_task, "smart_esc_task", STACK_SMART_ESC, (void *)&parameter, 4, &task_handle);
         context.uart1_notify_task_handle = task_handle;
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "RPM", "RPM", parameter.rpm};
         jeti_add_sensor(new_sensor, sensor);
@@ -640,7 +628,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage,
                                           config->analog_voltage_multiplier, malloc(sizeof(float))};
         xTaskCreate(voltage_task, "voltage_task", STACK_VOLTAGE, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor =
             (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_2_DECIMAL, "Voltage", "V", parameter.voltage};
@@ -658,7 +645,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float))};
         xTaskCreate(current_task, "current_task", STACK_CURRENT, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor =
             (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current", "A", parameter.current};
@@ -672,7 +658,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
     if (config->enable_analog_ntc) {
         ntc_parameters_t parameter = {2, config->analog_rate, config->alpha_temperature, malloc(sizeof(float))};
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor =
             (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Temperature", "C", parameter.ntc};
@@ -684,7 +669,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float)), malloc(sizeof(float))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
@@ -710,7 +694,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
                                          malloc(sizeof(float))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
@@ -734,7 +717,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
@@ -764,7 +746,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                                            baro_pressure,
                                            malloc(sizeof(float))};
         xTaskCreate(airspeed_task, "airspeed_task", STACK_AIRSPEED, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor =
             (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Air speed", "km/h", parameter.airspeed};
@@ -775,7 +756,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         fuel_meter_parameters_t parameter = {config->fuel_flow_ml_per_pulse, malloc(sizeof(float)),
                                              malloc(sizeof(float))};
         xTaskCreate(fuel_meter_task, "fuel_meter_task", STACK_FUEL_METER, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0,
                                         JETIEX_TYPE_INT14,
@@ -794,7 +774,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         xgzp68xxd_parameters_t parameter = {config->xgzp68xxd_k, malloc(sizeof(float)), malloc(sizeof(float))};
 
         xTaskCreate(xgzp68xxd_task, "fuel_pressure_task", STACK_FUEL_PRESSURE, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor =
             (sensor_jetiex_t){0, JETIEX_TYPE_INT22, JETIEX_FORMAT_0_DECIMAL, "Tank pressure", "Pa", parameter.pressure};
@@ -816,7 +795,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                                           malloc(sizeof(float)),
                                           malloc(sizeof(float))};
         xTaskCreate(mpu6050_task, "mpu6050_task", STACK_MPU6050, (void *)&parameter, 2, &task_handle);
-        xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
         new_sensor = malloc(sizeof(sensor_jetiex_t));
         *new_sensor = (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_0_DECIMAL, "Pitch", "dps", parameter.pitch};
         jeti_add_sensor(new_sensor, sensor);
@@ -855,7 +833,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
             *parameter.cell_prev = 0;
             cell_prev = parameter.cell[2];
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             for (uint8_t i = 0; i < MIN(parameter.cell_count, 3); i++) {
                 new_sensor = malloc(sizeof(sensor_jetiex_t));
                 new_sensor->data_id = 0;
@@ -879,7 +856,6 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
             parameter.cell_prev = cell_prev;
             cell_prev = parameter.cell[2];
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-            xQueueSendToBack(context.tasks_queue_handle, task_handle, 0);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
             for (uint8_t i = 0; i < MIN(parameter.cell_count - 3, 3); i++) {
                 new_sensor = malloc(sizeof(sensor_jetiex_t));
