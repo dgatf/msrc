@@ -10,7 +10,6 @@
 #define MIN_SATS 5
 #define MAX_HDOP 2.5f
 
-static float latitude_init = 0, longitude_init = 0;
 static float degrees_to_radians(float degrees);
 static float get_distance_to_home_2d(float lat, float lon, float lat_init, float lon_init);
 
@@ -24,6 +23,7 @@ static inline bool coord_valid(float lat, float lon) {
 void distance_task(void *parameters) {
     distance_parameters_t parameter = *(distance_parameters_t *)parameters;
     *parameter.distance = 0;
+    float latitude_init = 0, longitude_init = 0;
 
     while (1) {
         if (*parameter.fix && *parameter.sat >= MIN_SATS && *parameter.hdop <= MAX_HDOP && *parameter.hdop > 0.0f &&
@@ -48,9 +48,15 @@ void distance_task(void *parameters) {
 #ifdef SIM_SENSORS
             *parameter.distance = 1234.56f;
 #endif
-            debug("\nDistance (%u). Distance: %.2f, Lat: %.6f, Lon: %.6f, Sats: %.0f, HDOP: %.2f, Home Lat: %.6f, Home Lon: %.6f",
-                  uxTaskGetStackHighWaterMark(NULL), *parameter.distance, *parameter.latitude, *parameter.longitude,
-                  *parameter.sat, *parameter.hdop, latitude_init, longitude_init);
+            debug(
+                "\nDistance (%u). Distance: %.2f, Lat: %.6f, Lon: %.6f, Sats: %.0f, HDOP: %.2f, Home Lat: %.6f, Home "
+                "Lon: %.6f",
+                uxTaskGetStackHighWaterMark(NULL), *parameter.distance, *parameter.latitude, *parameter.longitude,
+                *parameter.sat, *parameter.hdop, latitude_init, longitude_init);
+        } else {
+            debug("\nDistance (%u): GPS invalid during distance (Fix:%u Sats:%.0f HDOP:%.2f Lat:%.6f Lon:%.6f)",
+                  uxTaskGetStackHighWaterMark(NULL), (unsigned)*parameter.fix, *parameter.sat, *parameter.hdop,
+                  *parameter.latitude, *parameter.longitude);
         }
         vTaskDelay(INTERVAL_MS / portTICK_PERIOD_MS);
     }
