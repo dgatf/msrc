@@ -10,6 +10,7 @@
 #define MIN_SATS 5
 #define MAX_HDOP 2.5f
 
+static float latitude_init = 0, longitude_init = 0;
 static float degrees_to_radians(float degrees);
 static float get_distance_to_home_2d(float lat, float lon, float lat_init, float lon_init);
 
@@ -24,32 +25,33 @@ void distance_task(void *parameters) {
     distance_parameters_t parameter = *(distance_parameters_t *)parameters;
     *parameter.distance = 0;
 
-    while (!*parameter.fix || *parameter.sat < MIN_SATS || *parameter.hdop > MAX_HDOP || *parameter.hdop <= 0.0f ||
-           !coord_valid(*parameter.latitude, *parameter.longitude)) {
-        vTaskDelay(INIT_DELAY_MS / portTICK_PERIOD_MS);
-    }
-
-    float latitude_init = *parameter.latitude;
-    float longitude_init = *parameter.longitude;
-
     while (1) {
         if (*parameter.fix && *parameter.sat >= MIN_SATS && *parameter.hdop <= MAX_HDOP && *parameter.hdop > 0.0f &&
             coord_valid(*parameter.latitude, *parameter.longitude)) {
-            *parameter.distance =
-                get_distance_to_home_2d(*parameter.latitude, *parameter.longitude, latitude_init, longitude_init);
-            debug("\nDistance (%u): %.2f (Lat: %.6f, Lon: %.6f) -> Home (Lat: %.6f, Lon: %.6f)",
-                  uxTaskGetStackHighWaterMark(NULL), *parameter.distance, *parameter.latitude, *parameter.longitude,
-                  latitude_init, longitude_init);
+            latitude_init = *parameter.latitude;
+            longitude_init = *parameter.longitude;
+            debug("\nDistance (%u). Set home: Lat: %.6f, Lon: %.6f, Sats: %.0f, HDOP: %.2f",
+                  uxTaskGetStackHighWaterMark(NULL), latitude_init, longitude_init, *parameter.sat, *parameter.hdop);
+            break;
         } else {
             debug("\nDistance (%u): Invalid GPS data (Fix: %u, Sats: %.0f, HDOP: %.2f, Lat: %.6f, Lon: %.6f)",
                   uxTaskGetStackHighWaterMark(NULL), (unsigned int)*parameter.fix, *parameter.sat, *parameter.hdop,
                   *parameter.latitude, *parameter.longitude);
         }
-
+        vTaskDelay(INTERVAL_MS / portTICK_PERIOD_MS);
+    }
+    while (1) {
+        if (*parameter.fix && *parameter.sat >= MIN_SATS && *parameter.hdop <= MAX_HDOP && *parameter.hdop > 0.0f &&
+            coord_valid(*parameter.latitude, *parameter.longitude)) {
+            *parameter.distance =
+                get_distance_to_home_2d(*parameter.latitude, *parameter.longitude, latitude_init, longitude_init);
 #ifdef SIM_SENSORS
-        *parameter.distance = 1234.56f;
+            *parameter.distance = 1234.56f;
 #endif
-
+            debug("\nDistance (%u). Distance: %.2f, Lat: %.6f, Lon: %.6f, Sats: %.0f, HDOP: %.2f, Home Lat: %.6f, Home Lon: %.6f",
+                  uxTaskGetStackHighWaterMark(NULL), *parameter.distance, *parameter.latitude, *parameter.longitude,
+                  *parameter.sat, *parameter.hdop, latitude_init, longitude_init);
+        }
         vTaskDelay(INTERVAL_MS / portTICK_PERIOD_MS);
     }
 }
