@@ -7,66 +7,56 @@
 
 #define INIT_DELAY_MS 1000
 #define INTERVAL_MS 500
-#define MIN_SATS 6
+#define MIN_SATS 5
 #define MAX_HDOP 2.5f
 
 static float degrees_to_radians(float degrees);
 static float get_distance_to_home_2d(float lat, float lon, float lat_init, float lon_init);
 
-static inline bool coord_valid(float lat, float lon)
-{
+static inline bool coord_valid(float lat, float lon) {
     /* Reject NaN/Inf and the common invalid (0,0) case */
     if (!isfinite(lat) || !isfinite(lon)) return false;
     if (lat == 0.0f && lon == 0.0f) return false;
     return true;
 }
 
-void distance_task(void *parameters)
-{
+void distance_task(void *parameters) {
     distance_parameters_t parameter = *(distance_parameters_t *)parameters;
     *parameter.distance = 0;
 
-    while (!*parameter.fix ||
-           *parameter.sat < MIN_SATS ||
-           *parameter.hdop > MAX_HDOP ||
-           !coord_valid(*parameter.latitude, *parameter.longitude))
-    {
+    while (!*parameter.fix || *parameter.sat < MIN_SATS || *parameter.hdop > MAX_HDOP || *parameter.hdop <= 0.0f ||
+           !coord_valid(*parameter.latitude, *parameter.longitude)) {
         vTaskDelay(INIT_DELAY_MS / portTICK_PERIOD_MS);
     }
 
-    float latitude_init  = *parameter.latitude;
+    float latitude_init = *parameter.latitude;
     float longitude_init = *parameter.longitude;
 
-    while (1)
-    {
-        if (*parameter.fix &&
-            *parameter.sat >= MIN_SATS &&
-            *parameter.hdop <= MAX_HDOP &&
-            coord_valid(*parameter.latitude, *parameter.longitude))
-        {
-            *parameter.distance = get_distance_to_home_2d(*parameter.latitude, *parameter.longitude,
-                                                          latitude_init, longitude_init);
+    while (1) {
+        if (*parameter.fix && *parameter.sat >= MIN_SATS && *parameter.hdop <= MAX_HDOP && *parameter.hdop > 0.0f &&
+            coord_valid(*parameter.latitude, *parameter.longitude)) {
+            *parameter.distance =
+                get_distance_to_home_2d(*parameter.latitude, *parameter.longitude, latitude_init, longitude_init);
+            debug("\nDistance (%u): %.2f (Lat: %.6f, Lon: %.6f) -> Home (Lat: %.6f, Lon: %.6f)",
+                  uxTaskGetStackHighWaterMark(NULL), *parameter.distance, *parameter.latitude, *parameter.longitude,
+                  latitude_init, longitude_init);
+        } else {
+            debug("\nDistance (%u): Invalid GPS data (Fix: %u, Sats: %.0f, HDOP: %.2f, Lat: %.6f, Lon: %.6f)",
+                  uxTaskGetStackHighWaterMark(NULL), (unsigned int)*parameter.fix, *parameter.sat, *parameter.hdop,
+                  *parameter.latitude, *parameter.longitude);
         }
 
 #ifdef SIM_SENSORS
         *parameter.distance = 1234.56f;
 #endif
 
-        debug("\nDistance (%u): %.2f (Lat: %.6f, Lon: %.6f) -> Home (Lat: %.6f, Lon: %.6f)",
-              uxTaskGetStackHighWaterMark(NULL), *parameter.distance, *parameter.latitude, *parameter.longitude,
-              latitude_init, longitude_init);
-
         vTaskDelay(INTERVAL_MS / portTICK_PERIOD_MS);
     }
 }
 
-static float degrees_to_radians(float degrees)
-{
-    return degrees * (float)PI / 180.0f;
-}
+static float degrees_to_radians(float degrees) { return degrees * (float)PI / 180.0f; }
 
-static float get_distance_to_home_2d(float lat, float lon, float lat_init, float lon_init)
-{
+static float get_distance_to_home_2d(float lat, float lon, float lat_init, float lon_init) {
     const float earth_radius_m = 6371000.0f;
 
     float lat1 = degrees_to_radians(lat_init);

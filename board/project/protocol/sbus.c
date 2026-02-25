@@ -233,8 +233,9 @@ static uint16_t format(uint8_t data_id, float value) {
         return __builtin_bswap16((uint16_t)round(value) | 0x4000);
     }
     if (data_id == SBUS_GPS_SPEED) {
-        debug("\nGPS Speed: %f kmh\n", value);
-        return __builtin_bswap16((uint16_t)round(value * 1.852) | 0x4000);
+        debug("\nGPS Speed: %f kts\n", value);
+        //return __builtin_bswap16((uint16_t)round(value * 1.852) | 0x4000);
+        return __builtin_bswap16(0x4008);
     }
     if (data_id == SBUS_GPS_VARIO_SPEED) {
         return __builtin_bswap16((int16_t)round(value * 10));
