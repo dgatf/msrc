@@ -1020,14 +1020,30 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             packet.sensorTextID = HOTT_GPS_TEXT_ID;
             packet.flightDirection = *sensors->gps[HOTT_GPS_DIRECTION] / 2;  // 0.5°
             packet.GPSSpeed = *sensors->gps[HOTT_GPS_SPEED];                 // km/h
-            packet.LatitudeNS = sensors->gps[HOTT_GPS_LATITUDE] > 0 ? 0 : 1;
-            float latitude = fabs(*sensors->gps[HOTT_GPS_LATITUDE]);
-            packet.LatitudeDegMin = (uint)latitude * 100 + (latitude - (uint)latitude) * 60;
-            packet.LatitudeSec = (latitude * 60 - (uint)(latitude * 60)) * 60;
-            packet.longitudeEW = sensors->gps[HOTT_GPS_LATITUDE] > 0 ? 0 : 1;
-            float longitude = fabs(*sensors->gps[HOTT_GPS_LONGITUDE]);
-            packet.longitudeDegMin = (uint)longitude * 100 + (longitude - (uint)longitude) * 60;
-            packet.longitudeSec = (longitude * 60 - (uint)(longitude * 60)) * 60;
+
+            packet.LatitudeNS = (*sensors->gps[HOTT_GPS_LATITUDE] < 0) ? 1 : 0;
+            {
+                float lat = fabsf(*sensors->gps[HOTT_GPS_LATITUDE]);
+                uint16_t deg = (uint16_t)lat;
+                float min_f = (lat - (float)deg) * 60.0f;
+                uint16_t min_i = (uint16_t)min_f;
+                /* HoTT: DDMM */
+                packet.LatitudeDegMin = (uint16_t)(deg * 100u + min_i);
+                /* HoTT: minutes fraction * 10000 */
+                packet.LatitudeSec = (uint16_t)lroundf((min_f - (float)min_i) * 10000.0f);
+            }
+            packet.longitudeEW = (*sensors->gps[HOTT_GPS_LONGITUDE] < 0) ? 1 : 0;
+            {
+                float lon = fabsf(*sensors->gps[HOTT_GPS_LONGITUDE]);
+                uint16_t deg = (uint16_t)lon;
+                float min_f = (lon - (float)deg) * 60.0f;
+                uint16_t min_i = (uint16_t)min_f;
+                /* HoTT: DDMM */
+                packet.longitudeDegMin = (uint16_t)(deg * 100u + min_i);
+                /* HoTT: minutes fraction * 10000 */
+                packet.longitudeSec = (uint16_t)lroundf((min_f - (float)min_i) * 10000.0f);
+            }
+
             packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
             packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
             float climbrate = *sensors->gps[HOTT_GPS_CLIMBRATE] * 100 + 30000;
