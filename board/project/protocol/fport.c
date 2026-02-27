@@ -36,7 +36,10 @@
 #include "uart_pio.h"
 #include "voltage.h"
 
-#define PACKET_LENGHT 12
+#define FPORT_DELIM 0x7E
+#define FPORT_ESC 0x7D
+#define FPORT_XOR 0x20
+#define FPORT_FRAME_MAX 96
 
 static SemaphoreHandle_t semaphore_sensor = NULL;
 
@@ -211,42 +214,37 @@ static void sensor_cell_individual_task(void *parameters) {
 }
 
 static void process(smartport_parameters_t *parameter) {
-    uint lenght = uart0_available();
-    if (lenght > 128 || lenght < 10) return;
-    if (lenght) {
-        uint8_t data[lenght];
-        uart0_read_bytes(data, lenght);
-        if (data[0] == 0x7E && data[1] == 0x19 && data[2] == 0x00) {
-            uint i = 1;
-            while (data[i] != 0x7E && i < lenght) i++;
-            memmove(data, data + i + 1, PACKET_LENGHT);
+    uint length = uart0_available();
+    if (length < 3 || length > 128) return;
+
+    uint8_t data[128];
+    uart0_read_bytes(data, MIN(length, 128));
+    
+    // Byte stuffing in-place
+    uint8_t delta = 0;
+    uint i;
+    for (i = 0; i < length; i++) {
+        data[i] = data[i + delta];
+        if (data[i] == 0x7D) {
+            delta++;
+            data[i] = data[i + delta] ^ 0x20;
         }
-        // send telemetry
-        if (data[0] == 0x7E && data[1] == 0x08 && data[2] == 0x01 && (data[3] == 0x00 || data[3] == 0x10)) {
-            debug("\nFport (%u) < ", uxTaskGetStackHighWaterMark(NULL));
-            debug_buffer(data, PACKET_LENGHT, "0x%X ");
-            xSemaphoreGive(semaphore_sensor);
-            vTaskDelay(4 / portTICK_PERIOD_MS);
-            xSemaphoreTake(semaphore_sensor, 0);
-        }
-        // receive & send packet
-        else if (data[0] == 0x7E && data[1] == 0x08 && data[2] == 0x01) {
-            uint8_t crc = smartport_get_crc(data + 1, PACKET_LENGHT - 1);
-            uint8_t frame_id = data[3];
-            uint16_t data_id = (uint16_t)data[5] << 8 | data[4];
-            if (crc == data[PACKET_LENGHT - 1]) {
-                uint value = (uint32_t)data[8] << 24 | (uint32_t)data[7] << 16 | (uint16_t)data[6] << 8 | data[5];
-                debug("\nFPort. Received packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X < ",
-                      uxTaskGetStackHighWaterMark(NULL), frame_id, data_id, value);
-                debug_buffer(data, 10, "0x%X ");
-                smartport_packet_t packet = smartport_process_packet(parameter, frame_id, data_id, value);
-                if (packet.data_id != 0) {
-                    send_packet(packet.frame_id, packet.data_id, packet.value);
-                    debug("\nFPort. Send packet (%u) FrameId 0x%X DataId 0x%X Value 0x%X",
-                          uxTaskGetStackHighWaterMark(NULL), frame_id, data_id, value);
-                }
-            }
-        }
+    }
+    debug("\nFPORT (%u) < ", uxTaskGetStackHighWaterMark(NULL));
+    debug_buffer(data, length - delta, "0x%X ");
+
+    uint idx = 0;
+    if (data[1] != 0x08) {
+        // Skip to next frame based on LEN
+        idx = data[1] + 5;
+    }
+    if (idx + 11 != length - delta)
+        return;  // Expecting exactly one frame with LEN=8 (plus LEN and CRC, ignoring RSSI if present)
+    if (data[idx] == 0x08 && data[idx + 2] == 0x10) {
+        xSemaphoreGive(semaphore_sensor);
+        // FBUS requires a small turnaround delay before replying (RTOS tick = 2ms).
+        vTaskDelay(pdMS_TO_TICKS(2));
+        xSemaphoreTake(semaphore_sensor, 0);
     }
 }
 
@@ -256,7 +254,7 @@ static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
     // len
     smartport_send_byte(0x08, &crc);
     // type
-    smartport_send_byte(0x81, &crc);
+    smartport_send_byte(0x01, &crc);
     // frame_id
     smartport_send_byte(frame_id, &crc);
     // data_id
@@ -277,10 +275,10 @@ static void send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value) {
 
 static void set_config(smartport_parameters_t *parameter) {
     config_t *config = config_read();
-    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, config->fport_inverted, true);
+    uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, TIMEOUT_US, 8, 1, UART_PARITY_NONE, config->fport_inverted,
+                true);
     TaskHandle_t task_handle;
     float *baro_temp = NULL, *baro_pressure = NULL;
-    parameter->sensor_id = config->smartport_sensor_id;
     parameter->data_id = 0x5100;
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
