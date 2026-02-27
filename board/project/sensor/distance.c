@@ -30,6 +30,7 @@ void distance_task(void *parameters) {
             coord_valid(*parameter.latitude, *parameter.longitude)) {
             latitude_init = *parameter.latitude;
             longitude_init = *parameter.longitude;
+            *parameter.home_set = true;
             debug("\nDistance (%u). Set home: Lat: %.6f, Lon: %.6f, Sats: %.0f, HDOP: %.2f",
                   uxTaskGetStackHighWaterMark(NULL), latitude_init, longitude_init, *parameter.sat, *parameter.hdop);
             break;

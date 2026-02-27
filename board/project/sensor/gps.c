@@ -27,9 +27,12 @@
 #define NMEA_TIME 8
 #define NMEA_LAT_SIGN 9
 #define NMEA_LON_SIGN 10
-#define NMEA_HDOP 11
-#define NMEA_END 12
-#define NMEA_LAT 13
+#define NMEA_END 11
+#define NMEA_LAT 12
+#define NMEA_GSA_FIX 13  // 1,2,3
+#define NMEA_GSA_PDOP 14
+#define NMEA_GSA_HDOP 15
+#define NMEA_GSA_VDOP 16
 
 #define TIMEOUT_US 5000
 #define VSPEED_INTERVAL_MS 2000
@@ -128,8 +131,9 @@ void gps_task(void *parameters) {
     *parameter.vspeed = 0;
     *parameter.dist = 0;
     *parameter.spd_kmh = 0;
-    *parameter.fix = 0;
-
+    *parameter.fix = 0;       // raw fix: nmea or ublox
+    *parameter.fix_type = 0;  // internal fix MSRC. 0 no fix, 1 2D fix, 2 3D fix
+    *parameter.home_set = false;
     *parameter.n_vel = 0;
     *parameter.e_vel = 0;
     *parameter.v_vel = 0;
@@ -159,10 +163,10 @@ void gps_task(void *parameters) {
     parameters_distance.sat = parameter.sat;
     parameters_distance.latitude = parameter.lat;
     parameters_distance.longitude = parameter.lon;
-    parameters_distance.fix = parameter.fix;
+    parameters_distance.fix = parameter.fix_type;
     parameters_distance.hdop = parameter.hdop;
+    parameters_distance.home_set = parameter.home_set;
     xTaskCreate(distance_task, "distance_task", STACK_DISTANCE, (void *)&parameters_distance, 2, &task_handle);
-    //
 
     /* Change GPS config. For ublox compatible devices */
 
@@ -278,7 +282,15 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->vspeed = -navpvt.velD / 1000.0F;
                 *parameter->spd_kmh = navpvt.gSpeed * 3600.0F / 1000000.0F;
                 *parameter->spd = navpvt.gSpeed * 0.001943844F;  // 1 mm/s = 0.001943844 Knot
-                *parameter->fix = navpvt.fixType == 2 || navpvt.fixType == 3 ? 1 : 0;
+                uint8_t fix = navpvt.fixType;
+                *parameter->fix = fix;
+                if (fix == 2)
+                    *parameter->fix_type = 1;  // 2D
+                else if (fix == 3 || fix == 4)
+                    *parameter->fix_type = 2;  // 3D
+                else
+                    *parameter->fix_type = 0;  // no fix
+                if (!(navpvt.flags & 0x01)) *parameter->fix_type = 0;
                 *parameter->n_vel = navpvt.velN / 1000.0F;
                 *parameter->e_vel = navpvt.velE / 1000.0F;
                 *parameter->v_vel = -navpvt.velD / 1000.0F;
@@ -309,13 +321,20 @@ static void process(gps_parameters_t *parameter) {
 }
 
 static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_parameters_t *parameter) {
-    uint8_t nmea_field[2][17] = {// GGA: time, lat, N/S, lon, E/W, fix, sats, hdop, alt
-                                 {0, NMEA_TIME, NMEA_LAT, NMEA_LAT_SIGN, NMEA_LON, NMEA_LON_SIGN, NMEA_FIX, NMEA_SAT,
-                                  NMEA_HDOP, NMEA_ALT, 0, 0, 0, 0, 0, 0, 0},
+#define NMEA_MAX_FIELDS 18  // 0..17 (field 1..17 plus dummy 0)
 
-                                 // RMC: time, lat, N/S, lon, E/W, spd, cog, date
-                                 {0, NMEA_TIME, 0, NMEA_LAT, NMEA_LAT_SIGN, NMEA_LON, NMEA_LON_SIGN, NMEA_SPD, NMEA_COG,
-                                  NMEA_DATE, 0, 0, 0, 0, 0, 0, 0}};
+    uint8_t nmea_field[3][NMEA_MAX_FIELDS] = {
+        // GGA: time, lat, N/S, lon, E/W, fix, sats, hdop, alt
+        {0, NMEA_TIME, NMEA_LAT, NMEA_LAT_SIGN, NMEA_LON, NMEA_LON_SIGN, NMEA_FIX, NMEA_SAT, 0, NMEA_ALT, 0, 0, 0, 0, 0,
+         0, 0, 0},
+
+        // RMC: time, status, lat, N/S, lon, E/W, spd, cog, date
+        {0, NMEA_TIME, 0, NMEA_LAT, NMEA_LAT_SIGN, NMEA_LON, NMEA_LON_SIGN, NMEA_SPD, NMEA_COG, NMEA_DATE, 0, 0, 0, 0,
+         0, 0, 0, 0},
+
+        // GSA: mode1, fix, sat1..sat12, PDOP, HDOP, VDOP
+        {0, 0, NMEA_GSA_FIX, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // sat1..sat12 ignored (fields 3..14)
+         NMEA_GSA_PDOP, NMEA_GSA_HDOP, NMEA_GSA_VDOP}};
     static int8_t lat_dir = 1, lon_dir = 1;
     static uint32_t timestamp_vspeed = 0, timestamp_dist = 0;
     if (strlen(buffer)) {
@@ -349,11 +368,23 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
             lat_dir = (buffer[0] == 'N') ? 1 : -1;
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_LON_SIGN) {
             lon_dir = (buffer[0] == 'E') ? 1 : -1;
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_HDOP) {
+        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_GSA_HDOP) {
             *parameter->hdop = atof(buffer);
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_FIX) {
+        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_GSA_VDOP) {
+            *parameter->vdop = atof(buffer);
+        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_GSA_PDOP) {
+            *parameter->pdop = atof(buffer);
+        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_GSA_FIX) {
             uint fix = atoi((char *)buffer);
-            *parameter->fix = (fix > 0) ? 1 : 0;
+            if (fix >= 1 && fix <= 3) {
+                *parameter->fix = fix;
+                if (fix == 2)
+                    *parameter->fix_type = 1;  // 2D
+                else if (fix == 3)
+                    *parameter->fix_type = 2;  // 3D
+                else
+                    *parameter->fix_type = 0;  // no fix
+            }
         }
         debug("%s(%i),", buffer, nmea_field[nmea_cmd][cmd_field]);
     }
@@ -375,7 +406,7 @@ static void set_ublox_config(uint rate) {
 
 static void set_nmea_config(uint rate) {
     nmea_msg("GLL", false);
-    nmea_msg("GSA", false);
+    nmea_msg("GSA", true);
     nmea_msg("GSV", false);
     nmea_msg("VTG", false);
     nmea_msg("ZDA", false);

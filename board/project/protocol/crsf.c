@@ -897,6 +897,8 @@ static void set_config(crsf_sensors_t *sensors) {
         parameter.v_vel = malloc(sizeof(float));
         parameter.alt_elipsiod = malloc(sizeof(float));
         parameter.pdop = malloc(sizeof(float));
+        parameter.fix_type = malloc(sizeof(uint8_t));
+        parameter.home_set = malloc(sizeof(uint8_t));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
 
@@ -1058,6 +1060,7 @@ static void set_config(crsf_sensors_t *sensors) {
     if (config->enable_lipo) {
         float *cell_prev = 0;
         sensors->voltages.cell_count = malloc(sizeof(uint8_t));
+        uint8_t c1 = 0, c2 = 0;
         if (config->lipo_cells > 0) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x40,
@@ -1068,12 +1071,12 @@ static void set_config(crsf_sensors_t *sensors) {
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
             };
+            c1 = parameter.cell_count;
             *parameter.cell_prev = 0;
             cell_prev = parameter.cell[2];
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
             sensors->enabled_sensors[TYPE_VOLTAGES] = true;
-            *sensors->voltages.cell_count = parameter.cell_count;
             for (uint i = 0; i < 3; i++) {
                 sensors->voltages.cell[i] = parameter.cell[i];
             }
@@ -1088,6 +1091,7 @@ static void set_config(crsf_sensors_t *sensors) {
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
             };
+            c2 = parameter.cell_count;
             parameter.cell_prev = cell_prev;
             cell_prev = parameter.cell[2];
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
@@ -1096,5 +1100,6 @@ static void set_config(crsf_sensors_t *sensors) {
                 sensors->voltages.cell[i + 3] = parameter.cell[i];
             }
         }
+        *sensors->voltages.cell_count = c1 + c2;
     }
 }

@@ -58,6 +58,8 @@ typedef enum xbus_gps_stat_enum_t {
     XBUS_GPS_STAT_TIME,
     XBUS_GPS_STAT_SATS,
     XBUS_GPS_STAT_ALTITUDE,
+    XBUS_GPS_STAT_FIX_TYPE,
+    XBUS_GPS_STAT_HOME_SET,
     XBUS_GPS_STAT_COUNT
 } xbus_gps_stat_enum_t;
 
@@ -231,7 +233,7 @@ typedef struct xbus_rpm_volt_temp_t {
 } xbus_rpm_volt_temp_t;
 
 typedef struct xbus_fuel_flow_t {
-    uint8_t id;                // Source device = 0x22
+    uint8_t identifier;        // Source device = 0x22
     uint8_t s_id;              // Secondary ID
     uint16_t fuel_consumed_A;  // Integrated fuel consumption, 0.1mL
     uint16_t flow_rate_A;      // Instantaneous consumption, 0.01mL/min
@@ -243,10 +245,10 @@ typedef struct xbus_fuel_flow_t {
 } xbus_fuel_flow_t;
 
 typedef struct xbus_stru_tele_digital_air_t {
-    uint8_t id;         // Source device = 0x36
-    uint8_t sID;        // Secondary ID
-    uint16_t digital;   // Digital inputs (bit per input)
-    uint16_t pressure;  // Tank pressure, 0.1PSI (0-6553.4PSI)
+    uint8_t identifier;  // Source device = 0x36
+    uint8_t sID;         // Secondary ID
+    uint16_t digital;    // Digital inputs (bit per input)
+    uint16_t pressure;   // Tank pressure, 0.1PSI (0-6553.4PSI)
 } xbus_stru_tele_digital_air_t;
 
 typedef struct xbus_tele_lipomon_t {
@@ -271,36 +273,29 @@ typedef struct xbus_tele_g_meter_t {
 typedef struct xbus_tele_gyro_t {
     uint8_t identifier;  // Source device = 0x1A
     uint8_t sID;         // Secondary ID
-    int16_t gyroX;       // Units are 0.1 deg/sec  - Rate is about the X Axis which is defined out the nose of the vehicle.
-    int16_t gyroY;       // Rate is about the Y Axis which is define out the right wing of the vehicle.
-    int16_t gyroZ;       // Rate is about the Z axis which is defined down from the vehicle.
-    int16_t maxGyroX;    // Max rates (absolute value)
+    int16_t gyroX;  // Units are 0.1 deg/sec  - Rate is about the X Axis which is defined out the nose of the vehicle.
+    int16_t gyroY;  // Rate is about the Y Axis which is define out the right wing of the vehicle.
+    int16_t gyroZ;  // Rate is about the Z axis which is defined down from the vehicle.
+    int16_t maxGyroX;  // Max rates (absolute value)
     int16_t maxGyroY;
     int16_t maxGyroZ;
 } xbus_tele_gyro_t;
 
-typedef struct xbus_sensor_formatted_t {
-    xbus_airspeed_t *airspeed;
-    xbus_altitude_t *altitude;
-    xbus_gps_loc_t *gps_loc;
-    xbus_gps_stat_t *gps_stat;
-    xbus_esc_t *esc;
-    xbus_battery_t *battery;
-    xbus_vario_t *vario;
-    xbus_rpm_volt_temp_t *rpm_volt_temp;
-    xbus_energy_t *energy;
-    xbus_fuel_flow_t *fuel_flow;
-    xbus_stru_tele_digital_air_t *stru_tele_digital_air;
-    xbus_tele_lipomon_t *tele_lipomon;
-    xbus_tele_g_meter_t *tele_g_meter;
-    xbus_tele_gyro_t *tele_gyro;
-} xbus_sensor_formatted_t;
+typedef struct xbus_sensor_gps_loc_t {
+    float *altitude_low;
+    float *latitude;
+    float *longitude;
+    float *course;
+    float *hdop;
+    uint8_t *fix_type;
+    uint8_t *home_set;
+} xbus_sensor_gps_loc_t;
 
 typedef struct xbus_sensor_t {
     bool is_enabled[XBUS_SENSORS_COUNT];
     float *airspeed[XBUS_AIRSPEED_COUNT];
     float *altimeter[XBUS_ALTITUDE_COUNT];
-    float *gps_loc[XBUS_GPS_LOC_COUNT];
+    xbus_sensor_gps_loc_t *gps_loc;
     float *gps_stat[XBUS_GPS_STAT_COUNT];
     float *esc[XBUS_ESC_COUNT];
     float *battery[XBUS_BATTERY_COUNT];
@@ -315,10 +310,11 @@ typedef struct xbus_sensor_t {
 } xbus_sensor_t;
 
 extern context_t context;
+extern xbus_sensor_t sensor;
 
 void xbus_task(void *parameters);
-void xbus_format_sensor(uint8_t address);
-
+void xbus_format_sensor(uint8_t address, uint8_t *buffer);
+void xbus_set_config(void);
 #ifdef SIM_RX
 void xbus_i2c_handler(uint8_t address);
 #endif

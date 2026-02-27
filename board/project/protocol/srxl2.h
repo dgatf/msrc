@@ -14,8 +14,7 @@
 #define SRXL2_PACKET_TYPE_TELEMETRY 0x80
 
 extern context_t context;
-extern xbus_sensor_t *sensor;
-extern xbus_sensor_formatted_t *sensor_formatted;
+extern xbus_sensor_t sensor;
 
 typedef struct srxl2_handshake_t {
     uint8_t header;

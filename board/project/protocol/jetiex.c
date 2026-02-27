@@ -578,6 +578,8 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
         parameter.v_vel = malloc(sizeof(float));
         parameter.alt_elipsiod = malloc(sizeof(float));
         parameter.pdop = malloc(sizeof(float));
+        parameter.fix_type = malloc(sizeof(uint8_t));
+        parameter.home_set = malloc(sizeof(uint8_t));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         new_sensor = malloc(sizeof(sensor_jetiex_t));
@@ -838,6 +840,7 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                 new_sensor->data_id = 0;
                 new_sensor->type = JETIEX_TYPE_INT14;
                 new_sensor->format = JETIEX_FORMAT_2_DECIMAL;
+                new_sensor->value = parameter.cell[i];
                 jeti_add_sensor(new_sensor, sensor);
             }
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -856,12 +859,12 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
             parameter.cell_prev = cell_prev;
             cell_prev = parameter.cell[2];
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-            for (uint8_t i = 0; i < MIN(parameter.cell_count - 3, 3); i++) {
+            for (uint8_t i = 0; i < parameter.cell_count; i++) {
                 new_sensor = malloc(sizeof(sensor_jetiex_t));
                 new_sensor->data_id = 0;
                 new_sensor->type = JETIEX_TYPE_INT14;
                 new_sensor->format = JETIEX_FORMAT_2_DECIMAL;
+                new_sensor->value = parameter.cell[i];
                 jeti_add_sensor(new_sensor, sensor);
             }
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);

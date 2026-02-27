@@ -508,6 +508,8 @@ static void set_config(sensor_multiplex_t **sensors) {
         parameter.v_vel = malloc(sizeof(float));
         parameter.alt_elipsiod = malloc(sizeof(float));
         parameter.pdop = malloc(sizeof(float));
+        parameter.fix_type = malloc(sizeof(uint8_t));
+        parameter.home_set = malloc(sizeof(uint8_t));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         new_sensor = malloc(sizeof(sensor_multiplex_t));

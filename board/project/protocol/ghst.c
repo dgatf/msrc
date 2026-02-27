@@ -98,6 +98,8 @@ typedef struct ghst_sensor_gps_secondary_t {
     float *distance;
     float *homedir;
     float *flags;
+    uint8_t *home_set;
+    uint8_t *fix_type;
 } ghst_sensor_gps_secondary_t;
 
 typedef struct ghst_sensor_magbaro_t {
@@ -142,7 +144,7 @@ static void process(ghst_sensors_t *sensors) {
         uart0_read_bytes(data, GHST_PACKET_LEN + 2);
         debug("\nGHST (%u) < ", uxTaskGetStackHighWaterMark(NULL));
         debug_buffer(data, GHST_PACKET_LEN + 2, "0x%X ");
-        uint8_t crc = get_crc(data + 2, GHST_PACKET_LEN - 1); // crc from type, size 11
+        uint8_t crc = get_crc(data + 2, GHST_PACKET_LEN - 1);  // crc from type, size 11
         // send telemetry
         if (data[0] == GHST_ADDR_RX) {
             if (data[13] == crc)
@@ -187,6 +189,13 @@ static uint8_t format_sensor(ghst_sensors_t *sensors, uint8_t type, uint8_t *buf
             if (sensors->gps_secondary.satellites) sensor.satellites = *sensors->gps_secondary.satellites;
             if (sensors->gps_secondary.distance) sensor.distance = *sensors->gps_secondary.distance / 10;
             if (sensors->gps_secondary.homedir) sensor.homedir = *sensors->gps_secondary.homedir * 10;
+            sensor.flags = 0;
+            if (sensors->gps_secondary.fix_type && *sensors->gps_secondary.fix_type >= 1) {
+                sensor.flags |= 0x01;
+            }
+            if (sensors->gps_secondary.home_set && *sensors->gps_secondary.home_set) {
+                sensor.flags |= 0x02;
+            }
             memcpy(&buffer[3], &sensor, sizeof(ghst_sensor_gps_secondary_formatted_t));
             buffer[GHST_PACKET_LEN + 1] = get_crc(&buffer[2], GHST_PACKET_LEN + 1);
             break;
@@ -291,6 +300,8 @@ static void set_config(ghst_sensors_t *sensors) {
         parameter.v_vel = malloc(sizeof(float));
         parameter.alt_elipsiod = malloc(sizeof(float));
         parameter.pdop = malloc(sizeof(float));
+        parameter.fix_type = malloc(sizeof(uint8_t));
+        parameter.home_set = malloc(sizeof(uint8_t));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
 
@@ -303,6 +314,8 @@ static void set_config(ghst_sensors_t *sensors) {
         sensors->gps_secondary.heading = parameter.cog;
         sensors->gps_secondary.satellites = parameter.sat;
         sensors->gps_secondary.distance = parameter.dist;
+        sensors->gps_secondary.home_set = parameter.home_set;
+        sensors->gps_secondary.fix_type = parameter.fix_type;
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
@@ -359,9 +372,8 @@ static void set_config(ghst_sensors_t *sensors) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset,
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float))};
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
 
         sensors->enabled_sensors[TYPE_MAGBARO] = true;

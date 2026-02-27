@@ -5,8 +5,7 @@
 #include "xbus.h"
 
 extern context_t context;
-extern xbus_sensor_t *sensor;
-extern xbus_sensor_formatted_t *sensor_formatted;
+extern xbus_sensor_t sensor;
 
 void srxl_task(void *parameters);
 uint16_t srxl_get_crc(uint8_t *buffer, uint8_t length);

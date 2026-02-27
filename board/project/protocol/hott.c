@@ -1018,7 +1018,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_GPS_MODULE_ID;
             packet.sensorTextID = HOTT_GPS_TEXT_ID;
-            packet.flightDirection = *sensors->gps[HOTT_GPS_DIRECTION] / 2;  // 0.5°
+            packet.flightDirection = *sensors->gps[HOTT_GPS_DIRECTION] / 2;  // 2°
             packet.GPSSpeed = *sensors->gps[HOTT_GPS_SPEED];                 // km/h
 
             packet.LatitudeNS = (*sensors->gps[HOTT_GPS_LATITUDE] < 0) ? 1 : 0;
@@ -1051,7 +1051,13 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             packet.climbrate = climbrate;  // 30000, 0.00
             // packet.climbrate3s = *sensors->gps[HOTT_GPS_ALTITUDE];  // 120, 0
             packet.GPSNumSat = *sensors->gps[HOTT_GPS_SATS] == 0 ? 0xFF : *sensors->gps[HOTT_GPS_SATS];
-            packet.GPS_fix = *sensors->gps[HOTT_GPS_FIX];
+            uint8_t fix_type = *sensors->gps[HOTT_GPS_FIX];
+            if (fix_type == 0)
+                packet.GPSFixChar = ' ';
+            else if (fix_type == 1)
+                packet.GPSFixChar = '2';
+            else
+                packet.GPSFixChar = '3';
             // (1 byte) uint8_t homeDirection;   // Byte 29: HomeDirection (direction from starting point to Model
             // position) (1 byte)
             uint hour = (uint)(*sensors->gps[HOTT_GPS_TIME]) / 10000;
@@ -1065,9 +1071,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             // uint8_t vibration; // Byte 39 vibrations level in %
             // uint8_t Ascii4;    // Byte 40: 00 ASCII Free Character [4] appears right to home distance
             // uint8_t Ascii5;    // Byte 41: 00 ASCII Free Character [5] appears right to home direction
-            // uint8_t GPS_fix;   // Byte 42: 00 ASCII Free Character [6], we use it for GPS FIX
+            packet.GPS_fix = (fix_type == 0) ? ' ' : (fix_type == 1) ? '2' : '3';
             // uint8_t version;   // Byte 43: 00 version number
-
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             send_packet((uint8_t *)&packet, sizeof(packet));
@@ -1392,6 +1397,8 @@ static void set_config(hott_sensors_t *sensors) {
         parameter.v_vel = malloc(sizeof(float));
         parameter.alt_elipsiod = malloc(sizeof(float));
         parameter.pdop = malloc(sizeof(float));
+        parameter.fix_type = malloc(sizeof(uint8_t));
+        parameter.home_set = malloc(sizeof(uint8_t));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -1603,9 +1610,9 @@ static void set_config(hott_sensors_t *sensors) {
             cell_prev = parameter.cell[2];
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-            sensors->general_air[HOTT_GENERAL_CELL_1] = parameter.cell[0];
-            sensors->general_air[HOTT_GENERAL_CELL_2] = parameter.cell[1];
-            sensors->general_air[HOTT_GENERAL_CELL_3] = parameter.cell[2];
+            sensors->general_air[HOTT_GENERAL_CELL_4] = parameter.cell[0];
+            sensors->general_air[HOTT_GENERAL_CELL_5] = parameter.cell[1];
+            sensors->general_air[HOTT_GENERAL_CELL_6] = parameter.cell[2];
         }
     }
 }
