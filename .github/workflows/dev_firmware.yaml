@@ -1,4 +1,5 @@
 name: Dev Release (Firmware)
+run-name: "Dev Firmware • ${{ github.ref_name }} • ${{ github.sha }}"
 
 on:
   workflow_dispatch: {}
@@ -9,7 +10,6 @@ on:
       - master
     paths:
       - board/**
-
 
 permissions:
   contents: write
@@ -25,14 +25,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get actions code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: 'true'
+          submodules: true
           fetch-depth: 0
-
-      - name: Fetch tags
-        run: git fetch --force --tags
 
       - name: Build firmware
         uses: samyarsadat/Pico-Build-Action@v1
@@ -41,7 +38,7 @@ jobs:
           output_dir: "../build"
           cmake_args: "-DCMAKE_BUILD_TYPE=Release"
 
-      - name: Prepare fixed filename
+      - name: Prepare artifact
         run: |
           mkdir -p dist
           cp build/project/MSRC-RP2040.uf2 dist/MSRC_firmware.uf2
@@ -52,65 +49,27 @@ jobs:
           subject-path: dist/MSRC_firmware.uf2
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Write release body
+        run: |
+          cat > release_body.md << EOF
+          Development (auto)
+
+          Firmware:
+          - commit: \`${{ github.sha }}\`
+          - date: $(date -u +'%Y-%m-%d %H:%M UTC')
+
+          EOF
+
       - name: Publish firmware to Development release
         uses: ncipollo/release-action@v1
         with:
-            tag: dev-latest
-            name: Development (auto)
-            prerelease: true
-            allowUpdates: true
-            commit: ${{ github.sha }}
-            artifacts: dist/MSRC_firmware.uf2
-            artifactContentType: application/octet-stream
-            replacesArtifacts: true
-            generateReleaseNotes: false
-
-      - name: Update release body (firmware section)
-        env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-            set -euo pipefail
-
-            # 1) Get release id + current body from tag
-            RELEASE_JSON="$(gh api repos/${{ github.repository }}/releases/tags/dev-latest)"
-            RELEASE_ID="$(echo "$RELEASE_JSON" | python3 -c 'import sys,json; print(json.load(sys.stdin)["id"])')"
-            BODY="$(echo "$RELEASE_JSON" | python3 -c 'import sys,json; print((json.load(sys.stdin).get("body") or ""))')"
-
-            START="<!-- COMPONENT:firmware:start -->"
-            END="<!-- COMPONENT:firmware:end -->"
-
-            COMMIT="${{ github.sha }}"
-            DATE_UTC="$(date -u +'%Y-%m-%d %H:%M UTC')"
-
-            NEW_SECTION="$START
-            **Firmware**
-            - commit: \`$COMMIT\`
-            - date: $DATE_UTC
-            $END"
-
-            UPDATED_BODY="$(python3 - << 'PY'
-        import re, os
-        body = os.environ["BODY"]
-        start = os.environ["START"]
-        end = os.environ["END"]
-        new_section = os.environ["NEW_SECTION"]
-
-        pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.DOTALL)
-        if pattern.search(body):
-            body2 = pattern.sub(new_section, body)
-        else:
-            sep = "\n\n---\n\n" if body.strip() else ""
-            body2 = body + sep + new_section
-        print(body2)
-        PY
-            )"
-
-            # 2) Patch by release id (this endpoint exists)
-            gh api \
-            -X PATCH repos/${{ github.repository }}/releases/$RELEASE_ID \
-            -f body="$UPDATED_BODY"
-        env:
-            BODY: ""
-            START: "<!-- COMPONENT:firmware:start -->"
-            END: "<!-- COMPONENT:firmware:end -->"
-            NEW_SECTION: ""
+          tag: dev-latest
+          name: Development (auto)
+          prerelease: true
+          allowUpdates: true
+          commit: ${{ github.sha }}
+          artifacts: dist/MSRC_firmware.uf2
+          artifactContentType: application/octet-stream
+          replacesArtifacts: true
+          generateReleaseNotes: false
+          bodyFile: release_body.md
