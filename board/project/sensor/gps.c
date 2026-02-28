@@ -12,7 +12,8 @@
 
 #define COMMAND_GGA 0
 #define COMMAND_RMC 1
-#define COMMAND_UNK 2
+#define COMMAND_GSA 2
+#define COMMAND_UNK 3
 
 #define COMMAND_VTG 4
 #define COMMAND_GLL 5
@@ -221,6 +222,8 @@ static void process(gps_parameters_t *parameter) {
                             nmea_cmd = COMMAND_GGA;
                         } else if (memcmp(buffer + 2, "RMC", 3) == 0) {
                             nmea_cmd = COMMAND_RMC;
+                        } else if (memcmp(buffer + 2, "GSA", 3) == 0) {
+                            nmea_cmd = COMMAND_GSA;
                         }
                         if (nmea_cmd != COMMAND_UNK) {
                             // cancel_alarm(alarm_id_nmea);
