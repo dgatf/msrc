@@ -10,7 +10,7 @@ on:
       - master
     paths:
       - msrc_gui/**
-      
+
 permissions:
   contents: write
   id-token: write
@@ -67,7 +67,7 @@ jobs:
           mkdir -p dist
           cp msrc_gui/appdir/MSRC_Link_Linux.AppImage dist/MSRC_Link_Linux.AppImage
 
-      - name: Upload build artifact (Linux)
+      - name: Upload artifact (Linux)
         uses: actions/upload-artifact@v4
         with:
           name: msrc-link-linux
@@ -105,7 +105,7 @@ jobs:
           mkdir -p dist
           cp build/msrc_gui.dmg dist/MSRC_Link_macOS.dmg
 
-      - name: Upload build artifact (macOS)
+      - name: Upload artifact (macOS)
         uses: actions/upload-artifact@v4
         with:
           name: msrc-link-macos
@@ -138,19 +138,17 @@ jobs:
           make
           mingw32-make release
 
-      - name: Package Windows ZIP (fixed filename)
+      - name: Collect Windows executable
         shell: bash
         run: |
           mkdir -p dist
-          # Put the exe inside a zip with a fixed name
-          cd build/release
-          7z a -tzip ../../dist/MSRC_Link_Windows.zip msrc_gui.exe
+          cp build/release/msrc_gui.exe dist/MSRC_Link_Windows.exe
 
-      - name: Upload build artifact (Windows)
+      - name: Upload artifact (Windows)
         uses: actions/upload-artifact@v4
         with:
           name: msrc-link-windows
-          path: dist/MSRC_Link_Windows.zip
+          path: dist/MSRC_Link_Windows.exe
           if-no-files-found: error
 
   publish:
@@ -166,15 +164,13 @@ jobs:
       - name: Normalize dist layout
         run: |
           set -euo pipefail
-          # download-artifact puts each artifact in its own subfolder
-          # Move files into dist/ root
-          find dist -type f -name "MSRC_Link_*.AppImage" -exec cp -f {} dist/ \;
-          find dist -type f -name "MSRC_Link_*.dmg" -exec cp -f {} dist/ \;
-          find dist -type f -name "MSRC_Link_*.zip" -exec cp -f {} dist/ \;
+          find dist -type f -name "MSRC_Link_Linux.AppImage" -exec cp -f {} dist/ \;
+          find dist -type f -name "MSRC_Link_macOS.dmg" -exec cp -f {} dist/ \;
+          find dist -type f -name "MSRC_Link_Windows.exe" -exec cp -f {} dist/ \;
 
           test -f dist/MSRC_Link_Linux.AppImage
           test -f dist/MSRC_Link_macOS.dmg
-          test -f dist/MSRC_Link_Windows.zip
+          test -f dist/MSRC_Link_Windows.exe
 
       - name: Generate attestation (Linux)
         uses: actions/attest-build-provenance@v3
@@ -191,7 +187,7 @@ jobs:
       - name: Generate attestation (Windows)
         uses: actions/attest-build-provenance@v3
         with:
-          subject-path: dist/MSRC_Link_Windows.zip
+          subject-path: dist/MSRC_Link_Windows.exe
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish MSRC Link to Development release
@@ -202,6 +198,6 @@ jobs:
           prerelease: true
           allowUpdates: true
           commit: ${{ github.sha }}
-          artifacts: dist/MSRC_Link_Linux.AppImage,dist/MSRC_Link_macOS.dmg,dist/MSRC_Link_Windows.zip
+          artifacts: dist/MSRC_Link_Linux.AppImage,dist/MSRC_Link_macOS.dmg,dist/MSRC_Link_Windows.exe
           replacesArtifacts: true
           generateReleaseNotes: false
