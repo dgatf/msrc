@@ -1,0 +1,125 @@
+name: Dev Release (Firmware)
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 0 1 * *'
+  push:
+    branches:
+      - master
+    paths:
+      - board/**
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dev-release-firmware
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get actions code
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: git fetch --force --tags
+
+      - name: Build firmware
+        uses: samyarsadat/Pico-Build-Action@v1
+        with:
+          source_dir: "board"
+          output_dir: "../build"
+          cmake_args: "-DCMAKE_BUILD_TYPE=Release"
+
+      - name: Prepare fixed filename
+        run: |
+          mkdir -p dist
+          cp build/project/MSRC-RP2040.uf2 dist/MSRC_firmware.uf2
+
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: dist/MSRC_firmware.uf2
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Move tag dev-latest (global)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f dev-latest
+          git push -f origin dev-latest
+
+      - name: Create/Update Development release (ensure exists)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-latest
+          name: Development (auto)
+          prerelease: true
+          generate_release_notes: false
+
+      - name: Delete previous firmware asset (keep filename fixed)
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: dev-latest
+          fail-if-no-release: false
+          assets: |
+            MSRC_firmware.uf2
+
+      - name: Upload firmware asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-latest
+          files: |
+            dist/MSRC_firmware.uf2
+
+      - name: Update release body (firmware section)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          BODY="$(gh api repos/${{ github.repository }}/releases/tags/dev-latest --jq '.body // ""')"
+
+          START="<!-- COMPONENT:firmware:start -->"
+          END="<!-- COMPONENT:firmware:end -->"
+
+          COMMIT="${{ github.sha }}"
+          DATE_UTC="$(date -u +'%Y-%m-%d %H:%M UTC')"
+
+          NEW_SECTION="$START
+          **Firmware**
+          - commit: \`$COMMIT\`
+          - date: $DATE_UTC
+          $END"
+
+          UPDATED_BODY="$(python3 - << 'PY'
+          import re, os
+
+          body = os.environ.get("BODY", "")
+          start = os.environ.get("START", "")
+          end = os.environ.get("END", "")
+          new_section = os.environ.get("NEW_SECTION", "")
+
+          pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.DOTALL)
+
+          if pattern.search(body):
+              body2 = pattern.sub(new_section, body)
+          else:
+              sep = "\n\n---\n\n" if body.strip() else ""
+              body2 = body + sep + new_section
+
+          print(body2)
+          PY
+          )"
+
+          gh api \
+            -X PATCH repos/${{ github.repository }}/releases/tags/dev-latest \
+            -f body="$UPDATED_BODY"
