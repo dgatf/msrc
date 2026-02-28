@@ -1,0 +1,213 @@
+name: Dev Release - MSRC Link
+run-name: "Dev Link • ${{ github.ref_name }} • ${{ github.sha }}"
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 0 1 * *'
+  push:
+    branches:
+      - master
+    # Adjust these paths to whatever actually changes MSRC Link in your repo
+    paths:
+      - msrc_gui/**
+      - msrclink/**
+      - MSRCLink/**
+      - link/**
+      - tools/**
+      - .github/workflows/dev_msrc_link.yaml
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: dev-release-link
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.*'
+          modules: qtserialport
+
+      - name: Fetch tags
+        run: git fetch --force --tags
+
+      - name: Build
+        run: |
+          mkdir -p build
+          cd build
+          qmake ../msrc_gui
+          make
+
+      - name: Install linuxdeployqt
+        run: |
+          cd msrc_gui
+          wget -q https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+          chmod +x linuxdeployqt-continuous-x86_64.AppImage
+
+      - name: Install fuse
+        run: sudo apt-get update && sudo apt-get install -y libfuse2
+
+      - name: Create AppImage
+        run: |
+          cp build/msrc_gui msrc_gui/appdir
+          cd msrc_gui/appdir
+          ../linuxdeployqt-continuous-x86_64.AppImage msrc.desktop -appimage -extra-plugins=iconengines,platformthemes/libqgtk3.so
+          mv ./*.AppImage ./MSRC_Link_Linux.AppImage
+
+      - name: Collect artifact
+        run: |
+          mkdir -p dist
+          cp msrc_gui/appdir/MSRC_Link_Linux.AppImage dist/MSRC_Link_Linux.AppImage
+
+      - name: Upload build artifact (Linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: msrc-link-linux
+          path: dist/MSRC_Link_Linux.AppImage
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.*'
+          modules: qtserialport
+
+      - name: Fetch tags
+        run: git fetch --force --tags
+
+      - name: Build
+        run: |
+          mkdir -p build
+          cd build
+          qmake ../msrc_gui
+          make
+          macdeployqt msrc_gui.app -dmg
+
+      - name: Collect artifact
+        run: |
+          mkdir -p dist
+          cp build/msrc_gui.dmg dist/MSRC_Link_macOS.dmg
+
+      - name: Upload build artifact (macOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: msrc-link-macos
+          path: dist/MSRC_Link_macOS.dmg
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Qt (static)
+        uses: orestonce/install-qt-static@v0.4.3
+        with:
+          version: Qt6.5.3-Windows-x86_64-MinGW13.2.0-ucrt-staticFull-20240527
+
+      - name: Fetch tags
+        run: git fetch --force --tags
+
+      - name: Build
+        shell: bash
+        run: |
+          mkdir -p build
+          cd build
+          qmake ../msrc_gui
+          make
+          mingw32-make release
+
+      - name: Package Windows ZIP (fixed filename)
+        shell: bash
+        run: |
+          mkdir -p dist
+          # Put the exe inside a zip with a fixed name
+          cd build/release
+          7z a -tzip ../../dist/MSRC_Link_Windows.zip msrc_gui.exe
+
+      - name: Upload build artifact (Windows)
+        uses: actions/upload-artifact@v4
+        with:
+          name: msrc-link-windows
+          path: dist/MSRC_Link_Windows.zip
+          if-no-files-found: error
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [linux, macos, windows]
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Normalize dist layout
+        run: |
+          set -euo pipefail
+          # download-artifact puts each artifact in its own subfolder
+          # Move files into dist/ root
+          find dist -type f -name "MSRC_Link_*.AppImage" -exec cp -f {} dist/ \;
+          find dist -type f -name "MSRC_Link_*.dmg" -exec cp -f {} dist/ \;
+          find dist -type f -name "MSRC_Link_*.zip" -exec cp -f {} dist/ \;
+
+          test -f dist/MSRC_Link_Linux.AppImage
+          test -f dist/MSRC_Link_macOS.dmg
+          test -f dist/MSRC_Link_Windows.zip
+
+      - name: Generate attestation (Linux)
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: dist/MSRC_Link_Linux.AppImage
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate attestation (macOS)
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: dist/MSRC_Link_macOS.dmg
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate attestation (Windows)
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: dist/MSRC_Link_Windows.zip
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish MSRC Link to Development release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: dev-latest
+          name: Development (auto)
+          prerelease: true
+          allowUpdates: true
+          commit: ${{ github.sha }}
+          artifacts: dist/MSRC_Link_Linux.AppImage,dist/MSRC_Link_macOS.dmg,dist/MSRC_Link_Windows.zip
+          replacesArtifacts: true
+          generateReleaseNotes: false
