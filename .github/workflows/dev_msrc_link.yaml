@@ -8,15 +8,9 @@ on:
   push:
     branches:
       - master
-    # Adjust these paths to whatever actually changes MSRC Link in your repo
     paths:
       - msrc_gui/**
-      - msrclink/**
-      - MSRCLink/**
-      - link/**
-      - tools/**
-      - .github/workflows/dev_msrc_link.yaml
-
+      
 permissions:
   contents: write
   id-token: write
