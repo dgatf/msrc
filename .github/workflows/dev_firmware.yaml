@@ -10,9 +10,11 @@ on:
     paths:
       - board/**
 
+
 permissions:
   contents: write
   id-token: write
+  attestations: write
 
 concurrency:
   group: dev-release-firmware
