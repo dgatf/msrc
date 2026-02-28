@@ -232,7 +232,7 @@ static uint16_t format(uint8_t data_id, float value) {
     if (data_id == SBUS_AIR_SPEED) {
         return __builtin_bswap16((uint16_t)round(value) | 0x4000);
     }
-    if (data_id == SBUS_GPS_SPEED) {
+    if (data_id == SBUS_GPS_SPEED) {  
         static uint16_t value2 = 0x4000;
         value2 += 0x01;
         if (value2 > 0x49A0) value2 = 0x4000;
