@@ -52,20 +52,14 @@ jobs:
           subject-path: dist/MSRC_firmware.uf2
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Move tag dev-latest (global)
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -f dev-latest
-          git push -f origin dev-latest
-
-      - name: Create/Update Development release (ensure exists)
+      - name: Create/Update Development release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: dev-latest
-          name: Development (auto)
-          prerelease: true
-          generate_release_notes: false
+            tag_name: dev-latest
+            target_commitish: ${{ github.sha }}
+            name: Development (auto)
+            prerelease: true
+            generate_release_notes: false
 
       - name: Delete previous firmware asset (keep filename fixed)
         uses: mknejp/delete-release-assets@v1
