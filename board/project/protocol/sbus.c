@@ -114,6 +114,7 @@ typedef struct sensor_sbus_t {
 } sensor_sbus_t;
 
 static sensor_sbus_t *sbus_sensor[32] = {NULL};
+static uint8_t *gps_fix;
 static uint packet_id;
 static volatile uint slot = 0;
 static volatile bool slot_pending = false;
@@ -233,12 +234,12 @@ static uint16_t format(uint8_t data_id, float value) {
         return __builtin_bswap16((uint16_t)round(value) | 0x4000);
     }
     if (data_id == SBUS_GPS_SPEED) {  
-        static uint16_t value2 = 0x4000;
-        value2 += 0x01;
-        if (value2 > 0x49A0) value2 = 0x4000;
-        debug("\nGPS Speed: %d kmh\n", value2);
-        //return __builtin_bswap16((uint16_t)round(value * 1.852) | 0x4000);
-        return __builtin_bswap16(value2);
+        //static uint16_t value2 = 0x4000;
+        //value2 += 0x01;
+        //if (value2 > 0x49A0) value2 = 0x4000;
+        debug("\nGPS Speed: %d kmh\n", value  * 1.852);
+        return __builtin_bswap16((uint16_t)round(value * 1.852) | (*gps_fix > 0 ? 0x4000 : 0x0000));
+        //return __builtin_bswap16(value2);
     }
     if (data_id == SBUS_GPS_VARIO_SPEED) {
         return __builtin_bswap16((int16_t)round(value * 10));
@@ -748,6 +749,7 @@ static void set_config(void) {
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){SBUS_GPS_SPEED, parameter.spd};
         add_sensor(SLOT_GPS_SPD, new_sensor);
+        gps_fix = parameter.fix_type;
         new_sensor = malloc(sizeof(sensor_sbus_t));
         *new_sensor = (sensor_sbus_t){SBUS_GPS_VARIO_SPEED, parameter.vspeed};
         add_sensor(SLOT_GPS_VARIO, new_sensor);
