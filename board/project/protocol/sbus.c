@@ -323,9 +323,9 @@ static uint16_t format(uint8_t data_id, float value) {
         return __builtin_bswap16(lon >> 4);
     }
     if (data_id == SBUS_GPS_LON_SPD) {
-        spd = 0;
-        if (value < 512) spd = 0x4000;
-        spd |= (uint16_t)round(value);
+        if (value > 512) spd = 512;
+        spd = (uint16_t)round(value);
+        spd |= (*gps_fix > 0 ? 0x4000 : 0x0000);
         return __builtin_bswap16((spd << 8) | (lon >> 20));
     }
     if (data_id == SBUS_GPS_PRESS_SPD) {
@@ -339,8 +339,8 @@ static uint16_t format(uint8_t data_id, float value) {
         uint16_t vario = 0;
         if (value >= -150 && value <= 260) {
             vario = (10.0 * (value + 150));
-            vario |= 0x1000;
         }
+        vario |= (*gps_fix > 0 ? 0x1000 : 0x0000);
         return __builtin_bswap16(vario | (alt >> 10));
     }
     return __builtin_bswap16(value);
