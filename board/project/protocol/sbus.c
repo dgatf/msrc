@@ -36,14 +36,24 @@
 #define SLOT_VARIO_RESSURE 5
 #define SLOT_VOLT_V1 6
 #define SLOT_VOLT_V2 7
-#define SLOT_GPS_SPD 8
+/*#define SLOT_GPS_SPD 8
 #define SLOT_GPS_ALT 9
 #define SLOT_GPS_TIME 10
 #define SLOT_GPS_VARIO 11
 #define SLOT_GPS_LAT1 12
 #define SLOT_GPS_LAT2 13
 #define SLOT_GPS_LON1 14
-#define SLOT_GPS_LON2 15
+#define SLOT_GPS_LON2 15*/
+
+#define SLOT_GPS_UTC 8
+#define SLOT_GPS_LAT_UTC 9
+#define SLOT_GPS_LAT_LON 10
+#define SLOT_GPS_LON 11
+#define SLOT_GPS_LON_SPD 12
+#define SLOT_GPS_PRESS_SPD 13
+#define SLOT_GPS_ALT_PRESS 14
+#define SLOT_GPS_VARIO_ALT 15
+
 #define SLOT_AIR_SPEED 16
 #define SLOT_POWER_CURR3 21
 #define SLOT_POWER_VOLT3 22
@@ -76,14 +86,22 @@
 #define SBUS_POWER_CONS 7
 #define SBUS_VARIO_ALT 8  // F1672
 #define SBUS_VARIO_SPEED 9
-#define SBUS_GPS_SPEED 10  // F1675
+#define SBUS_GPS_UTC 10
+#define SBUS_GPS_LAT_UTC 11
+#define SBUS_GPS_LAT_LON 12
+#define SBUS_GPS_LON 13
+#define SBUS_GPS_LON_SPD 14
+#define SBUS_GPS_PRESS_SPD 15
+#define SBUS_GPS_ALT_PRESS 16
+#define SBUS_GPS_VARIO_ALT 17
+/*#define SBUS_GPS_SPEED 10  // F1675
 #define SBUS_GPS_ALTITUDE 11
 #define SBUS_GPS_TIME 12
 #define SBUS_GPS_VARIO_SPEED 13
 #define SBUS_GPS_LATITUDE1 14
 #define SBUS_GPS_LATITUDE2 15
 #define SBUS_GPS_LONGITUDE1 16
-#define SBUS_GPS_LONGITUDE2 17
+#define SBUS_GPS_LONGITUDE2 17*/
 #define SBUS_AIR_SPEED 18
 
 /**
@@ -230,10 +248,10 @@ static uint16_t format(uint8_t data_id, float value) {
     if (data_id == SBUS_POWER_VOLT) {
         return __builtin_bswap16((uint16_t)round((value)*100));
     }
-    if (data_id == SBUS_AIR_SPEED) {
+    /*if (data_id == SBUS_AIR_SPEED) {
         return __builtin_bswap16((uint16_t)round(value) | 0x4000);
     }
-    if (data_id == SBUS_GPS_SPEED) {  
+    if (data_id == SBUS_GPS_SPEED) {
         //static uint16_t value2 = 0x4000;
         //value2 += 0x01;
         //if (value2 > 0x49A0) value2 = 0x4000;
@@ -274,8 +292,58 @@ static uint16_t format(uint8_t data_id, float value) {
         uint8_t minutes = (uint8_t)(value / 100) - hours * 100;
         uint8_t seconds = value - hours * 10000 - minutes * 100;
         return __builtin_bswap16(hours * 3600 + minutes * 60 + seconds);
+    }*/
+    static uint32_t utc = 0, lat = 0, lon = 0, spd = 0, alt = 0, vspeed = 0;
+    if (data_id == SBUS_GPS_UTC) {
+        uint8_t hours = value / 10000;
+        uint8_t minutes = (uint8_t)(value / 100) - hours * 100;
+        uint8_t seconds = value - hours * 10000 - minutes * 100;
+        utc = hours * 3600 + minutes * 60 + seconds;
+        return __builtin_bswap16(utc);
     }
-    return __builtin_bswap16(round(value));
+    if (data_id == SBUS_GPS_LAT_UTC) {
+        lat = 0;
+        if (value < 0) {
+            value *= -1;
+            lat = 0x4000000;
+        }
+        lat |= (uint32_t)(value * 600000);
+        return __builtin_bswap16((lat << 1) | (utc >> 16));
+    }
+    if (data_id == SBUS_GPS_LAT_LON) {
+        lon = 0;
+        if (value < 0) {
+            value *= -1;
+            lon = 0x8000000;
+        }
+        lon |= (uint32_t)(value * 600000);
+        return __builtin_bswap16((lon << 12) | (lat >> 15));
+    }
+    if (data_id == SBUS_GPS_LON) {
+        return __builtin_bswap16(lon >> 4);
+    }
+    if (data_id == SBUS_GPS_LON_SPD) {
+        spd = 0;
+        if (value < 512) spd = 0x4000;
+        spd |= (uint16_t)round(value);
+        return __builtin_bswap16((spd << 8) | (lon >> 20));
+    }
+    if (data_id == SBUS_GPS_PRESS_SPD) {
+        return __builtin_bswap16(spd >> 8);
+    }
+    if (data_id == SBUS_GPS_ALT_PRESS) {
+        alt = (value >= -820 && value <= 4830) ? (1.25 * (value + 820)) : 0;
+        return __builtin_bswap16(alt >> 6);
+    }
+    if (data_id == SBUS_GPS_VARIO_ALT) {
+        uint16_t vario = 0;
+        if (value >= -150 && value <= 260) {
+            vario = (10.0 * (value + 150));
+            vario |= 0x1000;
+        }
+        return __builtin_bswap16(vario | (alt >> 10));
+    }
+    return __builtin_bswap16(value);
 }
 
 static uint8_t get_slot_id(uint8_t slot) {
@@ -730,32 +798,31 @@ static void set_config(void) {
         parameter.home_set = malloc(sizeof(uint8_t));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
-
         new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_GPS_LATITUDE1, parameter.lat};
-        add_sensor(SLOT_GPS_LAT1, new_sensor);
+        *new_sensor = (sensor_sbus_t){SBUS_GPS_UTC, parameter.time};
+        add_sensor(SLOT_GPS_UTC, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_GPS_LATITUDE2, parameter.lat};
-        add_sensor(SLOT_GPS_LAT2, new_sensor);
+        *new_sensor = (sensor_sbus_t){SBUS_GPS_LAT_UTC, parameter.lat};
+        add_sensor(SLOT_GPS_LAT_UTC, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_GPS_LONGITUDE1, parameter.lon};
-        add_sensor(SLOT_GPS_LON1, new_sensor);
+        *new_sensor = (sensor_sbus_t){SBUS_GPS_LAT_LON, parameter.lon};
+        add_sensor(SLOT_GPS_LAT_LON, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_GPS_LONGITUDE2, parameter.lon};
-        add_sensor(SLOT_GPS_LON2, new_sensor);
+        *new_sensor = (sensor_sbus_t){SBUS_GPS_LON, parameter.lon};
+        add_sensor(SLOT_GPS_LON, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_GPS_ALTITUDE, parameter.alt};
-        add_sensor(SLOT_GPS_ALT, new_sensor);
+        *new_sensor = (sensor_sbus_t){SBUS_GPS_LON_SPD, parameter.spd_kmh};
+        add_sensor(SLOT_GPS_LON_SPD, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_GPS_SPEED, parameter.spd};
-        add_sensor(SLOT_GPS_SPD, new_sensor);
+        *new_sensor = (sensor_sbus_t){SBUS_GPS_PRESS_SPD, parameter.spd_kmh};
+        add_sensor(SLOT_GPS_PRESS_SPD, new_sensor);
         gps_fix = parameter.fix_type;
         new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_GPS_VARIO_SPEED, parameter.vspeed};
-        add_sensor(SLOT_GPS_VARIO, new_sensor);
+        *new_sensor = (sensor_sbus_t){SBUS_GPS_ALT_PRESS, parameter.alt};
+        add_sensor(SLOT_GPS_ALT_PRESS, new_sensor);
         new_sensor = malloc(sizeof(sensor_sbus_t));
-        *new_sensor = (sensor_sbus_t){SBUS_GPS_TIME, parameter.time};
-        add_sensor(SLOT_GPS_TIME, new_sensor);
+        *new_sensor = (sensor_sbus_t){SBUS_GPS_VARIO_ALT, parameter.vspeed};
+        add_sensor(SLOT_GPS_VARIO_ALT, new_sensor);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_voltage) {
@@ -852,9 +919,8 @@ static void set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset,
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float))};
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
 
         if (config->enable_analog_airspeed) {
