@@ -1,10 +1,7 @@
 name: Dev Release - MSRC Link
-run-name: "Dev Link • ${{ github.ref_name }} • ${{ github.sha }}"
 
 on:
   workflow_dispatch: {}
-  schedule:
-    - cron: '0 0 1 * *'
   push:
     branches:
       - master
@@ -189,6 +186,17 @@ jobs:
         with:
           subject-path: dist/MSRC_Link_Windows.exe
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Write release body
+        run: |
+          cat > release_body.md << EOF
+          Development (auto)
+
+          MSRC Link:
+          - commit: "${{ github.event.head_commit.message }}"
+          - commit-url: "https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+
+          EOF
 
       - name: Publish MSRC Link to Development release
         uses: ncipollo/release-action@v1

@@ -1,12 +1,7 @@
 name: CI - MSRC Link
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - master
-    paths:
-      - msrc_gui/**
+  workflow_dispatch: {}
 
 jobs:
   linux:
