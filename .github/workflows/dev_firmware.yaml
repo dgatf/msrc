@@ -1,10 +1,7 @@
 name: Dev Release (Firmware)
-run-name: "Dev Firmware • ${{ github.ref_name }} • ${{ github.sha }}"
 
 on:
   workflow_dispatch: {}
-  schedule:
-    - cron: '0 0 1 * *'
   push:
     branches:
       - master
@@ -55,8 +52,8 @@ jobs:
           Development (auto)
 
           Firmware:
-          - commit: \`${{ github.sha }}\`
-          - date: $(date -u +'%Y-%m-%d %H:%M UTC')
+          - commit: "${{ github.event.head_commit.message }}"
+          - commit-url: "https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
 
           EOF
 
