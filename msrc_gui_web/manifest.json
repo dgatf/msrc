@@ -1,0 +1,16 @@
+{
+    "name": "MSRC Link Web",
+    "short_name": "MSRC Link",
+    "description": "Web-based configuration tool for MSRC (Multi Sensor for RC) telemetry system",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#1a1a2e",
+    "theme_color": "#1a1a2e",
+    "icons": [
+        {
+            "src": "res/msrc.png",
+            "sizes": "any",
+            "type": "image/png"
+        }
+    ]
+}
