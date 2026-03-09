@@ -2,3 +2,6 @@ misc
 build/
 build_*/
 msrc_gui/msrc_gui.pro.user*
+
+### macOS ###
+.DS_Store
