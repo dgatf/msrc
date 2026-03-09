@@ -128,9 +128,18 @@ header {
 /* Tabs */
 .tabs {
     display: flex;
+    align-items: center;
     background: var(--header-bg);
     border-bottom: 2px solid var(--border);
     padding: 0 16px;
+}
+
+.tab-warning {
+    margin-left: auto;
+    font-size: 11px;
+    color: #ffcc00;
+    opacity: 0.8;
+    white-space: nowrap;
 }
 
 .tab {
