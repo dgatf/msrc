@@ -182,8 +182,22 @@ Then click **Connect**, select the RP2040 USB serial port, and the config will b
 
 ## Browser requirements
 
-- **Chrome 89+** or **Edge 89+** (Web Serial API support).
-- Firefox and Safari do not support Web Serial API — a banner is shown.
+| Platform | Browser | Transport | Status |
+|----------|---------|-----------|--------|
+| Windows / macOS / Linux / ChromeOS | Chrome 89+ / Edge 89+ | Web Serial API | Full support |
+| Android | Chrome 61+ | WebUSB API (fallback) | Full support |
+| iOS / Safari / Firefox | — | — | Not supported (banner shown) |
+
+The app auto-detects the best available transport: **Web Serial API** on desktop, **WebUSB API** on Android. Both use the same binary protocol — no firmware changes required.
+
+### WebUSB (Android) notes
+
+On Android, the [Web Serial API is not available](https://caniuse.com/web-serial), so the app falls back to the **WebUSB API** to communicate with the RP2040 at the raw USB level (CDC ACM).
+
+- The RP2040 is accessed via its default Pico SDK USB VID/PID (`0x2E8A` / `0x000A`).
+- Line coding (115200/8N1) is configured via USB CDC control transfers (`SET_LINE_CODING`, `SET_CONTROL_LINE_STATE`).
+- Data is exchanged over bulk IN/OUT endpoints on the CDC data interface.
+- Android may require the user to grant USB permission when first connecting.
 
 ## Compatibility with msrc_gui
 

@@ -3,17 +3,21 @@
  *          Orchestrates serial communication, UI mapping, circuit diagram, and PWA.
  */
 
-const serial = new SerialConnection();
+const serial = createConnection();
 let currentConfig = null;
 let debugAutoScroll = true;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    /* Check Web Serial support */
-    if (!SerialConnection.isSupported()) {
+    /* Check for any supported transport */
+    if (!serial) {
         $('unsupportedBanner').style.display = 'block';
         $('btConnect').disabled = true;
         return;
     }
+
+    /* Show which transport is active */
+    const transport = serial instanceof SerialConnection ? 'Web Serial' : 'WebUSB';
+    console.log('MSRC Link: using ' + transport);
 
     /* Preload circuit images */
     await preloadCircuitImages();
