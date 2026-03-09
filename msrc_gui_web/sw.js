@@ -3,12 +3,14 @@
  * Caches all app assets on install, serves from cache first.
  */
 
-const CACHE_NAME = 'msrc-link-v1';
+importScripts('./js/version.js');
+const CACHE_NAME = 'msrc-link-' + APP_VERSION;
 
 const ASSETS = [
     './',
     './index.html',
     './css/style.css',
+    './js/version.js',
     './js/config_struct.js',
     './js/serial.js',
     './js/circuit.js',
@@ -16,6 +18,8 @@ const ASSETS = [
     './js/app.js',
     './manifest.json',
     './res/msrc.png',
+    './res/msrc-192.png',
+    './res/msrc-512.png',
     './res/rp2040_zero.png',
     './res/current_rp2040_zero.png',
     './res/voltage_rp2040_zero.png',

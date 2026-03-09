@@ -15,9 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    /* Show which transport is active */
+    /* Show version and transport */
+    $('appVersion').textContent = 'v' + APP_VERSION;
     const transport = serial instanceof SerialConnection ? 'Web Serial' : 'WebUSB';
-    console.log('MSRC Link: using ' + transport);
+    console.log('MSRC Link v' + APP_VERSION + ' — ' + transport);
 
     /* Preload circuit images */
     await preloadCircuitImages();
