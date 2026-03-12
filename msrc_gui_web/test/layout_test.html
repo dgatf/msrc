@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Config Layout Test</title></head>
+<body><pre id="out"></pre>
+<script src="../js/config_struct.js"></script>
+<script>
+const out = document.getElementById('out');
+const checks = {
+    'version': 0, 'rx_protocol': 2, 'esc_protocol': 3, 'enable_gps': 4,
+    'gps_baudrate': 8, 'enable_analog_voltage': 12, 'alpha_rpm': 20,
+    'refresh_rate_rpm': 44, 'analog_voltage_multiplier': 64,
+    'analog_current_type': 68, 'gpio_interval': 70,
+    'analog_current_quiescent_voltage': 72, 'rpm_multiplier': 88,
+    'smartport_data_id': 96, 'esc_hw4_init_delay_duration': 102,
+    'esc_hw4_voltage_multiplier': 108, 'esc_hw4_offset': 124,
+    'serial_monitor_baudrate': 128, 'serial_monitor_timeout_ms': 134,
+    'airspeed_vcc': 138, 'fuel_flow_ml_per_pulse': 140,
+    'enable_fuel_flow': 144, 'airspeed_offset': 158,
+    'enable_gyro': 163, 'lipo_cells': 166, 'spare72': 167,
+    'spare73': 168, 'spare8': 172, 'spare20': 220
+};
+let pass = 0, fail = 0;
+const fieldMap = {};
+LAYOUT.fields.forEach(f => fieldMap[f.name] = f.offset);
+for (const [name, expected] of Object.entries(checks)) {
+    const actual = fieldMap[name];
+    if (actual === expected) { pass++; }
+    else { fail++; out.textContent += `FAIL: ${name} expected ${expected} got ${actual}\n`; }
+}
+out.textContent += `\nTotal size: JS=${CONFIG_SIZE} expected=224 ${CONFIG_SIZE===224?'OK':'FAIL'}\n`;
+out.textContent += `${pass} passed, ${fail} failed\n`;
+</script></body></html>

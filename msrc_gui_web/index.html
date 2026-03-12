@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSRC Link Web</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="res/msrc.png" type="image/png">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <img src="res/msrc.png" alt="MSRC" class="logo">
+            <h1>MSRC Link</h1>
+            <span id="appVersion" class="version"></span>
+        </div>
+        <div class="header-right">
+            <button id="btConnect" class="btn btn-primary">Connect</button>
+            <button id="btUpdate" class="btn btn-success" disabled>Update</button>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab active" data-tab="config">Configuration</button>
+        <button class="tab" data-tab="circuit">Circuit</button>
+        <button class="tab" data-tab="debug">Debug Log</button>
+        <span class="tab-warning">⚠️ This web app is AI-generated, don't use it for anything other than testing!</span>
+    </nav>
+
+    <main>
+        <!-- Configuration Tab -->
+        <section id="tab-config" class="tab-content active">
+            <div class="config-layout">
+                <!-- Left column: Receiver -->
+                <div class="config-column">
+                    <fieldset id="fsReceiver">
+                        <legend>Receiver Protocol</legend>
+                        <div class="form-group">
+                            <label for="cbReceiver">Protocol</label>
+                            <select id="cbReceiver">
+                                <option value="0">Frsky Smartport</option>
+                                <option value="1">Frsky D</option>
+                                <option value="15">Frsky FPort</option>
+                                <option value="16">Frsky FBUS</option>
+                                <option value="2">Spektrum XBUS</option>
+                                <option value="3">Spektrum SRXL</option>
+                                <option value="9">Spektrum SRXL2</option>
+                                <option value="4">Flysky IBUS</option>
+                                <option value="5">Futaba SBUS2</option>
+                                <option value="7">Jeti Ex Bus</option>
+                                <option value="18">Jeti Ex Sensor</option>
+                                <option value="6">Multiplex Sensor Bus</option>
+                                <option value="11">ELRS/CRSF</option>
+                                <option value="13">Sanwa</option>
+                                <option value="12">HOTT</option>
+                                <option value="8">Hitec</option>
+                                <option value="14">JR Propo</option>
+                                <option value="17">GHST</option>
+                                <option value="10">Serial Monitor</option>
+                            </select>
+                        </div>
+
+                        <!-- Protocol-specific options -->
+                        <div id="optSmartportSensorId" class="form-group protocol-opt" style="display:none">
+                            <label for="sbSensorId">Sensor Id</label>
+                            <input type="number" id="sbSensorId" min="1" max="28" value="15">
+                        </div>
+                        <div id="optXbusClockStretch" class="protocol-opt" style="display:none">
+                            <label><input type="checkbox" id="cbClockStretch"> Clock Stretch</label>
+                            <label><input type="checkbox" id="cbAlternativePacket"> Alt. Volt/Temp Packet</label>
+                        </div>
+                        <div id="optIbus" class="protocol-opt" style="display:none">
+                            <label><input type="checkbox" id="cbAlternativeCoordinates"> Alt. GPS Coordinates</label>
+                        </div>
+                        <div id="optJeti" class="protocol-opt" style="display:none">
+                            <div class="form-group">
+                                <label for="cbSpeedUnitsGps">GPS Speed Units</label>
+                                <select id="cbSpeedUnitsGps">
+                                    <option value="1">km/h</option>
+                                    <option value="0">kts</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="optSbus" class="protocol-opt" style="display:none">
+                            <label><input type="checkbox" id="ckSbusBattery" checked> Battery Slot</label>
+                            <label><input type="checkbox" id="ckSbusExtVolt"> Ext. Voltage Slot</label>
+                        </div>
+                        <div id="optFportInverted" class="protocol-opt" style="display:none">
+                            <label><input type="checkbox" id="cbFPortInverted"> Inverted</label>
+                        </div>
+                        <div id="optFbusInverted" class="protocol-opt" style="display:none">
+                            <label><input type="checkbox" id="cbFbusInverted"> Inverted</label>
+                        </div>
+                    </fieldset>
+
+                    <!-- Serial Monitor options -->
+                    <fieldset id="fsSerialMonitor" style="display:none">
+                        <legend>Serial Monitor</legend>
+                        <div class="form-group">
+                            <label for="cbSerialMonitorGpio">GPIO</label>
+                            <select id="cbSerialMonitorGpio">
+                                <option>1</option><option>5</option><option>6</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cbBaudrate">Baudrate</label>
+                            <select id="cbBaudrate">
+                                <option>115200</option><option>57600</option><option>38400</option>
+                                <option>19200</option><option>9600</option><option>4800</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cbStopbits">Stop bits</label>
+                            <select id="cbStopbits"><option>1</option><option>2</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cbParity">Parity</label>
+                            <select id="cbParity"><option value="0">None</option><option value="1">Odd</option><option value="2">Even</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sbTimeout">Timeout (ms)</label>
+                            <input type="number" id="sbTimeout" min="1" max="100" value="1">
+                        </div>
+                        <label><input type="checkbox" id="cbInverted"> Inverted</label>
+                        <div class="form-group">
+                            <label for="cbSerialFormat">Format</label>
+                            <select id="cbSerialFormat"><option value="0">Hex</option><option value="1">String</option></select>
+                        </div>
+                    </fieldset>
+
+                    <!-- Refresh Rates (Frsky only) -->
+                    <fieldset id="gbRate" style="display:none">
+                        <legend>Refresh Rate (ms)</legend>
+                        <div class="form-row">
+                            <div class="form-group"><label>RPM</label><input type="number" id="sbRpmRate" min="1" max="2000" value="1000"></div>
+                            <div class="form-group"><label>Voltage</label><input type="number" id="sbVoltageRate" min="1" max="2000" value="1000"></div>
+                            <div class="form-group"><label>Current</label><input type="number" id="sbCurrentRate" min="1" max="2000" value="1000"></div>
+                            <div class="form-group"><label>Temp</label><input type="number" id="sbTemperatureRate" min="1" max="2000" value="1000"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>GPS</label><input type="number" id="sbGpsRate" min="1" max="2000" value="1000"></div>
+                            <div class="form-group"><label>Consumption</label><input type="number" id="sbConsumptionRate" min="1" max="2000" value="1000"></div>
+                            <div class="form-group"><label>Vario</label><input type="number" id="sbVarioRate" min="1" max="2000" value="1000"></div>
+                            <div class="form-group"><label>Airspeed</label><input type="number" id="sbAirspeedRate" min="1" max="2000" value="1000"></div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Averaging -->
+                    <fieldset id="gbAverage">
+                        <legend>Averaging Elements</legend>
+                        <div class="form-row">
+                            <div class="form-group" id="grpRpmAvg"><label>RPM</label><input type="number" id="sbRpmAvg" min="1" max="16" value="1"></div>
+                            <div class="form-group" id="grpVoltageAvg"><label>Voltage</label><input type="number" id="sbVoltageAvg" min="1" max="16" value="1"></div>
+                            <div class="form-group" id="grpCurrentAvg"><label>Current</label><input type="number" id="sbCurrentAvg" min="1" max="16" value="1"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" id="grpTemperatureAvg"><label>Temp</label><input type="number" id="sbTemperatureAvg" min="1" max="16" value="1"></div>
+                            <div class="form-group" id="grpVarioAvg"><label>Vario</label><input type="number" id="sbVarioAvg" min="1" max="16" value="1"></div>
+                            <div class="form-group" id="grpAirspeedAvg"><label>Airspeed</label><input type="number" id="sbAirspeedAvg" min="1" max="16" value="1"></div>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <!-- Right column: Sensors -->
+                <div class="config-column">
+                    <!-- ESC -->
+                    <fieldset id="gbEsc" class="toggleable">
+                        <legend><label><input type="checkbox" id="chkEsc"> ESC</label></legend>
+                        <div class="fieldset-content">
+                            <div class="form-group">
+                                <label for="cbEsc">Model</label>
+                                <select id="cbEsc">
+                                    <option value="1">Hobbywing V3</option>
+                                    <option value="2">Hobbywing V4/Flyfun (not VBAR firmware)</option>
+                                    <option value="3">PWM</option>
+                                    <option value="4">Castle Link</option>
+                                    <option value="5">Kontronic</option>
+                                    <option value="6">Kiss</option>
+                                    <option value="7">APD HV</option>
+                                    <option value="8">HobbyWing V5</option>
+                                    <option value="9">Smart ESC/BAT</option>
+                                    <option value="10">OMP M4</option>
+                                    <option value="11">ZTW</option>
+                                    <option value="12">OpenYGE</option>
+                                </select>
+                            </div>
+                            <div id="optSmartEsc" style="display:none">
+                                <label><input type="checkbox" id="cbCalculateConsumption"> Calculate Consumption</label>
+                            </div>
+                            <div id="optHw4AutoDetect" style="display:none">
+                                <label><input type="checkbox" id="cbHw4AutoDetect"> Auto Detect</label>
+                                <label><input type="checkbox" id="cbPwmOut"> PWM Out</label>
+                            </div>
+                            <fieldset id="gbEscParameters" style="display:none">
+                                <legend>HW V4/V5 Parameters</legend>
+                                <label><input type="checkbox" id="cbInitDelay"> Init Delay</label>
+                                <label><input type="checkbox" id="cbEscAutoOffset" checked> Auto Offset</label>
+                                <div class="form-group" id="grpEscOffset" style="display:none">
+                                    <label for="sbEscOffset">Offset</label>
+                                    <input type="number" id="sbEscOffset" step="0.01" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="sbVoltageMultiplier">Voltage Mult. (x100000)</label>
+                                    <input type="number" id="sbVoltageMultiplier" step="1" value="880">
+                                </div>
+                                <div class="form-group">
+                                    <label for="sbCurrentMultiplier">Current Mult. (x100000)</label>
+                                    <input type="number" id="sbCurrentMultiplier" step="1" value="30000">
+                                </div>
+                            </fieldset>
+                            <fieldset id="gbRpmMultipliers">
+                                <legend>RPM Multipliers</legend>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Pair of Poles</label><input type="number" id="sbPairOfPoles" min="1" max="20" value="1"></div>
+                                    <div class="form-group"><label>Main Gear</label><input type="number" id="sbMainTeeth" min="1" max="1000" value="1"></div>
+                                    <div class="form-group"><label>Pinion Gear</label><input type="number" id="sbPinionTeeth" min="1" max="1000" value="1"></div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </fieldset>
+
+                    <!-- GPS -->
+                    <fieldset id="gbGps" class="toggleable">
+                        <legend><label><input type="checkbox" id="chkGps"> GPS</label></legend>
+                        <div class="fieldset-content">
+                            <div class="form-group">
+                                <label for="cbGpsProtocol">Protocol</label>
+                                <select id="cbGpsProtocol">
+                                    <option value="0">UBLOX</option>
+                                    <option value="1">NMEA</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cbGpsBaudrate">Baudrate</label>
+                                <select id="cbGpsBaudrate">
+                                    <option>115200</option><option>57600</option><option>38400</option><option>9600</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="grpGpsRate">
+                                <label for="cbGpsRate">Rate (Hz)</label>
+                                <select id="cbGpsRate">
+                                    <option>1</option><option>5</option><option>10</option><option>20</option>
+                                </select>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Voltage -->
+                    <fieldset id="gbVoltage1" class="toggleable">
+                        <legend><label><input type="checkbox" id="chkVoltage"> Voltage</label></legend>
+                        <div class="fieldset-content">
+                            <div class="form-group">
+                                <label for="sbVoltage1Mult">Multiplier</label>
+                                <input type="number" id="sbVoltage1Mult" step="0.1" value="7.8">
+                            </div>
+                            <div id="optSbusBatterySlot" style="display:none">
+                                <label><input type="checkbox" id="ckSbusBatteryVolt" checked> Battery Slot</label>
+                                <label><input type="checkbox" id="ckSbusExtVoltVolt"> Ext. Voltage Slot</label>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Temperature NTC -->
+                    <div id="grpTemperature">
+                        <label><input type="checkbox" id="cbTemperature1"> Temperature (NTC)</label>
+                    </div>
+
+                    <!-- Current -->
+                    <fieldset id="gbCurrent" class="toggleable">
+                        <legend><label><input type="checkbox" id="chkCurrent"> Current</label></legend>
+                        <div class="fieldset-content">
+                            <div class="form-group">
+                                <label for="cbCurrentSensorType">Sensor Type</label>
+                                <select id="cbCurrentSensorType">
+                                    <option value="0">Hall effect</option>
+                                    <option value="1">Shunt resistor</option>
+                                </select>
+                            </div>
+                            <div id="optHallEffect">
+                                <label><input type="checkbox" id="cbCurrentAutoOffset" checked> Auto Offset</label>
+                                <div class="form-group" id="grpQuiescentVoltage" style="display:none">
+                                    <label for="sbQuiescentVoltage">Zero current output voltage, V<sub>IOUT</sub> (V)</label>
+                                    <input type="number" id="sbQuiescentVoltage" step="0.01" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="sbCurrentSens">Sensitivity (mV/A)</label>
+                                    <input type="number" id="sbCurrentSens" step="0.1" value="1">
+                                </div>
+                            </div>
+                            <div id="optShuntResistor" style="display:none">
+                                <div class="form-group">
+                                    <label for="sbAnalogCurrentMultiplier">Multiplier</label>
+                                    <input type="number" id="sbAnalogCurrentMultiplier" step="0.01" value="1">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="sbAnalogRate">Analog Rate (Hz)</label>
+                                <input type="number" id="sbAnalogRate" min="1" max="100" value="10">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Airspeed -->
+                    <fieldset id="gbAirspeed" class="toggleable">
+                        <legend><label><input type="checkbox" id="chkAirspeed"> Airspeed</label></legend>
+                        <div class="fieldset-content">
+                            <div class="form-group">
+                                <label for="sbAirspeedVcc">VCC (V)</label>
+                                <input type="number" id="sbAirspeedVcc" step="0.01" value="5.0">
+                            </div>
+                            <div class="form-group">
+                                <label for="sbAirspeedOffset">Offset (mV)</label>
+                                <input type="number" id="sbAirspeedOffset" value="0">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Vario -->
+                    <fieldset id="gbAltitude" class="toggleable">
+                        <legend><label><input type="checkbox" id="chkAltitude"> Vario / Altitude</label></legend>
+                        <div class="fieldset-content">
+                            <div class="form-group">
+                                <label for="cbBarometerType">Barometer</label>
+                                <select id="cbBarometerType">
+                                    <option value="1">BMP280</option>
+                                    <option value="2">MS5611</option>
+                                    <option value="3">BMP180</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="grpAltitudeFilter">
+                                <label for="cbAltitudeFilter">Filter</label>
+                                <select id="cbAltitudeFilter">
+                                    <option value="1">Low</option>
+                                    <option value="2">Medium</option>
+                                    <option value="3">High</option>
+                                </select>
+                            </div>
+                            <label><input type="checkbox" id="cbVarioAutoOffset"> Auto Offset</label>
+                        </div>
+                    </fieldset>
+
+                    <!-- Fuel Meter -->
+                    <fieldset id="gbFuelmeter" class="toggleable" style="display:none">
+                        <legend><label><input type="checkbox" id="chkFuelmeter"> Fuel Meter</label></legend>
+                        <div class="fieldset-content">
+                            <div class="form-group">
+                                <label for="sbMlPulse">ml per pulse</label>
+                                <input type="number" id="sbMlPulse" step="0.001" value="0.01">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Fuel Pressure -->
+                    <fieldset id="gbFuelPressure" class="toggleable" style="display:none">
+                        <legend><label><input type="checkbox" id="chkFuelPressure"> Fuel Pressure</label></legend>
+                        <div class="fieldset-content">
+                            <div class="form-group">
+                                <label for="cbMaxPressure">Max Pressure</label>
+                                <select id="cbMaxPressure">
+                                    <option value="8192">&lt; 1 kPa (K = 8192)</option>
+                                    <option value="4096">&lt; 2 kPa (K = 4096)</option>
+                                    <option value="2048">&lt; 4 kPa (K = 2048)</option>
+                                    <option value="1024">&lt; 8 kPa (K = 1024)</option>
+                                    <option value="512">&lt; 16 kPa (K = 512)</option>
+                                    <option value="256">&lt; 32 kPa (K = 256)</option>
+                                    <option value="128">&lt; 65 kPa (K = 128)</option>
+                                    <option value="64">&lt; 130 kPa (K = 64)</option>
+                                    <option value="32">&lt; 260 kPa (K = 32)</option>
+                                    <option value="16">&lt; 500 kPa (K = 16)</option>
+                                    <option value="8">&lt; 1000 kPa (K = 8)</option>
+                                    <option value="4">&gt; 1000 kPa (K = 4)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- GPIO -->
+                    <fieldset id="gbGpio" style="display:none">
+                        <legend>GPIO Switches</legend>
+                        <div class="form-row gpio-row">
+                            <label><input type="checkbox" id="cbGpio17"> 17</label>
+                            <label><input type="checkbox" id="cbGpio18"> 18</label>
+                            <label><input type="checkbox" id="cbGpio19"> 19</label>
+                            <label><input type="checkbox" id="cbGpio20"> 20</label>
+                            <label><input type="checkbox" id="cbGpio21"> 21</label>
+                            <label><input type="checkbox" id="cbGpio22"> 22</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="sbGpioInterval">Interval (ms)</label>
+                            <input type="number" id="sbGpioInterval" min="100" max="10000" value="1000">
+                        </div>
+                    </fieldset>
+
+                    <!-- Gyro -->
+                    <fieldset id="gbGyro" class="toggleable">
+                        <legend><label><input type="checkbox" id="chkGyro"> Gyro (MPU6050)</label></legend>
+                        <div class="fieldset-content">
+                            <div class="form-group">
+                                <label for="cbGyroAccSens">Accel. Scale (g)</label>
+                                <select id="cbGyroAccSens">
+                                    <option value="0">2</option><option value="1">4</option>
+                                    <option value="2">8</option><option value="3">16</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cbGyroSens">Gyro Scale (dps)</label>
+                                <select id="cbGyroSens">
+                                    <option value="0">250</option><option value="1">500</option>
+                                    <option value="2">1000</option><option value="3">2000</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sbGyroWeight">Weighting (%)</label>
+                                <input type="number" id="sbGyroWeight" min="0" max="100" value="96">
+                            </div>
+                            <div class="form-group">
+                                <label for="sbGyroFilter">Filter</label>
+                                <input type="number" id="sbGyroFilter" min="0" max="6" value="0">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- LiPo (INA3221) -->
+                    <fieldset id="gbLipo" class="toggleable" style="display:none">
+                        <legend><label><input type="checkbox" id="chkLipo"> LiPo (INA3221)</label></legend>
+                        <div class="fieldset-content">
+                            <div class="form-group">
+                                <label for="cbIna3221Filter">Filter</label>
+                                <select id="cbIna3221Filter">
+                                    <option value="0">1</option><option value="1">4</option>
+                                    <option value="2">16</option><option value="3">64</option>
+                                    <option value="4">128</option><option value="5">256</option>
+                                    <option value="6">512</option><option value="7">1024</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sbLipoCells">Cells</label>
+                                <input type="number" id="sbLipoCells" min="1" max="12" value="3">
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </section>
+
+        <!-- Circuit Tab -->
+        <section id="tab-circuit" class="tab-content">
+            <div class="circuit-toolbar">
+                <button id="btZoomIn" class="btn">Zoom +</button>
+                <button id="btZoomOut" class="btn">Zoom −</button>
+            </div>
+            <div class="circuit-container" id="circuitContainer">
+                <canvas id="circuitCanvas" width="800" height="600"></canvas>
+            </div>
+        </section>
+
+        <!-- Debug Tab -->
+        <section id="tab-debug" class="tab-content">
+            <div class="debug-toolbar">
+                <button id="btDebug" class="btn" disabled>Enable Log</button>
+                <button id="btClearDebug" class="btn">Clear</button>
+                <button id="btScroll" class="btn">No scroll</button>
+            </div>
+            <pre id="ptDebug" class="debug-output"></pre>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-left">
+            <button id="btOpenConfig" class="btn btn-sm">Open .cfg</button>
+            <button id="btSaveConfig" class="btn btn-sm">Save .cfg</button>
+            <button id="btDefaultConfig" class="btn btn-sm btn-danger" disabled>Default Config</button>
+        </div>
+        <div class="footer-right">
+            <span id="statusBar">Not connected</span>
+        </div>
+    </footer>
+
+    <div id="unsupportedBanner" class="banner" style="display:none">
+        Your browser does not support Web Serial or WebUSB. Use Chrome or Edge (version 89+) on desktop, or Chrome on Android.
+    </div>
+
+    <script src="js/version.js"></script>
+    <script src="js/config_struct.js"></script>
+    <script src="js/serial.js"></script>
+    <script src="js/circuit.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
