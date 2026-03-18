@@ -1067,7 +1067,10 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             packet.gps_time_m = min;
             packet.gps_time_s = sec;
             // uint8_t gps_time_sss;//#36 UTC time milliseconds
-            packet.msl_altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
+            if (*sensors->gps[HOTT_GPS_ALTITUDE] < 0)
+                packet.msl_altitude = 0;
+            else
+                packet.msl_altitude = *sensors->gps[HOTT_GPS_ALTITUDE];
             // uint8_t vibration; // Byte 39 vibrations level in %
             // uint8_t Ascii4;    // Byte 40: 00 ASCII Free Character [4] appears right to home distance
             // uint8_t Ascii5;    // Byte 41: 00 ASCII Free Character [5] appears right to home direction
