@@ -19,6 +19,8 @@
 #define T1_LAST_ID 0x040f
 #define T2_FIRST_ID 0x0410  // 1 C
 #define T2_LAST_ID 0x041f
+#define DIST_FIRST_ID 0x0420
+#define DIST_LAST_ID 0x042f
 #define RPM_FIRST_ID 0x0500  // 1 rpm
 #define RPM_LAST_ID 0x050f
 #define FUEL_FIRST_ID 0x0600  // 1 %
