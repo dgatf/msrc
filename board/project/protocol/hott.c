@@ -1045,7 +1045,6 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             }
 
             packet.distance = *sensors->gps[HOTT_GPS_DISTANCE];
-            packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] + 500;
             float climbrate = *sensors->gps[HOTT_GPS_CLIMBRATE] * 100 + 30000;
             if (climbrate < 0) climbrate = 0;
             packet.climbrate = climbrate;  // 30000, 0.00
@@ -1067,10 +1066,23 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             packet.gps_time_m = min;
             packet.gps_time_s = sec;
             // uint8_t gps_time_sss;//#36 UTC time milliseconds
+
+            static float altitude_offset = 0;
+            static bool altitude_offset_set = false;
+            if (*sensors->gps[HOTT_GPS_FIX] == 2 && !altitude_offset_set) {
+                altitude_offset = *sensors->gps[HOTT_GPS_ALTITUDE];
+                altitude_offset_set = true;
+            }
             if (*sensors->gps[HOTT_GPS_ALTITUDE] < 0)
                 packet.msl_altitude = 0;
             else
                 packet.msl_altitude = *sensors->gps[HOTT_GPS_ALTITUDE];
+
+            if (*sensors->gps[HOTT_GPS_ALTITUDE] - altitude_offset + 500 < 0)
+                packet.altitude = 0;
+            else
+                packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] - altitude_offset + 500;
+
             // uint8_t vibration; // Byte 39 vibrations level in %
             // uint8_t Ascii4;    // Byte 40: 00 ASCII Free Character [4] appears right to home distance
             // uint8_t Ascii5;    // Byte 41: 00 ASCII Free Character [5] appears right to home direction
@@ -1491,11 +1503,6 @@ static void set_config(hott_sensors_t *sensors) {
 
         vario_alarm_parameters.altitude = parameter.altitude;
 
-        if (config->enable_gps) {
-            sensors->gps[HOTT_GPS_ALTITUDE] = parameter.altitude;
-            sensors->gps[HOTT_GPS_CLIMBRATE] = parameter.vspeed;
-        }
-
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
@@ -1522,11 +1529,6 @@ static void set_config(hott_sensors_t *sensors) {
 
         vario_alarm_parameters.altitude = parameter.altitude;
 
-        if (config->enable_gps) {
-            sensors->gps[HOTT_GPS_ALTITUDE] = parameter.altitude;
-            sensors->gps[HOTT_GPS_CLIMBRATE] = parameter.vspeed;
-        }
-
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
@@ -1551,11 +1553,6 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->general_air[HOTT_GENERAL_CLIMBRATE] = parameter.vspeed;
 
         vario_alarm_parameters.altitude = parameter.altitude;
-
-        if (config->enable_gps) {
-            sensors->gps[HOTT_GPS_ALTITUDE] = parameter.altitude;
-            sensors->gps[HOTT_GPS_CLIMBRATE] = parameter.vspeed;
-        }
 
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
