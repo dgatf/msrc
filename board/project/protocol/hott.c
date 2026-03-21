@@ -1069,9 +1069,15 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
 
             static float altitude_offset = 0;
             static bool altitude_offset_set = false;
-            if (*sensors->gps[HOTT_GPS_FIX] == 2 && !altitude_offset_set) {
-                altitude_offset = *sensors->gps[HOTT_GPS_ALTITUDE];
-                altitude_offset_set = true;
+            if (!altitude_offset_set) {
+                if (*sensors->gps[HOTT_GPS_FIX] == 2) {
+                    static uint cont =0;
+                    cont++;
+                    if (cont > 5) {
+                        altitude_offset = *sensors->gps[HOTT_GPS_ALTITUDE];
+                        altitude_offset_set = true;
+                    }
+                } else cont = 0;
             }
             if (*sensors->gps[HOTT_GPS_ALTITUDE] < 0)
                 packet.msl_altitude = 0;
