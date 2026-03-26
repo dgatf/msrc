@@ -8,7 +8,7 @@ typedef struct gps_parameters_t {
     uint baudrate, rate;
     float *lat, *lon;
     float *alt, *spd, *cog, *hdop, *sat, *time, *date, *vspeed, *dist, *spd_kmh, *fix, *vdop, *speed_acc, *h_acc,
-        *v_acc, *track_acc, *n_vel, *e_vel, *v_vel, *alt_elipsiod, *pdop;
+        *v_acc, *track_acc, *n_vel, *e_vel, *v_vel, *alt_elipsiod, *pdop, *alt_home;
     uint8_t *fix_type;
     uint8_t *home_set;
 } gps_parameters_t;

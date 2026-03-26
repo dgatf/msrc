@@ -241,7 +241,7 @@ static uint16_t format(uint8_t data_id, float value) {
         return __builtin_bswap16((int16_t)round(value * 10));
     }
     if (data_id == SBUS_GPS_ALTITUDE) {
-        return __builtin_bswap16((int16_t)round(value) | 0x4000);
+        return __builtin_bswap16((int16_t)round(value) | (*gps_fix > 1 ? 0x4000 : 0x0000));
     }
     if (data_id == SBUS_GPS_LATITUDE1 || data_id == SBUS_GPS_LONGITUDE1) {
         // bits 1-4: bits 17-20 from minutes precision 4 (minutes*10000 = 20 bits)
@@ -724,6 +724,7 @@ static void set_config(void) {
         parameter.pdop = malloc(sizeof(float));
         parameter.fix_type = malloc(sizeof(uint8_t));
         parameter.home_set = malloc(sizeof(uint8_t));
+        parameter.alt_home = malloc(sizeof(float));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         new_sensor = malloc(sizeof(sensor_sbus_t));

@@ -122,7 +122,8 @@
 #define HOTT_GPS_SATS 8
 #define HOTT_GPS_FIX 9
 #define HOTT_GPS_TIME 10
-#define HOTT_GPS_COUNT 11
+#define HOTT_GPS_HOME_ALTITUDE 11
+#define HOTT_GPS_COUNT 12
 
 // GENERAL
 #define HOTT_GENERAL_CELL_1 0
@@ -1066,29 +1067,14 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             packet.gps_time_m = min;
             packet.gps_time_s = sec;
             // uint8_t gps_time_sss;//#36 UTC time milliseconds
-
-            static float altitude_offset = 0;
-            static bool altitude_offset_set = false;
-            if (!altitude_offset_set) {
-                static uint cont =0;
-                if (*sensors->gps[HOTT_GPS_FIX] == 2) {
-                    cont++;
-                    if (cont > 5) {
-                        altitude_offset = *sensors->gps[HOTT_GPS_ALTITUDE];
-                        altitude_offset_set = true;
-                    }
-                } else cont = 0;
-            }
             if (*sensors->gps[HOTT_GPS_ALTITUDE] < 0)
                 packet.msl_altitude = 0;
             else
                 packet.msl_altitude = *sensors->gps[HOTT_GPS_ALTITUDE];
-
-            if (*sensors->gps[HOTT_GPS_ALTITUDE] - altitude_offset + 500 < 0)
+            if (*sensors->gps[HOTT_GPS_ALTITUDE] - *sensors->gps[HOTT_GPS_HOME_ALTITUDE] + 500 < 0)
                 packet.altitude = 0;
             else
-                packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] - altitude_offset + 500;
-
+                packet.altitude = *sensors->gps[HOTT_GPS_ALTITUDE] - *sensors->gps[HOTT_GPS_HOME_ALTITUDE] + 500;
             // uint8_t vibration; // Byte 39 vibrations level in %
             // uint8_t Ascii4;    // Byte 40: 00 ASCII Free Character [4] appears right to home distance
             // uint8_t Ascii5;    // Byte 41: 00 ASCII Free Character [5] appears right to home direction
@@ -1420,6 +1406,7 @@ static void set_config(hott_sensors_t *sensors) {
         parameter.pdop = malloc(sizeof(float));
         parameter.fix_type = malloc(sizeof(uint8_t));
         parameter.home_set = malloc(sizeof(uint8_t));
+        parameter.alt_home = malloc(sizeof(float));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -1435,8 +1422,7 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->gps[HOTT_GPS_DISTANCE] = parameter.dist;
         sensors->gps[HOTT_GPS_CLIMBRATE] = parameter.vspeed;
         sensors->gps[HOTT_GPS_TIME] = parameter.time;
-        sensors->gps[HOTT_GPS_TIME] = parameter.time;
-        sensors->gps[HOTT_GPS_TIME] = parameter.time;
+        sensors->gps[HOTT_GPS_HOME_ALTITUDE] = parameter.alt_home;
     }
     if (config->enable_analog_voltage) {
         voltage_parameters_t parameter = {0, config->analog_rate, config->alpha_voltage,

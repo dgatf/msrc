@@ -7,8 +7,8 @@
 
 #define INIT_DELAY_MS 1000
 #define INTERVAL_MS 500
-#define MIN_SATS 5
-#define MAX_HDOP 2.5f
+#define MIN_SATS 4
+#define MAX_HDOP 5.0f
 
 static float degrees_to_radians(float degrees);
 static float get_distance_to_home_2d(float lat, float lon, float lat_init, float lon_init);
@@ -25,8 +25,14 @@ void distance_task(void *parameters) {
     *parameter.distance = 0;
     float latitude_init = 0, longitude_init = 0;
 
+    vTaskDelay(INIT_DELAY_MS / portTICK_PERIOD_MS);
+
+    /* Home設定 */
     while (1) {
-        if (*parameter.fix && *parameter.sat >= MIN_SATS && *parameter.hdop <= MAX_HDOP && *parameter.hdop > 0.0f &&
+        if (*parameter.fix &&
+            *parameter.sat >= MIN_SATS &&
+            *parameter.hdop <= MAX_HDOP &&
+            *parameter.hdop > 0.0f &&
             coord_valid(*parameter.latitude, *parameter.longitude)) {
             latitude_init = *parameter.latitude;
             longitude_init = *parameter.longitude;
@@ -41,8 +47,10 @@ void distance_task(void *parameters) {
         }
         vTaskDelay(INTERVAL_MS / portTICK_PERIOD_MS);
     }
+
+    /* 距離更新 */
     while (1) {
-        if (*parameter.fix && *parameter.sat >= MIN_SATS && *parameter.hdop <= MAX_HDOP && *parameter.hdop > 0.0f &&
+        if (*parameter.fix &&
             coord_valid(*parameter.latitude, *parameter.longitude)) {
             *parameter.distance =
                 get_distance_to_home_2d(*parameter.latitude, *parameter.longitude, latitude_init, longitude_init);

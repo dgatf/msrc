@@ -714,6 +714,7 @@ static void set_config(void) {
         parameter.pdop = malloc(sizeof(float));
         parameter.fix_type = malloc(sizeof(uint8_t));
         parameter.home_set = malloc(sizeof(uint8_t));
+        parameter.alt_home = malloc(sizeof(float));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
         context.uart_pio_notify_task_handle = task_handle;
 

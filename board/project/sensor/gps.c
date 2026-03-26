@@ -113,6 +113,7 @@ static void nmea_msg(char *cmd, bool enable);
 static void ubx_cfg_msg(uint8_t class, uint8_t id, bool enable);
 static void ubx_cfg_rate(uint16_t rate);
 static void ubx_cfg_cfg(void);
+static bool set_home_altitude(uint fix_type);
 // static int64_t alarm_nmea_timeout(alarm_id_t id, void *parameters);
 // static int64_t alarm_ublox_timeout(alarm_id_t id, void *parameters);
 
@@ -143,6 +144,7 @@ void gps_task(void *parameters) {
     *parameter.alt_elipsiod = 0;
     *parameter.h_acc = 0;
     *parameter.v_acc = 0;
+    *parameter.alt_home = 0;
 #ifdef SIM_SENSORS
     *parameter.lat = 123.456789;   // deg * 1e7  11º32'45.67" +N, -S
     *parameter.lon = -123.456789;  //-deg + 10e7 1251.964833333; // 20º51'57.89" +E, -W
@@ -303,12 +305,15 @@ static void process(gps_parameters_t *parameter) {
                 *parameter->h_acc = navpvt.hAcc / 1000.0F;
                 *parameter->v_acc = navpvt.vAcc / 1000.0F;
                 *parameter->pdop = navpvt.pDOP / 100.0F;
+                if (set_home_altitude(*parameter->fix_type)) {
+                    *parameter->alt_home = *parameter->alt;
+                }
                 debug(
                     "\nGPS (%u) < NAV-PTV: Date: %.0f Time: %.0f Fix: %.0f Sat: %.0f Lon: %.5f Lat: %.5f Alt: %.2f "
-                    "Vspeed: %.2f Speed: mm/s %i knots %.2f kmh %.2f Pdop: %.2f",
+                    "Vspeed: %.2f Speed: mm/s %i knots %.2f kmh %.2f Pdop: %.2f, Alt home: %.2f",
                     uxTaskGetStackHighWaterMark(NULL), *parameter->date, *parameter->time, *parameter->fix,
                     *parameter->sat, *parameter->lon, *parameter->lat, *parameter->alt, *parameter->vspeed,
-                    navpvt.gSpeed, *parameter->spd, *parameter->spd_kmh, *parameter->pdop);
+                    navpvt.gSpeed, *parameter->spd, *parameter->spd_kmh, *parameter->pdop, *parameter->alt_home);
             } else if (msg_info.class == 0x01 && msg_info.id == 0x04 && msg_info.len == sizeof(ublox_navdop_t) - 2) {
                 // cancel_alarm(alarm_id_ublox);
                 // alarm_id_ublox = add_alarm_in_ms(2000, alarm_ublox_timeout, &alarm_parameters, false);
@@ -321,6 +326,22 @@ static void process(gps_parameters_t *parameter) {
             }
         }
     }
+}
+
+static bool set_home_altitude(uint fix_type) {
+    static bool altitude_offset_set = false;
+    if (!altitude_offset_set) {
+        static uint cont = 0;
+        if (fix_type == 2) {
+            cont++;
+            if (cont > 5) {
+                altitude_offset_set = true;
+                return true;
+            }
+        } else
+            cont = 0;
+    }
+    return false;
 }
 
 static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_parameters_t *parameter) {
@@ -358,6 +379,10 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_ALT) {
             *parameter->alt = atof(buffer);
             get_vspeed_gps(parameter->vspeed, *parameter->alt, VSPEED_INTERVAL_MS);
+            if (set_home_altitude(*parameter->fix_type)) {
+                *parameter->alt_home = *parameter->alt;
+            }
+            debug("(alt home %.2f),", *parameter->alt_home);
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_SPD) {
             *parameter->spd = atof(buffer);
             *parameter->spd_kmh = *parameter->spd * 1.852;
