@@ -12,6 +12,7 @@ static uint uart_pio_sm;
 
 static int64_t uart_pio_timeout_callback(alarm_id_t id, void *user_data);
 static void uart_pio_handler(uint8_t data);
+static void uart_pio_reset_queue_from_isr(BaseType_t *xHigherPriorityTaskWoken);
 
 void uart_pio_begin(uint baudrate, int gpio_tx, int gpio_rx, uint timeout, PIO pio, uint irq, uint8_t data_bits,
                     uint8_t stop_bits, uint8_t parity) {
@@ -24,7 +25,6 @@ void uart_pio_begin(uint baudrate, int gpio_tx, int gpio_rx, uint timeout, PIO p
     }
     if (gpio_tx != UART_GPIO_NONE) {
         uart_pio_sm = uart_tx_init(pio, gpio_tx, baudrate, data_bits, stop_bits, parity);
-        context.uart_rx_pio_queue_handle = xQueueCreate(UART_PIO_BUFFER_SIZE, sizeof(uint8_t));
     }
 }
 
@@ -37,12 +37,19 @@ static int64_t uart_pio_timeout_callback(alarm_id_t id, void *user_data) {
     return 0;
 }
 
+static void uart_pio_reset_queue_from_isr(BaseType_t *xHigherPriorityTaskWoken) {
+    uint8_t discarded;
+    while (uxQueueMessagesWaitingFromISR(context.uart_rx_pio_queue_handle) > 0) {
+        xQueueReceiveFromISR(context.uart_rx_pio_queue_handle, &discarded, xHigherPriorityTaskWoken);
+    }
+}
+
 static void uart_pio_handler(uint8_t data) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     static alarm_id_t uart_pio_timeout_alarm_id = 0;
     if (uart_pio_timeout_alarm_id) alarm_pool_cancel_alarm(context.uart_alarm_pool, uart_pio_timeout_alarm_id);
     if (uart_pio_is_timedout) {
-        xQueueReset(context.uart_rx_pio_queue_handle);
+        uart_pio_reset_queue_from_isr(&xHigherPriorityTaskWoken);
         uart_pio_is_timedout = false;
     }
     // debug("-%X-", data);
