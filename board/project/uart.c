@@ -19,6 +19,7 @@ static int64_t uart0_timeout_callback(alarm_id_t id, void *user_data);
 static int64_t uart1_timeout_callback(alarm_id_t id, void *user_data);
 static void uart0_rx_handler();
 static void uart1_rx_handler();
+static void uart_reset_queue_from_isr(QueueHandle_t queue_handle, BaseType_t *xHigherPriorityTaskWoken);
 
 void uart0_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint databits, uint stopbits,
                  uart_parity_t parity, bool inverted, bool half_duplex) {
@@ -92,12 +93,19 @@ static int64_t uart1_timeout_callback(alarm_id_t id, void *user_data) {
     return 0;
 }
 
+static void uart_reset_queue_from_isr(QueueHandle_t queue_handle, BaseType_t *xHigherPriorityTaskWoken) {
+    uint8_t discarded;
+    while (uxQueueMessagesWaitingFromISR(queue_handle) > 0) {
+        xQueueReceiveFromISR(queue_handle, &discarded, xHigherPriorityTaskWoken);
+    }
+}
+
 static void uart0_rx_handler() {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     static alarm_id_t uart0_timeout_alarm_id = 0;
     if (uart0_timeout_alarm_id) alarm_pool_cancel_alarm(context.uart_alarm_pool, uart0_timeout_alarm_id);
     if (uart0_is_timedout) {
-        xQueueReset(context.uart0_queue_handle);
+        uart_reset_queue_from_isr(context.uart0_queue_handle, &xHigherPriorityTaskWoken);
         uart0_is_timedout = false;
     }
     while (uart_is_readable(uart0)) {
@@ -124,7 +132,7 @@ static void uart1_rx_handler() {
         alarm_pool_cancel_alarm(context.uart_alarm_pool, uart1_timeout_alarm_id);
     }
     if (uart1_is_timedout) {
-        xQueueReset(context.uart1_queue_handle);
+        uart_reset_queue_from_isr(context.uart1_queue_handle, &xHigherPriorityTaskWoken);
         uart1_is_timedout = false;
     }
     while (uart_is_readable(uart1)) {

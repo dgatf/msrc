@@ -33,6 +33,12 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
         ;
 }
 
+void vApplicationMallocFailedHook(void) {
+    printf("malloc failed\r\n");
+    while (1)
+        ;
+}
+
 int main() {
     stdio_init_all();
 
