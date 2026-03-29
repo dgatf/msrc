@@ -321,6 +321,7 @@ static void send_packet(void) {
         packet.type = SRXL2_PACKET_TYPE_CONTROL;
         packet.len = SRXL2_CONTROL_LEN_CHANNEL;
         packet.command = SRXL2_CONTROL_CMD_CHANNEL;
+        packet.reply_id = 0;
         if (!(cont % 10)) packet.reply_id = esc_id;
         srxl2_channel_data_t channel_data;
         channel_data.rssi = 0x64;

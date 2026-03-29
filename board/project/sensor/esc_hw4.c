@@ -78,7 +78,8 @@ static void process(esc_hw4_parameters_t *parameter, uint *current_raw) {
     uint16_t pwm, throttle;
     static uint32_t timestamp = 0;
     uint8_t lenght = uart1_available();
-    uint8_t data[lenght];
+    if (lenght > PACKET_LENGHT + 1) lenght = PACKET_LENGHT + 1;
+    uint8_t data[PACKET_LENGHT + 1];
     uart1_read_bytes(data, lenght);
     debug("\nEsc HW4 (%u) < ", uxTaskGetStackHighWaterMark(NULL));
     debug_buffer(data, lenght, "0x%X ");

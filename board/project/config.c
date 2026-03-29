@@ -212,7 +212,6 @@ void config_forze_write() {
     config.esc_hw4_current_max = ESC_HW4_CURRENT_MAX;
     config.esc_hw4_voltage_multiplier = ESC_HW4_VOLTAGE_MULTIPLIER;
     config.esc_hw4_current_multiplier = ESC_HW4_CURRENT_MULTIPLIER;
-    config.esc_hw4_current_max = ESC_HW4_CURRENT_MAX;
     config.ibus_alternative_coordinates = IBUS_GPS_ALTERNATIVE_COORDINATES;
     config.debug = MSRC_DEBUG;
     config.esc_hw4_is_manual_offset = ESC_HW4_MANUAL_OFFSET;
