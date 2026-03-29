@@ -366,16 +366,16 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
             *parameter->time = atof(buffer);
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_LAT) {
             char degrees[3] = {0};
-            double minutes;
+            float minutes = 0;
             strncpy(degrees, buffer, 2);
             minutes = atof(buffer + 2);
-            *parameter->lat = lat_dir * (atoi(degrees) + minutes / 60);
+            *parameter->lat = atoi(degrees) + minutes / 60;
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_LON) {
             char degrees[4] = {0};
-            double minutes;
+            float minutes = 0;
             strncpy(degrees, buffer, 3);
             minutes = atof(buffer + 3);
-            *parameter->lon = lon_dir * (atoi(degrees) + minutes / 60);
+            *parameter->lon = atoi(degrees) + minutes / 60;
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_ALT) {
             *parameter->alt = atof(buffer);
             get_vspeed_gps(parameter->vspeed, *parameter->alt, VSPEED_INTERVAL_MS);
@@ -394,8 +394,10 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
             *parameter->sat = atof(buffer);
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_LAT_SIGN) {
             lat_dir = (buffer[0] == 'N') ? 1 : -1;
+            *parameter->lat = fabsf(*parameter->lat) * lat_dir;
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_LON_SIGN) {
             lon_dir = (buffer[0] == 'E') ? 1 : -1;
+            *parameter->lon = fabsf(*parameter->lon) * lon_dir;
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_GSA_HDOP) {
             *parameter->hdop = atof(buffer);
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_GSA_VDOP) {

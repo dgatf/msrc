@@ -59,7 +59,6 @@ void uart1_begin(uint baudrate, uint gpio_tx, uint gpio_rx, uint timeout, uint d
     uart_set_fifo_enabled(uart1, false);
     gpio_set_function(gpio_rx, GPIO_FUNC_UART);
     if (!half_duplex) gpio_set_function(gpio_tx, GPIO_FUNC_UART);
-    gpio_set_function(gpio_rx, GPIO_FUNC_UART);
     if (!inverted) {
         gpio_pull_up(gpio_tx);
         gpio_pull_up(gpio_rx);
@@ -106,7 +105,6 @@ static void uart0_rx_handler() {
         // debug("-%X-", data);
         xQueueSendToBackFromISR(context.uart0_queue_handle, &data, &xHigherPriorityTaskWoken);
         if (uart0_timeout == 0) {
-            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             vTaskNotifyGiveIndexedFromISR(context.uart0_notify_task_handle, 1, &xHigherPriorityTaskWoken);
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         }
@@ -134,7 +132,6 @@ static void uart1_rx_handler() {
         // debug("%X ", data);
         xQueueSendToBackFromISR(context.uart1_queue_handle, &data, &xHigherPriorityTaskWoken);
         if (uart1_timeout == 0) {
-            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             vTaskNotifyGiveIndexedFromISR(context.uart1_notify_task_handle, 1, &xHigherPriorityTaskWoken);
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         }
