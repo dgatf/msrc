@@ -961,9 +961,13 @@ void MainWindow::enableWidgets(QWidget *widget, bool enable) {
 void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     if (arg1 == "Spektrum XBUS") {
         ui->cbClockStretch->setVisible(true);
-        ui->cbAlternativePacket->setVisible(true);
     } else {
         ui->cbClockStretch->setVisible(false);
+    }
+
+    if (arg1 == "Spektrum XBUS" || arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2") {
+        ui->cbAlternativePacket->setVisible(true);
+    } else {
         ui->cbAlternativePacket->setVisible(false);
     }
 

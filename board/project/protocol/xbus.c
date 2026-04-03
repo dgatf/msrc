@@ -210,8 +210,11 @@ void xbus_format_sensor(uint8_t address, uint8_t *buffer) {
             rpm_volt_temp.identifier = XBUS_RPMVOLTTEMP_ID;
             if (sensor.rpm_volt_temp[XBUS_RPMVOLTTEMP_VOLT])
                 rpm_volt_temp.volts = swap_16((uint16_t)(*sensor.rpm_volt_temp[XBUS_RPMVOLTTEMP_VOLT] * 100));
-            if (sensor.rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP])
-                rpm_volt_temp.temperature = swap_16((int16_t)(*sensor.rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP]));
+            if (sensor.rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP]) {
+                float temp_f = *sensor.rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP];
+                temp_f = temp_f * 9.0 / 5.0 + 32;
+                rpm_volt_temp.temperature = swap_16((int16_t)(temp_f * 10));
+            }
             memcpy(buffer, &rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
             break;
         }
