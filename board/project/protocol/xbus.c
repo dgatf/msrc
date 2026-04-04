@@ -178,14 +178,20 @@ void xbus_format_sensor(uint8_t address, uint8_t *buffer) {
                 battery.current_a = swap_16((int16_t)(*sensor.battery[XBUS_BATTERY_CURRENT1] * 10));
             if (sensor.battery[XBUS_BATTERY_CONSUMPTION1])
                 battery.charge_used_a = swap_16((int16_t)(*sensor.battery[XBUS_BATTERY_CONSUMPTION1]));
-            if (sensor.battery[XBUS_BATTERY_TEMP1])
-                battery.temp_a = swap_16((uint16_t)(*sensor.battery[XBUS_BATTERY_TEMP1] * 10));
+            if (sensor.battery[XBUS_BATTERY_TEMP1]) {
+                float temp_f = *sensor.battery[XBUS_BATTERY_TEMP1];
+                temp_f = temp_f * 9.0 / 5.0 + 32;
+                battery.temp_a = swap_16((uint16_t)(temp_f * 10));
+            }
             if (sensor.battery[XBUS_BATTERY_CURRENT2])
                 battery.current_b = swap_16((int16_t)(*sensor.battery[XBUS_BATTERY_CURRENT2] * 10));
             if (sensor.battery[XBUS_BATTERY_CONSUMPTION2])
                 battery.charge_used_b = swap_16((int16_t)(*sensor.battery[XBUS_BATTERY_CONSUMPTION2]));
-            if (sensor.battery[XBUS_BATTERY_TEMP2])
-                battery.temp_b = swap_16((uint16_t)(*sensor.battery[XBUS_BATTERY_TEMP2] * 10));
+            if (sensor.battery[XBUS_BATTERY_TEMP2]) {
+                float temp_f = *sensor.battery[XBUS_BATTERY_TEMP2];
+                temp_f = temp_f * 9.0 / 5.0 + 32;
+                battery.temp_b = swap_16((uint16_t)(temp_f * 10));
+            }
             memcpy(buffer, &battery, sizeof(xbus_battery_t));
             break;
         }
@@ -213,7 +219,7 @@ void xbus_format_sensor(uint8_t address, uint8_t *buffer) {
             if (sensor.rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP]) {
                 float temp_f = *sensor.rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP];
                 temp_f = temp_f * 9.0 / 5.0 + 32;
-                rpm_volt_temp.temperature = swap_16((int16_t)(temp_f * 10));
+                rpm_volt_temp.temperature = swap_16((int16_t)(temp_f));
             }
             memcpy(buffer, &rpm_volt_temp, sizeof(xbus_rpm_volt_temp_t));
             break;
