@@ -37,7 +37,6 @@
 #include "voltage.h"
 #include "xgzp68xxd.h"
 
-#define SRXL2_DEVICE_ID 0x31
 #define SRXL2_DEVICE_PRIORITY 10
 #define SRXL2_DEVICE_BAUDRATE 1  // 0 = 115200. 1 = 400000
 #define SRXL2_DEVICE_INFO 0
@@ -48,6 +47,7 @@ static volatile uint8_t dest_id = 0xFF;
 static volatile uint8_t baudrate = 0;
 static alarm_id_t alarm_id;
 static volatile bool send_handshake = false;
+static uint8_t sensor_id_;
 
 static void process(void);
 static void send_packet(void);
@@ -60,15 +60,19 @@ void srxl2_task(void *parameters) {
     context.led_cycles = 1;
 
     uart0_begin(115200, UART_RECEIVER_TX, UART_RECEIVER_RX, SRXL2_TIMEOUT_US, 8, 1, UART_PARITY_NONE, false, true);
+    config_t *config = config_read();
+    sensor_id_ = config->sensor_id_srxl2 | 0x30;  // Ensure it's between 0x31 and 0x3F
+    if (sensor_id_ < 0x31 || sensor_id_ > 0x3F) sensor_id_ = 0x31;
     xbus_set_config();
+
     debug("\nSRXL2 init");
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         process();
         if (send_handshake) {
             send_handshake = false;
-            srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, 0, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE,
-                                 SRXL2_DEVICE_INFO, SRXL2_DEVICE_UID);
+            srxl2_send_handshake(uart0, sensor_id_, 0, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE, SRXL2_DEVICE_INFO,
+                                 SRXL2_DEVICE_UID);
         }
     }
 }
@@ -136,7 +140,7 @@ static void process(void) {
             debug(" %X", crc);
             // Allow packets with wrong crc for handshake
             if (dest_id != 0xFF ||
-                !(data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID)) {
+                !(data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == sensor_id_)) {
                 bad_frames++;
                 return;
             }
@@ -144,15 +148,15 @@ static void process(void) {
         bad_frames = 0;
 
         // Handshake received
-        if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == SRXL2_DEVICE_ID) {
+        if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_HANDSHAKE && data[4] == sensor_id_) {
             dest_id = data[3];
             debug("\nSRXL2. Set dest_id 0x%X", dest_id);
-            srxl2_send_handshake(uart0, SRXL2_DEVICE_ID, dest_id, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE,
+            srxl2_send_handshake(uart0, sensor_id_, dest_id, SRXL2_DEVICE_PRIORITY, SRXL2_DEVICE_BAUDRATE,
                                  SRXL2_DEVICE_INFO, SRXL2_DEVICE_UID);
 
         }
         // Send telemetry
-        else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == SRXL2_DEVICE_ID) {
+        else if (data[0] == SRXL2_HEADER && data[1] == SRXL2_PACKET_TYPE_CONTROL && data[4] == sensor_id_) {
             send_packet();
         }
         // Set baudrate

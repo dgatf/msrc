@@ -67,7 +67,7 @@ class MainWindow : public QMainWindow {
     void on_cbEsc_currentTextChanged(const QString &arg1);
     void on_gbEsc_toggled(bool arg1);
     void on_gbVoltage1_toggled(bool arg1);
-    void on_cbTemperature1_toggled(bool checked);
+    void on_gbTemp1_toggled(bool checked);
     void on_gbAltitude_toggled(bool arg1);
     void on_gbCurrent_toggled(bool arg1);
     void on_cbBarometerType_currentTextChanged(const QString &arg1);

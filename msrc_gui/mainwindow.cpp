@@ -161,7 +161,7 @@ void MainWindow::generateCircuit(QLabel *label) {
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
 
-        if (ui->cbTemperature1->isChecked()) {
+        if (ui->gbTemp1->isChecked()) {
             image.load(":/res/ntc_rp2040_zero.png");
             paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
         }
@@ -515,7 +515,8 @@ void MainWindow::setUiFromConfig() {
 
     // Temperature
 
-    ui->cbTemperature1->setChecked(config.enable_analog_ntc);
+    ui->gbTemp1->setChecked(config.enable_analog_ntc);
+    ui->sbTempOffset->setValue(config.ntc_offset);
 
     // Current
 
@@ -677,6 +678,11 @@ void MainWindow::setUiFromConfig() {
     ui->cbIna3221Filter->currentData(config.ina3221_filter);
     ui->sbLipoCells->setValue(config.lipo_cells);
     ui->gbLipo->setChecked(config.enable_lipo);
+
+    // SRXL2
+    uint sensor_id_srxl2 = config.sensor_id_srxl2 ;
+    if (sensor_id_srxl2 < 0x01 || sensor_id_srxl2 > 0x0F) sensor_id_srxl2 = 0x01;
+    ui->sbSensorIdSrxl2->setValue(sensor_id_srxl2);
 }
 
 void MainWindow::getConfigFromUi() {
@@ -747,7 +753,8 @@ void MainWindow::getConfigFromUi() {
 
     // Temperature
 
-    config.enable_analog_ntc = ui->cbTemperature1->isChecked();
+    config.enable_analog_ntc = ui->gbTemp1->isChecked();
+    config.ntc_offset = ui->sbTempOffset->value();
 
     // Airspeed
 
@@ -895,6 +902,10 @@ void MainWindow::getConfigFromUi() {
     config.lipo_cells = ui->sbLipoCells->value();
     config.enable_lipo = ui->gbLipo->isChecked();
 
+    // SRXL2
+    config.sensor_id_srxl2 = ui->sbSensorIdSrxl2->value();
+    if (config.sensor_id_srxl2 < 0x01 || config.sensor_id_srxl2 > 0x0F) config.sensor_id_srxl2 = 0x01;
+
     // Debug
 
     config.debug = 0;  // disabled from msrc_gui
@@ -963,6 +974,14 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->cbClockStretch->setVisible(true);
     } else {
         ui->cbClockStretch->setVisible(false);
+    }
+
+    if (arg1 == "Spektrum SRXL2") {
+        ui->lbSensorIdSrxl2->setVisible(true);
+        ui->sbSensorIdSrxl2->setVisible(true);
+    } else {
+        ui->lbSensorIdSrxl2->setVisible(false);
+        ui->sbSensorIdSrxl2->setVisible(false);
     }
 
     if (arg1 == "Spektrum XBUS" || arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2") {
@@ -1085,9 +1104,9 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
 
     // Temperature
     if (arg1 == "GHST") {
-        ui->cbTemperature1->setVisible(false);
+        ui->gbTemp1->setVisible(false);
     } else {
-        ui->cbTemperature1->setVisible(true);
+        ui->gbTemp1->setVisible(true);
     }
 
     // GPS, current, vario
@@ -1179,7 +1198,7 @@ void MainWindow::on_gbVoltage1_toggled(bool enabled) {
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbTemperature1_toggled(bool checked) {
+void MainWindow::on_gbTemp1_toggled(bool checked) {
     Q_UNUSED(checked);
     generateCircuit(ui->lbCircuit);
 }

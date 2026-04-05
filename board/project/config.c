@@ -130,6 +130,10 @@
 #define INA3221_FILTER 1  // 1 - 1024
 #define INA3221_CELLS 3   // 1 to 12
 
+#define SENSOR_ID_SRXL2 1 // Sensor Id for SRXL2 protocol (if used). 1-15
+
+#define NTC_OFFSET 0
+
 config_t *config_read() {
     uint16_t *version = (uint16_t *)(XIP_BASE + CONFIG_FLASH_TARGET_OFFSET);
     if (*version != CONFIG_VERSION) {
@@ -244,5 +248,7 @@ void config_forze_write() {
     config.ina3221_filter = INA3221_FILTER;
     config.lipo_cells = INA3221_CELLS;
     config.enable_lipo = false;
+    config.sensor_id_srxl2 = SENSOR_ID_SRXL2;
+    config.ntc_offset = NTC_OFFSET;
     config_write(&config);
 }

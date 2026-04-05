@@ -186,8 +186,9 @@ typedef struct config_t {                            // smartport data_id
     uint8_t enable_lipo;                             // 0x5150
     uint8_t mpu6050_filter;                          // 0x5151
     uint8_t lipo_cells;                              // 0x5152
-    uint8_t spare72;
-    uint16_t spare73;
+    uint8_t sensor_id_srxl2;
+    int8_t ntc_offset;                               // 0x5153
+    uint8_t spare7;
     uint32_t spare8;
     uint32_t spare9;
     uint32_t spare10;
