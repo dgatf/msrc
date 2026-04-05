@@ -17,6 +17,7 @@
 #define XBUS_TELE_LIPOMON_ID 0x3A  // 6S Cell Monitor
 #define XBUS_TELE_G_METER_ID 0x3B  // 3-axis accelerometer
 #define XBUS_TELE_GYRO_ID 0x1A     // 3D gyro sensor
+#define XBUS_MULTICYL_ID 0x59      // Multi-cylinder sensor
 #define XBUS_GPS_INFO_FLAGS_IS_NORTH_BIT 0
 #define XBUS_GPS_INFO_FLAGS_IS_EAST_BIT 1
 #define XBUS_GPS_INFO_FLAGS_LONG_GREATER_99_BIT 2
@@ -37,6 +38,7 @@ typedef enum xbus_sensors_t {
     XBUS_TELE_LIPOMON,
     XBUS_TELE_G_METER,
     XBUS_TELE_GYRO,
+    XBUS_MULTICYL,
     XBUS_SENSORS_COUNT
 } xbus_sensors_t;
 
@@ -141,6 +143,12 @@ typedef enum xbus_tele_gyro_enum_t {
     XBUS_TELE_GYRO_YAW,
     XBUS_TELE_GYRO_COUNT
 } xbus_tele_gyro_enum_t;
+
+typedef enum xbus_multicyl_enum_t {
+    XBUS_MULTICYL_TEMP,
+    XBUS_MULTICYL_VOLTAGE,
+    XBUS_MULTICYL_COUNT
+} xbus_multicyl_enum_t;
 
 typedef struct xbus_airspeed_t {
     uint8_t identifier;     // Source device 0x11
@@ -281,6 +289,31 @@ typedef struct xbus_tele_gyro_t {
     int16_t maxGyroZ;
 } xbus_tele_gyro_t;
 
+typedef struct xbus_multi_cyl_t {
+    uint8_t identifier;  // Source device = TELE_DEVICE_MULTICYLINDER = 0x7F
+    uint8_t sID;         // Secondary ID
+    uint8_t
+        temperature[9];   // Temperature, 1C increments, Offset = 30C, 0xFF = NO DATA
+                          // 0x00 = 30C		(86F)
+                          // 0x01 = 31C ...	(88F)
+                          // 0xFE = 284C		(543F)
+                          // 0xFF = NO SENSOR ATTACHED.  Note that sensors must be installed cylinder 1-9 in sequence!
+    uint8_t throttlePct;  // Throttle percent (0-100% typical, 0xFF = NO DATA)
+    uint16_t RPM;         // 4 RPM increments, Offset = 400RPM, range 404-16776.
+                          // 0x000 = 0 RPM
+                          // 0x001 = 404 RPM
+                          // 0x002 = 408 RPM
+                          // 0xFFE = 16776 RPM
+                          // 0xFFF = NO SENSOR ATTACHED
+                          // NOTE:  HI NYBBLE RESERVED, set to 0xF to mark "NO DATA" for now
+    uint8_t batteryV;     // Voltage, 0.1V increments, Offset = 3.5V, 0xFF = NO DATA
+                          // 0x00 = 3.5V
+                          // 0x01 = 3.6V
+                          // 0xFE = 28.9V
+                          // 0xFF = NO SENSOR ATTACHED
+    uint8_t spare;        // 0xFF --> no data
+} xbus_multi_cyl_t;
+
 typedef struct xbus_sensor_gps_loc_t {
     float *altitude_low;
     float *latitude;
@@ -307,6 +340,7 @@ typedef struct xbus_sensor_t {
     float *tele_lipomon[XBUS_TELE_LIPOMON_COUNT];
     float *tele_g_meter[XBUS_TELE_G_METER_COUNT];
     float *tele_gyro[XBUS_TELE_GYRO_COUNT];
+    float *multicyl[XBUS_MULTICYL_COUNT];
 } xbus_sensor_t;
 
 extern context_t context;

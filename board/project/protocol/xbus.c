@@ -304,6 +304,39 @@ void xbus_format_sensor(uint8_t address, uint8_t *buffer) {
             memcpy(buffer, &tele_gyro, sizeof(xbus_tele_gyro_t));
             break;
         }
+        case XBUS_MULTICYL_ID: {
+            xbus_multi_cyl_t multicyl = {0};
+            multicyl.identifier = XBUS_MULTICYL_ID;
+
+            for (int i = 0; i < 9; i++) {
+                multicyl.temperature[i] = 0xFF;
+            }
+
+            if (sensor.multicyl[XBUS_MULTICYL_TEMP]) {
+                config_t *config = config_read();
+                int idx = config->sensor_id_srxl2 - 1;
+
+                if (idx >= 0 && idx < 9) {
+                    float temp_c = *sensor.multicyl[XBUS_MULTICYL_TEMP];
+
+                    if (temp_c < 30.0f)
+                        multicyl.temperature[idx] = 0x00;
+                    else if (temp_c > 284.0f)
+                        multicyl.temperature[idx] = 0xFE;
+                    else
+                        multicyl.temperature[idx] = (uint8_t)(temp_c - 30.0f);
+                }
+            }
+
+            if (sensor.multicyl[XBUS_MULTICYL_VOLTAGE]) {
+                multicyl.batteryV = (uint8_t)((*sensor.multicyl[XBUS_MULTICYL_VOLTAGE] - 3.5f) * 10.0f);
+            } else {
+                multicyl.batteryV = 0xFF;
+            }
+
+            memcpy(buffer, &multicyl, sizeof(xbus_multi_cyl_t));
+            break;
+        }
     }
 }
 
@@ -744,9 +777,9 @@ void xbus_set_config(void) {
             sensor.is_enabled[XBUS_RPMVOLTTEMP] = true;
             i2c_multi_enable_address(XBUS_RPMVOLTTEMP_ID);
         } else {
-            sensor.energy[XBUS_ENERGY_VOLTAGE1] = parameter.voltage;
-            sensor.is_enabled[XBUS_ENERGY] = true;
-            i2c_multi_enable_address(XBUS_ENERGY_ID);
+            sensor.multicyl[XBUS_MULTICYL_VOLTAGE] = parameter.voltage;
+            sensor.is_enabled[XBUS_MULTICYL] = true;
+            i2c_multi_enable_address(XBUS_MULTICYL_ID);
         }
 
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -773,16 +806,17 @@ void xbus_set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_ntc) {
-        ntc_parameters_t parameter = {2, config->analog_rate, config->ntc_offset, config->alpha_temperature, malloc(sizeof(float))};
+        ntc_parameters_t parameter = {2, config->analog_rate, config->ntc_offset, config->alpha_temperature,
+                                      malloc(sizeof(float))};
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
         if (!config->xbus_use_alternative_volt_temp) {
             sensor.rpm_volt_temp[XBUS_RPMVOLTTEMP_TEMP] = parameter.ntc;
             sensor.is_enabled[XBUS_RPMVOLTTEMP] = true;
             i2c_multi_enable_address(XBUS_RPMVOLTTEMP_ID);
         } else {
-            sensor.battery[XBUS_BATTERY_TEMP1] = parameter.ntc;
-            sensor.is_enabled[XBUS_BATTERY] = true;
-            i2c_multi_enable_address(XBUS_BATTERY_ID);
+            sensor.multicyl[XBUS_MULTICYL_TEMP] = parameter.ntc;
+            sensor.is_enabled[XBUS_MULTICYL] = true;
+            i2c_multi_enable_address(XBUS_MULTICYL_ID);
         }
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
