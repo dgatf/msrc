@@ -25,12 +25,13 @@ void ntc_task(void *parameters) {
         float voltage = voltage_read(parameter.adc_num);
         float ntcR_Rref = (voltage * NTC_R1 / (BOARD_VCC - voltage)) / NTC_R_REF;
         if (ntcR_Rref < 0.0001) ntcR_Rref = 0.0001;
-        float temperature = 1 / (log(ntcR_Rref) / NTC_BETA + 1 / 298.15) - 273.15 + parameter.offset;
+        float temperature = 1 / (log(ntcR_Rref) / NTC_BETA + 1 / 298.15) - 273.15;
         *parameter.ntc = get_average(parameter.alpha, *parameter.ntc, temperature);
 #ifdef SIM_SENSORS
         *parameter.ntc = 12.34;
 #endif
-        debug("\nTemperature (%u): %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter.ntc);
+        *parameter.ntc += parameter.offset;
+        debug("\nTemperature (%u): %.2f (offset %d)", uxTaskGetStackHighWaterMark(NULL), *parameter.ntc, parameter.offset);
         vTaskDelay(1000 / parameter.rate / portTICK_PERIOD_MS);
     }
 }

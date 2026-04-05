@@ -6,8 +6,8 @@
 typedef struct ntc_parameters_t {
     uint8_t adc_num;
     uint8_t rate;
-    float alpha;
     int8_t offset;
+    float alpha;
     float *ntc;
 
 } ntc_parameters_t;
