@@ -1308,16 +1308,6 @@ void MainWindow::on_gbFuelPressure_toggled(bool enabled) {
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbGpsProtocol_currentTextChanged(const QString &arg1) {
-    if (arg1 == "NMEA") {
-        ui->lbGpsRate->setVisible(false);
-        ui->cbGpsRate->setVisible(false);
-    } else {
-        ui->lbGpsRate->setVisible(true);
-        ui->cbGpsRate->setVisible(true);
-    }
-}
-
 void MainWindow::on_ckSbusBattery_toggled(bool checked) { ui->ckSbusExtVolt->setChecked(!checked); }
 
 void MainWindow::on_ckSbusExtVolt_toggled(bool checked) { ui->ckSbusBattery->setChecked(!checked); }
