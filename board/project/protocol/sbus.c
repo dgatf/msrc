@@ -57,8 +57,8 @@
 #define SLOT_TEMP2 30
 
 #define TIMEOUT_US 500
-#define SLOT_0_DELAY 2300
-#define INTER_SLOT_DELAY 700
+#define SLOT_0_DELAY 2000
+#define INTER_SLOT_DELAY 660
 #define PACKET_LENGHT 25
 #define SBUS_NEGATIVE_BIT 15
 #define SBUS_SOUTH_WEST_BIT 4
@@ -234,7 +234,6 @@ static uint16_t format(uint8_t data_id, float value) {
         return __builtin_bswap16((uint16_t)round(value) | 0x4000);
     }
     if (data_id == SBUS_GPS_SPEED) {  
-        debug("\nGPS Speed: %d kmh\n", value  * 1.852);
         return __builtin_bswap16((uint16_t)round(value * 1.852) | (*gps_fix > 0 ? 0x4000 : 0x0000));
     }
     if (data_id == SBUS_GPS_VARIO_SPEED) {
