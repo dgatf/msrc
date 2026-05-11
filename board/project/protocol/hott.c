@@ -827,7 +827,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             packet.sensorTextID = HOTT_ESC_TEXT_ID;
             if (sensors->esc[HOTT_ESC_VOLTAGE]) {
                 packet.inputVolt = *sensors->esc[HOTT_ESC_VOLTAGE] * 10;
-                if (packet.inputVolt < minInputVolt) packet.minInputVolt = packet.inputVolt;
+                if (packet.inputVolt < minInputVolt) minInputVolt = packet.inputVolt;
+                packet.minInputVolt = minInputVolt;
                 if (*sensors->esc[HOTT_ESC_VOLTAGE] < alarms->triggers->esc[TRIGGER_ESC_VOLTAGE]) {
                     packet.warningID = ALARM_VOICE_MIN_POWER_VOLTAGE;
                     packet.alarmInverse |= 1 << ALARM_BITMASK_AIRESC_MIN_VOLTAGE;
@@ -843,7 +844,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             }
             if (sensors->esc[HOTT_ESC_TEMPERATURE]) {
                 packet.escTemperature = *sensors->esc[HOTT_ESC_TEMPERATURE] + 20;
-                if (packet.escTemperature > maxEscTemperature) packet.maxEscTemperature = packet.escTemperature;
+                if (packet.escTemperature > maxEscTemperature) maxEscTemperature = packet.escTemperature;
+                packet.maxEscTemperature = maxEscTemperature;
                 if (*sensors->esc[HOTT_ESC_TEMPERATURE] > alarms->triggers->esc[TRIGGER_ESC_TEMPERATURE]) {
                     packet.warningID = ALARM_VOICE_MAX_SENSOR_1_TEMP;
                     packet.alarmInverse |= 1 << ALARM_BITMASK_AIRESC_TEMPERATURE;
@@ -854,7 +856,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             }
             if (sensors->esc[HOTT_ESC_CURRENT]) {
                 packet.current = *sensors->esc[HOTT_ESC_CURRENT] * 10;
-                if (packet.current > maxCurrent) packet.maxCurrent = packet.current;
+                if (packet.current > maxCurrent) maxCurrent = packet.current;
+                packet.maxCurrent = maxCurrent;
                 if (*sensors->esc[HOTT_ESC_CURRENT] > alarms->triggers->esc[TRIGGER_ESC_CURRENT]) {
                     packet.warningID = ALARM_VOICE_MAX_CURRENT;
                     packet.alarmInverse |= 1 << ALARM_BITMASK_AIRESC_MAX_CURRENT;
@@ -863,7 +866,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             }
             if (sensors->esc[HOTT_ESC_RPM]) {
                 packet.RPM = *sensors->esc[HOTT_ESC_RPM] / 10;
-                if (packet.RPM > maxRPM) packet.maxRPM = packet.RPM;
+                if (packet.RPM > maxRPM) maxRPM = packet.RPM;
+                packet.maxRPM = maxRPM;
                 if (*sensors->esc[HOTT_ESC_RPM] < alarms->triggers->esc[TRIGGER_ESC_MIN_RPM]) {
                     packet.warningID = ALARM_VOICE_MIN_RPM;
                     packet.alarmInverse |= 1 << ALARM_BITMASK_AIRESC_RPM;
@@ -877,26 +881,32 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             // uint8_t throttlePercent;            // Byte 22
             if (sensors->esc[HOTT_ESC_SPEED]) {
                 packet.speed = *sensors->esc[HOTT_ESC_SPEED];
-                if (packet.speed > maxSpeed) packet.maxSpeed = packet.speed;
+                if (packet.speed > maxSpeed) maxSpeed = packet.speed;
+                packet.maxSpeed = maxSpeed;
             }
             if (sensors->esc[HOTT_ESC_BEC_VOLTAGE]) {
                 packet.BECVoltage = *sensors->esc[HOTT_ESC_BEC_VOLTAGE] * 10;
-                if (packet.minBECVoltage < minBECVoltage) packet.minBECVoltage = packet.BECVoltage;
+                if (packet.BECVoltage < minBECVoltage) minBECVoltage = packet.BECVoltage;
+                packet.minBECVoltage = minBECVoltage;
             }
             if (sensors->esc[HOTT_ESC_BEC_CURRENT]) {
                 packet.BECCurrent = *sensors->esc[HOTT_ESC_BEC_CURRENT] * 10;
-                if (packet.BECCurrent < minBECCurrent) packet.minBECCurrent = packet.BECCurrent;
-                if (packet.BECCurrent > maxBECCurrent) packet.maxBECCurrent = packet.BECCurrent;
+                if (packet.BECCurrent < minBECCurrent) minBECCurrent = packet.BECCurrent;
+                if (packet.BECCurrent > maxBECCurrent) maxBECCurrent = packet.BECCurrent;
+                packet.minBECCurrent = minBECCurrent;
+                packet.maxBECCurrent = maxBECCurrent;
             }
             // uint8_t PWM;                        // Byte 32
             if (sensors->esc[HOTT_ESC_BEC_TEMPERATURE]) {
                 packet.BECTemperature = *sensors->esc[HOTT_ESC_BEC_TEMPERATURE] + 20;
-                if (packet.BECTemperature > maxBECTemperature) packet.maxBECTemperature = packet.BECTemperature;
+                if (packet.BECTemperature > maxBECTemperature) maxBECTemperature = packet.BECTemperature;
+                packet.maxBECTemperature = maxBECTemperature;
             }
             if (sensors->esc[HOTT_ESC_EXT_TEMPERATURE]) {
                 packet.motorOrExtTemperature = *sensors->esc[HOTT_ESC_EXT_TEMPERATURE] + 20;
                 if (packet.motorOrExtTemperature > maxMotorOrExtTemperature)
-                    packet.maxMotorOrExtTemperature = packet.motorOrExtTemperature;
+                    maxMotorOrExtTemperature = packet.motorOrExtTemperature;
+                packet.maxMotorOrExtTemperature = maxMotorOrExtTemperature;
             }
             // uint16_t RPMWithoutGearOrExt;       // Byte 37
             // uint8_t timing;                     // Byte 39
