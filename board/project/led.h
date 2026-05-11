@@ -5,6 +5,6 @@
 
 extern context_t context;
 
-void led_task();
+void led_task(void *params);
 
 #endif

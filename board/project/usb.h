@@ -5,7 +5,7 @@
 
 extern context_t context;
 
-void usb_task();
+void usb_task(void *params);
 
 extern context_t context;
 

@@ -17,7 +17,7 @@ static uint8_t buffer_rx[USB_BUFFER_LENGTH];
 static int read_usb();
 static void process_usb(int lenght);
 
-void usb_task() {
+void usb_task(void *params) {
     while (1) {
         int length = read_usb();
         if (length) process_usb(length);
