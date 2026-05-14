@@ -2,15 +2,14 @@ QT       += core gui serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-system(git describe --tags > VERSION)
-PROJECT_VERSION = "\\\"$$cat(VERSION)"\\\"
-system(rm VERSION)
+PROJECT_VERSION = "\\\"$$system(git describe --tags)\\\""
 message($${PROJECT_VERSION})
 DEFINES += PROJECT_VERSION=$${PROJECT_VERSION}
 
 QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
 
-CONFIG += c++11
+CONFIG -= c++11
+CONFIG += c++17
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
