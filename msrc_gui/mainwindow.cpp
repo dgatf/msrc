@@ -99,7 +99,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         "\n| Fuel meter (PWM in)                       | 11               |"
         "\n| Throttle PWM (Smart ESC)                  | 12               |"
         "\n| Reverse PWM (Smart ESC)                   | 13               |"
-        "\n| Rsteore default config                    | 15               |"
+        "\n| Restore default config                    | 15               |"
         "\n| Voltage                                   | 26               |"
         "\n| Current                                   | 27               |"
         "\n| NTC                                       | 28               |"
@@ -141,39 +141,39 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::generateCircuit(QLabel *label) {
-    QSize *size = new QSize(label->width() - 10, label->height() - 10);
-    QPixmap *pix = new QPixmap(*size);
-    QPainter *paint = new QPainter(pix);
+    QSize size(label->width() - 10, label->height() - 10);
+    QPixmap pix(size);
+    QPainter paint(&pix);
     QImage image;
 
-    paint->fillRect(0, 0, size->width(), size->height(), label->palette().color(QPalette::Base));
+    paint.fillRect(0, 0, size.width(), size.height(), label->palette().color(QPalette::Base));
     image.load(":/res/rp2040_zero.png");
-    paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+    paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
 
     if (ui->cbReceiver->currentText() != "Serial Monitor") {
         if (ui->gbCurrent->isChecked()) {
             image.load(":/res/current_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
         if (ui->gbVoltage1->isChecked()) {
             image.load(":/res/voltage_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
         if (ui->gbTemp1->isChecked()) {
             image.load(":/res/ntc_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
         if (ui->gbAirspeed->isChecked()) {
             image.load(":/res/airspeed_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
         if (ui->gbGps->isChecked()) {
             image.load(":/res/gps_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
         if (ui->gbEsc->isChecked()) {
@@ -195,33 +195,33 @@ void MainWindow::generateCircuit(QLabel *label) {
                 image.load(":/res/castle_rp2040_zero.png");
             else if (ui->cbEsc->currentText() == "Smart ESC/BAT")
                 image.load(":/res/smart_esc.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         } else {
         }
 
         if (ui->gbAltitude->isChecked()) {
             image.load(":/res/vario_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
         if (ui->gbGyro->isChecked()) {
             image.load(":/res/vario_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
         if (ui->gbFuelPressure->isChecked()) {
             image.load(":/res/fuel_pressure.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
         if (ui->gbFuelmeter->isChecked()) {
             image.load(":/res/fuel_meter.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
         if (ui->gbLipo->isChecked()) {
             image.load(":/res/vario_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
         if (ui->cbReceiver->currentText() == "Frsky D" || ui->cbReceiver->currentText() == "ELRS/CRSF" || ui->cbReceiver->currentText() == "Jeti Ex Sensor") {
@@ -235,12 +235,12 @@ void MainWindow::generateCircuit(QLabel *label) {
         }
         if (ui->cbReceiver->currentText() == "Spektrum XBUS" && ui->cbClockStretch->isChecked() == true) {
             image.load(":/res/clock_stretch_xbus_rp2040_zero.png");
-            paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+            paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
     }
-    paint->drawImage(QPoint(0, 0), image.scaled(*size, Qt::IgnoreAspectRatio));
+    paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
 
-    label->setPixmap(*pix);
+    label->setPixmap(pix);
 }
 
 void MainWindow::openConfig() {
@@ -675,13 +675,13 @@ void MainWindow::setUiFromConfig() {
     // ui->cbGpsRate->setValue
 
     // INA3221 (lipo)
-    ui->cbIna3221Filter->currentData(config.ina3221_filter);
+    ui->cbIna3221Filter->setCurrentIndex(ui->cbIna3221Filter->findData(config.ina3221_filter));
     ui->sbLipoCells->setValue(config.lipo_cells);
     ui->gbLipo->setChecked(config.enable_lipo);
 
     // SRXL2
     uint sensor_id_srxl2 = config.sensor_id_srxl2 ;
-    if (sensor_id_srxl2 < 0x01 || sensor_id_srxl2 > 0x0F) sensor_id_srxl2 = 0x01;
+    if (sensor_id_srxl2 == 0 || sensor_id_srxl2 > 0x0F) sensor_id_srxl2 = 0x01;
     ui->sbSensorIdSrxl2->setValue(sensor_id_srxl2);
 }
 
