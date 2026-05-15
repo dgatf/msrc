@@ -59,7 +59,7 @@ static void begin(ina3221_parameters_t *parameter) {
     gpio_pull_up(I2C0_SDA_GPIO);
     gpio_pull_up(I2C0_SCL_GPIO);
 
-    uint8_t data[2] = {0};
+    uint8_t data[3] = {0};
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     while (i2c_write_blocking_until(i2c0, parameter->i2c_address, data, 1, false, make_timeout_time_ms(1000)) ==
@@ -68,15 +68,22 @@ static void begin(ina3221_parameters_t *parameter) {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
-    // Configure sensor
-    data[0] = INA3221_CONFIGURATION;
-    data[1] = MODE_VOLTAGE_CONTINUOUS | VOLTAGE_CONVERSION_TIME | (parameter->filter << 9);
+    // Configure sensor. INA3221 Configuration register is 16 bits wide: an I2C write
+    // therefore needs register address + 2 data bytes (MSB first). Build the full
+    // 16-bit value as uint16_t first, then split into high/low bytes — otherwise the
+    // upper byte (which holds the channel-enable bits 12-14 and the AVG bits 9-11)
+    // would be silently truncated by a single-byte store.
     if (parameter->cell_count > 3) parameter->cell_count = 3;
     if (parameter->cell_count < 1) parameter->cell_count = 1;
+    uint16_t config = MODE_VOLTAGE_CONTINUOUS | VOLTAGE_CONVERSION_TIME |
+                      ((uint16_t)parameter->filter << 9);
     for (uint8_t i = 1; i < parameter->cell_count; i++) {
-        data[1] |= (1 << (i + 12));
+        config |= (uint16_t)(1u << (i + 12));
     }
-    i2c_write_blocking(i2c0, parameter->i2c_address, data, 2, false);
+    data[0] = INA3221_CONFIGURATION;
+    data[1] = (uint8_t)(config >> 8);    // MSB: CH enables, AVG, conversion time MSBs
+    data[2] = (uint8_t)(config & 0xFF);  // LSB: conversion time LSBs, mode
+    i2c_write_blocking(i2c0, parameter->i2c_address, data, 3, false);
 }
 
 static void read(ina3221_parameters_t *parameter) {
