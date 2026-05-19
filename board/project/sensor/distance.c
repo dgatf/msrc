@@ -7,8 +7,9 @@
 
 #define INIT_DELAY_MS 1000
 #define INTERVAL_MS 500
-#define MIN_SATS 4
-#define MAX_HDOP 5.0f
+#define MIN_SATS 6
+#define MAX_HDOP 2.0f
+#define HOME_AVG_SAMPLES 10  // valid fixes averaged before locking the home reference
 
 static float degrees_to_radians(float degrees);
 static float get_distance_to_home_2d(float lat, float lon, float lat_init, float lon_init);
@@ -27,20 +28,37 @@ void distance_task(void *parameters) {
 
     vTaskDelay(INIT_DELAY_MS / portTICK_PERIOD_MS);
 
-    /* Home設定 */
+    /* Home setup: average HOME_AVG_SAMPLES consecutive valid fixes before
+       locking the home reference. Any invalid fix resets the accumulator, so
+       home is always averaged from a contiguous run of good fixes. A single
+       fix at the minimum sat/HDOP threshold can be tens of metres off; the
+       averaging plus the tightened criteria reduce the initial offset. */
+    uint8_t home_samples = 0;
     while (1) {
         if (*parameter.fix &&
             *parameter.sat >= MIN_SATS &&
             *parameter.hdop <= MAX_HDOP &&
             *parameter.hdop > 0.0f &&
             coord_valid(*parameter.latitude, *parameter.longitude)) {
-            latitude_init = *parameter.latitude;
-            longitude_init = *parameter.longitude;
-            *parameter.home_set = true;
-            debug("\nDistance (%u). Set home: Lat: %.6f, Lon: %.6f, Sats: %.0f, HDOP: %.2f",
-                  uxTaskGetStackHighWaterMark(NULL), latitude_init, longitude_init, *parameter.sat, *parameter.hdop);
-            break;
+            home_samples++;
+            /* Numerically stable running mean: m += (x - m) / n. Avoids
+               accumulating a large sum, which would lose float precision on
+               coordinates that already use most of the 32-bit mantissa. */
+            latitude_init += (*parameter.latitude - latitude_init) / home_samples;
+            longitude_init += (*parameter.longitude - longitude_init) / home_samples;
+            if (home_samples >= HOME_AVG_SAMPLES) {
+                *parameter.home_set = true;
+                debug("\nDistance (%u). Set home (avg of %u fixes): Lat: %.6f, Lon: %.6f",
+                      uxTaskGetStackHighWaterMark(NULL), home_samples, latitude_init, longitude_init);
+                break;
+            }
+            debug("\nDistance (%u). Collecting home fix %u/%u: Sats: %.0f, HDOP: %.2f",
+                  uxTaskGetStackHighWaterMark(NULL), home_samples, HOME_AVG_SAMPLES, *parameter.sat,
+                  *parameter.hdop);
         } else {
+            home_samples = 0;
+            latitude_init = 0;
+            longitude_init = 0;
             debug("\nDistance (%u): Invalid GPS data (Fix: %u, Sats: %.0f, HDOP: %.2f, Lat: %.6f, Lon: %.6f)",
                   uxTaskGetStackHighWaterMark(NULL), (unsigned int)*parameter.fix, *parameter.sat, *parameter.hdop,
                   *parameter.latitude, *parameter.longitude);
