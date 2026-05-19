@@ -250,5 +250,8 @@ void config_forze_write() {
     config.enable_lipo = false;
     config.sensor_id_srxl2 = SENSOR_ID_SRXL2;
     config.ntc_offset = NTC_OFFSET;
+    // HoTT module enable bitmask: ESC + GAM + Vario by default (preserves current behavior).
+    // EAM is opt-in. bit0=ESC, bit1=GAM, bit2=EAM, bit3=Vario. Value 0 = legacy auto-enable mode.
+    config.hott_modules_enabled = 0x0B;  // 0b1011 = ESC + GAM + Vario, EAM off
     config_write(&config);
 }

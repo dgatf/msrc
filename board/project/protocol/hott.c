@@ -70,6 +70,16 @@
 #define HOTT_TYPE_GPS 3
 #define HOTT_TYPE_ELECTRIC 4
 
+// HoTT module enable bits (config_t.hott_modules_enabled bitmask).
+// Matches msrc_link GUI checkbox order on Receiver tab.
+#define HOTT_MOD_ESC   (1 << 0)
+#define HOTT_MOD_GAM   (1 << 1)
+#define HOTT_MOD_EAM   (1 << 2)
+#define HOTT_MOD_VARIO (1 << 3)
+// Default for existing flashed configs whose `spare7` byte was 0 (pre-bitmask configs):
+// preserve current msrc behavior (ESC + GAM auto, Vario auto, EAM off).
+#define HOTT_MOD_LEGACY_DEFAULT (HOTT_MOD_ESC | HOTT_MOD_GAM | HOTT_MOD_VARIO)
+
 // VARIO
 #define HOTT_VARIO_ALTITUDE 0
 #define HOTT_VARIO_M1S 1
@@ -91,24 +101,27 @@
 #define HOTT_ESC_EXT_TEMPERATURE 10
 #define HOTT_ESC_COUNT 11
 
-// ELECTRIC - used by internal receiver vario (shouldnt be used)
-#define HOTT_ELECTRIC_EXT_TEMPERATURE 0
-#define HOTT_ELECTRIC_CELL_BAT_1_VOLTAGE 1
-#define HOTT_ELECTRIC_CELL_BAT_2_VOLTAGE 2
-#define HOTT_ELECTRIC_BAT_1_VOLTAGE 3
-#define HOTT_ELECTRIC_BAT_2_VOLTAGE 4
-#define HOTT_ELECTRIC_TEMPERATURE_1 5
-#define HOTT_ELECTRIC_TEMPERATURE_2 6
-#define HOTT_ELECTRIC_HEIGHT 7
-#define HOTT_ELECTRIC_CURRENT 8
-#define HOTT_ELECTRIC_CAPACITY 9
-#define HOTT_ELECTRIC_M2S 10
-#define HOTT_ELECTRIC_M3S 11
-#define HOTT_ELECTRIC_RPM 12
-#define HOTT_ELECTRIC_MINUTES 13
-#define HOTT_ELECTRIC_SECONDS 14
-#define HOTT_ELECTRIC_SPEED 15
-#define HOTT_ELECTRIC_COUNT 16
+// ELECTRIC AIR MODULE (EAM, 0x8E) — slot indexes into sensors->electric_air[]
+#define HOTT_ELECTRIC_CELL_1 0
+#define HOTT_ELECTRIC_CELL_2 1
+#define HOTT_ELECTRIC_CELL_3 2
+#define HOTT_ELECTRIC_CELL_4 3
+#define HOTT_ELECTRIC_CELL_5 4
+#define HOTT_ELECTRIC_CELL_6 5
+#define HOTT_ELECTRIC_CELL_7 6
+#define HOTT_ELECTRIC_BATTERY_1 7
+#define HOTT_ELECTRIC_BATTERY_2 8
+#define HOTT_ELECTRIC_TEMP_1 9
+#define HOTT_ELECTRIC_TEMP_2 10
+#define HOTT_ELECTRIC_ALTITUDE 11
+#define HOTT_ELECTRIC_CURRENT 12
+#define HOTT_ELECTRIC_DRIVE_VOLTAGE 13
+#define HOTT_ELECTRIC_CAPACITY 14
+#define HOTT_ELECTRIC_CLIMBRATE 15
+#define HOTT_ELECTRIC_CLIMBRATE3S 16
+#define HOTT_ELECTRIC_RPM 17
+#define HOTT_ELECTRIC_SPEED 18
+#define HOTT_ELECTRIC_COUNT 19
 
 // GPS
 #define HOTT_GPS_DIRECTION 0
@@ -240,6 +253,21 @@ typedef enum alarm_general_air_t {
     ALARM_BITMASK_GENERAL_AIR_MIN_CELL_VOLTAGE_NUM,
     ALARM_BITMASK_GENERAL_AIR_RPM_2,
 } alarm_general_air_t;
+
+typedef enum alarm_electric_air_t {
+    ALARM_BITMASK_ELECTRIC_AIR_CELL_VOLTAGE = 0,
+    ALARM_BITMASK_ELECTRIC_AIR_BATTERY_1,
+    ALARM_BITMASK_ELECTRIC_AIR_BATTERY_2,
+    ALARM_BITMASK_ELECTRIC_AIR_TEMPERATURE_1,
+    ALARM_BITMASK_ELECTRIC_AIR_TEMPERATURE_2,
+    ALARM_BITMASK_ELECTRIC_AIR_ALTITUDE,
+    ALARM_BITMASK_ELECTRIC_AIR_CURRENT,
+    ALARM_BITMASK_ELECTRIC_AIR_VOLTAGE,
+    ALARM_BITMASK_ELECTRIC_AIR_CAPACITY,
+    ALARM_BITMASK_ELECTRIC_AIR_CLIMBRATE,
+    ALARM_BITMASK_ELECTRIC_AIR_CLIMBRATE3S,
+    ALARM_BITMASK_ELECTRIC_AIR_MIN_CELL_VOLTAGE,
+} alarm_electric_air_t;
 
 typedef enum alarm_gps_t {
     ALARM_BITMASK_GPS_FLIGHT_DIRECTION = 0,
@@ -498,11 +526,12 @@ typedef struct hott_text_msg_t {
 } __attribute__((packed)) hott_text_msg_t;
 
 typedef struct hott_sensors_t {
-    bool is_enabled[4];
+    bool is_enabled[5];
     float *gps[HOTT_GPS_COUNT];
     float *vario[HOTT_VARIO_COUNT];
     float *esc[HOTT_ESC_COUNT];
     float *general_air[HOTT_GENERAL_COUNT];
+    float *electric_air[HOTT_ELECTRIC_COUNT];
 } hott_sensors_t;
 
 typedef struct trigger_t {
@@ -550,11 +579,25 @@ typedef enum general_triggers_t {
     TRIGGERS_GENERAL
 } general_triggers_t;
 
+typedef enum electric_triggers_t {
+    TRIGGER_ELECTRIC_CELL,
+    TRIGGER_ELECTRIC_BATTERY_1,
+    TRIGGER_ELECTRIC_BATTERY_2,
+    TRIGGER_ELECTRIC_TEMP_1,
+    TRIGGER_ELECTRIC_TEMP_2,
+    TRIGGER_ELECTRIC_MIN_ALTITUDE,
+    TRIGGER_ELECTRIC_MAX_ALTITUDE,
+    TRIGGER_ELECTRIC_CURRENT,
+    TRIGGER_ELECTRIC_CAPACITY,
+    TRIGGERS_ELECTRIC
+} electric_triggers_t;
+
 typedef struct triggers_value_t {
     float gps[TRIGGERS_GPS];
     float vario[TRIGGERS_VARIO];
     float esc[TRIGGERS_ESC];
     float general[TRIGGERS_GENERAL];
+    float electric[TRIGGERS_ELECTRIC];
 } triggers_value_t;
 
 typedef struct triggers_menu_t {
@@ -562,6 +605,7 @@ typedef struct triggers_menu_t {
     trigger_t vario[TRIGGERS_VARIO];
     trigger_t esc[TRIGGERS_ESC];
     trigger_t general[TRIGGERS_GENERAL];
+    trigger_t electric[TRIGGERS_ELECTRIC];
 } triggers_menu_t;
 
 typedef struct triggers_t {
@@ -615,7 +659,16 @@ void hott_task(void *parameters) {
                                          {.max = 100, .incr = 1, .str = "Temp Max"},
                                          {.max = 5000, .incr = 1, .str = "Alt Min"},
                                          {.max = 5000, .incr = 1, .str = "Alt Max"},
-                                         {.max = 300, .incr = 0.1, .str = "Curr Max"}}};
+                                         {.max = 300, .incr = 0.1, .str = "Curr Max"}},
+                             .electric = {{.max = 5, .incr = 0.01, .str = "Cell Min"},
+                                          {.max = 100, .incr = 0.1, .str = "Batt1 Min"},
+                                          {.max = 100, .incr = 0.1, .str = "Batt2 Min"},
+                                          {.max = 200, .incr = 1, .str = "Temp1 Max"},
+                                          {.max = 200, .incr = 1, .str = "Temp2 Max"},
+                                          {.max = 5000, .incr = 1, .str = "Alt Min"},
+                                          {.max = 5000, .incr = 1, .str = "Alt Max"},
+                                          {.max = 300, .incr = 0.1, .str = "Curr Max"},
+                                          {.max = 30000, .incr = 10, .str = "Cap Max"}}};
     triggers_value_t triggers_value;
     memcpy(&triggers_value, (uint8_t *)alarms_read(), sizeof(triggers_value_t));
     triggers_t hott_alarms = {.triggers = &triggers_value, .pages = &pages};
@@ -690,6 +743,13 @@ static void format_text_packet(triggers_t *alarms, hott_sensors_t *sensors, uint
             module_alarms_pages = alarms->pages->general;
             module_alarms_triggers = alarms->triggers->general;
             strcpy(packet.text[0], "General sensor");
+            break;
+        case HOTT_ELECTRIC_AIR_MODULE_ID:
+            if (!sensors->is_enabled[HOTT_TYPE_ELECTRIC]) return;
+            size = TRIGGERS_ELECTRIC;
+            module_alarms_pages = alarms->pages->electric;
+            module_alarms_triggers = alarms->triggers->electric;
+            strcpy(packet.text[0], "Electric sensor");
             break;
         default:
             break;
@@ -1003,6 +1063,117 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             send_packet((uint8_t *)&packet, sizeof(packet));
             break;
         }
+        case HOTT_ELECTRIC_AIR_MODULE_ID: {
+            if (!sensors->is_enabled[HOTT_TYPE_ELECTRIC]) return;
+            hott_sensor_electric_air_t packet = {0};
+            packet.startByte = HOTT_START_BYTE;
+            packet.sensorID = HOTT_ELECTRIC_AIR_MODULE_ID;
+            packet.sensorTextID = HOTT_ELECTRIC_AIR_TEXT_ID;
+            // Cell voltages: HoTT EAM expects values in 0.02 V steps (210 == 4.20 V)
+            uint8_t *cells_lo[7] = {&packet.cell1L, &packet.cell2L, &packet.cell3L, &packet.cell4L,
+                                    &packet.cell5L, &packet.cell6L, &packet.cell7L};
+            uint8_t *cells_hi[7] = {&packet.cell1H, &packet.cell2H, &packet.cell3H, &packet.cell4H,
+                                    &packet.cell5H, &packet.cell6H, &packet.cell7H};
+            uint8_t cell_indices[7] = {HOTT_ELECTRIC_CELL_1, HOTT_ELECTRIC_CELL_2, HOTT_ELECTRIC_CELL_3,
+                                       HOTT_ELECTRIC_CELL_4, HOTT_ELECTRIC_CELL_5, HOTT_ELECTRIC_CELL_6,
+                                       HOTT_ELECTRIC_CELL_7};
+            for (int i = 0; i < 7; i++) {
+                if (sensors->electric_air[cell_indices[i]]) {
+                    uint8_t v = *sensors->electric_air[cell_indices[i]] * 50;  // V -> 0.02V steps
+                    *cells_lo[i] = v;
+                    *cells_hi[i] = v;
+                    if (*sensors->electric_air[cell_indices[i]] <
+                        alarms->triggers->electric[TRIGGER_ELECTRIC_CELL]) {
+                        packet.warningID = ALARM_VOICE_MIN_CELL_VOLTAGE;
+                        packet.alarmInverse |= 1 << ALARM_BITMASK_ELECTRIC_AIR_CELL_VOLTAGE;
+                    }
+                }
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_BATTERY_1]) {
+                packet.battery1 = *sensors->electric_air[HOTT_ELECTRIC_BATTERY_1] * 10;  // V -> 0.1V steps
+                if (*sensors->electric_air[HOTT_ELECTRIC_BATTERY_1] <
+                    alarms->triggers->electric[TRIGGER_ELECTRIC_BATTERY_1]) {
+                    packet.warningID = ALARM_VOICE_MIN_POWER_VOLTAGE;
+                    packet.alarmInverse |= 1 << ALARM_BITMASK_ELECTRIC_AIR_BATTERY_1;
+                }
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_BATTERY_2]) {
+                packet.battery2 = *sensors->electric_air[HOTT_ELECTRIC_BATTERY_2] * 10;
+                if (*sensors->electric_air[HOTT_ELECTRIC_BATTERY_2] <
+                    alarms->triggers->electric[TRIGGER_ELECTRIC_BATTERY_2]) {
+                    packet.warningID = ALARM_VOICE_MIN_POWER_VOLTAGE;
+                    packet.alarmInverse |= 1 << ALARM_BITMASK_ELECTRIC_AIR_BATTERY_2;
+                }
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_TEMP_1]) {
+                packet.temp1 = *sensors->electric_air[HOTT_ELECTRIC_TEMP_1] + 20;
+                if (*sensors->electric_air[HOTT_ELECTRIC_TEMP_1] >
+                    alarms->triggers->electric[TRIGGER_ELECTRIC_TEMP_1]) {
+                    packet.warningID = ALARM_VOICE_MAX_SENSOR_1_TEMP;
+                    packet.alarmInverse |= 1 << ALARM_BITMASK_ELECTRIC_AIR_TEMPERATURE_1;
+                }
+            } else {
+                packet.temp1 = 20;
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_TEMP_2]) {
+                packet.temp2 = *sensors->electric_air[HOTT_ELECTRIC_TEMP_2] + 20;
+                if (*sensors->electric_air[HOTT_ELECTRIC_TEMP_2] >
+                    alarms->triggers->electric[TRIGGER_ELECTRIC_TEMP_2]) {
+                    packet.warningID = ALARM_VOICE_MAX_SENSOR_2_TEMP;
+                    packet.alarmInverse |= 1 << ALARM_BITMASK_ELECTRIC_AIR_TEMPERATURE_2;
+                }
+            } else {
+                packet.temp2 = 20;
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_ALTITUDE]) {
+                packet.height = *sensors->electric_air[HOTT_ELECTRIC_ALTITUDE] + 500;
+                if (*sensors->electric_air[HOTT_ELECTRIC_ALTITUDE] <
+                    alarms->triggers->electric[TRIGGER_ELECTRIC_MIN_ALTITUDE]) {
+                    packet.warningID = ALARM_VOICE_MIN_ALTITUDE;
+                    packet.alarmInverse |= 1 << ALARM_BITMASK_ELECTRIC_AIR_ALTITUDE;
+                }
+                if (*sensors->electric_air[HOTT_ELECTRIC_ALTITUDE] >
+                    alarms->triggers->electric[TRIGGER_ELECTRIC_MAX_ALTITUDE]) {
+                    packet.warningID = ALARM_VOICE_MAX_ALTITUDE;
+                    packet.alarmInverse |= 1 << ALARM_BITMASK_ELECTRIC_AIR_ALTITUDE;
+                }
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_CURRENT]) {
+                packet.current = *sensors->electric_air[HOTT_ELECTRIC_CURRENT] * 10;
+                if (*sensors->electric_air[HOTT_ELECTRIC_CURRENT] >
+                    alarms->triggers->electric[TRIGGER_ELECTRIC_CURRENT]) {
+                    packet.warningID = ALARM_VOICE_MAX_CURRENT;
+                    packet.alarmInverse |= 1 << ALARM_BITMASK_ELECTRIC_AIR_CURRENT;
+                }
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_DRIVE_VOLTAGE]) {
+                packet.driveVoltage = *sensors->electric_air[HOTT_ELECTRIC_DRIVE_VOLTAGE] * 10;
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_CAPACITY]) {
+                packet.capacity = *sensors->electric_air[HOTT_ELECTRIC_CAPACITY] / 10;
+                if (*sensors->electric_air[HOTT_ELECTRIC_CAPACITY] >
+                    alarms->triggers->electric[TRIGGER_ELECTRIC_CAPACITY]) {
+                    packet.warningID = ALARM_VOICE_MAX_CAPACITY;
+                    packet.alarmInverse |= 1 << ALARM_BITMASK_ELECTRIC_AIR_CAPACITY;
+                }
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_CLIMBRATE]) {
+                packet.m2s = *sensors->electric_air[HOTT_ELECTRIC_CLIMBRATE] * 100 + 30000;
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_CLIMBRATE3S]) {
+                packet.m3s = *sensors->electric_air[HOTT_ELECTRIC_CLIMBRATE3S] + 120;
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_RPM]) {
+                packet.rpm = *sensors->electric_air[HOTT_ELECTRIC_RPM] / 10;
+            }
+            if (sensors->electric_air[HOTT_ELECTRIC_SPEED]) {
+                packet.speed = *sensors->electric_air[HOTT_ELECTRIC_SPEED];
+            }
+            packet.endByte = HOTT_END_BYTE;
+            packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
+            send_packet((uint8_t *)&packet, sizeof(packet));
+            break;
+        }
         case HOTT_GPS_MODULE_ID: {
             if (!sensors->is_enabled[HOTT_TYPE_GPS]) return;
             hott_sensor_gps_t packet = {0};
@@ -1137,6 +1308,11 @@ static uint8_t get_crc(const uint8_t *buffer, uint len) {
 static void set_config(hott_sensors_t *sensors) {
     config_t *config = config_read();
     TaskHandle_t task_handle;
+    // Resolve HoTT module-enable bitmask. Value 0 in flashed config means the field
+    // was never written (pre-bitmask configs where this byte was `spare7`) — fall back
+    // to legacy behavior so existing setups continue working without a reflash.
+    uint8_t modules_enabled = config->hott_modules_enabled;
+    if (modules_enabled == 0) modules_enabled = HOTT_MOD_LEGACY_DEFAULT;
     if (config->esc_protocol == ESC_PWM) {
         esc_pwm_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm, malloc(sizeof(float))};
         xTaskCreate(esc_pwm_task, "esc_pwm_task", STACK_ESC_PWM, (void *)&parameter, 2, &task_handle);
@@ -1214,6 +1390,26 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
         sensors->esc[HOTT_ESC_CONSUMPTION] = parameter.consumption;
         sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.temperature_motor;
+        // Wire HW5 cell data into EAM (0x8E) when user enabled it via msrc_link checkbox.
+        // HW5 only reports average cell voltage, so we replicate it across the auto-detected
+        // number of cell slots.
+        if (modules_enabled & HOTT_MOD_EAM) {
+            sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
+            if (parameter.cell_count && *parameter.cell_count > 0) {
+                uint8_t n = *parameter.cell_count;
+                if (n > 7) n = 7;
+                uint8_t cell_ids[7] = {HOTT_ELECTRIC_CELL_1, HOTT_ELECTRIC_CELL_2, HOTT_ELECTRIC_CELL_3,
+                                       HOTT_ELECTRIC_CELL_4, HOTT_ELECTRIC_CELL_5, HOTT_ELECTRIC_CELL_6,
+                                       HOTT_ELECTRIC_CELL_7};
+                for (uint8_t i = 0; i < n; i++) sensors->electric_air[cell_ids[i]] = parameter.cell_voltage;
+            }
+            sensors->electric_air[HOTT_ELECTRIC_BATTERY_1] = parameter.voltage;
+            sensors->electric_air[HOTT_ELECTRIC_DRIVE_VOLTAGE] = parameter.voltage;
+            sensors->electric_air[HOTT_ELECTRIC_CURRENT] = parameter.current;
+            sensors->electric_air[HOTT_ELECTRIC_CAPACITY] = parameter.consumption;
+            sensors->electric_air[HOTT_ELECTRIC_TEMP_1] = parameter.temperature_fet;
+            sensors->electric_air[HOTT_ELECTRIC_TEMP_2] = parameter.temperature_bec;
+        }
     }
     if (config->esc_protocol == ESC_CASTLE) {
         esc_castle_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm,         config->alpha_voltage,
@@ -1254,6 +1450,25 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
         sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
         sensors->esc[HOTT_ESC_CONSUMPTION] = parameter.consumption;
+        // Wire Kontronik cell data into EAM (0x8E) when user enabled it.
+        // Average cell voltage replicated across the auto-detected cell count.
+        if (modules_enabled & HOTT_MOD_EAM) {
+            sensors->is_enabled[HOTT_TYPE_ELECTRIC] = true;
+            if (parameter.cell_count && *parameter.cell_count > 0) {
+                uint8_t n = *parameter.cell_count;
+                if (n > 7) n = 7;
+                uint8_t cell_ids[7] = {HOTT_ELECTRIC_CELL_1, HOTT_ELECTRIC_CELL_2, HOTT_ELECTRIC_CELL_3,
+                                       HOTT_ELECTRIC_CELL_4, HOTT_ELECTRIC_CELL_5, HOTT_ELECTRIC_CELL_6,
+                                       HOTT_ELECTRIC_CELL_7};
+                for (uint8_t i = 0; i < n; i++) sensors->electric_air[cell_ids[i]] = parameter.cell_voltage;
+            }
+            sensors->electric_air[HOTT_ELECTRIC_BATTERY_1] = parameter.voltage;
+            sensors->electric_air[HOTT_ELECTRIC_DRIVE_VOLTAGE] = parameter.voltage;
+            sensors->electric_air[HOTT_ELECTRIC_CURRENT] = parameter.current;
+            sensors->electric_air[HOTT_ELECTRIC_CAPACITY] = parameter.consumption;
+            sensors->electric_air[HOTT_ELECTRIC_TEMP_1] = parameter.temperature_fet;
+            sensors->electric_air[HOTT_ELECTRIC_TEMP_2] = parameter.temperature_bec;
+        }
     }
     if (config->esc_protocol == ESC_APD_F) {
         esc_apd_f_parameters_t parameter = {config->rpm_multiplier, config->alpha_rpm,         config->alpha_voltage,
@@ -1617,6 +1832,16 @@ static void set_config(hott_sensors_t *sensors) {
             sensors->general_air[HOTT_GENERAL_CELL_6] = parameter.cell[2];
         }
     }
+
+    // User-selected HoTT module roles (msrc_link checkboxes on Receiver tab).
+    // Sensor wiring above auto-enables each role when its data source is present.
+    // Here we mask out roles the user explicitly disabled, so msrc only announces
+    // on the bus types the user selected — this allows coexistence with other
+    // smart sensors (UniSens-E, JLog, etc.) without HoTTv4 collisions.
+    if (!(modules_enabled & HOTT_MOD_ESC)) sensors->is_enabled[HOTT_TYPE_ESC] = false;
+    if (!(modules_enabled & HOTT_MOD_GAM)) sensors->is_enabled[HOTT_TYPE_GENERAL] = false;
+    if (!(modules_enabled & HOTT_MOD_EAM)) sensors->is_enabled[HOTT_TYPE_ELECTRIC] = false;
+    if (!(modules_enabled & HOTT_MOD_VARIO)) sensors->is_enabled[HOTT_TYPE_VARIO] = false;
 }
 
 static int64_t interval_1000_callback(alarm_id_t id, void *parameters) {

@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbSpeedUnitsGps->addItems({"km/h", "kts"});
     ui->lbQuiescentVoltage->setText("Zero current output voltage, V<sub>IOUT</sub> (V)");
     ui->cbVarioAutoOffset->setVisible(false);
+    ui->gbHottRoles->setVisible(false);
     ui->cbSerialMonitorGpio->addItems({"1", "5", "6"});
     ui->cbBaudrate->addItems({"115200", "57600", "38400", "19200", "9600", "4800"});
     ui->cbStopbits->addItems({"1", "2"});
@@ -679,6 +680,16 @@ void MainWindow::setUiFromConfig() {
     ui->sbLipoCells->setValue(config.lipo_cells);
     ui->gbLipo->setChecked(config.enable_lipo);
 
+    // HoTT module-enable bitmask (Checkboxes on Receiver tab).
+    // Bit 0 = ESC (0x8C), Bit 1 = GAM (0x8D), Bit 2 = EAM (0x8E), Bit 3 = Vario (0x89).
+    // Value 0 in flashed config = legacy auto-enable mode; show defaults (ESC+GAM+Vario, EAM off).
+    uint8_t hott_modules = config.hott_modules_enabled;
+    if (hott_modules == 0) hott_modules = 0x0B;
+    ui->cbHottEsc->setChecked(hott_modules & 0x01);
+    ui->cbHottGam->setChecked(hott_modules & 0x02);
+    ui->cbHottEam->setChecked(hott_modules & 0x04);
+    ui->cbHottVario->setChecked(hott_modules & 0x08);
+
     // SRXL2
     uint sensor_id_srxl2 = config.sensor_id_srxl2 ;
     if (sensor_id_srxl2 == 0 || sensor_id_srxl2 > 0x0F) sensor_id_srxl2 = 0x01;
@@ -902,6 +913,12 @@ void MainWindow::getConfigFromUi() {
     config.lipo_cells = ui->sbLipoCells->value();
     config.enable_lipo = ui->gbLipo->isChecked();
 
+    // HoTT module-enable bitmask from Checkboxes on Receiver tab.
+    config.hott_modules_enabled = (ui->cbHottEsc->isChecked()   ? 0x01 : 0) |
+                                  (ui->cbHottGam->isChecked()   ? 0x02 : 0) |
+                                  (ui->cbHottEam->isChecked()   ? 0x04 : 0) |
+                                  (ui->cbHottVario->isChecked() ? 0x08 : 0);
+
     // SRXL2
     config.sensor_id_srxl2 = ui->sbSensorIdSrxl2->value();
     if (config.sensor_id_srxl2 < 0x01 || config.sensor_id_srxl2 > 0x0F) config.sensor_id_srxl2 = 0x01;
@@ -1086,6 +1103,13 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->gbFuelPressure->setVisible(true);
     } else {
         ui->gbFuelPressure->setVisible(false);
+    }
+
+    // HoTT module roles (ESC / GAM / EAM / Vario) — HOTT-protocol only
+    if (arg1 == "HOTT") {
+        ui->gbHottRoles->setVisible(true);
+    } else {
+        ui->gbHottRoles->setVisible(false);
     }
 
     // GPIO

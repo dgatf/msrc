@@ -112,6 +112,58 @@
                   </property>
                  </widget>
                 </item>
+                <item row="7" column="0" colspan="2">
+                 <widget class="QGroupBox" name="gbHottRoles">
+                  <property name="title">
+                   <string>HoTT module roles</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>Select which HoTT module types msrc announces on the bus. Multiple selections allowed. Uncheck to avoid conflicts with other smart sensors (UniSens-E, JLog, etc.) sharing the bus.</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_hottRoles">
+                   <item row="0" column="0">
+                    <widget class="QCheckBox" name="cbHottEsc">
+                     <property name="text">
+                      <string>ESC (0x8C) — Electronic Speed Controller</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="cbHottGam">
+                     <property name="text">
+                      <string>GAM (0x8D) — General Air Module</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QCheckBox" name="cbHottEam">
+                     <property name="text">
+                      <string>EAM (0x8E) — Electric Air Module</string>
+                     </property>
+                     <property name="checked">
+                      <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QCheckBox" name="cbHottVario">
+                     <property name="text">
+                      <string>Vario (0x89) — Vario</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
                 <item row="16" column="0" colspan="2">
                  <widget class="QGroupBox" name="gbRate">
                   <property name="enabled">

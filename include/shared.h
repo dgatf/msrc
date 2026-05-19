@@ -188,7 +188,7 @@ typedef struct config_t {                            // smartport data_id
     uint8_t lipo_cells;                              // 0x5152
     uint8_t sensor_id_srxl2;
     int8_t ntc_offset;                               // 0x5153
-    uint8_t spare7;
+    uint8_t hott_modules_enabled;                    // 0x5154 HoTT module enable bitmask: bit0=ESC(0x8C), bit1=GAM(0x8D), bit2=EAM(0x8E), bit3=Vario(0x89). Value 0 = legacy auto-enable mode.
     uint32_t spare8;
     uint32_t spare9;
     uint32_t spare10;
