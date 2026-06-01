@@ -99,7 +99,7 @@ typedef struct ghst_sensor_gps_secondary_t {
     float *homedir;
     float *flags;
     uint8_t *home_set;
-    uint8_t *fix_type;
+    float *fix_type;
 } ghst_sensor_gps_secondary_t;
 
 typedef struct ghst_sensor_magbaro_t {
@@ -300,7 +300,7 @@ static void set_config(ghst_sensors_t *sensors) {
         parameter.v_vel = malloc(sizeof(float));
         parameter.alt_elipsiod = malloc(sizeof(float));
         parameter.pdop = malloc(sizeof(float));
-        parameter.fix_type = malloc(sizeof(uint8_t));
+        parameter.fix_type = malloc(sizeof(float));
         parameter.home_set = malloc(sizeof(uint8_t));
         parameter.alt_home = malloc(sizeof(float));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);

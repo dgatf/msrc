@@ -1414,7 +1414,7 @@ static void set_config(hott_sensors_t *sensors) {
         parameter.v_vel = malloc(sizeof(float));
         parameter.alt_elipsiod = malloc(sizeof(float));
         parameter.pdop = malloc(sizeof(float));
-        parameter.fix_type = malloc(sizeof(uint8_t));
+        parameter.fix_type = malloc(sizeof(float));
         parameter.home_set = malloc(sizeof(uint8_t));
         parameter.alt_home = malloc(sizeof(float));
         xTaskCreate(gps_task, "gps_task", STACK_GPS, (void *)&parameter, 2, &task_handle);
@@ -1425,7 +1425,7 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->gps[HOTT_GPS_LATITUDE] = parameter.lat;
         sensors->gps[HOTT_GPS_LONGITUDE] = parameter.lon;
         sensors->gps[HOTT_GPS_SATS] = parameter.sat;
-        sensors->gps[HOTT_GPS_FIX] = parameter.fix;
+        sensors->gps[HOTT_GPS_FIX] = parameter.fix_type;
         sensors->gps[HOTT_GPS_ALTITUDE] = parameter.alt;
         sensors->gps[HOTT_GPS_SPEED] = parameter.spd_kmh;
         sensors->gps[HOTT_GPS_DIRECTION] = parameter.cog;
