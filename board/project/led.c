@@ -4,10 +4,11 @@
 #include "ws2812.h"
 
 void led_task(void *params) {
+    PIO pio = (PIO)params;
     const uint WS2812_PIN = 16;
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-    ws2812_init(pio0, WS2812_PIN, 800000);
+    ws2812_init(pio, WS2812_PIN, 800000);
 
     while (1) {
         for (uint8_t i = context.led_cycles; i > 0; i--) {

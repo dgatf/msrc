@@ -1,12 +1,21 @@
 #include <stdio.h>
 
 #include "config.h"
+#include "crsf.h"
+#include "dbg_task.h"
+#include "fbus.h"
+#include "fport.h"
 #include "frsky_d.h"
+#include "ghst.h"
 #include "hitec.h"
+#include "hott.h"
 #include "ibus.h"
 #include "jetiex.h"
+#include "jetiex_sensor.h"
+#include "jr_dmss.h"
 #include "led.h"
 #include "multiplex.h"
+#include "sanwa.h"
 #include "sbus.h"
 #include "serial_monitor.h"
 #include "sim_rx.h"
@@ -15,15 +24,7 @@
 #include "srxl2.h"
 #include "usb.h"
 #include "xbus.h"
-#include "crsf.h"
-#include "hott.h"
-#include "sanwa.h"
-#include "jr_dmss.h"
-#include "fport.h"
-#include "fbus.h"
-#include "ghst.h"
-#include "jetiex_sensor.h"
-#include "dbg_task.h"
+#include "hardware/pio.h"
 
 context_t context;
 
@@ -53,7 +54,14 @@ int main() {
 
     context.led_cycle_duration = 200;
     context.led_cycles = 3;
-    xTaskCreate(led_task, "led_task", STACK_LED, NULL, 1, &context.led_task_handle);
+    PIO pio;
+    if (config->rx_protocol != RX_XBUS) {
+        pio = pio1;
+        xTaskCreate(led_task, "led_task", STACK_LED, (void *)pio, 1, &context.led_task_handle);
+    } else if (!(config->enable_gps && config->esc_protocol == ESC_CASTLE)) {
+        pio = pio0;
+        xTaskCreate(led_task, "led_task", STACK_LED, (void *)pio, 1, &context.led_task_handle);
+    }
 
     switch (config->rx_protocol) {
         case RX_XBUS:
@@ -130,7 +138,8 @@ int main() {
             context.uart0_notify_task_handle = context.receiver_task_handle;
             break;
         case RX_JETIEX_SENSOR:
-            xTaskCreate(jetiex_sensor_task, "jetiex_sensor_task", STACK_RX_JETIEX_SENSOR, NULL, 3, &context.receiver_task_handle);
+            xTaskCreate(jetiex_sensor_task, "jetiex_sensor_task", STACK_RX_JETIEX_SENSOR, NULL, 3,
+                        &context.receiver_task_handle);
             context.uart_pio_notify_task_handle = context.receiver_task_handle;
             break;
     }
