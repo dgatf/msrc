@@ -1,0 +1,3 @@
+/tmp/workspace/dgatf/msrc/build-validate/_deps/pico_sdk-subbuild/CMakeFiles/pico_sdk-populate.dir
+/tmp/workspace/dgatf/msrc/build-validate/_deps/pico_sdk-subbuild/CMakeFiles/edit_cache.dir
+/tmp/workspace/dgatf/msrc/build-validate/_deps/pico_sdk-subbuild/CMakeFiles/rebuild_cache.dir
