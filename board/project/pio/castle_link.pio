@@ -14,11 +14,12 @@
 // set base = 1
 
 .program pulse
+.side_set 1 opt pindirs
 .wrap_target
-    wait 1 pin 0       // rx pulse start -> esc is output 
-    set pindirs 1 [31] // set pin 0 output (1)
+    wait 1 pin 0       // rx pulse start -> esc is output
+    nop          side 1 [31]
     wait 0 pin 0       // end of pwm rx -> esc is input. start counter (irq 4)
-    set pindirs 0 [31] // set pin 0 input (0)
+    nop          side 0 [31]
     irq 4
 .wrap
 

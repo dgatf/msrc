@@ -23,6 +23,7 @@ void castle_link_init(PIO pio, uint pin, uint irq) {
     pio_sm_config c_pulse = pulse_program_get_default_config(offset_pulse_);
     sm_config_set_clkdiv(&c_pulse, 10);
     sm_config_set_in_pins(&c_pulse, pin);
+    sm_config_set_sideset_pins(&c_pulse, pin + 1);
     sm_config_set_set_pins(&c_pulse, pin + 1, 1);
 
     pio_sm_init(pio_, sm_pulse_, offset_pulse_, &c_pulse);
