@@ -344,7 +344,6 @@ static void set_config(smartport_parameters_t *parameter) {
 
         smartport_sensor_parameters_t parameter_sensor;
         smartport_sensor_double_parameters_t parameter_sensor_double;
-        smartport_sensor_cell_parameters_t parameter_sensor_cell;
         parameter_sensor_double.data_id = ESC_RPM_CONS_FIRST_ID;
         parameter_sensor_double.value_l = parameter.rpm;
         parameter_sensor_double.value_h = parameter.consumption;
@@ -368,12 +367,6 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter_sensor.value = parameter.temperature_bec;
         parameter_sensor.rate = config->refresh_rate_temperature;
         xTaskCreate(sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3, &task_handle);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        parameter_sensor_cell.cell_count = parameter.cell_count;
-        parameter_sensor_cell.cell_voltage = parameter.cell_voltage;
-        parameter_sensor_cell.rate = config->refresh_rate_voltage;
-        xTaskCreate(sensor_cell_task, "sensor_cell_task", STACK_SENSOR_SMARTPORT_CELL, (void *)&parameter_sensor_cell,
-                    3, &task_handle);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->esc_protocol == ESC_HW5) {

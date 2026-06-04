@@ -3,7 +3,6 @@
 #include <semphr.h>
 #include <stdio.h>
 
-#include "cell_count.h"
 #include "hardware/clocks.h"
 #include "hardware/irq.h"
 #include "hardware/pio.h"
@@ -46,11 +45,6 @@ void esc_castle_task(void *parameters) {
     castle_link_init(pio0, CASTLE_PWM_GPIO, PIO0_IRQ_0);
     castle_link_set_handler(castle_link_handler);
     debug("\nCastle init");
-    TaskHandle_t task_handle;
-    uint cell_count_delay = 15000;
-    cell_count_parameters_t cell_count_parameters = {cell_count_delay, parameter.voltage, parameter.cell_count};
-    xTaskCreate(cell_count_task, "cell_count_task", STACK_CELL_COUNT, (void *)&cell_count_parameters, 1, &task_handle);
-
     vTaskSuspend(NULL);
     vTaskDelete(NULL);
 }
