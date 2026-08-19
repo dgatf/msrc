@@ -39,6 +39,7 @@ int main() {
 
     gpio_init(RESTORE_GPIO);
     gpio_pull_up(RESTORE_GPIO);
+    sleep_ms(10);
     if (CONFIG_FORZE_WRITE || !gpio_get(RESTORE_GPIO)) config_forze_write();
     config_t *config = config_read();
 
