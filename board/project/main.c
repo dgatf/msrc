@@ -39,9 +39,9 @@ int main() {
 
     gpio_init(RESTORE_GPIO);
     gpio_pull_up(RESTORE_GPIO);
-    sleep_ms(10);
-    if (CONFIG_FORZE_WRITE || !gpio_get(RESTORE_GPIO)) config_forze_write();
     config_t *config = config_read();
+    if (config->rx_protocol != RX_XBUS) sleep_ms(10);
+    if (CONFIG_FORZE_WRITE || !gpio_get(RESTORE_GPIO)) config_forze_write();
 
     context.debug = config->debug;
     if (context.debug) sleep_ms(1000);
