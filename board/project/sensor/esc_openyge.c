@@ -159,9 +159,9 @@ static void process(esc_openyge_parameters_t *parameter) {
         *parameter->pwm_percent = pwm_percent;
 
         debug(
-            "\nOpenYGE (%u) < RPM: %.0f Volt: %.2fV Curr: %.2fA TempFET: %.1f°C "
+            "\nOpenYGE (%u) < Dev:0x%02X RPM: %.0f Volt: %.2fV Curr: %.2fA TempFET: %.1f°C "
             "TempBEC: %.1f°C Cons: %.0fmAh CellV: %.2fV BECVolt: %.2fV BECCurr: %.3fA Thr: %.0f%% PWM: %.0f%%",
-            uxTaskGetStackHighWaterMark(NULL), *parameter->rpm, *parameter->voltage, *parameter->current,
+            uxTaskGetStackHighWaterMark(NULL), frame.device, *parameter->rpm, *parameter->voltage, *parameter->current,
             *parameter->temperature_fet, *parameter->temperature_bec, *parameter->consumption, *parameter->cell_voltage,
             *parameter->voltage_bec, *parameter->current_bec, *parameter->throttle, *parameter->pwm_percent);
 
