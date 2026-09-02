@@ -553,7 +553,6 @@ static void set_config(float **sensor) {
     if (config->esc_protocol == ESC_OPENYGE) {
         esc_openyge_parameters_t parameter;
         parameter.rpm_multiplier = config->rpm_multiplier;
-        parameter.pwm_out = config->enable_pwm_out;
         parameter.alpha_rpm = config->alpha_rpm;
         parameter.alpha_voltage = config->alpha_voltage;
         parameter.alpha_current = config->alpha_current;
