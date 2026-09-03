@@ -348,7 +348,9 @@ static void i2c_request_handler(uint8_t address) {
             if (!sensor.is_enabled[XBUS_AIRSPEED]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_airspeed_t), "0x%X ");
             break;
         case XBUS_ALTIMETER_ID:
@@ -358,70 +360,90 @@ static void i2c_request_handler(uint8_t address) {
             if (!sensor.is_enabled[XBUS_GPS_LOC]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_gps_loc_t), "0x%X ");
             break;
         case XBUS_GPS_STAT_ID:
             if (!sensor.is_enabled[XBUS_GPS_STAT]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_gps_stat_t), "0x%X ");
             break;
         case XBUS_ENERGY_ID:
             if (!sensor.is_enabled[XBUS_ENERGY]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_energy_t), "0x%X ");
             break;
         case XBUS_ESC_ID:
             if (!sensor.is_enabled[XBUS_ESC]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_esc_t), "0x%X ");
             break;
         case XBUS_BATTERY_ID:
             if (!sensor.is_enabled[XBUS_BATTERY]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_battery_t), "0x%X ");
             break;
         case XBUS_VARIO_ID:
             if (!sensor.is_enabled[XBUS_VARIO]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_vario_t), "0x%X ");
             break;
         case XBUS_RPMVOLTTEMP_ID:
             if (!sensor.is_enabled[XBUS_RPMVOLTTEMP]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_rpm_volt_temp_t), "0x%X ");
             break;
         case XBUS_FUEL_FLOW_ID:
             if (!sensor.is_enabled[XBUS_FUEL_FLOW]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_fuel_flow_t), "0x%X ");
             break;
         case XBUS_STRU_TELE_DIGITAL_AIR_ID:
             if (!sensor.is_enabled[XBUS_STRU_TELE_DIGITAL_AIR]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_stru_tele_digital_air_t), "0x%X ");
             break;
         case XBUS_TELE_LIPOMON_ID:
             if (!sensor.is_enabled[XBUS_TELE_LIPOMON]) break;
             xbus_format_sensor(address, buffer);
             i2c_multi_set_write_buffer(buffer);
-            vTaskResume(context.led_task_handle);
+            if (context.led_task_handle != NULL) {
+                vTaskResume(context.led_task_handle);
+            }
             debug_buffer(buffer, sizeof(xbus_tele_lipomon_t), "0x%X ");
             break;
     }
