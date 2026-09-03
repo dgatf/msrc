@@ -12,7 +12,8 @@ permissions:
   contents: write
   pages: write
   id-token: write
-  
+  attestations: write
+
 jobs:
   firmware:
     runs-on: ubuntu-latest
@@ -45,7 +46,6 @@ jobs:
         uses: actions/attest-build-provenance@v3
         with:
           subject-path: build/project/MSRC-RP2040_${{ github.ref_name }}.uf2
-          github-token: ${{ secrets.TOKEN }}
         
   linux:
     runs-on: ubuntu-22.04
@@ -96,7 +96,6 @@ jobs:
         uses: actions/attest-build-provenance@v3
         with:
           subject-path: msrc_gui/appdir/msrc_link_${{ github.ref_name }}.AppImage
-          github-token: ${{ secrets.TOKEN }}
             
   macos:
     runs-on: macos-14
@@ -132,7 +131,6 @@ jobs:
         uses: actions/attest-build-provenance@v3
         with:
           subject-path: build/msrc_link_${{ github.ref_name }}.dmg
-          github-token: ${{ secrets.TOKEN }}
 
   windows:
     runs-on: windows-2022
@@ -167,5 +165,4 @@ jobs:
         uses: actions/attest-build-provenance@v3
         with:
           subject-path: build/release/msrc_link_${{ github.ref_name }}.exe
-          github-token: ${{ secrets.TOKEN }}
 
