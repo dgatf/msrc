@@ -56,6 +56,7 @@ void esc_castle_task(void *parameters) {
 }
 
 static void castle_link_handler(castle_link_telemetry_t packet) {
+    static uint32_t timestamp = 0;
     *parameter.voltage = packet.voltage;
     *parameter.ripple_voltage = packet.ripple_voltage;
     *parameter.current = packet.current;
@@ -65,6 +66,7 @@ static void castle_link_handler(castle_link_telemetry_t packet) {
     *parameter.voltage_bec = packet.voltage_bec;
     *parameter.current_bec = packet.current_bec;
     *parameter.temperature = packet.temperature;
+    *parameter.consumption += get_consumption(*parameter.current, 0, &timestamp);
     debug(
         "\nCastle (%u) < Volt(V): %.2f Ripple volt(V): %.2f Curr(A): %.2f Thr: %.0f Out: %.0f Rpm: %.0f Bec volt(V): "
         "%.2f Bec curr(A): %.2f Temp(C): %.0f %s",

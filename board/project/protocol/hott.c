@@ -611,7 +611,7 @@ void hott_task(void *parameters) {
                                      {.max = 100, .incr = 0.1, .str = "Volt Min"},
                                      {.max = 300, .incr = 1, .str = "Curr Max"}},
                              .general = {{.max = 100, .incr = 0.1, .str = "Volt Min"},
-                                         {.max = 100, .incr = 10, .str = "Cons Max"},
+                                         {.max = 30000, .incr = 10, .str = "Cons Max"},
                                          {.max = 100, .incr = 1, .str = "Temp Max"},
                                          {.max = 5000, .incr = 1, .str = "Alt Min"},
                                          {.max = 5000, .incr = 1, .str = "Alt Max"},
@@ -1233,7 +1233,6 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->esc[HOTT_ESC_CURRENT] = parameter.current;
         sensors->esc[HOTT_ESC_BEC_CURRENT] = parameter.current_bec;
         sensors->esc[HOTT_ESC_CONSUMPTION] = parameter.consumption;
-        sensors->esc[HOTT_ESC_EXT_TEMPERATURE] = parameter.consumption;
     }
     if (config->esc_protocol == ESC_KONTRONIK) {
         esc_kontronik_parameters_t parameter = {
