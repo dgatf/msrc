@@ -18,5 +18,4 @@ bit_loop:
     out pins 1
     jmp x-- bit_loop [16-2]
     nop // set pins 1 [16*stop-1]. Stop bits (1-2)
-    nop [16]
     set pindirs 0 // release pin
