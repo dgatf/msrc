@@ -169,10 +169,20 @@ static void sensor_cell_task(void *parameters) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
         xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
         if (!*parameter.cell_count) return;
-        uint32_t data_formatted = smartport_format_cell(cell_index, *parameter.cell_voltage);
-        cell_index++;
+        float value1 = 0.0f;
+        float value2 = 0.0f;
+        uint8_t first_cell_index = cell_index;
+        if (cell_index < *parameter.cell_count) {
+            value1 = *parameter.cell_voltage;
+            cell_index++;
+        }
+        if (cell_index < *parameter.cell_count) {
+            value2 = *parameter.cell_voltage;
+            cell_index++;
+        }
+        uint32_t data_formatted = smartport_format_cell(first_cell_index, value1, value2, *parameter.cell_count);
         if (cell_index > *parameter.cell_count - 1) cell_index = 0;
-        debug("\nFPort. Sensor cell (%u) > ", uxTaskGetStackHighWaterMark(NULL));
+        debug("\nSmartport. Sensor cell (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, CELLS_FIRST_ID, data_formatted);
     }
 }
@@ -193,20 +203,27 @@ static void sensor_cell_individual_task(void *parameters) {
             continue;
         }
 
-        float value = 0.0f;
+        float value1 = 0.0f;
+        float value2 = 0.0f;
+        uint8_t first_cell_index = cell_index;
 
         // Safety: check index and pointer before dereferencing
-        if (cell_index < *parameter.cell_count && parameter.cell_voltage[cell_index] != NULL) {
-            value = *parameter.cell_voltage[cell_index];
+        if (cell_index < *parameter.cell_count) {
+            if (parameter.cell_voltage[cell_index] != NULL) value1 = *parameter.cell_voltage[cell_index];
+            cell_index++;
         }
 
-        uint32_t data_formatted = smartport_format_cell(cell_index, value);
+        if (cell_index < *parameter.cell_count) {
+            if (parameter.cell_voltage[cell_index] != NULL) value2 = *parameter.cell_voltage[cell_index];
+            cell_index++;
+        }
 
-        debug("\nFPort. Sensor cell (%u) > ", uxTaskGetStackHighWaterMark(NULL));
+        uint32_t data_formatted = smartport_format_cell(first_cell_index, value1, value2, *parameter.cell_count);
+
+        debug("\nSmartport. Sensor cell (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, CELLS_FIRST_ID, data_formatted);
 
         // Next cell
-        cell_index++;
         if (cell_index >= *parameter.cell_count) {
             cell_index = 0;
         }

@@ -184,7 +184,7 @@ int32_t smartport_format(uint16_t data_id, float value);
 uint32_t smartport_format_double(uint16_t data_id, float value_l, float value_h);
 uint32_t smartport_format_coordinate(coordinate_type_t type, float value);
 uint32_t smartport_format_datetime(uint8_t type, uint32_t value);
-uint32_t smartport_format_cell(uint8_t cell_index, float value);
+uint32_t smartport_format_cell(uint8_t cell_index, float value1, float value2, uint8_t cell_count);
 uint8_t smartport_get_crc(uint8_t *data, uint len);
 smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, uint8_t frame_id, uint16_t data_id,
                                             uint32_t value);

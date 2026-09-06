@@ -666,8 +666,9 @@ uint32_t smartport_format_datetime(uint8_t type, uint32_t value) {
     return (uint32_t)dayHour << 24 | (uint32_t)monthMin << 16 | yearSec << 8;
 }
 
-uint32_t smartport_format_cell(uint8_t cell_index, float value) {
-    return cell_index | (uint16_t)round(value * 500) << 8;
+uint32_t smartport_format_cell(uint8_t cell_index, float value1, float value2, uint8_t cell_count) {
+    return (cell_index & 0x0F) | ((uint32_t)(cell_count & 0x0F) << 4) |
+           (((uint32_t)round(value1 * 500) & 0x0FFF) << 8) | (((uint32_t)round(value2 * 500) & 0x0FFF) << 20);
 }
 
 uint8_t smartport_get_crc(uint8_t *data, uint len) {
@@ -872,8 +873,18 @@ static void sensor_cell_task(void *parameters) {
         vTaskDelay(parameter.rate / portTICK_PERIOD_MS);
         xSemaphoreTake(semaphore_sensor, portMAX_DELAY);
         if (!*parameter.cell_count) return;
-        uint32_t data_formatted = smartport_format_cell(cell_index, *parameter.cell_voltage);
-        cell_index++;
+        float value1 = 0.0f;
+        float value2 = 0.0f;
+        uint8_t first_cell_index = cell_index;
+        if (cell_index < *parameter.cell_count) {
+            value1 = *parameter.cell_voltage;
+            cell_index++;
+        }
+        if (cell_index < *parameter.cell_count) {
+            value2 = *parameter.cell_voltage;
+            cell_index++;
+        }
+        uint32_t data_formatted = smartport_format_cell(first_cell_index, value1, value2, *parameter.cell_count);
         if (cell_index > *parameter.cell_count - 1) cell_index = 0;
         debug("\nSmartport. Sensor cell (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, CELLS_FIRST_ID, data_formatted);
@@ -896,20 +907,27 @@ static void sensor_cell_individual_task(void *parameters) {
             continue;
         }
 
-        float value = 0.0f;
+        float value1 = 0.0f;
+        float value2 = 0.0f;
+        uint8_t first_cell_index = cell_index;
 
         // Safety: check index and pointer before dereferencing
-        if (cell_index < *parameter.cell_count && parameter.cell_voltage[cell_index] != NULL) {
-            value = *parameter.cell_voltage[cell_index];
+        if (cell_index < *parameter.cell_count) {
+            if (parameter.cell_voltage[cell_index] != NULL) value1 = *parameter.cell_voltage[cell_index];
+            cell_index++;
         }
 
-        uint32_t data_formatted = smartport_format_cell(cell_index, value);
+        if (cell_index < *parameter.cell_count) {
+            if (parameter.cell_voltage[cell_index] != NULL) value2 = *parameter.cell_voltage[cell_index];
+            cell_index++;
+        }
+
+        uint32_t data_formatted = smartport_format_cell(first_cell_index, value1, value2, *parameter.cell_count);
 
         debug("\nSmartport. Sensor cell (%u) > ", uxTaskGetStackHighWaterMark(NULL));
         send_packet(0x10, CELLS_FIRST_ID, data_formatted);
 
         // Next cell
-        cell_index++;
         if (cell_index >= *parameter.cell_count) {
             cell_index = 0;
         }
@@ -1737,7 +1755,8 @@ static void set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_ntc) {
-        ntc_parameters_t parameter = {2, config->analog_rate, config->ntc_offset, config->alpha_temperature, malloc(sizeof(float))};
+        ntc_parameters_t parameter = {2, config->analog_rate, config->ntc_offset, config->alpha_temperature,
+                                      malloc(sizeof(float))};
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
