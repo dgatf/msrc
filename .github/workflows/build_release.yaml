@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Get actions code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: 'true'
 
@@ -38,7 +38,7 @@ jobs:
         run: sudo mv build/project/MSRC-RP2040.uf2 build/project/MSRC-RP2040_${{ github.ref_name }}.uf2
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: build/project/MSRC-RP2040_${{ github.ref_name }}.uf2
             
@@ -52,7 +52,7 @@ jobs:
 
     steps:
       - name: Get actions code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: Install QT
         uses: jurplel/install-qt-action@v4
@@ -88,7 +88,7 @@ jobs:
           mv *.AppImage msrc_link_${{ github.ref_name }}.AppImage
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: msrc_gui/appdir/msrc_link_${{ github.ref_name }}.AppImage
               
@@ -102,7 +102,7 @@ jobs:
 
     steps:
       - name: Get actions code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: Install QT
         uses: jurplel/install-qt-action@v4
@@ -123,7 +123,7 @@ jobs:
           macdeployqt msrc_link_${{ github.ref_name }}.app -dmg
         
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: build/msrc_link_${{ github.ref_name }}.dmg
                 
@@ -137,7 +137,7 @@ jobs:
 
     steps:
       - name: Get actions code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: Install qt static
         uses: orestonce/install-qt-static@v0.4.3
@@ -157,7 +157,7 @@ jobs:
           mv release/msrc_gui.exe release/msrc_link_${{ github.ref_name }}.exe
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: build/release/msrc_link_${{ github.ref_name }}.exe
           
