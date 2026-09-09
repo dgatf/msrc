@@ -320,7 +320,7 @@ typedef struct xbus_sensor_gps_loc_t {
     float *longitude;
     float *course;
     float *hdop;
-    uint8_t *fix_type;
+    float *fix_type;
     uint8_t *home_set;
 } xbus_sensor_gps_loc_t;
 
