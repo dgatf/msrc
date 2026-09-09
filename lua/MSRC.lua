@@ -140,7 +140,9 @@ local gpsBaudrateVal = { 9600, 38400, 57600, 115200 }
 local gpsBaudrate = { "Baudrate", nil, 0, 3, 1, 0x5105, gpsBaudrateVal }
 local gpsRateVal = { 1, 5, 10, 20 }
 local gpsRate = { "Rate", nil, 0, 3, 1, 0x5147, gpsRateVal }
-vars[pageEnum.gps] = { gpsEnable, gpsProtocol, gpsBaudrate, gpsRate }
+local gpsDynModelVal = { 0, 2, 3, 4, 5, 6, 7, 8 }
+local gpsDynModel = { "DynModel", nil, 0, 7, 1, 0x5154, gpsDynModelVal }
+vars[pageEnum.gps] = { gpsEnable, gpsProtocol, gpsBaudrate, gpsRate, gpsDynModel }
 
 -- Page 6 - Vario
 local varioModelStr = { "None", "BMP280", "MS5611", "BMP180" }
@@ -171,7 +173,8 @@ vars[pageEnum.analogRate] = { analogRate }
 
 -- Page 10 - Temperature analog
 local analogTemp = { "Enable", nil, 0, 1, 1, 0x5108, onOffStr }
-vars[pageEnum.analogTemp] = { analogTemp }
+local analogTempOffset = { "Offset", nil, -40, 40, 1, 0x5153 }
+vars[pageEnum.analogTemp] = { analogTemp, analogTempOffset }
 
 -- Page 11 - Voltage analog
 local analogVolt = { "Enable", nil, 0, 1, 1, 0x5106, onOffStr }
@@ -355,6 +358,8 @@ local function getConfig()
 			value = getIndex(gpsBaudrateVal, value) - 1
 		elseif dataId == 0x5147 then
 			value = getIndex(gpsRateVal, value) - 1
+		elseif dataId == 0x5154 then
+			value = getIndex(gpsDynModelVal, value) - 1
 		elseif dataId == 0x5138 then
 			gpio17[varEnum.val] = bit32.extract(value, 0)
 			gpio18[varEnum.val] = bit32.extract(value, 1)
@@ -372,6 +377,8 @@ local function getConfig()
 			end
 		elseif dataId == 0x513F then
 			value = value - 1000
+		elseif dataId == 0x5153 then
+			value = value - 40
 		end
 		if value < vars[page][pageItem][varEnum.min] then
 			value = vars[page][pageItem][varEnum.min]
@@ -427,6 +434,8 @@ local function saveConfig()
 			value = getValue(gpsBaudrateVal, gpsBaudrate[varEnum.val] + 1)
 		elseif dataId == 0x5147 then
 			value = getValue(gpsRateVal, gpsRate[varEnum.val] + 1)
+		elseif dataId == 0x5154 then
+			value = getValue(gpsDynModelVal, gpsDynModel[varEnum.val] + 1)
 		elseif dataId == 0x5138 then
 			value = gpio17[varEnum.val] -- bit 1
 			value = bit32.bor(value, bit32.lshift(gpio18[varEnum.val], 1)) -- bit 2
@@ -444,6 +453,8 @@ local function saveConfig()
 			end
 		elseif dataId == 0x513F then
 			value = vars[page][pageItem][varEnum.val] + 1000
+		elseif dataId == 0x5153 then
+			value = vars[page][pageItem][varEnum.val] + 40
 		end
 		value = math.floor(value)
 		if sportTelemetryPush(sensorIdTx - 1, 0x31, dataId, value) then

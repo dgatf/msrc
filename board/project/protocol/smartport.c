@@ -380,6 +380,12 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
             case 0x5151:
                 packet.value = config->mpu6050_filter;
                 break;
+            case 0x5153:
+                packet.value = config->ntc_offset + 40;
+                break;
+            case 0x5154:
+                packet.value = config->gps_dynmodel;
+                break;
             default:
                 send = false;
                 debug("\nSmartport. Unknown request frameId 0x%X dataId 0x%X", frame_id, data_id);
@@ -601,6 +607,12 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 break;
             case 0x5151:
                 config_lua->mpu6050_filter = value;
+                break;
+            case 0x5153:
+                config_lua->ntc_offset = value - 40;
+                break;
+            case 0x5154:
+                config_lua->gps_dynmodel = value;
                 break;
             default:
                 debug("\nSmartport. Unknown save request. frameId 0x%X dataId 0x%X", frame_id, data_id);
