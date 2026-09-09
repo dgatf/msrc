@@ -38,13 +38,7 @@
 #define TIMEOUT_US 5000
 #define VSPEED_INTERVAL_MS 2000
 
-typedef struct ublox_msg_info_t {
-    uint8_t class;
-    uint8_t id;
-    uint16_t len;
-} __attribute__((packed)) ublox_msg_info_t;
-
-typedef struct ublox_navpvt_t {
+typedef struct ublox_nav_pvt_t {
     uint32_t iTOW;
     uint16_t year;
     uint8_t month;
@@ -78,11 +72,9 @@ typedef struct ublox_navpvt_t {
     int32_t headVeh;
     int16_t magDec;
     uint16_t magAcc;
-    uint8_t crc_a;
-    uint8_t crc_b;
-} __attribute__((packed)) ublox_navpvt_t;
+} __attribute__((packed)) ublox_nav_pvt_t;
 
-typedef struct ublox_navdop_t {
+typedef struct ublox_nav_dop_t {
     uint32_t iTOW;
     uint16_t gDOP;  // DOP * 100
     uint16_t pDOP;  // DOP * 100
@@ -91,31 +83,81 @@ typedef struct ublox_navdop_t {
     uint16_t hDOP;  // DOP * 100
     uint16_t nDOP;  // DOP * 100
     uint16_t eDOP;  // DOP * 100
+} __attribute__((packed)) ublox_nav_dop_t;
+
+typedef struct ublox_cfg_nav5_t {
+    uint16_t mask;
+    uint8_t dynModel;
+    uint8_t fixMode;
+    int32_t fixedAlt;
+    uint32_t fixedAltVar;
+    int8_t minElev;
+    uint8_t drLimit;
+    uint16_t pDOP;
+    uint16_t tDOP;
+    uint16_t pAcc;
+    uint16_t tAcc;
+    uint8_t staticHoldThresh;
+    uint8_t dgpsTimeOut;
+    uint8_t cnoThreshNumSVs;
+    uint8_t cnoThresh;
+    uint8_t reserved1[2];
+    uint16_t staticHoldMaxDist;
+    uint8_t utcStandard;
+    uint8_t reserved2[5];
+} __attribute__((packed)) ublox_cfg_nav5_t;
+
+typedef struct ublox_cfg_msg_t {
+    uint8_t msgClass;
+    uint8_t msgID;
+    uint8_t msgRate;
+} __attribute__((packed)) ublox_cfg_msg_t;
+
+typedef struct ublox_cfg_rate_t {
+    uint16_t measRate;
+    uint16_t navRate;
+    uint16_t timeRef;
+} __attribute__((packed)) ublox_cfg_rate_t;
+
+typedef struct ublox_cfg_cfg_t {
+    uint32_t clearMask;
+    uint32_t saveMask;
+    uint32_t loadMask;
+    uint8_t deviceMask;
+} __attribute__((packed)) ublox_cfg_cfg_t;
+
+typedef struct ublox_header_t {
+    uint16_t header;
+    uint8_t class;
+    uint8_t id;
+    uint16_t size;
+} __attribute__((packed)) ublox_header_t;
+
+typedef struct ublox_crc_t {
     uint8_t crc_a;
     uint8_t crc_b;
-} __attribute__((packed)) ublox_navdop_t;
+} __attribute__((packed)) ublox_crc_t;
 
-typedef struct alarm_parameters_t {
-    bool is_ublox;
-    uint rate;
-} alarm_parameters_t;
-
-// static alarm_id_t alarm_id_ublox = 0, alarm_id_nmea = 0;
-// static alarm_parameters_t alarm_parameters;
+typedef struct ublox_msg_t {
+    ublox_header_t header;
+    uint8_t *payload;
+    ublox_crc_t crc;
+} ublox_msg_t;
 
 static void process(gps_parameters_t *parameter);
 static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_parameters_t *parameter);
-static void send_ublox_message(uint8_t *buf, uint len);
+static void send_ublox_message(ublox_msg_t *msg);
 static void set_baudrate(uint baudrate);
-static void set_nmea_config(uint rate);
-static void set_ublox_config(uint rate);
+static void set_nmea_config(uint rate, uint dynmodel);
+static void set_ublox_config(uint rate, uint dynmodel);
 static void nmea_msg(char *cmd, bool enable);
 static void ubx_cfg_msg(uint8_t class, uint8_t id, bool enable);
 static void ubx_cfg_rate(uint16_t rate);
+static void ubx_cfg_dynmodel(uint8_t dynmodel);
 static void ubx_cfg_cfg(void);
 static bool set_home_altitude(uint fix_type);
-// static int64_t alarm_nmea_timeout(alarm_id_t id, void *parameters);
-// static int64_t alarm_ublox_timeout(alarm_id_t id, void *parameters);
+static bool check_ublox_crc(ublox_msg_t *msg);
+static void set_ublox_crc(ublox_msg_t *msg);
 
 void gps_task(void *parameters) {
     gps_parameters_t parameter = *(gps_parameters_t *)parameters;
@@ -178,9 +220,9 @@ void gps_task(void *parameters) {
     uart_pio_begin(parameter.baudrate, UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1, 8, 1,
                    UART_PARITY_NONE);
     if (parameter.protocol == UBLOX)
-        set_ublox_config(parameter.rate);
+        set_ublox_config(parameter.rate, parameter.dynmodel);
     else
-        set_nmea_config(parameter.rate);
+        set_nmea_config(parameter.rate, parameter.dynmodel);
 
     // alarm_parameters.is_ublox = true;
     // alarm_id_ublox = add_alarm_in_ms(20 * 1000L, alarm_ublox_timeout, &alarm_parameters, false);
@@ -260,69 +302,94 @@ static void process(gps_parameters_t *parameter) {
             }
         }
     } else {
-        while (uart_pio_available()) {
-            while (uart_pio_available() && uart_pio_read() != 0xB5)
-                ;
-            while (uart_pio_available() && uart_pio_read() != 0x62)
-                ;
-            if (uart_pio_available() < sizeof(ublox_msg_info_t)) return;
-            ublox_msg_info_t msg_info;
-            uart_pio_read_bytes((uint8_t *)&msg_info, sizeof(ublox_msg_info_t));
-            debug("\nGPS UBLOX MSG. Class: %u Id: %u Len: %u Avail: %u", msg_info.class, msg_info.id, msg_info.len,
-                  uart_pio_available());
-            if (uart_pio_available() < msg_info.len + 2) return;
-            if (msg_info.class == 0x01 && msg_info.id == 0x07 && msg_info.len == sizeof(ublox_navpvt_t) - 2) {
-                // cancel_alarm(alarm_id_ublox);
-                // alarm_id_ublox = add_alarm_in_ms(2000, alarm_ublox_timeout, &alarm_parameters, false);
-                ublox_navpvt_t navpvt;
-                uart_pio_read_bytes((uint8_t *)&navpvt, sizeof(ublox_navpvt_t));
-                *parameter->alt = navpvt.hMSL / 1000.0F;
-                *parameter->lat = navpvt.lat * 1.0e-7;
-                *parameter->lon = navpvt.lon * 1.0e-7;
-                *parameter->alt = navpvt.hMSL / 1000.0F;
-                *parameter->cog = navpvt.headMot / 100000.0F;
-                *parameter->sat = navpvt.numSV;
-                *parameter->time = navpvt.hour * 10000L + navpvt.min * 100 + navpvt.sec;
-                *parameter->date = navpvt.day * 10000L + navpvt.month * 100 + (navpvt.year - 2000);
-                *parameter->vspeed = -navpvt.velD / 1000.0F;
-                *parameter->spd_kmh = navpvt.gSpeed * 3600.0F / 1000000.0F;
-                *parameter->spd = navpvt.gSpeed * 0.001943844F;  // 1 mm/s = 0.001943844 Knot
-                uint8_t fix = navpvt.fixType;
-                *parameter->fix = fix;
-                if (fix == 2)
-                    *parameter->fix_type = 1;  // 2D
-                else if (fix == 3 || fix == 4)
-                    *parameter->fix_type = 2;  // 3D
-                else
-                    *parameter->fix_type = 0;  // no fix
-                if (!(navpvt.flags & 0x01)) *parameter->fix_type = 0;
-                *parameter->n_vel = navpvt.velN / 1000.0F;
-                *parameter->e_vel = navpvt.velE / 1000.0F;
-                *parameter->v_vel = -navpvt.velD / 1000.0F;
-                *parameter->speed_acc = navpvt.sAcc / 1000.0F;
-                *parameter->track_acc = navpvt.headAcc * 1e-5f;
-                *parameter->alt_elipsiod = navpvt.height / 1000.0F;
-                *parameter->h_acc = navpvt.hAcc / 1000.0F;
-                *parameter->v_acc = navpvt.vAcc / 1000.0F;
-                *parameter->pdop = navpvt.pDOP / 100.0F;
-                if (set_home_altitude(*parameter->fix_type)) {
-                    *parameter->alt_home = *parameter->alt;
+        bool sync = false;
+        while (uart_pio_available() > 1) {
+            if (uart_pio_read() == 0xB5) {
+                if (uart_pio_read() == 0x62) {
+                    sync = true;
+                    break;
                 }
-                debug(
-                    "\nGPS (%u) < NAV-PTV: Date: %.0f Time: %.0f Fix: %.0f Sat: %.0f Lon: %.5f Lat: %.5f Alt: %.2f "
-                    "Vspeed: %.2f Speed: mm/s %i knots %.2f kmh %.2f Pdop: %.2f, Alt home: %.2f",
-                    uxTaskGetStackHighWaterMark(NULL), *parameter->date, *parameter->time, *parameter->fix,
-                    *parameter->sat, *parameter->lon, *parameter->lat, *parameter->alt, *parameter->vspeed,
-                    navpvt.gSpeed, *parameter->spd, *parameter->spd_kmh, *parameter->pdop, *parameter->alt_home);
-            } else if (msg_info.class == 0x01 && msg_info.id == 0x04 && msg_info.len == sizeof(ublox_navdop_t) - 2) {
-                // cancel_alarm(alarm_id_ublox);
-                // alarm_id_ublox = add_alarm_in_ms(2000, alarm_ublox_timeout, &alarm_parameters, false);
-                ublox_navdop_t navdop;
-                uart_pio_read_bytes((uint8_t *)&navdop, sizeof(ublox_navdop_t));
-                *parameter->hdop = navdop.hDOP / 100.0F;
-                *parameter->vdop = navdop.vDOP / 100.0F;
-                debug("\nGPS (%u) < NAV-DOP: h: %.2f v: %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter->hdop,
-                      *parameter->vdop);
+            }
+        }
+        if (!sync) return;
+        if (uart_pio_available() < sizeof(ublox_header_t) - 2) return;
+        ublox_msg_t msg;
+        msg.header = (ublox_header_t){.header = 0x62B5};
+        uart_pio_read_bytes((uint8_t *)&msg.header + 2, sizeof(ublox_header_t) - 2);
+        debug("\nGPS UBLOX MSG. Class: %u Id: %u Len: %u Avail: %u", msg.header.class, msg.header.id, msg.header.size,
+              uart_pio_available());
+        if (uart_pio_available() < msg.header.size + 2) return;
+
+        // NAV PVT
+        if (msg.header.class == 0x01 && msg.header.id == 0x07 && msg.header.size == sizeof(ublox_nav_pvt_t)) {
+            ublox_nav_pvt_t navpvt;
+            uart_pio_read_bytes((uint8_t *)&navpvt, sizeof(ublox_nav_pvt_t));
+            uart_pio_read_bytes((uint8_t *)&msg.crc, sizeof(ublox_crc_t));
+            msg.payload = (uint8_t *)&navpvt;
+            if (!check_ublox_crc(&msg)) {
+                debug("\nGPS UBLOX MSG. CRC ERROR");
+                return;
+            }
+            *parameter->alt = navpvt.hMSL / 1000.0F;
+            *parameter->lat = navpvt.lat * 1.0e-7;
+            *parameter->lon = navpvt.lon * 1.0e-7;
+            *parameter->alt = navpvt.hMSL / 1000.0F;
+            *parameter->cog = navpvt.headMot / 100000.0F;
+            *parameter->sat = navpvt.numSV;
+            *parameter->time = navpvt.hour * 10000L + navpvt.min * 100 + navpvt.sec;
+            *parameter->date = navpvt.day * 10000L + navpvt.month * 100 + (navpvt.year - 2000);
+            *parameter->vspeed = -navpvt.velD / 1000.0F;
+            *parameter->spd_kmh = navpvt.gSpeed * 3600.0F / 1000000.0F;
+            *parameter->spd = navpvt.gSpeed * 0.001943844F;  // 1 mm/s = 0.001943844 Knot
+            uint8_t fix = navpvt.fixType;
+            *parameter->fix = fix;
+            if (fix == 2)
+                *parameter->fix_type = 1;  // 2D
+            else if (fix == 3 || fix == 4)
+                *parameter->fix_type = 2;  // 3D
+            else
+                *parameter->fix_type = 0;  // no fix
+            if (!(navpvt.flags & 0x01)) *parameter->fix_type = 0;
+            *parameter->n_vel = navpvt.velN / 1000.0F;
+            *parameter->e_vel = navpvt.velE / 1000.0F;
+            *parameter->v_vel = -navpvt.velD / 1000.0F;
+            *parameter->speed_acc = navpvt.sAcc / 1000.0F;
+            *parameter->track_acc = navpvt.headAcc * 1e-5f;
+            *parameter->alt_elipsiod = navpvt.height / 1000.0F;
+            *parameter->h_acc = navpvt.hAcc / 1000.0F;
+            *parameter->v_acc = navpvt.vAcc / 1000.0F;
+            *parameter->pdop = navpvt.pDOP / 100.0F;
+            if (set_home_altitude(*parameter->fix_type)) {
+                *parameter->alt_home = *parameter->alt;
+            }
+            debug(
+                "\nGPS (%u) < NAV-PTV: Date: %.0f Time: %.0f Fix: %.0f Sat: %.0f Lon: %.5f Lat: %.5f Alt: %.2f "
+                "Vspeed: %.2f Speed: mm/s %i knots %.2f kmh %.2f Pdop: %.2f, Alt home: %.2f",
+                uxTaskGetStackHighWaterMark(NULL), *parameter->date, *parameter->time, *parameter->fix, *parameter->sat,
+                *parameter->lon, *parameter->lat, *parameter->alt, *parameter->vspeed, navpvt.gSpeed, *parameter->spd,
+                *parameter->spd_kmh, *parameter->pdop, *parameter->alt_home);
+        }
+
+        // NAV DOP
+        else if (msg.header.class == 0x01 && msg.header.id == 0x04 && msg.header.size == sizeof(ublox_nav_dop_t)) {
+            ublox_nav_dop_t navdop;
+            uart_pio_read_bytes((uint8_t *)&navdop, sizeof(ublox_nav_dop_t));
+            uart_pio_read_bytes((uint8_t *)&msg.crc, sizeof(ublox_crc_t));
+            msg.payload = (uint8_t *)&navdop;
+            if (!check_ublox_crc(&msg)) {
+                debug("\nGPS UBLOX MSG. CRC ERROR");
+                return;
+            }
+            *parameter->hdop = navdop.hDOP / 100.0F;
+            *parameter->vdop = navdop.vDOP / 100.0F;
+            debug("\nGPS (%u) < NAV-DOP: h: %.2f v: %.2f", uxTaskGetStackHighWaterMark(NULL), *parameter->hdop,
+                  *parameter->vdop);
+        }
+
+        // Unknown
+        else {
+            for (uint i = 0; i < msg.header.size + sizeof(ublox_crc_t); i++) {
+                uart_pio_read();
             }
         }
     }
@@ -420,7 +487,7 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
     }
 }
 
-static void set_ublox_config(uint rate) {
+static void set_ublox_config(uint rate, uint dynmodel) {
     nmea_msg("GLL", false);
     nmea_msg("GSV", false);
     nmea_msg("GSA", false);
@@ -430,11 +497,12 @@ static void set_ublox_config(uint rate) {
     nmea_msg("RMC", false);
     ubx_cfg_msg(0x01, 0x07, true);  // Enable message UBX-NAV-PVT
     ubx_cfg_msg(0x01, 0x04, true);  // Enable message UBX-NAV-DOP
+    ubx_cfg_dynmodel(dynmodel);     // Set dynmodel UBX-CFG-NAV5
     ubx_cfg_rate(rate);             // Set messages rate (UBX-CFG-RATE (0x06 0x08))
     ubx_cfg_cfg();                  // Save changes
 }
 
-static void set_nmea_config(uint rate) {
+static void set_nmea_config(uint rate, uint dynmodel) {
     nmea_msg("GLL", false);
     nmea_msg("GSA", true);
     nmea_msg("GSV", false);
@@ -444,6 +512,7 @@ static void set_nmea_config(uint rate) {
     nmea_msg("RMC", true);
     ubx_cfg_msg(0x01, 0x07, false);  // Disable message UBX-NAV-PVT
     ubx_cfg_msg(0x01, 0x04, false);  // Disable message UBX-NAV-DOP
+    ubx_cfg_dynmodel(dynmodel);      // Set dynmodel UBX-CFG-NAV5
     ubx_cfg_rate(rate);              // Set messages rate (UBX-CFG-RATE (0x06 0x08))
     ubx_cfg_cfg();                   // Save changes
 }
@@ -469,48 +538,69 @@ static void nmea_msg(char *cmd, bool enable) {
 }
 
 static void ubx_cfg_msg(uint8_t class, uint8_t id, bool enable) {
-    uint8_t msg[] = {0x06, 0x01, 0x03, 0x00, class, id, enable};
-    send_ublox_message(msg, sizeof(msg));
+    ublox_msg_t ublox_msg;
+    ublox_msg.header = (ublox_header_t){.header = 0x62B5, .class = 0x06, .id = 0x01, .size = sizeof(ublox_cfg_msg_t)};
+    ublox_cfg_msg_t payload = {.msgClass = class, .msgID = id, .msgRate = enable ? 1 : 0};
+    ublox_msg.payload = (uint8_t *)&payload;
+    send_ublox_message(&ublox_msg);
 }
 
 static void ubx_cfg_rate(uint16_t rate) {
-    uint16_t ms = 1000 / rate;
-    uint8_t msg[] = {0x06, 0x08, 0x06, 0x00, ms, ms >> 8, 0x01, 0x00, 0x01, 0x00};
-    send_ublox_message(msg, sizeof(msg));
+    ublox_msg_t ublox_msg;
+    ublox_msg.header = (ublox_header_t){.header = 0x62B5, .class = 0x06, .id = 0x08, .size = sizeof(ublox_cfg_rate_t)};
+    ublox_cfg_rate_t payload = {.measRate = 1000 / rate, .navRate = 1, .timeRef = 0};
+    ublox_msg.payload = (uint8_t *)&payload;
+    send_ublox_message(&ublox_msg);
 }
 
 static void ubx_cfg_cfg(void) {
-    uint8_t msg[] = {0x06, 0x09, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-                     0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03};
-    send_ublox_message(msg, sizeof(msg));
+    ublox_msg_t ublox_msg;
+    ublox_msg.header = (ublox_header_t){.header = 0x62B5, .class = 0x06, .id = 0x09, .size = sizeof(ublox_cfg_cfg_t)};
+    ublox_cfg_cfg_t payload = {.clearMask = 0x00, .saveMask = 0xFFFF, .loadMask = 0x00, .deviceMask = 0x03};
+    ublox_msg.payload = (uint8_t *)&payload;
+    send_ublox_message(&ublox_msg);
 }
 
-static inline void send_ublox_message(uint8_t *buf, uint len) {
-    uint8_t a = 0, b = 0;
-    uart_pio_write(0xB5);
-    uart_pio_write(0x62);
-    for (uint i = 0; i < len; i++) {
-        a += buf[i];
-        b += a;
-        uart_pio_write(buf[i]);
+static void ubx_cfg_dynmodel(uint8_t value) {
+    ublox_msg_t ublox_msg;
+    ublox_msg.header = (ublox_header_t){.header = 0x62B5, .class = 0x06, .id = 0x24, .size = sizeof(ublox_cfg_nav5_t)};
+    ublox_cfg_nav5_t payload = {.mask = 0x0001, .dynModel = value};
+    ublox_msg.payload = (uint8_t *)&payload;
+    send_ublox_message(&ublox_msg);
+}
+
+static inline void send_ublox_message(ublox_msg_t *msg) {
+    set_ublox_crc(msg);
+    uart_pio_write_bytes((uint8_t *)&msg->header, sizeof(ublox_header_t));
+    uart_pio_write_bytes((uint8_t *)msg->payload, msg->header.size);
+    uart_pio_write_bytes((uint8_t *)&msg->crc, sizeof(ublox_crc_t));
+}
+
+static void set_ublox_crc(ublox_msg_t *msg) {
+    uint8_t CK_A = 0;
+    uint8_t CK_B = 0;
+    for (uint i = 2; i < sizeof(ublox_header_t); i++) {
+        CK_A += ((uint8_t *)msg)[i];
+        CK_B += CK_A;
     }
-    uart_pio_write(a);
-    uart_pio_write(b);
+    for (uint i = 0; i < msg->header.size; i++) {
+        CK_A += ((uint8_t *)msg->payload)[i];
+        CK_B += CK_A;
+    }
+    msg->crc.crc_a = CK_A;
+    msg->crc.crc_b = CK_B;
 }
 
-/*static int64_t alarm_nmea_timeout(alarm_id_t id, void *parameters) {
-    alarm_parameters_t *parameter;
-    parameter = (alarm_parameters_t *)parameters;
-    parameter->is_ublox = true;
-    set_ublox_config(parameter->rate);
-    return 10000 * 1000L;
+static bool check_ublox_crc(ublox_msg_t *msg) {
+    uint8_t CK_A = 0;
+    uint8_t CK_B = 0;
+    for (uint i = 2; i < sizeof(ublox_header_t); i++) {
+        CK_A += ((uint8_t *)msg)[i];
+        CK_B += CK_A;
+    }
+    for (uint i = 0; i < msg->header.size; i++) {
+        CK_A += ((uint8_t *)msg->payload)[i];
+        CK_B += CK_A;
+    }
+    return (msg->crc.crc_a == CK_A) && (msg->crc.crc_b == CK_B);
 }
-
-static int64_t alarm_ublox_timeout(alarm_id_t id, void *parameters) {
-    alarm_parameters_t *parameter;
-    parameter = (alarm_parameters_t *)parameters;
-    parameter->is_ublox = false;
-    //set_nmea_config(parameter->rate);
-    set_ublox_config(parameter->rate);
-    return 10000 * 1000L;
-}*/

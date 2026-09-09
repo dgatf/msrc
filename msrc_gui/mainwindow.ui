@@ -76,7 +76,7 @@
         <item>
          <widget class="QTabWidget" name="tbConfig">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tbReceiver">
            <attribute name="title">
@@ -92,7 +92,7 @@
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-104</y>
+                 <y>0</y>
                  <width>581</width>
                  <height>806</height>
                 </rect>
@@ -613,9 +613,9 @@
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>0</y>
+                 <y>-332</y>
                  <width>581</width>
-                 <height>2242</height>
+                 <height>2273</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -954,6 +954,16 @@
                    </item>
                    <item row="0" column="1">
                     <widget class="QComboBox" name="cbGpsProtocol"/>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QComboBox" name="cbDynModel"/>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="lbDynModel">
+                     <property name="text">
+                      <string>DynModel</string>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </widget>

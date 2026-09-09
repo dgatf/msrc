@@ -51,6 +51,8 @@ typedef enum serial_monitor_format_t : uint8_t { FORMAT_HEX, FORMAT_STRING } ser
 
 typedef enum gps_protocol_t : uint8_t { UBLOX, NMEA } gps_protocol_t;
 
+typedef enum gps_dynmodel_t : uint8_t { GPS_DYNMODEL_PORTABLE, GPS_DYNMODEL_STATIONARY, GPS_DYNMODEL_PEDESTRIAN, GPS_DYNMODEL_AUTOMOTIVE, GPS_DYNMODEL_SEA, GPS_DYNMODEL_AIRBORNE1, GPS_DYNMODEL_AIRBORNE2, GPS_DYNMODEL_AIRBORNE4 } gps_dynmodel_t;
+
 #else
 
 typedef enum rx_protocol_t {
@@ -98,6 +100,8 @@ typedef enum analog_current_type_t { CURRENT_TYPE_HALL, CURRENT_TYPE_SHUNT } ana
 typedef enum serial_monitor_format_t { FORMAT_HEX, FORMAT_STRING } serial_monitor_format_t;
 
 typedef enum gps_protocol_t { UBLOX, NMEA } gps_protocol_t;
+
+typedef enum gps_dynmodel_t { GPS_DYNMODEL_PORTABLE, GPS_DYNMODEL_STATIONARY, GPS_DYNMODEL_PEDESTRIAN, GPS_DYNMODEL_AUTOMOTIVE, GPS_DYNMODEL_SEA, GPS_DYNMODEL_AIRBORNE1, GPS_DYNMODEL_AIRBORNE2, GPS_DYNMODEL_AIRBORNE4 } gps_dynmodel_t;
 
 #endif
 
@@ -188,7 +192,7 @@ typedef struct config_t {                            // smartport data_id
     uint8_t lipo_cells;                              // 0x5152
     uint8_t sensor_id_srxl2;
     int8_t ntc_offset;                               // 0x5153
-    uint8_t spare7;
+    uint8_t gps_dynmodel;                            // 0x5154
     uint8_t sensor_id_jeti;
     uint8_t spare81;
     uint16_t spare82;

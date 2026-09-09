@@ -75,6 +75,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbGyroSamplerate->addItems({"1000", "500", "333", "250", "200", "167", "144", "125"});
     ui->cbGyroSamplerate->setVisible(false);
     ui->lbGyroSamplerate->setVisible(false);
+    ui->cbDynModel->addItem("Portable", GPS_DYNMODEL_PORTABLE);
+    ui->cbDynModel->addItem("Stationary", GPS_DYNMODEL_STATIONARY);
+    ui->cbDynModel->addItem("Pedestrian", GPS_DYNMODEL_PEDESTRIAN);
+    ui->cbDynModel->addItem("Automotive", GPS_DYNMODEL_AUTOMOTIVE);
+    ui->cbDynModel->addItem("Sea", GPS_DYNMODEL_SEA);
+    ui->cbDynModel->addItem("Airborne 1g", GPS_DYNMODEL_AIRBORNE1);
+    ui->cbDynModel->addItem("Airborne 2g", GPS_DYNMODEL_AIRBORNE2);
+    ui->cbDynModel->addItem("Airborne 4g", GPS_DYNMODEL_AIRBORNE4);
 
     ui->lbConnections->setText(
         "| Sensor/Receiver                           | Board GPIO|"
@@ -497,6 +505,7 @@ void MainWindow::setUiFromConfig() {
     ui->cbGpsBaudrate->setCurrentText(QString::number(config.gps_baudrate));
     ui->cbGpsRate->setCurrentText(QString::number(config.gps_rate));
     ui->cbGpsProtocol->setCurrentIndex(config.gps_protocol);
+    ui->cbDynModel->findData(config.gps_dynmodel);
 
     // Analog rate
 
@@ -726,6 +735,7 @@ void MainWindow::getConfigFromUi() {
     config.gps_baudrate = ui->cbGpsBaudrate->currentText().toInt();
     config.gps_rate = ui->cbGpsRate->currentText().toInt();
     config.gps_protocol = ui->cbGpsProtocol->currentIndex();
+    config.gps_dynmodel = ui->cbDynModel->currentData().toUInt();;
 
     // Voltage
 

@@ -901,6 +901,7 @@ static void set_config(smartport_parameters_t *parameter) {
         parameter.protocol = config->gps_protocol;
         parameter.baudrate = config->gps_baudrate;
         parameter.rate = config->gps_rate;
+        parameter.dynmodel = config->gps_dynmodel;
         parameter.lat = malloc(sizeof(float));
         parameter.lon = malloc(sizeof(float));
         parameter.alt = malloc(sizeof(float));
