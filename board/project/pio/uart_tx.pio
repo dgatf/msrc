@@ -6,16 +6,15 @@
  * LICENSE file in the root directory of this source tree. 
  */
 
-.define PUBLIC UART_TX_CYCLES_PER_BIT 16  // we want here resolution to reduce division error when writing. more cycles less error
+.define PUBLIC UART_TX_CYCLES_PER_BIT 4
 
-.program uart_tx  // 1 bit every 16 cycles
+.program uart_tx
+.side_set 1 opt pindirs
 start:
-    nop // set x n (0 to 31). Number of data bits
+    nop // set x [data_bits-1] side 0
     pull block
-    set pindirs 1 // take control of pin
-    set pins 0 [16-2]  // start bit
+    set pins 0 [UART_TX_CYCLES_PER_BIT-1] side 1
 bit_loop:
     out pins 1
-    jmp x-- bit_loop [16-2]
-    nop // set pins 1 [16*stop-1]. Stop bits (1-2)
-    set pindirs 0 // release pin
+    jmp x-- bit_loop [UART_TX_CYCLES_PER_BIT-2]
+    nop // set pins 1 [UART_TX_CYCLES_PER_BIT*stop-1]

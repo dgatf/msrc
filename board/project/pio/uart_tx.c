@@ -10,20 +10,23 @@ static uint8_t data_bits_;
 static uint8_t parity_;
 
 uint uart_tx_init(PIO pio, uint pin, uint baudrate, uint data_bits, uint stop_bits, uint parity) {
+    gpio_init(pin);
+    gpio_pull_up(pin);
     pio_ = pio;
     data_bits_ = data_bits;
     parity_ = parity;
-    gpio_pull_up(pin);
     sm_ = pio_claim_unused_sm(pio_, true);
     pio_gpio_init(pio_, pin);
-    pio_sm_set_consecutive_pindirs(pio_, sm_, pin, 1, false);
-    pio_sm_set_pins(pio, sm_, 0xFFFF);
+    pio_sm_set_consecutive_pindirs(pio_, sm_, pin, 1, true);
     offset_ = pio_add_program(pio_, &uart_tx_program);
-    pio_->instr_mem[offset_] = pio_encode_set(pio_x, parity == UART_PARITY_NONE ? data_bits - 1 : data_bits);
-    pio_->instr_mem[offset_ + 6] = pio_encode_set(pio_pins, 1) | pio_encode_delay(16 * stop_bits - 1);
+    pio_->instr_mem[offset_] =
+        pio_encode_set(pio_x, parity == UART_PARITY_NONE ? data_bits - 1 : data_bits) | pio_encode_sideset_opt(1, 0);
+    pio_->instr_mem[offset_ + 5] =
+        pio_encode_set(pio_pins, 1) | pio_encode_delay(UART_TX_CYCLES_PER_BIT * stop_bits - 1);
     pio_sm_config c = uart_tx_program_get_default_config(offset_);
     sm_config_set_out_pins(&c, pin, 1);
     sm_config_set_set_pins(&c, pin, 1);
+    sm_config_set_sideset_pins(&c, pin);
     sm_config_set_in_shift(&c, true, false, 32);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
     float div = (float)clock_get_hz(clk_sys) / (UART_TX_CYCLES_PER_BIT * baudrate);
