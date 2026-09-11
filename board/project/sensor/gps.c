@@ -429,49 +429,51 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
     static int8_t lat_dir = 1, lon_dir = 1;
     static uint32_t timestamp_vspeed = 0, timestamp_dist = 0;
     if (strlen(buffer)) {
-        if (nmea_field[nmea_cmd][cmd_field] == NMEA_TIME) {
+        if (cmd_field >= NMEA_MAX_FIELDS) return;
+        uint8_t field_type = nmea_field[nmea_cmd][cmd_field];
+        if (field_type == NMEA_TIME) {
             *parameter->time = atof(buffer);
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_LAT) {
+        } else if (field_type == NMEA_LAT) {
             char degrees[3] = {0};
             float minutes = 0;
             strncpy(degrees, buffer, 2);
             minutes = atof(buffer + 2);
             *parameter->lat = atoi(degrees) + minutes / 60;
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_LON) {
+        } else if (field_type == NMEA_LON) {
             char degrees[4] = {0};
             float minutes = 0;
             strncpy(degrees, buffer, 3);
             minutes = atof(buffer + 3);
             *parameter->lon = atoi(degrees) + minutes / 60;
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_ALT) {
+        } else if (field_type == NMEA_ALT) {
             *parameter->alt = atof(buffer);
             get_vspeed_gps(parameter->vspeed, *parameter->alt, VSPEED_INTERVAL_MS);
             if (set_home_altitude(*parameter->fix_type)) {
                 *parameter->alt_home = *parameter->alt;
             }
             debug("(alt home %.2f),", *parameter->alt_home);
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_SPD) {
+        } else if (field_type == NMEA_SPD) {
             *parameter->spd = atof(buffer);
             *parameter->spd_kmh = *parameter->spd * 1.852;
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_COG) {
+        } else if (field_type == NMEA_COG) {
             *parameter->cog = atof(buffer);
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_DATE) {
+        } else if (field_type == NMEA_DATE) {
             *parameter->date = atof(buffer);
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_SAT) {
+        } else if (field_type == NMEA_SAT) {
             *parameter->sat = atof(buffer);
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_LAT_SIGN) {
+        } else if (field_type == NMEA_LAT_SIGN) {
             lat_dir = (buffer[0] == 'N') ? 1 : -1;
             *parameter->lat = fabsf(*parameter->lat) * lat_dir;
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_LON_SIGN) {
+        } else if (field_type == NMEA_LON_SIGN) {
             lon_dir = (buffer[0] == 'E') ? 1 : -1;
             *parameter->lon = fabsf(*parameter->lon) * lon_dir;
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_GSA_HDOP) {
+        } else if (field_type == NMEA_GSA_HDOP) {
             *parameter->hdop = atof(buffer);
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_GSA_VDOP) {
+        } else if (field_type == NMEA_GSA_VDOP) {
             *parameter->vdop = atof(buffer);
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_GSA_PDOP) {
+        } else if (field_type == NMEA_GSA_PDOP) {
             *parameter->pdop = atof(buffer);
-        } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_GSA_FIX) {
+        } else if (field_type == NMEA_GSA_FIX) {
             uint fix = atoi((char *)buffer);
             if (fix >= 1 && fix <= 3) {
                 *parameter->fix = fix;
@@ -483,7 +485,7 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
                     *parameter->fix_type = 0;  // no fix
             }
         }
-        debug("%s(%i),", buffer, nmea_field[nmea_cmd][cmd_field]);
+        debug("%s(%i),", buffer, field_type);
     }
 }
 
