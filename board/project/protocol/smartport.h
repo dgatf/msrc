@@ -2,6 +2,7 @@
 #define SMARTPORT_H
 
 #include "common.h"
+#include <semphr.h>
 
 // FrSky Smartport Data Id
 
@@ -177,6 +178,17 @@ typedef struct smartport_packet_t {
     uint32_t value;
 } smartport_packet_t;
 
+typedef struct fbus_packet_t {
+    uint8_t len;
+    uint8_t sensor_id;
+    uint8_t frame_id;
+    uint16_t data_id;
+    uint32_t value;
+    uint8_t crc;
+} __attribute__((packed)) fbus_packet_t;
+
+typedef enum frsky_protocol_t { SMARTPORT, FPORT, FBUS } frsky_protocol_t;
+
 extern context_t context;
 
 void smartport_task(void *parameters);
@@ -191,4 +203,20 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
 void smartport_send_byte(uint8_t c, uint16_t *crcp);
 uint8_t smartport_sensor_id_to_crc(uint8_t sensor_id);
 uint8_t smartport_sensor_crc_to_id(uint8_t sensor_id_crc);
+void smartport_sensor_task(void *parameters);
+void smartport_sensor_gpio_task(void *parameters);
+void smartport_sensor_void_task(void *parameters);
+void smartport_sensor_double_task(void *parameters);
+void smartport_sensor_coordinates_task(void *parameters);
+void smartport_sensor_datetime_task(void *parameters);
+void smartport_sensor_cell_task(void *parameters);
+void smartport_sensor_cell_individual_task(void *parameters);
+void smartport_send_packet(uint8_t frame_id, uint16_t data_id, uint32_t value, uint8_t protocol);
+void smartport_set_protocol(frsky_protocol_t prot);
+void smartport_set_sensor_id(uint8_t sensor_id);
+uint8_t smartport_get_sensor_id(void);
+void smartport_set_config(smartport_parameters_t *parameter);
+void smartport_set_semaphore(SemaphoreHandle_t semaphore);
+SemaphoreHandle_t smartport_get_semaphore(void);
+
 #endif
