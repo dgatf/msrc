@@ -59,6 +59,7 @@
 #define HOTT_TIMEOUT_US 5000
 #define HOTT_INTERBYTE_DELAY_US 500
 #define HOTT_PACKET_LENGHT 2
+#define HOTT_ALARM_CAPACITY_DURATION_US 8000000L  // 8s
 
 #define HOTT_START_BYTE 0x7C
 #define HOTT_END_BYTE 0x7D
@@ -836,10 +837,23 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 }
             }
             if (sensors->esc[HOTT_ESC_CONSUMPTION]) {
+                static uint32_t cap_trigger_time = 0;
+                static bool cap_alarm_active = false;
                 packet.capacity = *sensors->esc[HOTT_ESC_CONSUMPTION] / 10;
                 if (*sensors->esc[HOTT_ESC_CONSUMPTION] > alarms->triggers->esc[TRIGGER_ESC_CONSUMPTION]) {
-                    packet.warningID = ALARM_VOICE_MAX_CAPACITY;
+																
                     packet.alarmInverse |= 1 << ALARM_BITMASK_AIRESC_CAPACITY;
+                    uint32_t now = time_us_32();
+                    if (!cap_alarm_active) {
+                        cap_alarm_active = true;
+                        cap_trigger_time = now;
+                    }
+                    if (now - cap_trigger_time < HOTT_ALARM_CAPACITY_DURATION_US) {
+                        packet.warningID = ALARM_VOICE_MAX_CAPACITY;
+                    }
+                } else {
+                    cap_alarm_active = false;
+                    cap_trigger_time = 0;
                 }
             }
             if (sensors->esc[HOTT_ESC_TEMPERATURE]) {
