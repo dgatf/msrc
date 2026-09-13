@@ -188,14 +188,22 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Write release body
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cat > release_body.md << 'EOF'
-          Development (auto)
+          LAST_RELEASE_TAG=$(gh api \
+            repos/${{ github.repository }}/releases/latest \
+            --jq '.tag_name')
 
-          MSRC Link:
-          - commit: ${{ github.sha }}
-          - commit-url: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-          EOF
+          {
+            echo "Development (auto)"
+            echo
+            echo "Commits since ${LAST_RELEASE_TAG}:"
+            echo
+            git log "${LAST_RELEASE_TAG}..${{ github.sha }}" \
+              --pretty=format:'- [`%h`](https://github.com/${{ github.repository }}/commit/%H) %s'
+            echo
+          } > release_body.md
 
       - name: Publish MSRC Link to Development release
         uses: ncipollo/release-action@v1
