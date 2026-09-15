@@ -66,14 +66,14 @@ static inline void handler_pio() {
         return;
     }
     uint data = pio_sm_get_blocking(pio_, sm_counter_);
-    if (data > 50000) {
+    // Castle Link Live max telemetry pulse is ~5.5 ms.
+    // Reset frame index on gaps longer than ~6 ms.
+    if (data > 30000) {
         index = 0;
-        // printf("%i \n", data);
         return;
     }
     if (index > 10) return;
     value[index] = data;
-    // printf("(%u)%u ", index, value[index]);
     if (index == 10) {
         uint calibration;
         castle_link_telemetry_t packet;
