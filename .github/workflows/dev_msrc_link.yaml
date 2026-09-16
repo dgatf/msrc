@@ -153,6 +153,11 @@ jobs:
     needs: [linux, macos, windows]
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -214,5 +219,7 @@ jobs:
           allowUpdates: true
           commit: ${{ github.sha }}
           artifacts: dist/MSRC_Link_Linux.AppImage,dist/MSRC_Link_macOS.dmg,dist/MSRC_Link_Windows.exe
+          artifactContentType: application/octet-stream
           replacesArtifacts: true
           generateReleaseNotes: false
+          bodyFile: release_body.md
