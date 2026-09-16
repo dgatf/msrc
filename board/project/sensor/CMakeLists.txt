@@ -7,7 +7,6 @@ target_sources(${PROJECT_NAME} PRIVATE
     esc_apd_f.c
     esc_apd_hv.c
     gps.c
-    vspeed.c
     distance.c
     esc_pwm.c
     bmp280.c

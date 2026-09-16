@@ -5,7 +5,6 @@
 #include "auto_offset.h"
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
-#include "vspeed.h"
 
 #define REGISTER_DIG_AC1 0xAA
 #define REGISTER_DIG_AC2 0xAC
@@ -47,8 +46,7 @@ void bmp180_task(void *parameters) {
     *parameter.vspeed = 0;
     *parameter.temperature = 0;
     *parameter.pressure = 0;
-
-    TaskHandle_t task_handle;
+    *parameter.alt_ts = 0;
 
     vTaskDelay(500 / portTICK_PERIOD_MS);
     bmp180_calibration_t calibration;
@@ -62,12 +60,13 @@ void bmp180_task(void *parameters) {
 }
 
 static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibration) {
-    uint8_t register_address, register_value;
     uint8_t data[3];
     int32_t X1, X2, X3, B5, T, UT, UP, B6, B3, p;
     uint32_t B4, B7;
     static float pressure_initial = 0;
     static uint discard_readings = 5;
+    static uint32_t ts_vspeed = 0;
+    static float alt_prev = 0;
 
     data[0] = REGISTER_CONTROL;
     data[1] = READ_TEMPERATURE;
@@ -112,11 +111,23 @@ static void read(bmp180_parameters_t *parameter, bmp180_calibration_t *calibrati
     X2 = (-7357 * p) >> 16;
     p = p + ((X1 + X2 + 3791) >> 4);
 
+    if (discard_readings > 0) {
+        discard_readings--;
+        return;
+    }
     *parameter->pressure = p;  // Pa    calcAverage((float)alphaVario_ / 100, pressure_, p);
-    if (pressure_initial == 0 && discard_readings == 0) pressure_initial = *parameter->pressure;
+    if (pressure_initial == 0) pressure_initial = *parameter->pressure;
     *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
-    get_vspeed(parameter->vspeed, *parameter->altitude, VSPEED_INTERVAL_MS);
-    if (discard_readings > 0) discard_readings--;
+    uint32_t now = time_us_32();
+    *parameter->alt_ts = now;
+    if (!ts_vspeed) {
+        alt_prev = *parameter->altitude;
+        ts_vspeed = now;
+    } else if (now - ts_vspeed >= VSPEED_INTERVAL_MS * 1000) {
+        *parameter->vspeed = (*parameter->altitude - alt_prev) / ((now - ts_vspeed) / 1000000.0f);
+        alt_prev = *parameter->altitude;
+        ts_vspeed = now;
+    }
     debug("\nBMP180 P0: %.0f", pressure_initial);
 #ifdef SIM_SENSORS
     *parameter->temperature = 12.34;

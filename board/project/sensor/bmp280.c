@@ -5,7 +5,6 @@
 #include "auto_offset.h"
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
-#include "vspeed.h"
 
 #define REGISTER_DIG_T1 0x88
 #define REGISTER_DIG_T2 0x8A
@@ -70,8 +69,7 @@ void bmp280_task(void *parameters) {
     *parameter.vspeed = 0;
     *parameter.temperature = 0;
     *parameter.pressure = 0;
-
-    TaskHandle_t task_handle;
+    *parameter.alt_ts = 0;
 
     bmp280_calibration_t calibration;
     vTaskDelay(500 / portTICK_PERIOD_MS);
@@ -92,6 +90,8 @@ static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibrati
     uint32_t adc_T, adc_P, t_fine, t;
     static float pressure_initial = 0;
     static uint discard_readings = 5;
+    static uint32_t ts_vspeed = 0;
+    static float alt_prev = 0;
 
     data[0] = REGISTER_TEMPDATA;
     i2c_write_blocking(i2c0, parameter->address, data, 1, true);
@@ -117,6 +117,11 @@ static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibrati
     var1 = ((var1 * var1 * (int64_t)calibration->P3) >> 8) + ((var1 * (int64_t)calibration->P2) << 12);
     var1 = (((((int64_t)1) << 47) + var1)) * ((int64_t)calibration->P1) >> 33;
 
+    if (discard_readings > 0) {
+        discard_readings--;
+        return;
+    }
+
     if (var1 != 0) {
         p = 1048576 - adc_P;
         p = (((p << 31) - var2) * 3125) / var1;
@@ -127,10 +132,18 @@ static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibrati
         // pressure_ = calcAverage((float)alphaVario_ / 100, pressure_, (float)p / 256);
     }
 
-    if (pressure_initial == 0 && discard_readings == 0) pressure_initial = *parameter->pressure;
+    if (pressure_initial == 0) pressure_initial = *parameter->pressure;
     *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
-    get_vspeed(parameter->vspeed, *parameter->altitude, VSPEED_INTERVAL_MS);
-    if (discard_readings > 0) discard_readings--;
+    uint32_t now = time_us_32();
+    *parameter->alt_ts = now;
+    if (!ts_vspeed) {
+        alt_prev = *parameter->altitude;
+        ts_vspeed = now;
+    } else if (now - ts_vspeed >= VSPEED_INTERVAL_MS * 1000) {
+        *parameter->vspeed = (*parameter->altitude - alt_prev) / ((now - ts_vspeed) / 1000000.0f);
+        alt_prev = *parameter->altitude;
+        ts_vspeed = now;
+    }
     debug("\nBMP280 P0: %.0f", pressure_initial);
 #ifdef SIM_SENSORS
     *parameter->temperature = 12.34;

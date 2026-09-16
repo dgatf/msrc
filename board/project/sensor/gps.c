@@ -8,7 +8,6 @@
 #include "pico/stdlib.h"
 #include "stdlib.h"
 #include "uart_pio.h"
-#include "vspeed.h"
 
 #define COMMAND_GGA 0
 #define COMMAND_RMC 1
@@ -427,7 +426,9 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
         {0, 0, NMEA_GSA_FIX, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // sat1..sat12 ignored (fields 3..14)
          NMEA_GSA_PDOP, NMEA_GSA_HDOP, NMEA_GSA_VDOP}};
     static int8_t lat_dir = 1, lon_dir = 1;
-    static uint32_t timestamp_vspeed = 0, timestamp_dist = 0;
+    static uint32_t ts_vspeed = 0;
+    static float alt_prev = 0;
+
     if (strlen(buffer)) {
         if (nmea_field[nmea_cmd][cmd_field] == NMEA_TIME) {
             *parameter->time = atof(buffer);
@@ -445,7 +446,15 @@ static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_par
             *parameter->lon = atoi(degrees) + minutes / 60;
         } else if (nmea_field[nmea_cmd][cmd_field] == NMEA_ALT) {
             *parameter->alt = atof(buffer);
-            get_vspeed_gps(parameter->vspeed, *parameter->alt, VSPEED_INTERVAL_MS);
+            uint32_t now = time_us_32();
+            if (!ts_vspeed) {
+                alt_prev = *parameter->alt;
+                ts_vspeed = now;
+            } else if (now - ts_vspeed >= VSPEED_INTERVAL_MS * 1000) {
+                *parameter->vspeed = (*parameter->alt - alt_prev) / ((now - ts_vspeed) / 1000000.0f);
+                alt_prev = *parameter->alt;
+                ts_vspeed = now;
+            }
             if (set_home_altitude(*parameter->fix_type)) {
                 *parameter->alt_home = *parameter->alt;
             }

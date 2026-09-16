@@ -41,8 +41,20 @@
 #define XBUS_GPS_3D (1 << 1)
 #define XBUS_GPS_HOME (1 << 4)
 
+typedef struct vario_alarm_parameters_t {
+    float *altitude;
+    float m250ms;
+    float m500ms;
+    float m1000ms;
+    float m1500ms;
+    float m2000ms;
+    float m3000ms;
+    uint32_t *alt_ts;
+} vario_alarm_parameters_t;
+
+static vario_alarm_parameters_t vario_alarm_parameters;
+
 static void i2c_request_handler(uint8_t address);
-// static void set_config(void);
 static uint8_t bcd8(float value, uint8_t precision);
 static uint16_t bcd16(float value, uint8_t precision);
 static uint32_t bcd32(float value, uint8_t precision);
@@ -54,7 +66,6 @@ static int64_t interval_2000_callback(alarm_id_t id, void *parameters);
 static int64_t interval_3000_callback(alarm_id_t id, void *parameters);
 
 xbus_sensor_t sensor;
-static volatile int16_t delta_0250ms, delta_0500ms, delta_1000ms, delta_1500ms, delta_2000ms, delta_3000ms;
 
 void xbus_i2c_handler(uint8_t address) { i2c_request_handler(address); }
 
@@ -200,6 +211,12 @@ void xbus_format_sensor(uint8_t address, uint8_t *buffer) {
             vario.identifier = XBUS_VARIO_ID;
             float altitude = *sensor.vario[XBUS_VARIO_ALTITUDE];
             vario.altitude = swap_16((int16_t)(altitude * 10));
+            vario.delta_0250ms = swap_16((int16_t)(round((vario_alarm_parameters.m250ms) * 10)));
+            vario.delta_0500ms = swap_16((int16_t)(round((vario_alarm_parameters.m500ms) * 10)));
+            vario.delta_1000ms = swap_16((int16_t)(round((vario_alarm_parameters.m1000ms) * 10)));
+            vario.delta_1500ms = swap_16((int16_t)(round((vario_alarm_parameters.m1500ms) * 10)));
+            vario.delta_2000ms = swap_16((int16_t)(round((vario_alarm_parameters.m2000ms) * 10)));
+            vario.delta_3000ms = swap_16((int16_t)(round((vario_alarm_parameters.m3000ms) * 10)));
 #ifdef SIM_SENSORS
             vario.delta_0250ms = swap_16((int16_t)(-10));
             vario.delta_0500ms = swap_16((int16_t)(20));
@@ -846,7 +863,7 @@ void xbus_set_config(void) {
     if (config->i2c_module == I2C_BMP280) {
         bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float))};
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(uint32_t))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
 
         if (config->enable_analog_airspeed) {
@@ -854,12 +871,14 @@ void xbus_set_config(void) {
             baro_pressure = parameter.pressure;
         }
 
-        add_alarm_in_ms(250, interval_250_callback, NULL, false);
-        add_alarm_in_ms(500, interval_500_callback, NULL, false);
-        add_alarm_in_ms(1000, interval_1000_callback, NULL, false);
-        add_alarm_in_ms(1500, interval_1500_callback, NULL, false);
-        add_alarm_in_ms(2000, interval_2000_callback, NULL, false);
-        add_alarm_in_ms(3000, interval_3000_callback, NULL, false);
+        vario_alarm_parameters.altitude = parameter.altitude;
+        vario_alarm_parameters.alt_ts = parameter.alt_ts;
+        add_alarm_in_ms(250, interval_250_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(500, interval_500_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1500, interval_1500_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(2000, interval_2000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
         sensor.vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
         sensor.is_enabled[XBUS_VARIO] = true;
         i2c_multi_enable_address(XBUS_VARIO_ID);
@@ -869,20 +888,23 @@ void xbus_set_config(void) {
     if (config->i2c_module == I2C_MS5611) {
         ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float))};
+                                         malloc(sizeof(float)), malloc(sizeof(uint32_t))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
             baro_pressure = parameter.pressure;
         }
+        
+        vario_alarm_parameters.altitude = parameter.altitude;
+        vario_alarm_parameters.alt_ts = parameter.alt_ts;
+        add_alarm_in_ms(250, interval_250_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(500, interval_500_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1500, interval_1500_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(2000, interval_2000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
 
-        add_alarm_in_ms(250, interval_250_callback, NULL, false);
-        add_alarm_in_ms(500, interval_500_callback, NULL, false);
-        add_alarm_in_ms(1000, interval_1000_callback, NULL, false);
-        add_alarm_in_ms(1500, interval_1500_callback, NULL, false);
-        add_alarm_in_ms(2000, interval_2000_callback, NULL, false);
-        add_alarm_in_ms(3000, interval_3000_callback, NULL, false);
         sensor.vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
         sensor.is_enabled[XBUS_VARIO] = true;
         i2c_multi_enable_address(XBUS_VARIO_ID);
@@ -891,19 +913,22 @@ void xbus_set_config(void) {
     }
     if (config->i2c_module == I2C_BMP180) {
         bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float))};
+                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),  malloc(sizeof(uint32_t))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
-        add_alarm_in_ms(250, interval_250_callback, NULL, false);
-        add_alarm_in_ms(500, interval_500_callback, NULL, false);
-        add_alarm_in_ms(1000, interval_1000_callback, NULL, false);
-        add_alarm_in_ms(1500, interval_1500_callback, NULL, false);
-        add_alarm_in_ms(2000, interval_2000_callback, NULL, false);
-        add_alarm_in_ms(3000, interval_3000_callback, NULL, false);
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
             baro_pressure = parameter.pressure;
         }
+
+        vario_alarm_parameters.altitude = parameter.altitude;
+        vario_alarm_parameters.alt_ts = parameter.alt_ts;
+        add_alarm_in_ms(250, interval_250_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(500, interval_500_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(1500, interval_1500_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(2000, interval_2000_callback, &vario_alarm_parameters, false);
+        add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
 
         sensor.vario[XBUS_VARIO_ALTITUDE] = parameter.altitude;
         sensor.is_enabled[XBUS_VARIO] = true;
@@ -1058,43 +1083,104 @@ static uint32_t bcd32(float value, uint8_t precision) {
 }
 
 static int64_t interval_250_callback(alarm_id_t id, void *parameters) {
-    static float prev = 0;
-    delta_0250ms = swap_16((int16_t)(round(*sensor.vario[XBUS_VARIO_ALTITUDE] - prev) * 10));
-    prev = *sensor.vario[XBUS_VARIO_ALTITUDE];
+    vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
+    static float alt_prev = 0;
+    static uint32_t ts_prev = 0;
+    uint32_t now = *parameter->alt_ts;
+
+    if (!ts_prev) {
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    } else if (now != ts_prev) {
+        parameter->m250ms = (*parameter->altitude - alt_prev) * 250000.0f / (now - ts_prev);
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    }
+
     return 250000L;
 }
 
 static int64_t interval_500_callback(alarm_id_t id, void *parameters) {
-    static float prev = 0;
-    delta_0500ms = swap_16((int16_t)(round(*sensor.vario[XBUS_VARIO_ALTITUDE] - prev) * 10));
-    prev = *sensor.vario[XBUS_VARIO_ALTITUDE];
+    vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
+    static float alt_prev = 0;
+    static uint32_t ts_prev = 0;
+    uint32_t now = *parameter->alt_ts;
+
+    if (!ts_prev) {
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    } else if (now != ts_prev) {
+        parameter->m500ms = (*parameter->altitude - alt_prev) * 500000.0f / (now - ts_prev);
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    }
     return 500000L;
 }
 
 static int64_t interval_1000_callback(alarm_id_t id, void *parameters) {
-    static float prev = 0;
-    delta_1000ms = swap_16((int16_t)round(*sensor.vario[XBUS_VARIO_ALTITUDE] - prev));
-    prev = *sensor.vario[XBUS_VARIO_ALTITUDE];
+    vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
+    static float alt_prev = 0;
+    static uint32_t ts_prev = 0;
+    uint32_t now = *parameter->alt_ts;
+
+    if (!ts_prev) {
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    } else if (now != ts_prev) {
+        parameter->m1000ms = (*parameter->altitude - alt_prev) * 1000000.0f / (now - ts_prev);
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    }
     return 1000000L;
 }
 
 static int64_t interval_1500_callback(alarm_id_t id, void *parameters) {
-    static float prev = 0;
-    delta_1500ms = swap_16((int16_t)round(*sensor.vario[XBUS_VARIO_ALTITUDE] - prev));
-    prev = *sensor.vario[XBUS_VARIO_ALTITUDE];
+    vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
+    static float alt_prev = 0;
+    static uint32_t ts_prev = 0;
+    uint32_t now = *parameter->alt_ts;
+
+    if (!ts_prev) {
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    } else if (now != ts_prev) {
+        parameter->m1500ms = (*parameter->altitude - alt_prev) * 1500000.0f / (now - ts_prev);
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    }
     return 1500000L;
 }
 
 static int64_t interval_2000_callback(alarm_id_t id, void *parameters) {
-    static float prev = 0;
-    delta_2000ms = swap_16((int16_t)round(*sensor.vario[XBUS_VARIO_ALTITUDE] - prev));
-    prev = *sensor.vario[XBUS_VARIO_ALTITUDE];
+    vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
+    static float alt_prev = 0;
+    static uint32_t ts_prev = 0;
+    uint32_t now = *parameter->alt_ts;
+
+    if (!ts_prev) {
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    } else if (now != ts_prev) {
+        parameter->m2000ms = (*parameter->altitude - alt_prev) * 2000000.0f / (now - ts_prev);
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    }
     return 2000000L;
 }
 
 static int64_t interval_3000_callback(alarm_id_t id, void *parameters) {
-    static float prev = 0;
-    delta_3000ms = swap_16((int16_t)round(*sensor.vario[XBUS_VARIO_ALTITUDE] - prev));
-    prev = *sensor.vario[XBUS_VARIO_ALTITUDE];
+    vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
+    static float alt_prev = 0;
+    static uint32_t ts_prev = 0;
+    uint32_t now = *parameter->alt_ts;
+
+    if (!ts_prev) {
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    } else if (now != ts_prev) {
+        parameter->m3000ms = (*parameter->altitude - alt_prev) * 3000000.0f / (now - ts_prev);
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    }
     return 3000000L;
 }

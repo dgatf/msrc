@@ -8,6 +8,7 @@ typedef struct ms5611_parameters_t {
     bool auto_offset;
     uint8_t address;
     float *temperature, *pressure, *altitude, *vspeed;
+    uint32_t *alt_ts;
 } ms5611_parameters_t;
 
 typedef struct ms5611_calibration_t {

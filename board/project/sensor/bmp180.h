@@ -7,6 +7,7 @@ typedef struct bmp180_parameters_t {
     float alpha_vario;
     bool auto_offset;
     float *temperature, *pressure, *altitude, *vspeed;
+    uint32_t *alt_ts;
 } bmp180_parameters_t;
 
 typedef struct bmp180_calibration_t {

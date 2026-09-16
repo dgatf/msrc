@@ -6,7 +6,6 @@
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "stdlib.h"
-#include "vspeed.h"
 
 #define CMD_ADC_READ 0x00
 #define CMD_RESET 0x1E
@@ -46,8 +45,7 @@ void ms5611_task(void *parameters) {
     *parameter.vspeed = 0;
     *parameter.temperature = 0;
     *parameter.pressure = 0;
-
-    TaskHandle_t task_handle;
+    *parameter.alt_ts = 0;
 
     vTaskDelay(500 / portTICK_PERIOD_MS);
     ms5611_calibration_t calibration;
@@ -63,6 +61,8 @@ void ms5611_task(void *parameters) {
 static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibration) {
     static float pressure_initial = 0;
     static uint discard_readings = 5;
+    static uint32_t ts_vspeed = 0;
+    static float alt_prev = 0;
     /* Read sensor data */
     uint32_t D1, D2;
     uint8_t data[3];
@@ -102,12 +102,26 @@ static void read(ms5611_parameters_t *parameter, ms5611_calibration_t *calibrati
     OFF = OFF - OFF2;
     SENS = SENS - SENS2;
     int32_t P = (((D1 * SENS) >> 21) - OFF) >> 15;
+    
+    if (discard_readings > 0) {
+        discard_readings--;
+        return;
+    }
+
     *parameter->temperature = (float)TEMP / 100;  // °C
     *parameter->pressure = (float)P;              // Pa
-    if (pressure_initial == 0 && discard_readings == 0) pressure_initial = *parameter->pressure;
+    if (pressure_initial == 0) pressure_initial = *parameter->pressure;
     *parameter->altitude = get_altitude(*parameter->pressure, *parameter->temperature, pressure_initial);
-    get_vspeed(parameter->vspeed, *parameter->altitude, VSPEED_INTERVAL_MS);
-    if (discard_readings > 0) discard_readings--;
+    uint32_t now = time_us_32();
+    *parameter->alt_ts = now;
+    if (!ts_vspeed) {
+        alt_prev = *parameter->altitude;
+        ts_vspeed = now;
+    } else if (now - ts_vspeed >= VSPEED_INTERVAL_MS * 1000) {
+        *parameter->vspeed = (*parameter->altitude - alt_prev) / ((now - ts_vspeed) / 1000000.0f);
+        alt_prev = *parameter->altitude;
+        ts_vspeed = now;
+    }
     debug("\nMS5611 P0: %.0f", pressure_initial);
 #ifdef SIM_SENSORS
     *parameter->temperature = 12.34;

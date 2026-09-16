@@ -571,13 +571,13 @@ typedef struct triggers_t {
 
 typedef struct vario_alarm_parameters_t {
     float *altitude;
-    float *vspd;
     float m1s;
     float m3s;
     float m10s;
+    uint32_t *alt_ts;
 } vario_alarm_parameters_t;
 
-vario_alarm_parameters_t vario_alarm_parameters;
+static vario_alarm_parameters_t vario_alarm_parameters = {0};
 float *baro_temp = NULL, *baro_pressure = NULL;
 
 static void process(hott_sensors_t *sensors, triggers_t *alarms);
@@ -793,7 +793,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 packet.alarmInverse |= 1 << ALARM_BITMASK_VARIO_ALTITUDE;
                 packet.alarmInverse |= 1 << ALARM_BITMASK_VARIO_MAX_ALTITUDE;
             }
-            if (*sensors->vario[HOTT_VARIO_M1S] < alarms->triggers->vario[TRIGGER_VARIO_VSPD]) {
+            if (fabs(*sensors->vario[HOTT_VARIO_M1S]) > alarms->triggers->vario[TRIGGER_VARIO_VSPD]) {
                 packet.alarmInverse |= 1 << ALARM_BITMASK_VARIO_M1S;
             }
             packet.altitude = *sensors->vario[HOTT_VARIO_ALTITUDE] + 500;
@@ -801,9 +801,9 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             if (min_altitude > packet.altitude) min_altitude = packet.altitude;
             packet.maxAltitude = max_altitude;
             packet.minAltitude = min_altitude;
-            packet.m1s = *sensors->vario[HOTT_VARIO_M1S] * 100 + 30000;
-            packet.m3s = vario_alarm_parameters.m3s;
-            packet.m10s = vario_alarm_parameters.m10s;
+            packet.m1s = vario_alarm_parameters.m1s * 100.0f + 30000.0f;
+            packet.m3s = vario_alarm_parameters.m3s * 100.0f + 30000.0f;
+            packet.m10s = vario_alarm_parameters.m10s * 100.0f + 30000.0f;
             packet.endByte = HOTT_END_BYTE;
             packet.checksum = get_crc((uint8_t *)&packet, sizeof(packet) - 1);
             send_packet((uint8_t *)&packet, sizeof(packet));
@@ -933,7 +933,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             }
             if (sensors->general_air[HOTT_GENERAL_CURRENT]) {
                 packet.current = *sensors->general_air[HOTT_GENERAL_CURRENT] * 10;
-                if (*sensors->general_air[HOTT_GENERAL_CURRENT] < alarms->triggers->general[TRIGGER_GENERAL_CURRENT]) {
+                if (*sensors->general_air[HOTT_GENERAL_CURRENT] > alarms->triggers->general[TRIGGER_GENERAL_CURRENT]) {
                     packet.warningID = ALARM_VOICE_MAX_CURRENT;
                     packet.alarmInverse |= 1 << ALARM_BITMASK_GENERAL_AIR_CURRENT;
                 }
@@ -951,11 +951,11 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                     *sensors->general_air[HOTT_GENERAL_PRESSURE] * 1e-5 * 10;  // Pa -> bar (in steps of 0.1 bar)
             }
             if (sensors->general_air[HOTT_GENERAL_ALTITUDE]) {
-                if (*sensors->vario[HOTT_GENERAL_ALTITUDE] < alarms->triggers->vario[TRIGGER_GENERAL_MIN_ALTITUDE]) {
+                if (*sensors->general_air[HOTT_GENERAL_ALTITUDE] < alarms->triggers->general[TRIGGER_GENERAL_MIN_ALTITUDE]) {
                     packet.warningID = ALARM_VOICE_MIN_ALTITUDE;
                     packet.alarmInverse |= 1 << ALARM_BITMASK_GENERAL_AIR_ALTITUDE;
                 }
-                if (*sensors->vario[HOTT_GENERAL_ALTITUDE] > alarms->triggers->vario[TRIGGER_GENERAL_MAX_ALTITUDE]) {
+                if (*sensors->general_air[HOTT_GENERAL_ALTITUDE] > alarms->triggers->general[TRIGGER_GENERAL_MAX_ALTITUDE]) {
                     packet.warningID = ALARM_VOICE_MAX_ALTITUDE;
                     packet.alarmInverse |= 1 << ALARM_BITMASK_GENERAL_AIR_ALTITUDE;
                 }
@@ -1006,24 +1006,24 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
         case HOTT_GPS_MODULE_ID: {
             if (!sensors->is_enabled[HOTT_TYPE_GPS]) return;
             hott_sensor_gps_t packet = {0};
-            if (*sensors->vario[HOTT_GPS_SPEED] < alarms->triggers->vario[TRIGGER_GPS_MIN_SPEED]) {
+            if (*sensors->gps[HOTT_GPS_SPEED] < alarms->triggers->gps[TRIGGER_GPS_MIN_SPEED]) {
                 packet.alarmInverse |= 1 << ALARM_BITMASK_GPS_SPEED;
             }
-            if (*sensors->vario[HOTT_GPS_SPEED] > alarms->triggers->vario[TRIGGER_GPS_MAX_SPEED]) {
+            if (*sensors->gps[HOTT_GPS_SPEED] > alarms->triggers->gps[TRIGGER_GPS_MAX_SPEED]) {
                 packet.alarmInverse |= 1 << ALARM_BITMASK_GPS_SPEED;
             }
-            if (*sensors->vario[HOTT_GPS_ALTITUDE] < alarms->triggers->vario[TRIGGER_GPS_MIN_ALTITUDE]) {
+            if (*sensors->gps[HOTT_GPS_ALTITUDE] < alarms->triggers->gps[TRIGGER_GPS_MIN_ALTITUDE]) {
                 packet.warningID = ALARM_VOICE_MIN_ALTITUDE;
                 packet.alarmInverse |= 1 << ALARM_BITMASK_GPS_ALTITUDE;
             }
-            if (*sensors->vario[HOTT_GPS_ALTITUDE] > alarms->triggers->vario[TRIGGER_GPS_MAX_ALTITUDE]) {
+            if (*sensors->gps[HOTT_GPS_ALTITUDE] > alarms->triggers->gps[TRIGGER_GPS_MAX_ALTITUDE]) {
                 packet.warningID = ALARM_VOICE_MAX_ALTITUDE;
                 packet.alarmInverse |= 1 << ALARM_BITMASK_GPS_ALTITUDE;
             }
-            if (*sensors->vario[HOTT_GPS_CLIMBRATE] < alarms->triggers->vario[TRIGGER_GPS_MAX_CLIMB]) {
+            if (fabs(*sensors->gps[HOTT_GPS_CLIMBRATE]) > alarms->triggers->gps[TRIGGER_GPS_MAX_CLIMB]) {
                 packet.alarmInverse |= 1 << ALARM_BITMASK_GPS_CLIMBRATE;
             }
-            if (*sensors->vario[HOTT_GPS_SATS] < alarms->triggers->vario[TRIGGER_GPS_MIN_SATS]) {
+            if (*sensors->gps[HOTT_GPS_SATS] < alarms->triggers->gps[TRIGGER_GPS_MIN_SATS]) {
                 packet.alarmInverse |= 1 << ALARM_BITMASK_GPS_SATS;
             }
             packet.startByte = HOTT_START_BYTE;
@@ -1461,7 +1461,8 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->general_air[HOTT_GENERAL_CAPACITY] = parameter.consumption;
     }
     if (config->enable_analog_ntc) {
-        ntc_parameters_t parameter = {2, config->analog_rate, config->ntc_offset, config->alpha_temperature, malloc(sizeof(float))};
+        ntc_parameters_t parameter = {2, config->analog_rate, config->ntc_offset, config->alpha_temperature,
+                                      malloc(sizeof(float))};
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
@@ -1486,7 +1487,7 @@ static void set_config(hott_sensors_t *sensors) {
     if (config->i2c_module == I2C_BMP280) {
         bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
                                          config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float))};
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(uint32_t))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
@@ -1504,6 +1505,7 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->general_air[HOTT_GENERAL_CLIMBRATE] = parameter.vspeed;
 
         vario_alarm_parameters.altitude = parameter.altitude;
+        vario_alarm_parameters.alt_ts = parameter.alt_ts;
 
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
@@ -1512,7 +1514,7 @@ static void set_config(hott_sensors_t *sensors) {
     if (config->i2c_module == I2C_MS5611) {
         ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
                                          malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float))};
+                                         malloc(sizeof(float)), malloc(sizeof(uint32_t))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
@@ -1530,14 +1532,16 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->general_air[HOTT_GENERAL_CLIMBRATE] = parameter.vspeed;
 
         vario_alarm_parameters.altitude = parameter.altitude;
+        vario_alarm_parameters.alt_ts = parameter.alt_ts;
 
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(10000, interval_10000_callback, &vario_alarm_parameters, false);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float))};
+        bmp180_parameters_t parameter = {config->alpha_vario,     config->vario_auto_offset, malloc(sizeof(float)),
+                                         malloc(sizeof(float)),   malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(uint32_t))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
@@ -1555,6 +1559,7 @@ static void set_config(hott_sensors_t *sensors) {
         sensors->general_air[HOTT_GENERAL_CLIMBRATE] = parameter.vspeed;
 
         vario_alarm_parameters.altitude = parameter.altitude;
+        vario_alarm_parameters.alt_ts = parameter.alt_ts;
 
         add_alarm_in_ms(1000, interval_1000_callback, &vario_alarm_parameters, false);
         add_alarm_in_ms(3000, interval_3000_callback, &vario_alarm_parameters, false);
@@ -1621,34 +1626,57 @@ static void set_config(hott_sensors_t *sensors) {
 
 static int64_t interval_1000_callback(alarm_id_t id, void *parameters) {
     vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
-    static float prev = 0;
-    parameter->m1s = (*parameter->altitude - prev) * 100 + 30000;
+    static float alt_prev = 0;
+    static uint32_t ts_prev = 0;
+    uint32_t now = *parameter->alt_ts;
+    if (!ts_prev) {
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    } else if (now != ts_prev) {
+        parameter->m1s = (*parameter->altitude - alt_prev) * 1000000.0f / (now - ts_prev);
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    }
 #ifdef SIM_SENSORS
-    vario_alarm_parameters.m1s = 12 * 100 + 30000;
+    vario_alarm_parameters.m1s = 12;
 #endif
-    prev = *parameter->altitude;
     return 1000000L;
 }
 
 static int64_t interval_3000_callback(alarm_id_t id, void *parameters) {
     vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
-    static float prev = 0;
-    parameter->m3s = (*parameter->altitude - prev) * 100 + 30000;
-    *parameter->vspd = parameter->m3s / 3.0F;
+    static float alt_prev = 0;
+    static uint32_t ts_prev = 0;
+    uint32_t now = *parameter->alt_ts;
+    if (!ts_prev) {
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    } else if (now != ts_prev) {
+        parameter->m3s = (*parameter->altitude - alt_prev) * 3000000.0f / (now - ts_prev);
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    }
 #ifdef SIM_SENSORS
-    vario_alarm_parameters.m3s = 34 * 100 + 30000;
+    vario_alarm_parameters.m3s = 34;
 #endif
-    prev = *parameter->altitude;
     return 3000000L;
 }
 
 static int64_t interval_10000_callback(alarm_id_t id, void *parameters) {
     vario_alarm_parameters_t *parameter = (vario_alarm_parameters_t *)parameters;
-    static float prev = 0;
-    parameter->m10s = (*parameter->altitude - prev) * 100 + 30000;
+    static float alt_prev = 0;
+    static uint32_t ts_prev = 0;
+    uint32_t now = *parameter->alt_ts;
+    if (!ts_prev) {
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    } else if (now != ts_prev) {
+        parameter->m10s = (*parameter->altitude - alt_prev) * 10000000.0f / (now - ts_prev);
+        ts_prev = now;
+        alt_prev = *parameter->altitude;
+    }
 #ifdef SIM_SENSORS
-    vario_alarm_parameters.m10s = 56 * 100 + 30000;
+    vario_alarm_parameters.m10s = 56;
 #endif
-    prev = *parameter->altitude;
     return 10000000L;
 }

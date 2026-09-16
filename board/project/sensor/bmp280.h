@@ -9,6 +9,7 @@ typedef struct bmp280_parameters_t {
     uint8_t address;
     uint8_t filter;
     float *temperature, *pressure, *altitude, *vspeed;
+    uint32_t *alt_ts;
 } bmp280_parameters_t;
 
 typedef struct bmp280_calibration_t {
