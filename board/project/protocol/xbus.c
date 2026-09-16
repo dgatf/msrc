@@ -861,9 +861,18 @@ void xbus_set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP280) {
-        bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
-                                         config->bmp280_filter, malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(uint32_t))};
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
+        bmp280_parameters_t parameter = {config->alpha_vario,
+                                         config->vario_auto_offset,
+                                         0,
+                                         config->bmp280_filter,
+                                         vario_interval,
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(uint32_t))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
 
         if (config->enable_analog_airspeed) {
@@ -886,16 +895,18 @@ void xbus_set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_MS5611) {
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
         ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
-                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(uint32_t))};
+                                         vario_interval,        malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(uint32_t))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
             baro_pressure = parameter.pressure;
         }
-        
+
         vario_alarm_parameters.altitude = parameter.altitude;
         vario_alarm_parameters.alt_ts = parameter.alt_ts;
         add_alarm_in_ms(250, interval_250_callback, &vario_alarm_parameters, false);
@@ -912,8 +923,11 @@ void xbus_set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),  malloc(sizeof(uint32_t))};
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, vario_interval,
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(uint32_t))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
 
         if (config->enable_analog_airspeed) {

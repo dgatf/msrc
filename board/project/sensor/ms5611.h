@@ -7,6 +7,7 @@ typedef struct ms5611_parameters_t {
     float alpha_vario;
     bool auto_offset;
     uint8_t address;
+    uint16_t vario_interval;
     float *temperature, *pressure, *altitude, *vspeed;
     uint32_t *alt_ts;
 } ms5611_parameters_t;

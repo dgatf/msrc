@@ -233,7 +233,7 @@ static uint16_t format(uint8_t data_id, float value) {
     if (data_id == SBUS_AIR_SPEED) {
         return __builtin_bswap16((uint16_t)round(value) | 0x4000);
     }
-    if (data_id == SBUS_GPS_SPEED) {  
+    if (data_id == SBUS_GPS_SPEED) {
         return __builtin_bswap16((uint16_t)round(value * 1.852) | (*gps_fix > 0 ? 0x4000 : 0x0000));
     }
     if (data_id == SBUS_GPS_VARIO_SPEED) {
@@ -801,7 +801,8 @@ static void set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_ntc) {
-        ntc_parameters_t parameter = {2, config->analog_rate, config->ntc_offset, config->alpha_temperature, malloc(sizeof(float))};
+        ntc_parameters_t parameter = {2, config->analog_rate, config->ntc_offset, config->alpha_temperature,
+                                      malloc(sizeof(float))};
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
 
         new_sensor = malloc(sizeof(sensor_sbus_t));
@@ -810,9 +811,18 @@ static void set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP280) {
-        bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
-                                         config->bmp280_filter, malloc(sizeof(float)), malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint32_t))};
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
+        bmp280_parameters_t parameter = {config->alpha_vario,
+                                         config->vario_auto_offset,
+                                         0,
+                                         config->bmp280_filter,
+                                         vario_interval,
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(uint32_t))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
 
         if (config->enable_analog_airspeed) {
@@ -829,9 +839,11 @@ static void set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_MS5611) {
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
         ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
-                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(uint32_t))};
+                                         vario_interval,        malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(uint32_t))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
 
         if (config->enable_analog_airspeed) {
@@ -848,8 +860,11 @@ static void set_config(void) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint32_t))};
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, vario_interval,
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(uint32_t))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
 
         if (config->enable_analog_airspeed) {

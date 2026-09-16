@@ -57,7 +57,6 @@
 #define I2C_ADDRESS_1 0x76
 #define I2C_ADDRESS_2 0x77
 #define SENSOR_INTERVAL_MS 40  // min 30
-#define VSPEED_INTERVAL_MS 500
 
 static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibration);
 static void begin(bmp280_parameters_t *parameter, bmp280_calibration_t *calibration);
@@ -139,7 +138,7 @@ static void read(bmp280_parameters_t *parameter, bmp280_calibration_t *calibrati
     if (!ts_vspeed) {
         alt_prev = *parameter->altitude;
         ts_vspeed = now;
-    } else if (now - ts_vspeed >= VSPEED_INTERVAL_MS * 1000) {
+    } else if (now - ts_vspeed >= parameter->vario_interval * 1000) {
         *parameter->vspeed = (*parameter->altitude - alt_prev) / ((now - ts_vspeed) / 1000000.0f);
         alt_prev = *parameter->altitude;
         ts_vspeed = now;

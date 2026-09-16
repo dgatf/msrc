@@ -791,7 +791,8 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->enable_analog_ntc) {
-        ntc_parameters_t parameter = {2, config->analog_rate, config->ntc_offset, config->alpha_temperature, malloc(sizeof(float))};
+        ntc_parameters_t parameter = {2, config->analog_rate, config->ntc_offset, config->alpha_temperature,
+                                      malloc(sizeof(float))};
         xTaskCreate(ntc_task, "ntc_task", STACK_NTC, (void *)&parameter, 2, &task_handle);
 
         new_sensor = malloc(sizeof(sensor_ibus_t));
@@ -800,11 +801,19 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP280) {
-        bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
-                                         config->bmp280_filter, malloc(sizeof(float)), malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint32_t))};
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
+        bmp280_parameters_t parameter = {config->alpha_vario,
+                                         config->vario_auto_offset,
+                                         0,
+                                         config->bmp280_filter,
+                                         vario_interval,
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(uint32_t))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
-
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
@@ -823,11 +832,12 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_MS5611) {
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
         ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
-                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(uint32_t))};
+                                         vario_interval,        malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(uint32_t))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
-
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;
@@ -846,10 +856,12 @@ static void set_config(sensor_ibus_t **sensor, uint16_t sensormask) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint32_t))};
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, vario_interval,
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(uint32_t))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
-
 
         if (config->enable_analog_airspeed) {
             baro_temp = parameter.temperature;

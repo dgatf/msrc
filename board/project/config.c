@@ -69,6 +69,7 @@
 /* Vario */
 #define VARIO_AUTO_OFFSET false
 #define BMP280_FILTER 3  // BMP Filter. Higher filter = lower noise: 1 - low, 2 - medium, 3 - high
+#define VARIO_VSPEED_INTERVAL 25  // Vario speed interval in ms * 10. Minimum 250ms
 
 /* Only smartport and opentx */
 #define SMARTPORT_SENSOR_ID 15    // Sensor Id
@@ -250,5 +251,6 @@ void config_forze_write() {
     config.enable_lipo = false;
     config.sensor_id_srxl2 = SENSOR_ID_SRXL2;
     config.ntc_offset = NTC_OFFSET;
+    config.vario_vspeed_interval = VARIO_VSPEED_INTERVAL;
     config_write(&config);
 }

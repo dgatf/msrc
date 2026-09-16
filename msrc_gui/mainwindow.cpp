@@ -83,6 +83,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbDynModel->addItem("Airborne 1g", GPS_DYNMODEL_AIRBORNE1);
     ui->cbDynModel->addItem("Airborne 2g", GPS_DYNMODEL_AIRBORNE2);
     ui->cbDynModel->addItem("Airborne 4g", GPS_DYNMODEL_AIRBORNE4);
+    ui->cbVSpeedInterval->addItem("250", 25);
+    ui->cbVSpeedInterval->addItem("500", 50);
+    ui->cbVSpeedInterval->addItem("1000", 100);
+    ui->cbVSpeedInterval->addItem("1500", 150);
+    ui->cbVSpeedInterval->addItem("2000", 200);
+    ui->cbVSpeedInterval->addItem("2500", 250);
 
     ui->lbConnections->setText(
         "| Sensor/Receiver                           | Board GPIO|"
@@ -555,6 +561,8 @@ void MainWindow::setUiFromConfig() {
     ui->cbBarometerType->setCurrentIndex(config.i2c_module - 1);
     ui->cbAltitudeFilter->setCurrentIndex(config.bmp280_filter - 1);
     ui->cbVarioAutoOffset->setChecked(config.vario_auto_offset);
+    uint vSpeedIndex = ui->cbVSpeedInterval->findData(config.vario_vspeed_interval) == -1 ? 0 : ui->cbVSpeedInterval->findData(config.vario_vspeed_interval);
+    ui->cbVSpeedInterval->setCurrentIndex(vSpeedIndex);
 
     // Refresh rate
 
@@ -784,6 +792,8 @@ void MainWindow::getConfigFromUi() {
         config.i2c_module = i2c_module_t::I2C_NONE;
     config.bmp280_filter = ui->cbAltitudeFilter->currentIndex() + 1;
     config.vario_auto_offset = ui->cbVarioAutoOffset->isChecked();
+
+    config.vario_vspeed_interval =  ui->cbVSpeedInterval->currentData().toUInt();
 
     // Refresh rate
 
@@ -1187,6 +1197,15 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->sbVarioAvg->setVisible(true);
         ui->lbAirspeedAvg->setVisible(true);
         ui->sbAirspeedAvg->setVisible(true);
+    }
+
+    // Vario
+    if (arg1 == "Spectrum XBUS" || arg1 == "HOTT") {
+        ui->lbVSpeedInterval->setVisible(false);
+        ui->cbVSpeedInterval->setVisible(false);
+    } else {
+        ui->lbVSpeedInterval->setVisible(true);
+        ui->cbVSpeedInterval->setVisible(true);
     }
     generateCircuit(ui->lbCircuit);
 }

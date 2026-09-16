@@ -613,9 +613,9 @@
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-332</y>
+                 <y>-564</y>
                  <width>581</width>
-                 <height>2273</height>
+                 <height>2304</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -995,23 +995,6 @@
                    <bool>false</bool>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_7">
-                   <item row="3" column="1">
-                    <widget class="QCheckBox" name="cbVarioAutoOffset">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Auto offset</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="2">
-                    <widget class="QComboBox" name="cbBarometerType">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="2" column="2">
                     <widget class="QComboBox" name="cbAltitudeFilter">
                      <property name="enabled">
@@ -1038,6 +1021,33 @@
                       <string>Model</string>
                      </property>
                     </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QCheckBox" name="cbVarioAutoOffset">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Auto offset</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QComboBox" name="cbBarometerType">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QLabel" name="lbVSpeedInterval">
+                     <property name="text">
+                      <string>Vspeed interval (ms)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="2">
+                    <widget class="QComboBox" name="cbVSpeedInterval"/>
                    </item>
                   </layout>
                  </widget>

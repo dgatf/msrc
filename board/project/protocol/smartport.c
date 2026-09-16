@@ -1729,9 +1729,18 @@ void smartport_set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP280) {
-        bmp280_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
-                                         config->bmp280_filter, malloc(sizeof(float)), malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(uint32_t))};
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
+        bmp280_parameters_t parameter = {config->alpha_vario,
+                                         config->vario_auto_offset,
+                                         0,
+                                         config->bmp280_filter,
+                                         vario_interval,
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(float)),
+                                         malloc(sizeof(uint32_t))};
         xTaskCreate(bmp280_task, "bmp280_task", STACK_BMP280, (void *)&parameter, 2, &task_handle);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
@@ -1755,9 +1764,11 @@ void smartport_set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_MS5611) {
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
         ms5611_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, 0,
-                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(uint32_t))};
+                                         vario_interval,        malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(uint32_t))};
         xTaskCreate(ms5611_task, "ms5611_task", STACK_MS5611, (void *)&parameter, 2, &task_handle);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
@@ -1781,8 +1792,11 @@ void smartport_set_config(smartport_parameters_t *parameter) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
     if (config->i2c_module == I2C_BMP180) {
-        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, malloc(sizeof(float)),
-                                         malloc(sizeof(float)), malloc(sizeof(float)), malloc(sizeof(float)),  malloc(sizeof(uint32_t))};
+        uint16_t vario_interval = config->vario_vspeed_interval * 10;
+        if (vario_interval < 250) vario_interval = 250;
+        bmp180_parameters_t parameter = {config->alpha_vario,   config->vario_auto_offset, vario_interval,
+                                         malloc(sizeof(float)), malloc(sizeof(float)),     malloc(sizeof(float)),
+                                         malloc(sizeof(float)), malloc(sizeof(uint32_t))};
         xTaskCreate(bmp180_task, "bmp180_task", STACK_BMP180, (void *)&parameter, 2, &task_handle);
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
@@ -2079,10 +2093,6 @@ void smartport_set_sensor_id(uint8_t sens_id) { sensor_id = sens_id; }
 
 uint8_t smartport_get_sensor_id(void) { return sensor_id; }
 
-void smartport_set_semaphore(SemaphoreHandle_t semaphore) {
-    semaphore_sensor = semaphore;
-}
+void smartport_set_semaphore(SemaphoreHandle_t semaphore) { semaphore_sensor = semaphore; }
 
-SemaphoreHandle_t smartport_get_semaphore(void) {
-    return semaphore_sensor;
-}
+SemaphoreHandle_t smartport_get_semaphore(void) { return semaphore_sensor; }

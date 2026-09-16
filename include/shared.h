@@ -194,7 +194,7 @@ typedef struct config_t {                            // smartport data_id
     int8_t ntc_offset;                               // 0x5153
     uint8_t gps_dynmodel;                            // 0x5154
     uint8_t sensor_id_jeti;
-    uint8_t spare81;
+    uint8_t vario_vspeed_interval;                   // 0x5155 (ms * 10)
     uint16_t spare82;
     uint32_t spare9;
     uint32_t spare10;
