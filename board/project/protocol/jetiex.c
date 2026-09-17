@@ -845,10 +845,14 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                 .i2c_address = 0x40,
                 .filter = config->ina3221_filter,
                 .cell_count = MIN(config->lipo_cells, 3),
+                .measure_current = config->lipo_cells > 3 ? false : config->lipo_current,
+                .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
+                .current = malloc(sizeof(float)),
+                .consumption = malloc(sizeof(float)),
             };
             *parameter.cell_prev = 0;
             cell_prev = parameter.cell[2];
@@ -861,17 +865,31 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                 new_sensor->value = parameter.cell[i];
                 jeti_add_sensor(new_sensor, sensor);
             }
+            if (config->lipo_current && config->lipo_cells <= 3) {
+                new_sensor = malloc(sizeof(sensor_jetiex_t));
+                *new_sensor =
+                    (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current", "A", parameter.current};
+                jeti_add_sensor(new_sensor, sensor);
+                new_sensor = malloc(sizeof(sensor_jetiex_t));
+                *new_sensor = (sensor_jetiex_t){0,     JETIEX_TYPE_INT22,    JETIEX_FORMAT_0_DECIMAL, "Consumption",
+                                                "mAh", parameter.consumption};
+                jeti_add_sensor(new_sensor, sensor);
+            }
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         }
         if (config->lipo_cells > 3) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x41,
                 .filter = config->ina3221_filter,
-                .cell_count = MIN(config->lipo_cells - 3, 3),
+                .cell_count = MIN(config->lipo_cells, 3),
+                .measure_current = config->lipo_current,
+                .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
+                .current = malloc(sizeof(float)),
+                .consumption = malloc(sizeof(float)),
             };
             parameter.cell_prev = cell_prev;
             cell_prev = parameter.cell[2];
@@ -882,6 +900,16 @@ void jeti_set_config(sensor_jetiex_t **sensor) {
                 new_sensor->type = JETIEX_TYPE_INT14;
                 new_sensor->format = JETIEX_FORMAT_2_DECIMAL;
                 new_sensor->value = parameter.cell[i];
+                jeti_add_sensor(new_sensor, sensor);
+            }
+            if (config->lipo_current) {
+                new_sensor = malloc(sizeof(sensor_jetiex_t));
+                *new_sensor =
+                    (sensor_jetiex_t){0, JETIEX_TYPE_INT14, JETIEX_FORMAT_1_DECIMAL, "Current", "A", parameter.current};
+                jeti_add_sensor(new_sensor, sensor);
+                new_sensor = malloc(sizeof(sensor_jetiex_t));
+                *new_sensor = (sensor_jetiex_t){0,     JETIEX_TYPE_INT22,    JETIEX_FORMAT_0_DECIMAL, "Consumption",
+                                                "mAh", parameter.consumption};
                 jeti_add_sensor(new_sensor, sensor);
             }
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);

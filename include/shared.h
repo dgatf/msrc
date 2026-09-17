@@ -195,7 +195,8 @@ typedef struct config_t {                            // smartport data_id
     uint8_t gps_dynmodel;                            // 0x5154
     uint8_t sensor_id_jeti;
     uint8_t vario_vspeed_interval;                   // 0x5155 (ms * 10)
-    uint16_t spare82;
+    bool lipo_current;                               // 0x5156
+    uint8_t lipo_current_shunt;                      // 0x5157 (R * 100)
     uint32_t spare9;
     uint32_t spare10;
     uint32_t spare11;

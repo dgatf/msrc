@@ -1083,10 +1083,14 @@ static void set_config(crsf_sensors_t *sensors) {
                 .i2c_address = 0x40,
                 .filter = config->ina3221_filter,
                 .cell_count = MIN(config->lipo_cells, 3),
+                .measure_current = config->lipo_cells > 3 ? false : config->lipo_current,
+                .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
+                .current = malloc(sizeof(float)),
+                .consumption = malloc(sizeof(float)),
             };
             c1 = parameter.cell_count;
             *parameter.cell_prev = 0;
@@ -1097,16 +1101,25 @@ static void set_config(crsf_sensors_t *sensors) {
             for (uint i = 0; i < 3; i++) {
                 sensors->voltages.cell[i] = parameter.cell[i];
             }
+            if (config->lipo_current && config->lipo_cells <= 3) {
+                sensors->enabled_sensors[TYPE_BATERY] = true;
+                sensors->battery.current = parameter.current;
+                sensors->battery.capacity = parameter.consumption;
+            }
         }
         if (config->lipo_cells > 3) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x41,
                 .filter = config->ina3221_filter,
                 .cell_count = MIN(config->lipo_cells - 3, 3),
+                .measure_current = config->lipo_current,
+                .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
+                .current = malloc(sizeof(float)),
+                .consumption = malloc(sizeof(float)),
             };
             c2 = parameter.cell_count;
             parameter.cell_prev = cell_prev;
@@ -1115,6 +1128,11 @@ static void set_config(crsf_sensors_t *sensors) {
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
             for (uint i = 0; i < 3; i++) {
                 sensors->voltages.cell[i + 3] = parameter.cell[i];
+            }
+            if (config->lipo_current) {
+                sensors->enabled_sensors[TYPE_BATERY] = true;
+                sensors->battery.current = parameter.current;
+                sensors->battery.capacity = parameter.consumption;
             }
         }
         *sensors->voltages.cell_count = c1 + c2;
