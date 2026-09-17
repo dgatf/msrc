@@ -538,6 +538,7 @@ typedef enum esc_triggers_t {
     TRIGGER_ESC_VOLTAGE,
     TRIGGER_ESC_CURRENT,
     TRIGGER_ESC_WARNING,
+    TRIGGER_ESC_WARNING_CONS,
     TRIGGERS_ESC
 } esc_triggers_t;
 
@@ -549,6 +550,7 @@ typedef enum general_triggers_t {
     TRIGGER_GENERAL_MAX_ALTITUDE,
     TRIGGER_GENERAL_CURRENT,
     TRIGGER_GENERAL_WARNING,
+    TRIGGER_GENERAL_WARNING_CONS,
     TRIGGERS_GENERAL
 } general_triggers_t;
 
@@ -615,14 +617,16 @@ void hott_task(void *parameters) {
                                      {.max = 20000, .incr = 10, .str = "RPM Max", .values = NULL},
                                      {.max = 100, .incr = 0.1, .str = "Volt Min", .values = NULL},
                                      {.max = 300, .incr = 1, .str = "Curr Max", .values = NULL},
-                                     {.max = 1, .incr = 1, .str = "Warning", .values = warning_values}},
+                                     {.max = 1, .incr = 1, .str = "Warning", .values = warning_values},
+                                     {.max = 1, .incr = 1, .str = "Warning Cons", .values = warning_values}},
                              .general = {{.max = 100, .incr = 0.1, .str = "Volt Min", .values = NULL},
                                          {.max = 30000, .incr = 10, .str = "Cons Max", .values = NULL},
                                          {.max = 100, .incr = 1, .str = "Temp Max", .values = NULL},
                                          {.max = 5000, .incr = 1, .str = "Alt Min", .values = NULL},
                                          {.max = 5000, .incr = 1, .str = "Alt Max", .values = NULL},
                                          {.max = 300, .incr = 0.1, .str = "Curr Max", .values = NULL},
-                                         {.max = 1, .incr = 1, .str = "Warning", .values = warning_values}}};
+                                         {.max = 1, .incr = 1, .str = "Warning", .values = warning_values},
+                                         {.max = 1, .incr = 1, .str = "Warning Cons", .values = warning_values}}};
 
     triggers_value_t triggers_value;
     memcpy(&triggers_value, (uint8_t *)alarms_read(), sizeof(triggers_value_t));
@@ -853,6 +857,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
         case HOTT_ESC_MODULE_ID: {
             if (!sensors->is_enabled[HOTT_TYPE_ESC]) return;
             hott_sensor_airesc_t packet = {0};
+            static bool warning_cons_latch = false;
+            static uint32_t warning_cons_start = 0;
             static uint16_t minInputVolt = 0xFFFF;
             static uint8_t maxEscTemperature = 0;
             static uint16_t maxCurrent = 0;
@@ -888,12 +894,12 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 packet.capacity = *sensors->esc[HOTT_ESC_CONSUMPTION] / 10;
                 if (alarms->triggers->esc[TRIGGER_ESC_CONSUMPTION] &&
                     *sensors->esc[HOTT_ESC_CONSUMPTION] > alarms->triggers->esc[TRIGGER_ESC_CONSUMPTION]) {
-                    if (!(warning_latch_mask & (1u << ALARM_VOICE_MAX_CAPACITY))) {
-                        warning_start[ALARM_VOICE_MAX_CAPACITY] = time_us_32();
-                        warning_latch_mask |= 1u << ALARM_VOICE_MAX_CAPACITY;
+                    if (!warning_cons_latch) {
+                        warning_cons_start = time_us_32();
+                        warning_cons_latch = true;
                     }
-                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 ||
-                        time_us_32() - warning_start[ALARM_VOICE_MAX_CAPACITY] < 10000000ULL) {
+                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING_CONS] == 0 ||
+                        time_us_32() - warning_cons_start < 10000000ULL) {
                         packet.warningID = ALARM_VOICE_MAX_CAPACITY;
                     }
                     packet.alarmInverse |= 1u << ALARM_BITMASK_AIRESC_CAPACITY;
@@ -1009,6 +1015,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
         case HOTT_GENERAL_AIR_MODULE_ID: {
             if (!sensors->is_enabled[HOTT_TYPE_GENERAL]) return;
             hott_sensor_general_air_t packet = {0};
+            static bool warning_cons_latch = false;
+            static uint32_t warning_cons_start = 0;
             packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_GENERAL_AIR_MODULE_ID;
             packet.sensorTextID = HOTT_GENERAL_AIR_TEXT_ID;
@@ -1048,12 +1056,12 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 if (alarms->triggers->general[TRIGGER_GENERAL_CAPACITY] &&
                     *sensors->general_air[HOTT_GENERAL_CAPACITY] >
                         alarms->triggers->general[TRIGGER_GENERAL_CAPACITY]) {
-                    if (!(warning_latch_mask & (1u << ALARM_VOICE_MAX_CAPACITY))) {
-                        warning_start[ALARM_VOICE_MAX_CAPACITY] = time_us_32();
-                        warning_latch_mask |= 1u << ALARM_VOICE_MAX_CAPACITY;
+                    if (!warning_cons_latch) {
+                        warning_cons_start = time_us_32();
+                        warning_cons_latch = true;
                     }
-                    if (alarms->triggers->general[TRIGGER_GENERAL_WARNING] == 0 ||
-                        time_us_32() - warning_start[ALARM_VOICE_MAX_CAPACITY] < 10000000ULL) {
+                    if (alarms->triggers->general[TRIGGER_GENERAL_WARNING_CONS] == 0 ||
+                        time_us_32() - warning_cons_start < 10000000ULL) {
                         packet.warningID = ALARM_VOICE_MAX_CAPACITY;
                     }
                     packet.alarmInverse |= 1u << ALARM_BITMASK_GENERAL_AIR_CAPACITY;
