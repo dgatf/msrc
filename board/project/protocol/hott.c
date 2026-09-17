@@ -588,8 +588,8 @@ static void process(hott_sensors_t *sensors, triggers_t *alarms);
 static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, uint8_t address);
 static void format_text_packet(triggers_t *alarms, hott_sensors_t *sensors, uint8_t sensor_id, uint8_t key);
 static void send_packet(uint8_t *buffer, uint len);
-static void module_alarms_save(triggers_value_t *module_alarms);
-static triggers_value_t *alarms_read(void);
+static void alarms_save(triggers_value_t *module_alarms);
+static void alarms_read(triggers_value_t *triggers_value);
 static uint8_t get_crc(const uint8_t *buffer, uint len);
 static void set_config(hott_sensors_t *sensors);
 static int64_t interval_1000_callback(alarm_id_t id, void *parameters);
@@ -629,7 +629,7 @@ void hott_task(void *parameters) {
                                          {.max = 1, .incr = 1, .str = "Warning Cons", .values = warning_values}}};
 
     triggers_value_t triggers_value;
-    memcpy(&triggers_value, (uint8_t *)alarms_read(), sizeof(triggers_value_t));
+    alarms_read(&triggers_value);
     triggers_t hott_alarms = {.triggers = &triggers_value, .pages = &pages};
     set_config(&sensors);
     context.led_cycle_duration = 6;
@@ -749,7 +749,7 @@ static void format_text_packet(triggers_t *alarms, hott_sensors_t *sensors, uint
         }
     } else if (key == HOTT_KEY_SET) {
         if (is_selected) {
-            module_alarms_save(alarms->triggers);
+            alarms_save(alarms->triggers);
             strcat(packet.text[0], " (Saved)");
             debug("\nHOTT (%u). Saved sensor config.", uxTaskGetStackHighWaterMark(NULL));
             is_selected = false;
@@ -1282,17 +1282,32 @@ static void send_packet(uint8_t *buffer, uint len) {
     }
 }
 
-static triggers_value_t *alarms_read(void) { return (triggers_value_t *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET); }
+static void alarms_read(triggers_value_t *triggers_value) { 
+    memcpy(triggers_value->gps, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET), sizeof(triggers_value->gps));
+    memcpy(triggers_value->vario, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 256u), sizeof(triggers_value->vario));
+    memcpy(triggers_value->esc, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 512u), sizeof(triggers_value->esc));
+    memcpy(triggers_value->general, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 768u), sizeof(triggers_value->general));
+}
 
-static void module_alarms_save(triggers_value_t *triggers_value) {
-    uint8_t flash[FLASH_PAGE_SIZE];
-    memset(flash, 0xFF, sizeof(flash));
-    memcpy(flash, triggers_value, sizeof(*triggers_value));
-
+static void alarms_save(triggers_value_t *triggers_value) {
+    
     uint32_t ints = save_and_disable_interrupts();
 
     flash_range_erase(ALARMS_FLASH_TARGET_OFFSET, FLASH_SECTOR_SIZE);
+    
+    uint8_t flash[FLASH_PAGE_SIZE];
+    memset(flash, 0xFF, sizeof(flash));
+    memcpy(flash, triggers_value->gps, sizeof(triggers_value->gps));
     flash_range_program(ALARMS_FLASH_TARGET_OFFSET, flash, FLASH_PAGE_SIZE);
+    memset(flash, 0xFF, sizeof(flash));
+    memcpy(flash, triggers_value->vario, sizeof(triggers_value->vario));
+    flash_range_program(ALARMS_FLASH_TARGET_OFFSET + 256u, flash, FLASH_PAGE_SIZE);
+    memset(flash, 0xFF, sizeof(flash));
+    memcpy(flash, triggers_value->esc, sizeof(triggers_value->esc));
+    flash_range_program(ALARMS_FLASH_TARGET_OFFSET + 512u, flash, FLASH_PAGE_SIZE);
+    memset(flash, 0xFF, sizeof(flash));
+    memcpy(flash, triggers_value->general, sizeof(triggers_value->general));
+    flash_range_program(ALARMS_FLASH_TARGET_OFFSET + 768u, flash, FLASH_PAGE_SIZE);
 
     restore_interrupts(ints);
 
