@@ -22,11 +22,14 @@
 #define CH1_ENABLE (1u << 14)
 #define CH2_ENABLE (1u << 13)
 #define CH3_ENABLE (1u << 12)
-#define MODE_VOLTAGE_CONTINUOUS 0x06         // Bus continuous
-#define VOLTAGE_CONVERSION_TIME (0x03 << 6)  // 588us
+#define MODE_VOLTAGE_CONTINUOUS 0x06
+#define MODE_SHUNT_BUS_CONTINUOUS 0x07
 //#define AVG 0x7     // 128 samples
 //#define CH 0x7      // Enable all channels
 #define RST 0x8000  // Reset bit
+
+#define VOLTAGE_CONVERSION_TIME (0x03 << 6)  // 588 us
+#define SHUNT_CONVERSION_TIME (0x03 << 3)    // 588 us
 
 #define I2C_ADDRESS 0x40
 #define SENSOR_INTERVAL_MS 20  // 10ms min for 1024 filter. 1ms min for 0B11 filter
@@ -40,6 +43,8 @@ void ina3221_task(void *parameters) {
     for (uint8_t i = 0; i < parameter.cell_count; i++) {
         *parameter.cell[i] = 0;
     }
+    *parameter.current = 0;
+    *parameter.consumption = 0;
 
     vTaskDelay(500 / portTICK_PERIOD_MS);
 
@@ -51,6 +56,7 @@ void ina3221_task(void *parameters) {
         for (uint8_t i = 0; i < parameter.cell_count; i++) {
             debug(" Cell %u: %.2fV", i + 1, *parameter.cell[i]);
         }
+        if (parameter.current) debug(" Current: %.2fA", *parameter.current);
         vTaskDelay(SENSOR_INTERVAL_MS / portTICK_PERIOD_MS);
     }
 }
@@ -78,7 +84,12 @@ static void begin(ina3221_parameters_t *parameter) {
     // would be silently truncated by a single-byte store.
     if (parameter->cell_count > 3) parameter->cell_count = 3;
     if (parameter->cell_count < 1) parameter->cell_count = 1;
-    uint16_t config = MODE_VOLTAGE_CONTINUOUS | VOLTAGE_CONVERSION_TIME | ((uint16_t)(parameter->filter & 0x07) << 9);
+    uint16_t config = VOLTAGE_CONVERSION_TIME | ((uint16_t)(parameter->filter & 0x07) << 9);
+    if (parameter->measure_current) {
+        config |= MODE_SHUNT_BUS_CONTINUOUS | SHUNT_CONVERSION_TIME;
+    } else {
+        config |= MODE_VOLTAGE_CONTINUOUS;
+    }
     if (parameter->cell_count > 0) config |= CH1_ENABLE;
     if (parameter->cell_count > 1) config |= CH2_ENABLE;
     if (parameter->cell_count > 2) config |= CH3_ENABLE;
@@ -111,5 +122,23 @@ static void read(ina3221_parameters_t *parameter) {
         } else {
             *parameter->cell[i] = cell_total[i] - cell_total[i - 1];
         }
+    }
+
+    if (parameter->measure_current && parameter->shunt_resistor > 0.0f) {
+        static uint32_t timestamp = 0;
+        uint8_t channel = parameter->cell_count - 1;
+
+        data[0] = INA3221_SHUNT_VOLTAGE(channel);
+        i2c_write_blocking(i2c0, parameter->i2c_address, data, 1, true);
+        i2c_read_blocking(i2c0, parameter->i2c_address, data, 2, false);
+
+        int16_t raw = ((int16_t)data[0] << 8) | data[1];
+
+        // Full 16-bit register scale:
+        // bit 3 = 40 uV, therefore raw LSB = 5 uV.
+        float shunt_voltage = raw * 0.000005f;
+
+        *parameter->current = shunt_voltage / (parameter->shunt_resistor / 1000.0f);
+        *parameter->consumption += get_consumption(*parameter->current, 0, &timestamp);
     }
 }

@@ -813,7 +813,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                     warning_latch_mask |= 1u << ALARM_VOICE_MIN_ALTITUDE;
                     warning_start[ALARM_VOICE_MIN_ALTITUDE] = time_us_32();
                 }
-                if (alarms->triggers->vario[TRIGGER_VARIO_WARNING] == 0 || time_us_32() - warning_start[ALARM_VOICE_MIN_ALTITUDE] < 10000000ULL) {
+                if (alarms->triggers->vario[TRIGGER_VARIO_WARNING] == 0 ||
+                    time_us_32() - warning_start[ALARM_VOICE_MIN_ALTITUDE] < 10000000ULL) {
                     packet.warningID = ALARM_VOICE_MIN_ALTITUDE;
                 }
                 packet.alarmInverse |= 1u << ALARM_BITMASK_VARIO_ALTITUDE;
@@ -825,7 +826,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                     warning_latch_mask |= 1u << ALARM_VOICE_MAX_ALTITUDE;
                     warning_start[ALARM_VOICE_MAX_ALTITUDE] = time_us_32();
                 }
-                if (alarms->triggers->vario[TRIGGER_VARIO_WARNING] == 0 || time_us_32() - warning_start[ALARM_VOICE_MAX_ALTITUDE] < 10000000ULL) {
+                if (alarms->triggers->vario[TRIGGER_VARIO_WARNING] == 0 ||
+                    time_us_32() - warning_start[ALARM_VOICE_MAX_ALTITUDE] < 10000000ULL) {
                     packet.warningID = ALARM_VOICE_MAX_ALTITUDE;
                 }
                 packet.alarmInverse |= 1u << ALARM_BITMASK_VARIO_ALTITUDE;
@@ -874,7 +876,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                         warning_start[ALARM_VOICE_MIN_POWER_VOLTAGE] = time_us_32();
                         warning_latch_mask |= 1u << ALARM_VOICE_MIN_POWER_VOLTAGE;
                     }
-                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 || time_us_32() - warning_start[ALARM_VOICE_MIN_POWER_VOLTAGE] < 10000000ULL) {
+                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 ||
+                        time_us_32() - warning_start[ALARM_VOICE_MIN_POWER_VOLTAGE] < 10000000ULL) {
                         packet.warningID = ALARM_VOICE_MIN_POWER_VOLTAGE;
                     }
                     packet.alarmInverse |= 1u << ALARM_BITMASK_AIRESC_MIN_VOLTAGE;
@@ -889,7 +892,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                         warning_start[ALARM_VOICE_MAX_CAPACITY] = time_us_32();
                         warning_latch_mask |= 1u << ALARM_VOICE_MAX_CAPACITY;
                     }
-                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 || time_us_32() - warning_start[ALARM_VOICE_MAX_CAPACITY] < 10000000ULL) {
+                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 ||
+                        time_us_32() - warning_start[ALARM_VOICE_MAX_CAPACITY] < 10000000ULL) {
                         packet.warningID = ALARM_VOICE_MAX_CAPACITY;
                     }
                     packet.alarmInverse |= 1u << ALARM_BITMASK_AIRESC_CAPACITY;
@@ -905,7 +909,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                         warning_start[ALARM_VOICE_MAX_SENSOR_1_TEMP] = time_us_32();
                         warning_latch_mask |= 1u << ALARM_VOICE_MAX_SENSOR_1_TEMP;
                     }
-                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 || time_us_32() - warning_start[ALARM_VOICE_MAX_SENSOR_1_TEMP] < 10000000ULL) {
+                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 ||
+                        time_us_32() - warning_start[ALARM_VOICE_MAX_SENSOR_1_TEMP] < 10000000ULL) {
                         packet.warningID = ALARM_VOICE_MAX_SENSOR_1_TEMP;
                     }
                     packet.alarmInverse |= 1u << ALARM_BITMASK_AIRESC_TEMPERATURE;
@@ -924,7 +929,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                         warning_start[ALARM_VOICE_MAX_CURRENT] = time_us_32();
                         warning_latch_mask |= 1u << ALARM_VOICE_MAX_CURRENT;
                     }
-                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 || time_us_32() - warning_start[ALARM_VOICE_MAX_CURRENT] < 10000000ULL) {
+                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 ||
+                        time_us_32() - warning_start[ALARM_VOICE_MAX_CURRENT] < 10000000ULL) {
                         packet.warningID = ALARM_VOICE_MAX_CURRENT;
                     }
                     packet.alarmInverse |= 1u << ALARM_BITMASK_AIRESC_MAX_CURRENT;
@@ -941,7 +947,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                         warning_start[ALARM_VOICE_MIN_RPM] = time_us_32();
                         warning_latch_mask |= 1u << ALARM_VOICE_MIN_RPM;
                     }
-                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 || time_us_32() - warning_start[ALARM_VOICE_MIN_RPM] < 10000000ULL) {
+                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 ||
+                        time_us_32() - warning_start[ALARM_VOICE_MIN_RPM] < 10000000ULL) {
                         packet.warningID = ALARM_VOICE_MIN_RPM;
                     }
                     packet.alarmInverse |= 1u << ALARM_BITMASK_AIRESC_RPM;
@@ -952,7 +959,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                         warning_start[ALARM_VOICE_MAX_RPM] = time_us_32();
                         warning_latch_mask |= 1u << ALARM_VOICE_MAX_RPM;
                     }
-                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 || time_us_32() - warning_start[ALARM_VOICE_MAX_RPM] < 10000000ULL) {
+                    if (alarms->triggers->esc[TRIGGER_ESC_WARNING] == 0 ||
+                        time_us_32() - warning_start[ALARM_VOICE_MAX_RPM] < 10000000ULL) {
                         packet.warningID = ALARM_VOICE_MAX_RPM;
                     }
                     packet.alarmInverse |= 1u << ALARM_BITMASK_AIRESC_RPM;
@@ -1151,7 +1159,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                     warning_latch_mask |= 1u << ALARM_VOICE_MIN_ALTITUDE;
                     warning_start[ALARM_VOICE_MIN_ALTITUDE] = time_us_32();
                 }
-                if (alarms->triggers->gps[TRIGGER_GPS_WARNING] == 0 || time_us_32() - warning_start[ALARM_VOICE_MIN_ALTITUDE] < 10000000ULL) {
+                if (alarms->triggers->gps[TRIGGER_GPS_WARNING] == 0 ||
+                    time_us_32() - warning_start[ALARM_VOICE_MIN_ALTITUDE] < 10000000ULL) {
                     packet.warningID = ALARM_VOICE_MIN_ALTITUDE;
                 }
 
@@ -1163,7 +1172,8 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                     warning_start[ALARM_VOICE_MAX_ALTITUDE] = time_us_32();
                     warning_latch_mask |= 1u << ALARM_VOICE_MAX_ALTITUDE;
                 }
-                if (alarms->triggers->gps[TRIGGER_GPS_WARNING] == 0 || time_us_32() - warning_start[ALARM_VOICE_MAX_ALTITUDE] < 10000000ULL) {
+                if (alarms->triggers->gps[TRIGGER_GPS_WARNING] == 0 ||
+                    time_us_32() - warning_start[ALARM_VOICE_MAX_ALTITUDE] < 10000000ULL) {
                     packet.warningID = ALARM_VOICE_MAX_ALTITUDE;
                 }
                 packet.alarmInverse |= 1u << ALARM_BITMASK_GPS_ALTITUDE;
@@ -1758,10 +1768,14 @@ static void set_config(hott_sensors_t *sensors) {
                 .i2c_address = 0x40,
                 .filter = config->ina3221_filter,
                 .cell_count = MIN(config->lipo_cells, 3),
+                .measure_current = config->lipo_cells > 3 ? false : config->lipo_current,
+                .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
+                .current = malloc(sizeof(float)),
+                .consumption = malloc(sizeof(float)),
             };
             *parameter.cell_prev = 0;
             cell_prev = parameter.cell[2];
@@ -1771,16 +1785,25 @@ static void set_config(hott_sensors_t *sensors) {
             sensors->general_air[HOTT_GENERAL_CELL_1] = parameter.cell[0];
             sensors->general_air[HOTT_GENERAL_CELL_2] = parameter.cell[1];
             sensors->general_air[HOTT_GENERAL_CELL_3] = parameter.cell[2];
+            if (config->lipo_current && config->lipo_cells <= 3) {
+                sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+                sensors->general_air[HOTT_GENERAL_CURRENT] = parameter.current;
+                sensors->general_air[HOTT_GENERAL_CAPACITY] = parameter.consumption;
+            }
         }
         if (config->lipo_cells > 3) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x41,
                 .filter = config->ina3221_filter,
                 .cell_count = MIN(config->lipo_cells - 3, 3),
+                .measure_current = config->lipo_current,
+                .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
+                .current = malloc(sizeof(float)),
+                .consumption = malloc(sizeof(float)),
             };
             parameter.cell_prev = cell_prev;
             cell_prev = parameter.cell[2];
@@ -1789,6 +1812,11 @@ static void set_config(hott_sensors_t *sensors) {
             sensors->general_air[HOTT_GENERAL_CELL_4] = parameter.cell[0];
             sensors->general_air[HOTT_GENERAL_CELL_5] = parameter.cell[1];
             sensors->general_air[HOTT_GENERAL_CELL_6] = parameter.cell[2];
+            if (config->lipo_current) {
+                sensors->is_enabled[HOTT_TYPE_GENERAL] = true;
+                sensors->general_air[HOTT_GENERAL_CURRENT] = parameter.current;
+                sensors->general_air[HOTT_GENERAL_CAPACITY] = parameter.consumption;
+            }
         }
     }
 }

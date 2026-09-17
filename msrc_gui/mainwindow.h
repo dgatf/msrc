@@ -85,5 +85,6 @@ class MainWindow : public QMainWindow {
     void on_ckSbusExtVolt_toggled(bool checked);
     void on_cbHw4AutoDetect_toggled(bool checked);
     void on_gbGyro_toggled(bool arg1);
+    void on_ckLipoCurrent_toggled(bool checked);
 };
 #endif  // MAINWINDOW_H

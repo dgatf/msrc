@@ -1970,13 +1970,16 @@ void smartport_set_config(smartport_parameters_t *parameter) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x40,
                 .filter = config->ina3221_filter,
-                .cell_count = cells_first,
+                .cell_count = MIN(config->lipo_cells, 3),
+                .measure_current = config->lipo_cells > 3 ? false : config->lipo_current,
+                .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
+                .current = malloc(sizeof(float)),
+                .consumption = malloc(sizeof(float)),
             };
-
             // First INA has no previous cell reference
             *parameter.cell_prev = 0;
             cell_prev = parameter.cell[2];
@@ -1995,13 +1998,17 @@ void smartport_set_config(smartport_parameters_t *parameter) {
             uint8_t cells_second = MIN((uint8_t)(lipo_cells - 3), (uint8_t)3);
 
             ina3221_parameters_t parameter = {
-                .i2c_address = 0x41,
+                .i2c_address = 0x40,
                 .filter = config->ina3221_filter,
-                .cell_count = cells_second,
+                .cell_count = MIN(config->lipo_cells, 3),
+                .measure_current = config->lipo_current,
+                .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
-                .cell_prev = cell_prev,  // Link to the last cell of the previous INA
+                .cell_prev = malloc(sizeof(float)),
+                .current = malloc(sizeof(float)),
+                .consumption = malloc(sizeof(float)),
             };
 
             xTaskCreate(ina3221_task, "ina3221_task", STACK_INA3221, (void *)&parameter, 2, &task_handle);

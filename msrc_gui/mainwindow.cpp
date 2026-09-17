@@ -699,6 +699,10 @@ void MainWindow::setUiFromConfig() {
     ui->cbIna3221Filter->setCurrentIndex(ui->cbIna3221Filter->findData(config.ina3221_filter));
     ui->sbLipoCells->setValue(config.lipo_cells);
     ui->gbLipo->setChecked(config.enable_lipo);
+    ui->ckLipoCurrent->setChecked(config.lipo_current);
+    uint shunt = config.lipo_current_shunt;
+    if (shunt < 1 || shunt > 100) shunt = 100;
+    ui->sbLipoShunt->setValue(shunt);
 
     // SRXL2
     uint sensor_id_srxl2 = config.sensor_id_srxl2 ;
@@ -927,6 +931,8 @@ void MainWindow::getConfigFromUi() {
     config.ina3221_filter = ui->cbIna3221Filter->itemData(ui->cbIna3221Filter->currentIndex()).toUInt();
     config.lipo_cells = ui->sbLipoCells->value();
     config.enable_lipo = ui->gbLipo->isChecked();
+    config.lipo_current = ui->ckLipoCurrent->isChecked();
+    config.lipo_current_shunt = ui->sbLipoShunt->value();
 
     // SRXL2
     config.sensor_id_srxl2 = ui->sbSensorIdSrxl2->value();
@@ -1362,4 +1368,10 @@ void MainWindow::on_cbHw4AutoDetect_toggled(bool checked) {
 void MainWindow::on_gbGyro_toggled(bool enabled) {
     enableWidgets(ui->gbGyro, enabled);
     generateCircuit(ui->lbCircuit);
+}
+
+void MainWindow::on_ckLipoCurrent_toggled(bool enabled)
+{
+    ui->lbLipoShunt->setVisible(enabled);
+    ui->sbLipoShunt->setVisible(enabled);
 }

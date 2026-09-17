@@ -1029,10 +1029,14 @@ void xbus_set_config(void) {
                 .i2c_address = 0x40,
                 .filter = config->ina3221_filter,
                 .cell_count = MIN(config->lipo_cells, 3),
+                .measure_current = config->lipo_cells > 3 ? false : config->lipo_current,
+                .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
+                .current = malloc(sizeof(float)),
+                .consumption = malloc(sizeof(float)),
             };
             *parameter.cell_prev = 0;
             cell_prev = parameter.cell[2];
@@ -1044,16 +1048,27 @@ void xbus_set_config(void) {
             for (uint8_t i = parameter.cell_count; i < 3; i++) {
                 *sensor.tele_lipomon[XBUS_TELE_LIPOMON_CELL1 + i] = 0x7FFF;
             }
+            if (config->lipo_current && config->lipo_cells <= 3) {
+                sensor.energy[XBUS_ENERGY_CURRENT1] = parameter.current;
+                sensor.energy[XBUS_ENERGY_CONSUMPTION1] = parameter.consumption;
+                if (!sensor.is_enabled[XBUS_ENERGY]) {
+                    sensor.is_enabled[XBUS_ENERGY] = true;
+                }
+            }
         }
         if (config->lipo_cells > 3) {
             ina3221_parameters_t parameter = {
-                .i2c_address = 0x41,
+                .i2c_address = 0x40,
                 .filter = config->ina3221_filter,
-                .cell_count = MIN(config->lipo_cells - 3, 3),
+                .cell_count = MIN(config->lipo_cells, 3),
+                .measure_current = config->lipo_current,
+                .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
                 .cell_prev = malloc(sizeof(float)),
+                .current = malloc(sizeof(float)),
+                .consumption = malloc(sizeof(float)),
             };
             parameter.cell_prev = cell_prev;
             cell_prev = parameter.cell[2];
@@ -1064,6 +1079,13 @@ void xbus_set_config(void) {
             }
             for (uint8_t i = parameter.cell_count; i < 3; i++) {
                 *sensor.tele_lipomon[XBUS_TELE_LIPOMON_CELL4 + i] = 0x7FFF;
+            }
+            if (config->lipo_current && config->lipo_cells <= 3) {
+                sensor.energy[XBUS_ENERGY_CURRENT1] = parameter.current;
+                sensor.energy[XBUS_ENERGY_CONSUMPTION1] = parameter.consumption;
+                if (!sensor.is_enabled[XBUS_ENERGY]) {
+                    sensor.is_enabled[XBUS_ENERGY] = true;
+                }
             }
         }
     }
