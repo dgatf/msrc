@@ -714,7 +714,9 @@ static void format_text_packet(triggers_t *alarms, hott_sensors_t *sensors, uint
     if (key == HOTT_KEY_LEFT) {
         if (is_selected) {
             module_alarms_triggers[item] -= 10 * module_alarms_pages[item].incr;
-            if (module_alarms_triggers[item] < 0) module_alarms_triggers[item] = 0;
+            if (module_alarms_triggers[item] < -module_alarms_pages[item].incr)
+                module_alarms_triggers[item] = -module_alarms_pages[item].incr;
+            if (module_alarms_pages[item].values && module_alarms_triggers[item] < 0) module_alarms_triggers[item] = 0;
         } else {
             packet.esc = 0x01;  // exit
             strcat(packet.text[0], " (Exit)");
@@ -745,7 +747,9 @@ static void format_text_packet(triggers_t *alarms, hott_sensors_t *sensors, uint
             }
         } else {
             module_alarms_triggers[item] -= module_alarms_pages[item].incr;
-            if (module_alarms_triggers[item] < 0) module_alarms_triggers[item] = 0;
+            if (module_alarms_triggers[item] < -module_alarms_pages[item].incr)
+                module_alarms_triggers[item] = -module_alarms_pages[item].incr;
+            if (module_alarms_pages[item].values && module_alarms_triggers[item] < 0) module_alarms_triggers[item] = 0;
         }
     } else if (key == HOTT_KEY_SET) {
         if (is_selected) {
@@ -767,20 +771,29 @@ static void format_text_packet(triggers_t *alarms, hott_sensors_t *sensors, uint
     // if (size > HOTT_MENU_ROWS) size = HOTT_MENU_ROWS;
     for (int i = 0; i < visible; i++) {
         uint idx = first_item + i;
-        if (module_alarms_triggers[idx] < 0) module_alarms_triggers[idx] = 0;
+        if (module_alarms_triggers[idx] < -module_alarms_pages[idx].incr)
+            module_alarms_triggers[idx] = -module_alarms_pages[idx].incr;
         if (module_alarms_triggers[idx] > module_alarms_pages[idx].max)
             module_alarms_triggers[idx] = module_alarms_pages[idx].max;
-        if (isinf(module_alarms_triggers[idx])) module_alarms_triggers[idx] = 0;
-        if (isnan(module_alarms_triggers[idx])) module_alarms_triggers[idx] = 0;
+        if (isinf(module_alarms_triggers[idx])) module_alarms_triggers[idx] = -module_alarms_pages[idx].incr;
+        if (isnan(module_alarms_triggers[idx])) module_alarms_triggers[idx] = -module_alarms_pages[idx].incr;
+        if (module_alarms_pages[idx].values && module_alarms_triggers[idx] < 0) module_alarms_triggers[idx] = 0;
 
         if (module_alarms_pages[idx].values) {
             uint value = (uint)module_alarms_triggers[idx];
             snprintf(packet.text[i + 1], 21, " %-13s %5s", module_alarms_pages[idx].str,
                      module_alarms_pages[idx].values[value]);
-        } else if (module_alarms_pages[idx].incr == 1)
-            snprintf(packet.text[i + 1], 21, " %-13s %5.0f", module_alarms_pages[idx].str, module_alarms_triggers[idx]);
-        else
+        } else if (module_alarms_pages[idx].incr == 1) {
+            if (module_alarms_triggers[idx] >= 0)
+                snprintf(packet.text[i + 1], 21, " %-13s %5.0f", module_alarms_pages[idx].str,
+                         module_alarms_triggers[idx]);
+            else
+                snprintf(packet.text[i + 1], 21, " %-13s %5s", module_alarms_pages[idx].str, "Off");
+        } else if (module_alarms_triggers[idx] >= 0)
             snprintf(packet.text[i + 1], 21, " %-13s %5.1f", module_alarms_pages[idx].str, module_alarms_triggers[idx]);
+        else
+
+            snprintf(packet.text[i + 1], 21, " %-13s %5s", module_alarms_pages[idx].str, "Off");
     }
     packet.text[item - first_item + 1][0] |= '>';
     if (is_selected) {
@@ -811,7 +824,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             packet.startByte = HOTT_START_BYTE;
             packet.sensorID = HOTT_VARIO_MODULE_ID;
             packet.sensorTextID = HOTT_VARIO_TEXT_ID;
-            if (alarms->triggers->vario[TRIGGER_VARIO_MIN_ALTITUDE] &&
+            if (alarms->triggers->vario[TRIGGER_VARIO_MIN_ALTITUDE] >= 0 &&
                 *sensors->vario[HOTT_VARIO_ALTITUDE] < alarms->triggers->vario[TRIGGER_VARIO_MIN_ALTITUDE]) {
                 if (!(warning_latch_mask & (1u << ALARM_VOICE_MIN_ALTITUDE))) {
                     warning_latch_mask |= 1u << ALARM_VOICE_MIN_ALTITUDE;
@@ -824,7 +837,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 packet.alarmInverse |= 1u << ALARM_BITMASK_VARIO_ALTITUDE;
                 packet.alarmInverse |= 1u << ALARM_BITMASK_VARIO_MIN_ALTITUDE;
             }
-            if (alarms->triggers->vario[TRIGGER_VARIO_MAX_ALTITUDE] &&
+            if (alarms->triggers->vario[TRIGGER_VARIO_MAX_ALTITUDE] >= 0 &&
                 *sensors->vario[HOTT_VARIO_ALTITUDE] > alarms->triggers->vario[TRIGGER_VARIO_MAX_ALTITUDE]) {
                 if (!(warning_latch_mask & (1u << ALARM_VOICE_MAX_ALTITUDE))) {
                     warning_latch_mask |= 1u << ALARM_VOICE_MAX_ALTITUDE;
@@ -837,7 +850,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 packet.alarmInverse |= 1u << ALARM_BITMASK_VARIO_ALTITUDE;
                 packet.alarmInverse |= 1u << ALARM_BITMASK_VARIO_MAX_ALTITUDE;
             }
-            if (alarms->triggers->vario[TRIGGER_VARIO_VSPD] &&
+            if (alarms->triggers->vario[TRIGGER_VARIO_VSPD] >= 0 &&
                 fabsf(*sensors->vario[HOTT_VARIO_M1S]) > alarms->triggers->vario[TRIGGER_VARIO_VSPD]) {
                 packet.alarmInverse |= 1u << ALARM_BITMASK_VARIO_M1S;
             }
@@ -876,7 +889,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 packet.inputVolt = *sensors->esc[HOTT_ESC_VOLTAGE] * 10;
                 if (packet.inputVolt < minInputVolt) minInputVolt = packet.inputVolt;
                 packet.minInputVolt = minInputVolt;
-                if (alarms->triggers->esc[TRIGGER_ESC_VOLTAGE] &&
+                if (alarms->triggers->esc[TRIGGER_ESC_VOLTAGE] >= 0 &&
                     *sensors->esc[HOTT_ESC_VOLTAGE] < alarms->triggers->esc[TRIGGER_ESC_VOLTAGE]) {
                     if (!(warning_latch_mask & (1u << ALARM_VOICE_MIN_POWER_VOLTAGE))) {
                         warning_start[ALARM_VOICE_MIN_POWER_VOLTAGE] = time_us_32();
@@ -892,7 +905,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             }
             if (sensors->esc[HOTT_ESC_CONSUMPTION]) {
                 packet.capacity = *sensors->esc[HOTT_ESC_CONSUMPTION] / 10;
-                if (alarms->triggers->esc[TRIGGER_ESC_CONSUMPTION] &&
+                if (alarms->triggers->esc[TRIGGER_ESC_CONSUMPTION] >= 0 &&
                     *sensors->esc[HOTT_ESC_CONSUMPTION] > alarms->triggers->esc[TRIGGER_ESC_CONSUMPTION]) {
                     if (!warning_cons_latch) {
                         warning_cons_start = time_us_32();
@@ -909,7 +922,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 packet.escTemperature = *sensors->esc[HOTT_ESC_TEMPERATURE] + 20;
                 if (packet.escTemperature > maxEscTemperature) maxEscTemperature = packet.escTemperature;
                 packet.maxEscTemperature = maxEscTemperature;
-                if (alarms->triggers->esc[TRIGGER_ESC_TEMPERATURE] &&
+                if (alarms->triggers->esc[TRIGGER_ESC_TEMPERATURE] >= 0 &&
                     *sensors->esc[HOTT_ESC_TEMPERATURE] > alarms->triggers->esc[TRIGGER_ESC_TEMPERATURE]) {
                     if (!(warning_latch_mask & (1u << ALARM_VOICE_MAX_SENSOR_1_TEMP))) {
                         warning_start[ALARM_VOICE_MAX_SENSOR_1_TEMP] = time_us_32();
@@ -929,7 +942,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 packet.current = *sensors->esc[HOTT_ESC_CURRENT] * 10;
                 if (packet.current > maxCurrent) maxCurrent = packet.current;
                 packet.maxCurrent = maxCurrent;
-                if (alarms->triggers->esc[TRIGGER_ESC_CURRENT] &&
+                if (alarms->triggers->esc[TRIGGER_ESC_CURRENT] >= 0 &&
                     *sensors->esc[HOTT_ESC_CURRENT] > alarms->triggers->esc[TRIGGER_ESC_CURRENT]) {
                     if (!(warning_latch_mask & (1u << ALARM_VOICE_MAX_CURRENT))) {
                         warning_start[ALARM_VOICE_MAX_CURRENT] = time_us_32();
@@ -947,7 +960,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 packet.RPM = *sensors->esc[HOTT_ESC_RPM] / 10;
                 if (packet.RPM > maxRPM) maxRPM = packet.RPM;
                 packet.maxRPM = maxRPM;
-                if (alarms->triggers->esc[TRIGGER_ESC_MIN_RPM] &&
+                if (alarms->triggers->esc[TRIGGER_ESC_MIN_RPM] >= 0 &&
                     *sensors->esc[HOTT_ESC_RPM] < alarms->triggers->esc[TRIGGER_ESC_MIN_RPM]) {
                     if (!(warning_latch_mask & (1u << ALARM_VOICE_MIN_RPM))) {
                         warning_start[ALARM_VOICE_MIN_RPM] = time_us_32();
@@ -959,7 +972,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                     }
                     packet.alarmInverse |= 1u << ALARM_BITMASK_AIRESC_RPM;
                 }
-                if (alarms->triggers->esc[TRIGGER_ESC_MAX_RPM] &&
+                if (alarms->triggers->esc[TRIGGER_ESC_MAX_RPM] >= 0 &&
                     *sensors->esc[HOTT_ESC_RPM] > alarms->triggers->esc[TRIGGER_ESC_MAX_RPM]) {
                     if (!(warning_latch_mask & (1u << ALARM_VOICE_MAX_RPM))) {
                         warning_start[ALARM_VOICE_MAX_RPM] = time_us_32();
@@ -1022,7 +1035,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             packet.sensorTextID = HOTT_GENERAL_AIR_TEXT_ID;
             if (sensors->general_air[HOTT_GENERAL_BATTERY_1]) {
                 packet.battery1 = *sensors->general_air[HOTT_GENERAL_BATTERY_1] * 10;
-                if (alarms->triggers->general[TRIGGER_GENERAL_BATTERY] &&
+                if (alarms->triggers->general[TRIGGER_GENERAL_BATTERY] >= 0 &&
                     *sensors->general_air[HOTT_GENERAL_BATTERY_1] <
                         alarms->triggers->general[TRIGGER_GENERAL_BATTERY]) {
                     if (!(warning_latch_mask & (1u << ALARM_VOICE_MIN_POWER_VOLTAGE))) {
@@ -1038,7 +1051,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             }
             if (sensors->general_air[HOTT_GENERAL_CURRENT]) {
                 packet.current = *sensors->general_air[HOTT_GENERAL_CURRENT] * 10;
-                if (alarms->triggers->general[TRIGGER_GENERAL_CURRENT] &&
+                if (alarms->triggers->general[TRIGGER_GENERAL_CURRENT] >= 0 &&
                     *sensors->general_air[HOTT_GENERAL_CURRENT] > alarms->triggers->general[TRIGGER_GENERAL_CURRENT]) {
                     if (!(warning_latch_mask & (1u << ALARM_VOICE_MAX_CURRENT))) {
                         warning_latch_mask |= 1u << ALARM_VOICE_MAX_CURRENT;
@@ -1053,7 +1066,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             }
             if (sensors->general_air[HOTT_GENERAL_CAPACITY]) {
                 packet.batt_cap = *sensors->general_air[HOTT_GENERAL_CAPACITY] / 10;
-                if (alarms->triggers->general[TRIGGER_GENERAL_CAPACITY] &&
+                if (alarms->triggers->general[TRIGGER_GENERAL_CAPACITY] >= 0 &&
                     *sensors->general_air[HOTT_GENERAL_CAPACITY] >
                         alarms->triggers->general[TRIGGER_GENERAL_CAPACITY]) {
                     if (!warning_cons_latch) {
@@ -1072,7 +1085,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                     *sensors->general_air[HOTT_GENERAL_PRESSURE] * 1e-5 * 10;  // Pa -> bar (in steps of 0.1 bar)
             }
             if (sensors->general_air[HOTT_GENERAL_ALTITUDE]) {
-                if (alarms->triggers->general[TRIGGER_GENERAL_MIN_ALTITUDE] &&
+                if (alarms->triggers->general[TRIGGER_GENERAL_MIN_ALTITUDE] >= 0 &&
                     *sensors->general_air[HOTT_GENERAL_ALTITUDE] <
                         alarms->triggers->general[TRIGGER_GENERAL_MIN_ALTITUDE]) {
                     if (!(warning_latch_mask & (1u << ALARM_VOICE_MIN_ALTITUDE))) {
@@ -1085,7 +1098,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                     }
                     packet.alarmInverse |= 1u << ALARM_BITMASK_GENERAL_AIR_ALTITUDE;
                 }
-                if (alarms->triggers->general[TRIGGER_GENERAL_MAX_ALTITUDE] &&
+                if (alarms->triggers->general[TRIGGER_GENERAL_MAX_ALTITUDE] >= 0 &&
                     *sensors->general_air[HOTT_GENERAL_ALTITUDE] >
                         alarms->triggers->general[TRIGGER_GENERAL_MAX_ALTITUDE]) {
                     if (!(warning_latch_mask & (1u << ALARM_VOICE_MAX_ALTITUDE))) {
@@ -1123,7 +1136,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
             }
             if (sensors->general_air[HOTT_GENERAL_TEMP_1]) {
                 packet.temperature1 = *sensors->general_air[HOTT_GENERAL_TEMP_1] + 20;
-                if (alarms->triggers->general[TRIGGER_GENERAL_TEMPERATURE] &&
+                if (alarms->triggers->general[TRIGGER_GENERAL_TEMPERATURE] >= 0 &&
                     *sensors->general_air[HOTT_GENERAL_TEMP_1] >
                         alarms->triggers->general[TRIGGER_GENERAL_TEMPERATURE]) {
                     if (!(warning_latch_mask & (1u << ALARM_VOICE_MAX_SENSOR_1_TEMP))) {
@@ -1153,15 +1166,15 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
         case HOTT_GPS_MODULE_ID: {
             if (!sensors->is_enabled[HOTT_TYPE_GPS]) return;
             hott_sensor_gps_t packet = {0};
-            if (alarms->triggers->gps[TRIGGER_GPS_MIN_SPEED] &&
+            if (alarms->triggers->gps[TRIGGER_GPS_MIN_SPEED] >= 0 &&
                 *sensors->gps[HOTT_GPS_SPEED] < alarms->triggers->gps[TRIGGER_GPS_MIN_SPEED]) {
                 packet.alarmInverse |= 1u << ALARM_BITMASK_GPS_SPEED;
             }
-            if (alarms->triggers->gps[TRIGGER_GPS_MAX_SPEED] &&
+            if (alarms->triggers->gps[TRIGGER_GPS_MAX_SPEED] >= 0 &&
                 *sensors->gps[HOTT_GPS_SPEED] > alarms->triggers->gps[TRIGGER_GPS_MAX_SPEED]) {
                 packet.alarmInverse |= 1u << ALARM_BITMASK_GPS_SPEED;
             }
-            if (alarms->triggers->gps[TRIGGER_GPS_MIN_ALTITUDE] &&
+            if (alarms->triggers->gps[TRIGGER_GPS_MIN_ALTITUDE] >= 0 &&
                 *sensors->gps[HOTT_GPS_ALTITUDE] < alarms->triggers->gps[TRIGGER_GPS_MIN_ALTITUDE]) {
                 if (!(warning_latch_mask & (1u << ALARM_VOICE_MIN_ALTITUDE))) {
                     warning_latch_mask |= 1u << ALARM_VOICE_MIN_ALTITUDE;
@@ -1174,7 +1187,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
 
                 packet.alarmInverse |= 1u << ALARM_BITMASK_GPS_ALTITUDE;
             }
-            if (alarms->triggers->gps[TRIGGER_GPS_MAX_ALTITUDE] &&
+            if (alarms->triggers->gps[TRIGGER_GPS_MAX_ALTITUDE] >= 0 &&
                 *sensors->gps[HOTT_GPS_ALTITUDE] > alarms->triggers->gps[TRIGGER_GPS_MAX_ALTITUDE]) {
                 if (!(warning_latch_mask & (1u << ALARM_VOICE_MAX_ALTITUDE))) {
                     warning_start[ALARM_VOICE_MAX_ALTITUDE] = time_us_32();
@@ -1186,15 +1199,15 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
                 }
                 packet.alarmInverse |= 1u << ALARM_BITMASK_GPS_ALTITUDE;
             }
-            if (alarms->triggers->gps[TRIGGER_GPS_MAX_CLIMB] &&
+            if (alarms->triggers->gps[TRIGGER_GPS_MAX_CLIMB] >= 0 &&
                 fabsf(*sensors->gps[HOTT_GPS_CLIMBRATE]) > alarms->triggers->gps[TRIGGER_GPS_MAX_CLIMB]) {
                 packet.alarmInverse |= 1u << ALARM_BITMASK_GPS_CLIMBRATE;
             }
-            if (alarms->triggers->gps[TRIGGER_GPS_MIN_SATS] &&
+            if (alarms->triggers->gps[TRIGGER_GPS_MIN_SATS] >= 0 &&
                 *sensors->gps[HOTT_GPS_SATS] < alarms->triggers->gps[TRIGGER_GPS_MIN_SATS]) {
                 packet.alarmInverse |= 1u << ALARM_BITMASK_GPS_SATS;
             }
-            if (alarms->triggers->gps[TRIGGER_GPS_MAX_DISTANCE] &&
+            if (alarms->triggers->gps[TRIGGER_GPS_MAX_DISTANCE] >= 0 &&
                 *sensors->gps[HOTT_GPS_DISTANCE] > alarms->triggers->gps[TRIGGER_GPS_MAX_DISTANCE]) {
                 packet.alarmInverse |= 1u << ALARM_BITMASK_GPS_DISTANCE;
             }
@@ -1282,19 +1295,20 @@ static void send_packet(uint8_t *buffer, uint len) {
     }
 }
 
-static void alarms_read(triggers_value_t *triggers_value) { 
+static void alarms_read(triggers_value_t *triggers_value) {
     memcpy(triggers_value->gps, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET), sizeof(triggers_value->gps));
-    memcpy(triggers_value->vario, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 256u), sizeof(triggers_value->vario));
+    memcpy(triggers_value->vario, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 256u),
+           sizeof(triggers_value->vario));
     memcpy(triggers_value->esc, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 512u), sizeof(triggers_value->esc));
-    memcpy(triggers_value->general, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 768u), sizeof(triggers_value->general));
+    memcpy(triggers_value->general, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 768u),
+           sizeof(triggers_value->general));
 }
 
 static void alarms_save(triggers_value_t *triggers_value) {
-    
     uint32_t ints = save_and_disable_interrupts();
 
     flash_range_erase(ALARMS_FLASH_TARGET_OFFSET, FLASH_SECTOR_SIZE);
-    
+
     uint8_t flash[FLASH_PAGE_SIZE];
     memset(flash, 0xFF, sizeof(flash));
     memcpy(flash, triggers_value->gps, sizeof(triggers_value->gps));
