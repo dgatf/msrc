@@ -16,11 +16,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->btUpdate->setDisabled(true);
     enableWidgets(ui->scrollAreaWidgetContentsReceiver, false);
     enableWidgets(ui->scrollAreaWidgetContentsSensors, false);
-    ui->cbEsc->addItems({"Hobbywing V3", "Hobbywing V4/Flyfun (not VBAR firmware)", "PWM", "Castle Link", "Kontronic",
-                         "Kiss", "APD HV", "HobbyWing V5", "Smart ESC/BAT", "OMP M4", "ZTW", "OpenYGE"});
+
+    ui->cbEsc->addItem("Hobbywing V3", ESC_HW3);
+    ui->cbEsc->addItem("Hobbywing V4/Flyfun (not VBAR firmware)", ESC_HW4);
+    ui->cbEsc->addItem("PWM", ESC_PWM);
+    ui->cbEsc->addItem("Castle Link", ESC_CASTLE);
+    ui->cbEsc->addItem("Kontronik", ESC_KONTRONIK);
+    ui->cbEsc->addItem("Kiss", ESC_APD_F);
+    ui->cbEsc->addItem("APD HV", ESC_APD_HV);
+    ui->cbEsc->addItem("HobbyWing V5", ESC_HW5);
+    ui->cbEsc->addItem("Smart ESC/BAT", ESC_SMART);
+    ui->cbEsc->addItem("OMP M4", ESC_OMP_M4);
+    ui->cbEsc->addItem("ZTW", ESC_ZTW);
+    ui->cbEsc->addItem("OpenYGE", ESC_OPENYGE);
 
     ui->cbGpsBaudrate->addItems({"115200", "57600", "38400", "9600"});
-    ui->cbGpsBaudrate->setCurrentIndex(5);
+
     ui->cbReceiver->addItem("Frsky Smartport", RX_SMARTPORT);
     ui->cbReceiver->addItem("Frsky D", RX_FRSKY_D);
     ui->cbReceiver->addItem("Frsky FPort", RX_FPORT);
@@ -40,22 +51,54 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbReceiver->addItem("JR Propo", RX_JR_PROPO);
     ui->cbReceiver->addItem("GHST", RX_GHST);
     ui->cbReceiver->addItem("Serial Monitor", SERIAL_MONITOR);
-    ui->sbEscOffset->setVisible(false);
-    ui->cbCurrentSensorType->addItems({"Hall effect", "Shunt resistor"});
-    ui->cbCurrentAutoOffset->setChecked(true);
-    ui->cbBarometerType->addItems({"BMP280", "MS5611", "BMP180"});
-    ui->cbAltitudeFilter->addItems({"Low", "Medium", "High"});
+
+    ui->cbBarometerType->addItem("BMP280", I2C_BMP280);
+    ui->cbBarometerType->addItem("MS5611", I2C_MS5611);
+    ui->cbBarometerType->addItem("BMP180", I2C_BMP180);
+
+    ui->cbCurrentSensorType->addItem("Hall effect", CURRENT_TYPE_HALL);
+    ui->cbCurrentSensorType->addItem("Shunt resistor", CURRENT_TYPE_SHUNT);
+
+    ui->cbGpsProtocol->addItem("UBLOX", UBLOX);
+    ui->cbGpsProtocol->addItem("NMEA", NMEA);
+
+    ui->cbParity->addItem("None", 0);
+    ui->cbParity->addItem("Odd", 1);
+    ui->cbParity->addItem("Even", 2);
+
+    ui->cbStopbits->addItem("1", 1);
+    ui->cbStopbits->addItem("2", 2);
+
+    ui->cbSerialFormat->addItem("Hex", FORMAT_HEX);
+    ui->cbSerialFormat->addItem("String", FORMAT_STRING);
+
+    ui->cbAltitudeFilter->addItem("Low", 1);
+    ui->cbAltitudeFilter->addItem("Medium", 2);
+    ui->cbAltitudeFilter->addItem("High", 3);
     ui->cbAltitudeFilter->setCurrentIndex(2);
+
+    ui->cbMaxPressure->addItem("< 1 kPa (K = 8192)", 8192);
+    ui->cbMaxPressure->addItem("< 2 kPa (K = 4096)", 4096);
+    ui->cbMaxPressure->addItem("< 4 kPa (K = 2048)", 2048);
+    ui->cbMaxPressure->addItem("< 8 kPa (K = 1024)", 1024);
+    ui->cbMaxPressure->addItem("< 16 kPa (K = 512)", 512);
+    ui->cbMaxPressure->addItem("< 32 kPa (K = 256)", 256);
+    ui->cbMaxPressure->addItem("< 65 kPa (K = 128)", 128);
+    ui->cbMaxPressure->addItem("< 130 kPa (K = 64)", 64);
+    ui->cbMaxPressure->addItem("< 260 kPa (K = 32)", 32);
+    ui->cbMaxPressure->addItem("< 500 kPa (K = 16)", 16);
+    ui->cbMaxPressure->addItem("< 1000 kPa (K = 8)", 8);
+    ui->cbMaxPressure->addItem("> 1000 kPa (K = 4)", 4);
+
+    ui->sbEscOffset->setVisible(false);
+    ui->cbCurrentAutoOffset->setChecked(true);
+
     ui->cbGpsRate->addItems({"1", "5", "10", "20"});
-    ui->cbGpsProtocol->addItems({"UBLOX", "NMEA"});
     ui->cbSpeedUnitsGps->addItems({"km/h", "kts"});
     ui->lbQuiescentVoltage->setText("Zero current output voltage, V<sub>IOUT</sub> (V)");
     ui->cbVarioAutoOffset->setVisible(false);
     ui->cbSerialMonitorGpio->addItems({"1", "5", "6"});
     ui->cbBaudrate->addItems({"115200", "57600", "38400", "19200", "9600", "4800"});
-    ui->cbStopbits->addItems({"1", "2"});
-    ui->cbParity->addItems({"None", "Odd", "Even"});
-    ui->cbSerialFormat->addItems({"Hex", "String"});
     ui->cbLipoType->addItem({"INA3221"});
     ui->cbIna3221Filter->addItem("1", 0B000);
     ui->cbIna3221Filter->addItem("4", 0B001);
@@ -65,10 +108,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->cbIna3221Filter->addItem("256", 0B101);
     ui->cbIna3221Filter->addItem("512", 0B110);
     ui->cbIna3221Filter->addItem("1024", 0B111);
-    ui->cbMaxPressure->addItems({"< 1 kPa (K = 8192)", "< 2 kPa (K = 4096)", "< 4 kPa (K = 2048)", "< 8 kPa (K = 1024)",
-                                 "< 16 kPa (K = 512)", "< 32 kPa (K = 256)", "< 65 kPa (K = 128)", "< 130 kPa (K = 64)",
-                                 "< 260 kPa (K = 32)", "< 500 kPa (K = 16)", "< 1000 kPa (K = 8)",
-                                 "> 1000 kPa (K = 4)"});
 
     ui->cbGyroAccSens->addItems({"2", "4", "8", "16"});
     ui->cbGyroSens->addItems({"250", "500", "1000", "2000"});
@@ -164,7 +203,9 @@ void MainWindow::generateCircuit(QLabel *label) {
     image.load(":/res/rp2040_zero.png");
     paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
 
-    if (ui->cbReceiver->currentText() != "Serial Monitor") {
+    int receiver = ui->cbReceiver->currentData().toInt();
+    int esc = ui->cbEsc->currentData().toInt();
+    if (receiver != SERIAL_MONITOR) {
         if (ui->gbCurrent->isChecked()) {
             image.load(":/res/current_rp2040_zero.png");
             paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
@@ -196,18 +237,18 @@ void MainWindow::generateCircuit(QLabel *label) {
             // ui->lbEscModel->setEnabled(true);
             // ui->lbEscModel->setEnabled(true);
             // ui->gbRpmMultipliers->setEnabled(true);
-            if (ui->cbEsc->currentText() == "Hobbywing V3" ||
-                ui->cbEsc->currentText() == "Hobbywing V4/Flyfun (not VBAR firmware)" ||
-                ui->cbEsc->currentText() == "Kontronic" || ui->cbEsc->currentText() == "Kiss" ||
-                ui->cbEsc->currentText() == "APD HV" || ui->cbEsc->currentText() == "HobbyWing V5" ||
-                ui->cbEsc->currentText() == "OMP M4" || ui->cbEsc->currentText() == "ZTW" ||
-                ui->cbEsc->currentText() == "OpenYGE")
+            if (esc == ESC_HW3 ||
+                esc == ESC_HW4 ||
+                esc == ESC_KONTRONIK || esc == ESC_APD_F ||
+                esc == ESC_APD_HV || esc == ESC_HW5 ||
+                esc == ESC_OMP_M4 || esc == ESC_ZTW ||
+                esc == ESC_OPENYGE)
                 image.load(":/res/esc_rp2040_zero.png");
-            else if (ui->cbEsc->currentText() == "PWM")
+            else if (esc == ESC_PWM)
                 image.load(":/res/pwm_rp2040_zero.png");
-            else if (ui->cbEsc->currentText() == "Castle Link")
+            else if (esc == ESC_CASTLE)
                 image.load(":/res/castle_rp2040_zero.png");
-            else if (ui->cbEsc->currentText() == "Smart ESC/BAT")
+            else if (esc == ESC_SMART)
                 image.load(":/res/smart_esc.png");
             paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         } else {
@@ -238,16 +279,16 @@ void MainWindow::generateCircuit(QLabel *label) {
             paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
 
-        if (ui->cbReceiver->currentText() == "Frsky D" || ui->cbReceiver->currentText() == "ELRS/CRSF" || ui->cbReceiver->currentText() == "Jeti Ex Sensor") {
+        if (receiver == RX_FRSKY_D || receiver == RX_CRSF || receiver == RX_JETIEX_SENSOR) {
             image.load(":/res/receiver_frsky_d_rp2040_zero.png");
-        } else if (ui->cbReceiver->currentText() == "Spektrum XBUS") {
+        } else if (receiver == RX_XBUS) {
             image.load(":/res/receiver_xbus_rp2040_zero.png");
-        } else if (ui->cbReceiver->currentText() == "Hitec") {
+        } else if (receiver == RX_HITEC) {
             image.load(":/res/receiver_hitec_rp2040_zero.png");
         } else {
             image.load(":/res/receiver_serial_rp2040_zero.png");
         }
-        if (ui->cbReceiver->currentText() == "Spektrum XBUS" && ui->cbClockStretch->isChecked() == true) {
+        if (receiver == RX_XBUS && ui->cbClockStretch->isChecked() == true) {
             image.load(":/res/clock_stretch_xbus_rp2040_zero.png");
             paint.drawImage(QPoint(0, 0), image.scaled(size, Qt::IgnoreAspectRatio));
         }
@@ -483,16 +524,13 @@ void MainWindow::setUiFromConfig() {
     else
         ui->cbBaudrate->setCurrentIndex(item);
     if (config.serial_monitor_parity > 2) config.serial_monitor_parity = 0;
-    ui->cbParity->setCurrentIndex(config.serial_monitor_parity);
+    ui->cbParity->setCurrentIndex(ui->cbParity->findData(config.serial_monitor_parity));
     if (config.serial_monitor_stop_bits > 2 || config.serial_monitor_stop_bits < 1) config.serial_monitor_stop_bits = 1;
-    ui->cbStopbits->setCurrentIndex(config.serial_monitor_stop_bits - 1);
+    ui->cbStopbits->setCurrentIndex(ui->cbStopbits->findData(config.serial_monitor_stop_bits));
     if (config.serial_monitor_timeout_ms > 100) config.serial_monitor_timeout_ms = 100;
     ui->sbTimeout->setValue(config.serial_monitor_timeout_ms);
     ui->cbInverted->setChecked(config.serial_monitor_inverted);
-    if (config.serial_monitor_format == FORMAT_HEX)
-        ui->cbSerialFormat->setCurrentText("Hex");
-    else
-        ui->cbSerialFormat->setCurrentText("String");
+    ui->cbSerialFormat->setCurrentIndex(ui->cbSerialFormat->findData(config.serial_monitor_format));
 
     /* Sensors */
 
@@ -502,7 +540,7 @@ void MainWindow::setUiFromConfig() {
         ui->gbEsc->setChecked(false);
     else {
         ui->gbEsc->setChecked(true);
-        ui->cbEsc->setCurrentIndex(config.esc_protocol - 1);
+        ui->cbEsc->setCurrentIndex(ui->cbEsc->findData(config.esc_protocol));
     }
 
     // GPS
@@ -510,7 +548,7 @@ void MainWindow::setUiFromConfig() {
     ui->gbGps->setChecked(config.enable_gps);
     ui->cbGpsBaudrate->setCurrentText(QString::number(config.gps_baudrate));
     ui->cbGpsRate->setCurrentText(QString::number(config.gps_rate));
-    ui->cbGpsProtocol->setCurrentIndex(config.gps_protocol);
+    ui->cbGpsProtocol->setCurrentIndex(ui->cbGpsProtocol->findData(config.gps_protocol));
     ui->cbDynModel->setCurrentIndex(
         ui->cbDynModel->findData(config.gps_dynmodel)
     );
@@ -538,7 +576,7 @@ void MainWindow::setUiFromConfig() {
     // Current
 
     ui->gbCurrent->setChecked(config.enable_analog_current);
-    ui->cbCurrentSensorType->setCurrentIndex(config.analog_current_type);
+    ui->cbCurrentSensorType->setCurrentIndex(ui->cbCurrentSensorType->findData(config.analog_current_type));
     ui->cbCurrentAutoOffset->setChecked(config.analog_current_autoffset);
     ui->sbQuiescentVoltage->setValue(config.analog_current_quiescent_voltage);
     if (config.analog_current_type == analog_current_type_t::CURRENT_TYPE_HALL)
@@ -558,11 +596,11 @@ void MainWindow::setUiFromConfig() {
         ui->gbAltitude->setChecked(false);
     else
         ui->gbAltitude->setChecked(true);
-    ui->cbBarometerType->setCurrentIndex(config.i2c_module - 1);
-    ui->cbAltitudeFilter->setCurrentIndex(config.bmp280_filter - 1);
+    ui->cbBarometerType->setCurrentIndex(ui->cbBarometerType->findData(config.i2c_module));
+    ui->cbAltitudeFilter->setCurrentIndex(ui->cbAltitudeFilter->findData(config.bmp280_filter));
     ui->cbVarioAutoOffset->setChecked(config.vario_auto_offset);
-    uint vSpeedIndex = ui->cbVSpeedInterval->findData(config.vario_vspeed_interval) == -1 ? 0 : ui->cbVSpeedInterval->findData(config.vario_vspeed_interval);
-    ui->cbVSpeedInterval->setCurrentIndex(vSpeedIndex);
+    int vSpeedIndex = ui->cbVSpeedInterval->findData(config.vario_vspeed_interval);
+    ui->cbVSpeedInterval->setCurrentIndex(vSpeedIndex == -1 ? 0 : vSpeedIndex);
 
     // Refresh rate
 
@@ -653,30 +691,7 @@ void MainWindow::setUiFromConfig() {
     // Fuel pressure
 
     ui->gbFuelPressure->setChecked(config.enable_fuel_pressure);
-    if (config.xgzp68xxd_k == 8192)
-        ui->cbMaxPressure->setCurrentIndex(0);
-    else if (config.xgzp68xxd_k == 4096)
-        ui->cbMaxPressure->setCurrentIndex(1);
-    else if (config.xgzp68xxd_k == 2048)
-        ui->cbMaxPressure->setCurrentIndex(2);
-    else if (config.xgzp68xxd_k == 1024)
-        ui->cbMaxPressure->setCurrentIndex(3);
-    else if (config.xgzp68xxd_k == 512)
-        ui->cbMaxPressure->setCurrentIndex(4);
-    else if (config.xgzp68xxd_k == 256)
-        ui->cbMaxPressure->setCurrentIndex(5);
-    else if (config.xgzp68xxd_k == 128)
-        ui->cbMaxPressure->setCurrentIndex(6);
-    else if (config.xgzp68xxd_k == 64)
-        ui->cbMaxPressure->setCurrentIndex(7);
-    else if (config.xgzp68xxd_k == 32)
-        ui->cbMaxPressure->setCurrentIndex(8);
-    else if (config.xgzp68xxd_k == 16)
-        ui->cbMaxPressure->setCurrentIndex(9);
-    else if (config.xgzp68xxd_k == 8)
-        ui->cbMaxPressure->setCurrentIndex(10);
-    else
-        ui->cbMaxPressure->setCurrentIndex(11);
+    ui->cbMaxPressure->setCurrentIndex(ui->cbMaxPressure->findData(config.xgzp68xxd_k));
 
     // GPIOs
     ui->cbGpio17->setChecked(config.gpio_mask & 1);
@@ -723,23 +738,18 @@ void MainWindow::getConfigFromUi() {
 
     config.serial_monitor_baudrate = ui->cbBaudrate->currentText().toInt();
     config.serial_monitor_gpio = ui->cbSerialMonitorGpio->currentText().toInt();
-    config.serial_monitor_stop_bits = ui->cbStopbits->currentText().toInt();
-    if (ui->cbParity->currentText() == "None")
-        config.serial_monitor_parity = 0;
-    else if (ui->cbParity->currentText() == "Odd")
-        config.serial_monitor_parity = 1;
-    else
-        config.serial_monitor_parity = 2;
+    config.serial_monitor_stop_bits = ui->cbStopbits->currentData().toInt();
+    config.serial_monitor_parity = ui->cbParity->currentData().toUInt();
     config.serial_monitor_timeout_ms = ui->sbTimeout->value();
     config.serial_monitor_inverted = ui->cbInverted->isChecked();
-    config.serial_monitor_format = ui->cbSerialFormat->currentText() == "Hex" ? FORMAT_HEX : FORMAT_STRING;
+    config.serial_monitor_format =(serial_monitor_format_t)(ui->cbSerialFormat->currentData().toUInt());
 
     /* Sensors */
 
     // ESC
 
     if (ui->gbEsc->isChecked())
-        config.esc_protocol = (esc_protocol_t)(ui->cbEsc->currentIndex() + 1);
+        config.esc_protocol = (esc_protocol_t)ui->cbEsc->currentData().toInt();
     else
         config.esc_protocol = esc_protocol_t::ESC_NONE;
 
@@ -748,7 +758,7 @@ void MainWindow::getConfigFromUi() {
     config.enable_gps = ui->gbGps->isChecked();
     config.gps_baudrate = ui->cbGpsBaudrate->currentText().toInt();
     config.gps_rate = ui->cbGpsRate->currentText().toInt();
-    config.gps_protocol = ui->cbGpsProtocol->currentIndex();
+    config.gps_protocol = ui->cbGpsProtocol->currentData().toUInt();
     config.gps_dynmodel = ui->cbDynModel->currentData().toUInt();
 
     // Voltage
@@ -760,9 +770,9 @@ void MainWindow::getConfigFromUi() {
     // Current
 
     config.enable_analog_current = ui->gbCurrent->isChecked();
-    config.analog_current_type = (analog_current_type_t)ui->cbCurrentSensorType->currentIndex();
+    config.analog_current_type = (analog_current_type_t)ui->cbCurrentSensorType->currentData().toInt();
     config.analog_current_quiescent_voltage = ui->sbQuiescentVoltage->value();
-    if (ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_HALL) {
+    if (ui->cbCurrentSensorType->currentData().toInt() == CURRENT_TYPE_HALL) {
         if (ui->cbCurrentAutoOffset->isChecked()) {
             config.analog_current_autoffset = true;
             config.analog_current_offset = 0;
@@ -771,7 +781,7 @@ void MainWindow::getConfigFromUi() {
             config.analog_current_offset = ui->sbQuiescentVoltage->value();
         }
         config.analog_current_multiplier = 1000 / ui->sbCurrentSens->value();
-    } else if (ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_SHUNT) {
+    } else if (ui->cbCurrentSensorType->currentData().toInt() == CURRENT_TYPE_SHUNT) {
         config.analog_current_autoffset = false;
         config.analog_current_offset = 0;
         config.analog_current_multiplier = ui->sbAnalogCurrentMultiplier->value();
@@ -791,10 +801,10 @@ void MainWindow::getConfigFromUi() {
     // Vario
 
     if (ui->gbAltitude->isChecked())
-        config.i2c_module = (i2c_module_t)(ui->cbBarometerType->currentIndex() + 1);
+        config.i2c_module = (i2c_module_t)(ui->cbBarometerType->currentData().toInt());
     else
         config.i2c_module = i2c_module_t::I2C_NONE;
-    config.bmp280_filter = ui->cbAltitudeFilter->currentIndex() + 1;
+    config.bmp280_filter = ui->cbAltitudeFilter->currentData().toUInt();
     config.vario_auto_offset = ui->cbVarioAutoOffset->isChecked();
 
     config.vario_vspeed_interval =  ui->cbVSpeedInterval->currentData().toUInt();
@@ -885,30 +895,7 @@ void MainWindow::getConfigFromUi() {
     // Fuel pressure
 
     config.enable_fuel_pressure = ui->gbFuelPressure->isChecked();
-    if (ui->cbMaxPressure->currentIndex() == 0)
-        config.xgzp68xxd_k = 8192;
-    else if (ui->cbMaxPressure->currentIndex() == 1)
-        config.xgzp68xxd_k = 4096;
-    else if (ui->cbMaxPressure->currentIndex() == 2)
-        config.xgzp68xxd_k = 2048;
-    else if (ui->cbMaxPressure->currentIndex() == 3)
-        config.xgzp68xxd_k = 1024;
-    else if (ui->cbMaxPressure->currentIndex() == 4)
-        config.xgzp68xxd_k = 512;
-    else if (ui->cbMaxPressure->currentIndex() == 5)
-        config.xgzp68xxd_k = 256;
-    else if (ui->cbMaxPressure->currentIndex() == 6)
-        config.xgzp68xxd_k = 128;
-    else if (ui->cbMaxPressure->currentIndex() == 7)
-        config.xgzp68xxd_k = 64;
-    else if (ui->cbMaxPressure->currentIndex() == 8)
-        config.xgzp68xxd_k = 32;
-    else if (ui->cbMaxPressure->currentIndex() == 9)
-        config.xgzp68xxd_k = 16;
-    else if (ui->cbMaxPressure->currentIndex() == 10)
-        config.xgzp68xxd_k = 8;
-    else
-        config.xgzp68xxd_k = 4;
+    config.xgzp68xxd_k = ui->cbMaxPressure->currentData().toUInt();
 
     // GPIOs
     config.gpio_mask = ui->cbGpio17->isChecked();
@@ -928,7 +915,7 @@ void MainWindow::getConfigFromUi() {
     // config.mpu6050_rate = ui->cbGyroSamplerate->currentText().toInt();
 
     // INA3221 (lipo)
-    config.ina3221_filter = ui->cbIna3221Filter->itemData(ui->cbIna3221Filter->currentIndex()).toUInt();
+    config.ina3221_filter = ui->cbIna3221Filter->currentData().toUInt();
     config.lipo_cells = ui->sbLipoCells->value();
     config.enable_lipo = ui->gbLipo->isChecked();
     config.lipo_current = ui->ckLipoCurrent->isChecked();
@@ -1001,14 +988,16 @@ void MainWindow::enableWidgets(QWidget *widget, bool enable) {
     foreach (child, widgets) child->setEnabled(enable);
 }
 
-void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
-    if (arg1 == "Spektrum XBUS") {
+void MainWindow::on_cbReceiver_currentIndexChanged(int index)
+{
+    int value = ui->cbReceiver->itemData(index).toInt();
+    if (value == RX_XBUS) {
         ui->cbClockStretch->setVisible(true);
     } else {
         ui->cbClockStretch->setVisible(false);
     }
 
-    if (arg1 == "Spektrum SRXL2") {
+    if (value == RX_SRXL2) {
         ui->lbSensorIdSrxl2->setVisible(true);
         ui->sbSensorIdSrxl2->setVisible(true);
     } else {
@@ -1016,31 +1005,31 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->sbSensorIdSrxl2->setVisible(false);
     }
 
-    if (arg1 == "Spektrum XBUS" || arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2") {
+    if (value == RX_XBUS || value == RX_SRXL || value == RX_SRXL2) {
         ui->cbAlternativePacket->setVisible(true);
     } else {
         ui->cbAlternativePacket->setVisible(false);
     }
 
-    if (arg1 == "Frsky Smartport" || arg1 == "Frsky D" || arg1 == "Frsky FPort" || arg1 == "Frsky FBUS") {
+    if (value == RX_SMARTPORT || value == RX_FRSKY_D || value == RX_FPORT || value == RX_FBUS) {
         ui->gbRate->setVisible(true);
     } else {
         ui->gbRate->setVisible(false);
     }
 
-    if (arg1 == "Frsky FPort") {
+    if (value == RX_FPORT) {
         ui->cbFPortInverted->setVisible(true);
     } else {
         ui->cbFPortInverted->setVisible(false);
     }
 
-    if (arg1 == "Frsky FBUS") {
+    if (value == RX_FBUS) {
         ui->cbFbusInverted->setVisible(true);
     } else {
         ui->cbFbusInverted->setVisible(false);
     }
 
-    if (arg1 == "Frsky Smartport" || arg1 == "Frsky FBUS") {
+    if (value == RX_SMARTPORT || value == RX_FBUS) {
         ui->lbSensorId->setVisible(true);
         ui->sbSensorId->setVisible(true);
     } else {
@@ -1048,13 +1037,13 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->sbSensorId->setVisible(false);
     }
 
-    if (arg1 == "Flysky IBUS") {
+    if (value == RX_IBUS) {
         ui->cbAlternativeCoordinates->setVisible(true);
     } else {
         ui->cbAlternativeCoordinates->setVisible(false);
     }
 
-    if (arg1 == "Jeti Ex Bus" || arg1 == "Jeti Ex Sensor") {
+    if (value == RX_JETIEX || value == RX_JETIEX_SENSOR) {
         ui->cbSpeedUnitsGps->setVisible(true);
         ui->lbSpeedUnitsGps->setVisible(true);
         ui->lbSensorIdJeti->setVisible(true);
@@ -1066,7 +1055,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->sbSensorIdJeti->setVisible(false);
     }
 
-    if (arg1 == "Futaba SBUS2") {
+    if (value == RX_SBUS) {
         ui->ckSbusBattery->setVisible(true);
         ui->ckSbusExtVolt->setVisible(true);
     } else {
@@ -1074,7 +1063,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->ckSbusExtVolt->setVisible(false);
     }
 
-    if (arg1 == "Serial Monitor") {
+    if (value == SERIAL_MONITOR) {
         ui->cbBaudrate->setVisible(true);
         ui->cbStopbits->setVisible(true);
         ui->cbParity->setVisible(true);
@@ -1109,44 +1098,44 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     }
 
     // Fuel meter
-    if (arg1 == "Frsky Smartport" || arg1 == "Jeti Ex Bus" || arg1 == "Jeti Ex Sensor" || arg1 == "Spektrum XBUS" ||
-        arg1 == "HOTT" || arg1 == "Frsky FPort" || arg1 == "Frsky FBUS") {
+    if (value == RX_SMARTPORT || value == RX_JETIEX || value == RX_JETIEX_SENSOR || value == RX_XBUS ||
+        value == RX_HOTT || value == RX_FPORT || value == RX_FBUS) {
         ui->gbFuelmeter->setVisible(true);
     } else {
         ui->gbFuelmeter->setVisible(false);
     }
 
     // Fuel pressure
-    if (arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2" || arg1 == "Jeti Ex Bus" || arg1 == "Jeti Ex Sensor" ||
-        arg1 == "Spektrum XBUS" || arg1 == "HOTT") {
+    if (value == RX_SRXL || value == RX_SRXL2 || value == RX_JETIEX || value == RX_JETIEX_SENSOR ||
+        value == RX_XBUS || value == RX_HOTT) {
         ui->gbFuelPressure->setVisible(true);
     } else {
         ui->gbFuelPressure->setVisible(false);
     }
 
     // GPIO
-    if (arg1 == "Frsky Smartport" || arg1 == "Frsky FPort" || arg1 == "Frsky FBUS") {
+    if (value == RX_SMARTPORT || value == RX_FPORT || value == RX_FBUS) {
         ui->gbGpio->setVisible(true);
     } else {
         ui->gbGpio->setVisible(false);
     }
 
     // Airspeed
-    if (arg1 == "Sanwa" || arg1 == "GHST") {
+    if (value == RX_SANWA || value == RX_GHST) {
         ui->gbAirspeed->setVisible(false);
     } else {
         ui->gbAirspeed->setVisible(true);
     }
 
     // Temperature
-    if (arg1 == "GHST") {
+    if (value == RX_GHST) {
         ui->gbTemp1->setVisible(false);
     } else {
         ui->gbTemp1->setVisible(true);
     }
 
     // GPS, current, vario
-    if (arg1 == "Sanwa") {
+    if (value == RX_SANWA) {
         ui->gbGps->setVisible(false);
         ui->gbCurrent->setVisible(false);
         ui->gbAltitude->setVisible(false);
@@ -1157,14 +1146,14 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     }
 
     // Lipo
-    if (arg1 == "ELRS/CRSF" || arg1 == "Frsky Smartport" || arg1 == "Frsky FPort" || arg1 == "Frsky FBUS" || arg1 == "HOTT" || arg1 == "JetiEx Bus" || arg1 == "JetiEx Bus" || arg1 == "JetiEx Sensor" || arg1 == "Spektrum SRXL" || arg1 == "Spektrum SRXL2") {
+    if (value == RX_CRSF || value == RX_SMARTPORT || value == RX_FPORT || value == RX_FBUS || value == RX_HOTT || value == RX_JETIEX || value == RX_JETIEX_SENSOR || value == RX_SRXL || value == RX_SRXL2) {
         ui->gbLipo->setVisible(true);
     } else {
         ui->gbLipo->setVisible(false);
     }
 
     // Average elements
-    if (arg1 == "Sanwa") {
+    if (value == RX_SANWA) {
         ui->lbRpmAvg->setVisible(true);
         ui->sbRpmAvg->setVisible(true);
         ui->lbVoltageAvg->setVisible(true);
@@ -1177,7 +1166,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
         ui->sbVarioAvg->setVisible(false);
         ui->lbAirspeedAvg->setVisible(false);
         ui->sbAirspeedAvg->setVisible(false);
-    } else if (arg1 == "GHST") {
+    } else if (value == RX_GHST) {
         ui->lbRpmAvg->setVisible(false);
         ui->sbRpmAvg->setVisible(false);
         ui->lbVoltageAvg->setVisible(true);
@@ -1206,7 +1195,7 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     }
 
     // Vario
-    if (arg1 == "Spectrum XBUS" || arg1 == "HOTT") {
+    if (value == RX_XBUS || value == RX_HOTT) {
         ui->lbVSpeedInterval->setVisible(false);
         ui->cbVSpeedInterval->setVisible(false);
     } else {
@@ -1216,12 +1205,14 @@ void MainWindow::on_cbReceiver_currentTextChanged(const QString &arg1) {
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbEsc_currentTextChanged(const QString &arg1) {
-    if (arg1 == "Smart ESC/BAT")
+void MainWindow::on_cbEsc_currentIndexChanged(int index)
+{
+    int value = ui->cbEsc->itemData(index).toInt();
+    if (value == ESC_SMART)
         ui->cbCalculateConsumption->setVisible(true);
     else
         ui->cbCalculateConsumption->setVisible(false);
-    if (arg1 == "Hobbywing V4/Flyfun (not VBAR firmware)") {
+    if (value == ESC_HW4) {
         ui->gbEscParameters->setVisible(true);
         ui->cbPwmOut->setVisible(true);
         ui->cbHw4AutoDetect->setVisible(true);
@@ -1258,8 +1249,10 @@ void MainWindow::on_gbCurrent_toggled(bool enabled) {
     generateCircuit(ui->lbCircuit);
 }
 
-void MainWindow::on_cbBarometerType_currentTextChanged(const QString &arg1) {
-    if (arg1 == "BMP280") {
+void MainWindow::on_cbBarometerType_currentIndexChanged(int index)
+{
+    int value = ui->cbBarometerType->itemData(index).toInt();
+    if (value == I2C_BMP280) {
         ui->cbAltitudeFilter->setVisible(true);
         ui->lbAltitudeFilter->setVisible(true);
     } else {
@@ -1296,14 +1289,16 @@ void MainWindow::on_cbCurrentAutoOffset_toggled(bool checked) {
     if (checked) {
         ui->lbQuiescentVoltage->setVisible(false);
         ui->sbQuiescentVoltage->setVisible(false);
-    } else if (ui->cbCurrentSensorType->currentIndex() == analog_current_type_t::CURRENT_TYPE_HALL) {
+    } else if (ui->cbCurrentSensorType->currentData().toInt() == analog_current_type_t::CURRENT_TYPE_HALL) {
         ui->lbQuiescentVoltage->setVisible(true);
         ui->sbQuiescentVoltage->setVisible(true);
     }
 }
 
-void MainWindow::on_cbCurrentSensorType_currentTextChanged(const QString &arg1) {
-    if (arg1 == "Hall effect") {
+void MainWindow::on_cbCurrentSensorType_currentIndexChanged(int index)
+{
+    int value = ui->cbCurrentSensorType->itemData(index).toInt();
+    if (value == CURRENT_TYPE_HALL) {
         ui->cbCurrentAutoOffset->setVisible(true);
         ui->lbCurrentSens->setVisible(true);
         ui->sbCurrentSens->setVisible(true);
@@ -1317,7 +1312,7 @@ void MainWindow::on_cbCurrentSensorType_currentTextChanged(const QString &arg1) 
             ui->sbQuiescentVoltage->setVisible(true);
         }
     }
-    if (arg1 == "Shunt resistor") {
+    if (value == CURRENT_TYPE_SHUNT) {
         ui->cbCurrentAutoOffset->setVisible(false);
         ui->lbCurrentSens->setVisible(false);
         ui->sbCurrentSens->setVisible(false);
@@ -1375,3 +1370,5 @@ void MainWindow::on_ckLipoCurrent_toggled(bool enabled)
     ui->lbLipoShunt->setVisible(enabled);
     ui->sbLipoShunt->setVisible(enabled);
 }
+
+
