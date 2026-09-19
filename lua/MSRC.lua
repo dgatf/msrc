@@ -1,6 +1,6 @@
 local toolName = "TNS|MSRC config|TNE"
 
-local scriptVersion = "v1.4"
+local scriptVersion = "v1.5"
 
 local statusEnum = {
 	start = 1,
@@ -27,6 +27,7 @@ local pageEnum = {
 	analogCurr = 12,
 	analogAirspeed = 13,
 	gyro = 14,
+	lipo = 15,
 }
 local varEnum = {
 	str = 1,
@@ -65,6 +66,7 @@ local pageName = {
 	"Current analog",
 	"Airspeed analog",
     "Gyro",
+	"Lipo",
 }
 
 -- Page 1 - SensorId
@@ -110,7 +112,7 @@ local escProtocolStr = {
 	"ZTW",
     "OpenYGE",
 }
-local escProtocol = { "Protocol", nil, 0, 11, 1, 0x5103, escProtocolStr }
+local escProtocol = { "Protocol", nil, 0, 12, 1, 0x5103, escProtocolStr }
 local hw4InitDelay = { "Init Delay", nil, 0, 1, 1, 0x512E, onOffStr }
 local hw4AutoDetect = { "Auto detect", nil, 0, 1, 1, 0x514B, onOffStr }
 local hw4VoltMult = { "Volt mult", nil, 0, 100000, 1, 0x5131 }
@@ -204,6 +206,16 @@ local gyroGyroSens = { "Gyro sens", nil, 0, 3, 1, 0x514D, { 250, 500, 1000, 2000
 local gyroGyroWeight = { "Gyro weight", nil, 0, 100, 1, 0x514E }
 local gyroFilter = { "Filter", nil, 0, 6, 1, 0x5151 }
 vars[pageEnum.gyro] = { gyro, gyroAccSens, gyroGyroSens, gyroGyroWeight, gyroFilter }
+
+ -- str, val, min, max, incr, dataId
+
+-- Page 15 - Lipo
+local lipo = { "Enable", nil, 0, 1, 1, 0x5150, onOffStr }
+local lipoCells = { "Cells", nil, 1, 6, 1, 0x5152 }
+local lipoFilter = { "Filter", nil, 0, 7, 1, 0x510B, { 1, 4, 16, 64, 128, 256, 512, 1024 } }
+local lipoCurr = { "Current", nil, 0, 1, 1, 0x5156, onOffStr }
+local lipoShunt = { "Shunt(mOhm)", nil, 1, 100, 1, 0x5157 }
+vars[pageEnum.lipo] = { lipo, lipoCells, lipoFilter, lipoCurr, lipoShunt }
 
 local function getTextFlags(item)
 	local value = 0

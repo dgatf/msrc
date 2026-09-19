@@ -378,6 +378,21 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
             case 0x5154:
                 packet.value = config->gps_dynmodel;
                 break;
+            case 0x510B:
+                packet.value = config->ina3221_filter;
+                break;
+            case 0x5150:
+                packet.value = config->enable_lipo;
+                break;
+            case 0x5152:
+                packet.value = config->lipo_cells;
+                break;
+            case 0x5156:
+                packet.value = config->lipo_current;
+                break;
+            case 0x5157:
+                packet.value = config->lipo_current_shunt;
+                break;
             default:
                 send = false;
                 debug("\nSmartport. Unknown request frameId 0x%X dataId 0x%X", frame_id, data_id);
@@ -605,6 +620,21 @@ smartport_packet_t smartport_process_packet(smartport_parameters_t *parameter, u
                 break;
             case 0x5154:
                 config_lua->gps_dynmodel = value;
+                break;
+            case 0x510B:
+                config_lua->ina3221_filter = value;
+                break;
+            case 0x5150:
+                config_lua->enable_lipo = value;
+                break;
+            case 0x5152:
+                config_lua->lipo_cells = value;
+                break;
+            case 0x5156:
+                config_lua->lipo_current = value;
+                break;
+            case 0x5157:
+                config_lua->lipo_current_shunt = value;
                 break;
             default:
                 debug("\nSmartport. Unknown save request. frameId 0x%X dataId 0x%X", frame_id, data_id);
@@ -1991,6 +2021,24 @@ void smartport_set_config(smartport_parameters_t *parameter) {
             for (uint i = 0; i < cells_first; i++) {
                 parameter_sensor_cell.cell_voltage[i] = parameter.cell[i];
             }
+            if (parameter.measure_current) {
+                smartport_sensor_parameters_t parameter_sensor;
+                parameter_sensor.data_id = CURR_FIRST_ID + 2;
+                parameter_sensor.value = parameter.current;
+                parameter_sensor.rate = config->refresh_rate_current;
+                xTaskCreate(smartport_sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3,
+                            &task_handle);
+                ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+                smartport_sensor_double_parameters_t parameter_sensor_double;
+                parameter_sensor_double.data_id = ESC_RPM_CONS_FIRST_ID + 1;
+                parameter_sensor_double.value_l = NULL;
+                parameter_sensor_double.value_h = parameter.consumption;
+                parameter_sensor_double.rate = config->refresh_rate_consumption;
+                xTaskCreate(smartport_sensor_double_task, "sensor_task", STACK_SENSOR_SMARTPORT_DOUBLE,
+                            (void *)&parameter_sensor_double, 3, &task_handle);
+                ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+            }
         }
 
         // --- Second INA3221: cells 3–5 ----------------------------------------
@@ -2000,13 +2048,13 @@ void smartport_set_config(smartport_parameters_t *parameter) {
             ina3221_parameters_t parameter = {
                 .i2c_address = 0x41,
                 .filter = config->ina3221_filter,
-                .cell_count = MIN(config->lipo_cells, 3),
+                .cell_count = cells_second,
                 .measure_current = config->lipo_current,
                 .shunt_resistor = config->lipo_current_shunt,
                 .cell[0] = malloc(sizeof(float)),
                 .cell[1] = malloc(sizeof(float)),
                 .cell[2] = malloc(sizeof(float)),
-                .cell_prev = malloc(sizeof(float)),
+                .cell_prev = cell_prev,
                 .current = malloc(sizeof(float)),
                 .consumption = malloc(sizeof(float)),
             };
@@ -2017,6 +2065,25 @@ void smartport_set_config(smartport_parameters_t *parameter) {
             // Store cell pointers for SmartPort
             for (uint i = 0; i < cells_second; i++) {
                 parameter_sensor_cell.cell_voltage[i + 3] = parameter.cell[i];
+            }
+
+            if (parameter.measure_current) {
+                smartport_sensor_parameters_t parameter_sensor;
+                parameter_sensor.data_id = CURR_FIRST_ID + 2;
+                parameter_sensor.value = parameter.current;
+                parameter_sensor.rate = config->refresh_rate_current;
+                xTaskCreate(smartport_sensor_task, "sensor_task", STACK_SENSOR_SMARTPORT, (void *)&parameter_sensor, 3,
+                            &task_handle);
+                ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+                smartport_sensor_double_parameters_t parameter_sensor_double;
+                parameter_sensor_double.data_id = ESC_RPM_CONS_FIRST_ID + 1;
+                parameter_sensor_double.value_l = NULL;
+                parameter_sensor_double.value_h = parameter.consumption;
+                parameter_sensor_double.rate = config->refresh_rate_consumption;
+                xTaskCreate(smartport_sensor_double_task, "sensor_task", STACK_SENSOR_SMARTPORT_DOUBLE,
+                            (void *)&parameter_sensor_double, 3, &task_handle);
+                ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
             }
         }
 
