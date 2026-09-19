@@ -187,6 +187,7 @@
 #define ALARM_VOICE_MAX_ALTITUDE 0x1A
 
 #define HOTT_MENU_ROWS 7
+#define HOTT_ALARMS_MAGIC 0x484F5454u
 
 typedef enum alarm_vario_t {
     ALARM_BITMASK_VARIO_ALTITUDE = 0,
@@ -504,6 +505,7 @@ typedef struct hott_sensors_t {
 
 typedef struct trigger_t {
     float value;
+    float min;
     float max;
     float incr;
     char str[21];
@@ -589,7 +591,7 @@ static void format_binary_packet(triggers_t *alarms, hott_sensors_t *sensors, ui
 static void format_text_packet(triggers_t *alarms, hott_sensors_t *sensors, uint8_t sensor_id, uint8_t key);
 static void send_packet(uint8_t *buffer, uint len);
 static void alarms_save(triggers_value_t *module_alarms);
-static void alarms_read(triggers_value_t *triggers_value);
+static void alarms_read(triggers_value_t *triggers_value, triggers_menu_t *pages);
 static uint8_t get_crc(const uint8_t *buffer, uint len);
 static void set_config(hott_sensors_t *sensors);
 static int64_t interval_1000_callback(alarm_id_t id, void *parameters);
@@ -599,37 +601,38 @@ static int64_t interval_10000_callback(alarm_id_t id, void *parameters);
 void hott_task(void *parameters) {
     hott_sensors_t sensors = {0};
     char *warning_values[] = {"Yes", "10s"};
-    triggers_menu_t pages = {.gps = {{.max = 200, .incr = 1, .str = "Speed Min", .values = NULL},
-                                     {.max = 200, .incr = 1, .str = "Speed Max", .values = NULL},
-                                     {.max = 5000, .incr = 1, .str = "Alt Min", .values = NULL},
-                                     {.max = 5000, .incr = 1, .str = "Alt Max", .values = NULL},
-                                     {.max = 200, .incr = 1, .str = "Vspd Max", .values = NULL},
-                                     {.max = 20, .incr = 1, .str = "Sats Min", .values = NULL},
-                                     {.max = 20000, .incr = 10, .str = "Dist Max", .values = NULL},
-                                     {.max = 1, .incr = 1, .str = "Warning", .values = warning_values}},
-                             .vario = {{.max = 5000, .incr = 1, .str = "Alt Min", .values = NULL},
-                                       {.max = 5000, .incr = 1, .str = "Alt Max", .values = NULL},
-                                       {.max = 200, .incr = 1, .str = "Vspd Max", .values = NULL},
-                                       {.max = 1, .incr = 1, .str = "Warning", .values = warning_values}},
-                             .esc = {{.max = 30000, .incr = 10, .str = "Cons Max", .values = NULL},
-                                     {.max = 100, .incr = 1, .str = "Temp Max", .values = NULL},
-                                     {.max = 20000, .incr = 10, .str = "RPM Min", .values = NULL},
-                                     {.max = 20000, .incr = 10, .str = "RPM Max", .values = NULL},
-                                     {.max = 100, .incr = 0.1, .str = "Volt Min", .values = NULL},
-                                     {.max = 300, .incr = 1, .str = "Curr Max", .values = NULL},
-                                     {.max = 1, .incr = 1, .str = "Warning", .values = warning_values},
-                                     {.max = 1, .incr = 1, .str = "Warning Cons", .values = warning_values}},
-                             .general = {{.max = 100, .incr = 0.1, .str = "Volt Min", .values = NULL},
-                                         {.max = 30000, .incr = 10, .str = "Cons Max", .values = NULL},
-                                         {.max = 100, .incr = 1, .str = "Temp Max", .values = NULL},
-                                         {.max = 5000, .incr = 1, .str = "Alt Min", .values = NULL},
-                                         {.max = 5000, .incr = 1, .str = "Alt Max", .values = NULL},
-                                         {.max = 300, .incr = 0.1, .str = "Curr Max", .values = NULL},
-                                         {.max = 1, .incr = 1, .str = "Warning", .values = warning_values},
-                                         {.max = 1, .incr = 1, .str = "Warning Cons", .values = warning_values}}};
+    triggers_menu_t pages = {
+        .gps = {{.min = 0, .max = 200, .incr = 1, .str = "Speed Min", .values = NULL},
+                {.min = 0, .max = 200, .incr = 1, .str = "Speed Max", .values = NULL},
+                {.min = 0, .max = 5000, .incr = 1, .str = "Alt Min", .values = NULL},
+                {.min = 0, .max = 5000, .incr = 1, .str = "Alt Max", .values = NULL},
+                {.min = 0, .max = 200, .incr = 1, .str = "Vspd Max", .values = NULL},
+                {.min = 0, .max = 20, .incr = 1, .str = "Sats Min", .values = NULL},
+                {.min = 0, .max = 20000, .incr = 10, .str = "Dist Max", .values = NULL},
+                {.min = 0, .max = 1, .incr = 1, .str = "Warning", .values = warning_values}},
+        .vario = {{.min = 0, .max = 5000, .incr = 1, .str = "Alt Min", .values = NULL},
+                  {.min = 0, .max = 5000, .incr = 1, .str = "Alt Max", .values = NULL},
+                  {.min = 0, .max = 200, .incr = 1, .str = "Vspd Max", .values = NULL},
+                  {.min = 0, .max = 1, .incr = 1, .str = "Warning", .values = warning_values}},
+        .esc = {{.min = 0, .max = 30000, .incr = 10, .str = "Cons Max", .values = NULL},
+                {.min = 0, .max = 100, .incr = 1, .str = "Temp Max", .values = NULL},
+                {.min = 0, .max = 20000, .incr = 10, .str = "RPM Min", .values = NULL},
+                {.min = 0, .max = 20000, .incr = 10, .str = "RPM Max", .values = NULL},
+                {.min = 0, .max = 100, .incr = 0.1, .str = "Volt Min", .values = NULL},
+                {.min = 0, .max = 300, .incr = 1, .str = "Curr Max", .values = NULL},
+                {.min = 0, .max = 1, .incr = 1, .str = "Warning", .values = warning_values},
+                {.min = 0, .max = 1, .incr = 1, .str = "Warning Cons", .values = warning_values}},
+        .general = {{.min = 0, .max = 100, .incr = 0.1, .str = "Volt Min", .values = NULL},
+                    {.min = 0, .max = 30000, .incr = 10, .str = "Cons Max", .values = NULL},
+                    {.min = 0, .max = 100, .incr = 1, .str = "Temp Max", .values = NULL},
+                    {.min = 0, .max = 5000, .incr = 1, .str = "Alt Min", .values = NULL},
+                    {.min = 0, .max = 5000, .incr = 1, .str = "Alt Max", .values = NULL},
+                    {.min = 0, .max = 300, .incr = 0.1, .str = "Curr Max", .values = NULL},
+                    {.min = 0, .max = 1, .incr = 1, .str = "Warning", .values = warning_values},
+                    {.min = 0, .max = 1, .incr = 1, .str = "Warning Cons", .values = warning_values}}};
 
     triggers_value_t triggers_value;
-    alarms_read(&triggers_value);
+    alarms_read(&triggers_value, &pages);
     triggers_t hott_alarms = {.triggers = &triggers_value, .pages = &pages};
     set_config(&sensors);
     context.led_cycle_duration = 6;
@@ -714,8 +717,8 @@ static void format_text_packet(triggers_t *alarms, hott_sensors_t *sensors, uint
     if (key == HOTT_KEY_LEFT) {
         if (is_selected) {
             module_alarms_triggers[item] -= 10 * module_alarms_pages[item].incr;
-            if (module_alarms_triggers[item] < -module_alarms_pages[item].incr)
-                module_alarms_triggers[item] = -module_alarms_pages[item].incr;
+            if (module_alarms_triggers[item] < module_alarms_pages[item].min - module_alarms_pages[item].incr)
+                module_alarms_triggers[item] = module_alarms_pages[item].min - module_alarms_pages[item].incr;
             if (module_alarms_pages[item].values && module_alarms_triggers[item] < 0) module_alarms_triggers[item] = 0;
         } else {
             packet.esc = 0x01;  // exit
@@ -747,8 +750,8 @@ static void format_text_packet(triggers_t *alarms, hott_sensors_t *sensors, uint
             }
         } else {
             module_alarms_triggers[item] -= module_alarms_pages[item].incr;
-            if (module_alarms_triggers[item] < -module_alarms_pages[item].incr)
-                module_alarms_triggers[item] = -module_alarms_pages[item].incr;
+            if (module_alarms_triggers[item] < module_alarms_pages[item].min - module_alarms_pages[item].incr)
+                module_alarms_triggers[item] = module_alarms_pages[item].min - module_alarms_pages[item].incr;
             if (module_alarms_pages[item].values && module_alarms_triggers[item] < 0) module_alarms_triggers[item] = 0;
         }
     } else if (key == HOTT_KEY_SET) {
@@ -771,12 +774,14 @@ static void format_text_packet(triggers_t *alarms, hott_sensors_t *sensors, uint
     // if (size > HOTT_MENU_ROWS) size = HOTT_MENU_ROWS;
     for (int i = 0; i < visible; i++) {
         uint idx = first_item + i;
-        if (module_alarms_triggers[idx] < -module_alarms_pages[idx].incr)
-            module_alarms_triggers[idx] = -module_alarms_pages[idx].incr;
+        if (module_alarms_triggers[idx] < module_alarms_pages[idx].min - module_alarms_pages[idx].incr)
+            module_alarms_triggers[idx] = module_alarms_pages[idx].min - module_alarms_pages[idx].incr;
         if (module_alarms_triggers[idx] > module_alarms_pages[idx].max)
             module_alarms_triggers[idx] = module_alarms_pages[idx].max;
-        if (isinf(module_alarms_triggers[idx])) module_alarms_triggers[idx] = -module_alarms_pages[idx].incr;
-        if (isnan(module_alarms_triggers[idx])) module_alarms_triggers[idx] = -module_alarms_pages[idx].incr;
+        if (isinf(module_alarms_triggers[idx]))
+            module_alarms_triggers[idx] = module_alarms_pages[idx].min - module_alarms_pages[idx].incr;
+        if (isnan(module_alarms_triggers[idx]))
+            module_alarms_triggers[idx] = module_alarms_pages[idx].min - module_alarms_pages[idx].incr;
         if (module_alarms_pages[idx].values && module_alarms_triggers[idx] < 0) module_alarms_triggers[idx] = 0;
 
         if (module_alarms_pages[idx].values) {
@@ -1295,13 +1300,32 @@ static void send_packet(uint8_t *buffer, uint len) {
     }
 }
 
-static void alarms_read(triggers_value_t *triggers_value) {
-    memcpy(triggers_value->gps, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET), sizeof(triggers_value->gps));
-    memcpy(triggers_value->vario, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 256u),
-           sizeof(triggers_value->vario));
-    memcpy(triggers_value->esc, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 512u), sizeof(triggers_value->esc));
-    memcpy(triggers_value->general, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 768u),
-           sizeof(triggers_value->general));
+static void alarms_read(triggers_value_t *triggers_value, triggers_menu_t *pages) {
+    uint32_t magic = *(const uint32_t *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET);
+
+    if (magic == HOTT_ALARMS_MAGIC) {
+        memcpy(triggers_value->gps, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 256u),
+               sizeof(triggers_value->gps));
+        memcpy(triggers_value->vario, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 512u),
+               sizeof(triggers_value->vario));
+        memcpy(triggers_value->esc, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 768u),
+               sizeof(triggers_value->esc));
+        memcpy(triggers_value->general, (void *)(XIP_BASE + ALARMS_FLASH_TARGET_OFFSET + 1024u),
+               sizeof(triggers_value->general));
+    } else {
+        for (uint i = 0; i < TRIGGERS_GPS; i++)
+            triggers_value->gps[i] = pages->gps[i].values ? 0 : pages->gps[i].min - pages->gps[i].incr;
+
+        for (uint i = 0; i < TRIGGERS_VARIO; i++)
+            triggers_value->vario[i] = pages->vario[i].values ? 0 : pages->vario[i].min - pages->vario[i].incr;
+
+        for (uint i = 0; i < TRIGGERS_ESC; i++)
+            triggers_value->esc[i] = pages->esc[i].values ? 0 : pages->esc[i].min - pages->esc[i].incr;
+
+        for (uint i = 0; i < TRIGGERS_GENERAL; i++)
+            triggers_value->general[i] = pages->general[i].values ? 0 : pages->general[i].min - pages->general[i].incr;
+        alarms_save(triggers_value);
+    }
 }
 
 static void alarms_save(triggers_value_t *triggers_value) {
@@ -1311,17 +1335,25 @@ static void alarms_save(triggers_value_t *triggers_value) {
 
     uint8_t flash[FLASH_PAGE_SIZE];
     memset(flash, 0xFF, sizeof(flash));
-    memcpy(flash, triggers_value->gps, sizeof(triggers_value->gps));
+    uint32_t magic = HOTT_ALARMS_MAGIC;
+    memcpy(flash, &magic, sizeof(magic));
     flash_range_program(ALARMS_FLASH_TARGET_OFFSET, flash, FLASH_PAGE_SIZE);
+
+    memset(flash, 0xFF, sizeof(flash));
+    memcpy(flash, triggers_value->gps, sizeof(triggers_value->gps));
+    flash_range_program(ALARMS_FLASH_TARGET_OFFSET + 256u, flash, FLASH_PAGE_SIZE);
+
     memset(flash, 0xFF, sizeof(flash));
     memcpy(flash, triggers_value->vario, sizeof(triggers_value->vario));
-    flash_range_program(ALARMS_FLASH_TARGET_OFFSET + 256u, flash, FLASH_PAGE_SIZE);
+    flash_range_program(ALARMS_FLASH_TARGET_OFFSET + 512u, flash, FLASH_PAGE_SIZE);
+
     memset(flash, 0xFF, sizeof(flash));
     memcpy(flash, triggers_value->esc, sizeof(triggers_value->esc));
-    flash_range_program(ALARMS_FLASH_TARGET_OFFSET + 512u, flash, FLASH_PAGE_SIZE);
+    flash_range_program(ALARMS_FLASH_TARGET_OFFSET + 768u, flash, FLASH_PAGE_SIZE);
+
     memset(flash, 0xFF, sizeof(flash));
     memcpy(flash, triggers_value->general, sizeof(triggers_value->general));
-    flash_range_program(ALARMS_FLASH_TARGET_OFFSET + 768u, flash, FLASH_PAGE_SIZE);
+    flash_range_program(ALARMS_FLASH_TARGET_OFFSET + 1024u, flash, FLASH_PAGE_SIZE);
 
     restore_interrupts(ints);
 
