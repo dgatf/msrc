@@ -43,8 +43,10 @@ void ina3221_task(void *parameters) {
     for (uint8_t i = 0; i < parameter.cell_count; i++) {
         *parameter.cell[i] = 0;
     }
-    *parameter.current = 0;
-    *parameter.consumption = 0;
+    if (parameter.measure_current) {
+        *parameter.current = 0;
+        *parameter.consumption = 0;
+    }
 
     vTaskDelay(500 / portTICK_PERIOD_MS);
 
@@ -56,7 +58,7 @@ void ina3221_task(void *parameters) {
         for (uint8_t i = 0; i < parameter.cell_count; i++) {
             debug(" Cell %u: %.2fV", i + 1, *parameter.cell[i]);
         }
-        if (parameter.current) debug(" Current: %.2fA", *parameter.current);
+        if (parameter.measure_current) debug(" Current: %.2fA " "Consumption: %.2fAh", *parameter.current, *parameter.consumption);
         vTaskDelay(SENSOR_INTERVAL_MS / portTICK_PERIOD_MS);
     }
 }
