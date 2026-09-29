@@ -140,7 +140,7 @@ static void read(ina3221_parameters_t *parameter) {
         // bit 3 = 40 uV, therefore raw LSB = 5 uV.
         float shunt_voltage = raw * 0.000005f;
 
-        *parameter->current = shunt_voltage / (parameter->shunt_resistor / 1000.0f);
+        *parameter->current = - shunt_voltage / (parameter->shunt_resistor / 1000.0f);
         *parameter->consumption += get_consumption(*parameter->current, 0, &timestamp);
     }
 }
