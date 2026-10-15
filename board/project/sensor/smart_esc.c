@@ -127,7 +127,7 @@ typedef struct srxl2_control_packet_t {
 #define SRXL2_CONTROL_LEN_CHANNEL (5 + sizeof(srxl2_channel_data_t) + 2)  // header + channel data + crc
 
 static volatile uint8_t esc_id = 0, esc_priority = 10;
-static volatile uint16_t throttle = 0, reverse = 0;
+static volatile uint16_t throttle = 10912, reverse = 10912;
 static volatile bool packet_pending = false;
 
 static void process(smart_esc_parameters_t *parameter);
@@ -223,7 +223,7 @@ static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter) {
         *parameter->rpm = swap_16(esc.rpm) * 10 * parameter->rpm_multiplier;
         *parameter->voltage = swap_16(esc.volts_input) / 100.0;
         *parameter->current = swap_16(esc.current_motor) / 100.0;
-        *parameter->voltage_bec = esc.voltage_bec == 0xFF ? 0 : esc.voltage_bec / 2.0;
+        *parameter->voltage_bec = esc.voltage_bec == 0xFF ? 0 : esc.voltage_bec / 20.0;
         *parameter->current_bec = esc.current_bec == 0xFF ? 0 : esc.current_bec / 100.0;
         *parameter->temperature_fet = esc.temp_fet == 0xFFFF ? 0 : (swap_16(esc.temp_fet) / 10.0);
         *parameter->temperature_bec = esc.temp_bec == 0xFFFF ? 0 : swap_16(esc.temp_bec) / 10.0;
@@ -336,59 +336,52 @@ static void send_packet(void) {
         cont++;
         static uint32_t last_time = 0;
         uint32_t now = time_us_32();
-        debug("\nSmart ESC (%u) Thr: %u Rev: %u (interval us %i)", uxTaskGetStackHighWaterMark(NULL), throttle, reverse, now - last_time);
+        debug("\nSmart ESC (%u) Thr: %u Rev: %u (interval us %i)", uxTaskGetStackHighWaterMark(NULL), throttle, reverse,
+              now - last_time);
         debug_buffer((uint8_t *)&packet, sizeof(packet), " 0x%X");
-        last_time = now;    
+        last_time = now;
     }
 }
 
 static void capture_pwm_throttle_handler(uint counter, edge_type_t edge) {
     static uint counter_edge_rise = 0;
     static alarm_id_t timeout_throttle_alarm_id = 0;
-    if (timeout_throttle_alarm_id) cancel_alarm(timeout_throttle_alarm_id);
     if (edge == EDGE_RISE) {
         counter_edge_rise = counter;
     } else if (edge == EDGE_FALL && counter_edge_rise) {
         uint pulse = (float)(counter - counter_edge_rise) / clock_get_hz(clk_sys) * COUNTER_CYCLES * 1000000;
-        int delta = pulse - 1000;
-        if (delta < 0) delta = 0;
-        if (delta > 1000) delta = 1000;
-        throttle = delta / 1000.0F * 65532;  // 0us->0% 1000us->100%
-
-        static uint32_t last_time = 0;
-        uint32_t now = time_us_32();
-        debug("\nSmart Esc. Thr (%.0f%%) %u us %u interval us %i", throttle / 65532.0F * 100, throttle, pulse, now - last_time);
-        last_time = now;
+        if (pulse < 750 || pulse > 2250) return;
+        throttle = (pulse - 750) / 1500.0F * 65532;
+        if (timeout_throttle_alarm_id) cancel_alarm(timeout_throttle_alarm_id);
+        timeout_throttle_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_throttle_callback, NULL, true);
+        debug("\nSmart Esc. Thr %u, %.0f%% (Pulse us %i)", throttle, throttle / 65532.0F * 100, pulse);
     }
-    timeout_throttle_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_throttle_callback, NULL, true);
 }
 
 static void capture_pwm_reverse_handler(uint counter, edge_type_t edge) {
     static uint counter_edge_rise = 0;
     static alarm_id_t timeout_reverse_alarm_id = 0;
-    if (timeout_reverse_alarm_id) cancel_alarm(timeout_reverse_alarm_id);
     if (edge == EDGE_RISE) {
         counter_edge_rise = counter;
     } else if (edge == EDGE_FALL && counter_edge_rise) {
         uint pulse = (float)(counter - counter_edge_rise) / clock_get_hz(clk_sys) * COUNTER_CYCLES * 1000000;
-        int delta = pulse - 1000;
-        if (delta < 0) delta = 0;
-        if (delta > 1000) delta = 1000;
-        reverse = delta / 1000.0F * 65532;  // 0us->0% 1000us->100%
-        // debug("\nSmart Esc. Rev (%.0f%%) %u us %u", reverse / 65532.0F * 100, reverse, pulse);
+        if (pulse < 750 || pulse > 2250) return;
+        reverse = (pulse - 750) / 1500.0F * 65532;
+        if (timeout_reverse_alarm_id) cancel_alarm(timeout_reverse_alarm_id);
+        timeout_reverse_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_reverse_callback, NULL, true);
+        // debug("\nSmart Esc. Rev %u, (%.0f%%) (Pulse us %i)", reverse, reverse / 65532.0F * 100, pulse);
     }
-    timeout_reverse_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_reverse_callback, NULL, true);
 }
 
 static int64_t timeout_throttle_callback(alarm_id_t id, void *user_data) {
-    throttle = 0;
-    debug("\nSmart Esc. Signal timeout. Throttle 0");
+    throttle = 10912;
+    debug("\nSmart Esc. Signal timeout. Throttle 10912");
     return 0;
 }
 
 static int64_t timeout_reverse_callback(alarm_id_t id, void *user_data) {
-    reverse = 0;
-    debug("\nSmart Esc. Signal timeout. Reverse 0");
+    reverse = 10912;
+    debug("\nSmart Esc. Signal timeout. Reverse 10912");
     return 0;
 }
 
