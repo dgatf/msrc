@@ -228,7 +228,13 @@ void gps_task(void *parameters) {
 
     while (1) {
         ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
-        process(&parameter);
+        // process() handles one UBX message per call, but a burst holds several (e.g. NAV-PVT followed by NAV-DOP).
+        // Bytes left over when the next burst starts are discarded by uart_pio, so read until nothing more is consumed.
+        uint8_t queued;
+        do {
+            queued = uart_pio_available();
+            process(&parameter);
+        } while (uart_pio_available() > 0 && uart_pio_available() < queued);
     }
 }
 
