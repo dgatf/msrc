@@ -147,6 +147,7 @@ static void process(gps_parameters_t *parameter);
 static void parser(uint8_t nmea_cmd, uint8_t cmd_field, uint8_t *buffer, gps_parameters_t *parameter);
 static void send_ublox_message(ublox_msg_t *msg);
 static void set_baudrate(uint baudrate);
+static bool probe_ublox(void);
 static void set_nmea_config(uint rate, uint dynmodel);
 static void set_ublox_config(uint rate, uint dynmodel);
 static void nmea_msg(char *cmd, bool enable);
@@ -215,9 +216,20 @@ void gps_task(void *parameters) {
     /* Change GPS config. For ublox compatible devices */
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
-    set_baudrate(parameter.baudrate);
-    uart_pio_begin(parameter.baudrate, UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1, 8, 1,
-                   UART_PARITY_NONE);
+    bool module_found = false;
+    if (parameter.protocol == UBLOX) {
+        // The baud rate scan sends text at every baud rate. On an M10 this was followed by the module ignoring the
+        // configuration. If the module already answers at the configured baud rate, skip the scan.
+        uart_pio_begin(parameter.baudrate, UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1, 8, 1,
+                       UART_PARITY_NONE);
+        module_found = probe_ublox();
+        if (!module_found) uart_pio_remove();
+    }
+    if (!module_found) {
+        set_baudrate(parameter.baudrate);
+        uart_pio_begin(parameter.baudrate, UART_TX_PIO_GPIO, UART_RX_PIO_GPIO, TIMEOUT_US, pio0, PIO0_IRQ_1, 8, 1,
+                       UART_PARITY_NONE);
+    }
     if (parameter.protocol == UBLOX)
         set_ublox_config(parameter.rate, parameter.dynmodel);
     else
@@ -538,6 +550,36 @@ static void set_baudrate(uint baudrate) {
         vTaskDelay(200 / portTICK_PERIOD_MS);
         uart_pio_remove();
     }
+}
+
+static bool probe_ublox(void) {
+    // Poll UBX-MON-VER (0x0A 0x04) and wait for a UBX frame with class 0x0A, id 0x04 in the answer
+    ublox_msg_t ublox_msg;
+    ublox_msg.header = (ublox_header_t){.header = 0x62B5, .class = 0x0A, .id = 0x04, .size = 0};
+    ublox_msg.payload = NULL;
+    for (uint attempt = 0; attempt < 3; attempt++) {
+        while (uart_pio_available()) uart_pio_read();
+        send_ublox_message(&ublox_msg);
+        uint8_t state = 0;
+        for (uint i = 0; i < 150; i++) {
+            vTaskDelay(2 / portTICK_PERIOD_MS);
+            while (uart_pio_available()) {
+                uint8_t c = uart_pio_read();
+                if (state == 3 && c == 0x04) {
+                    vTaskDelay(100 / portTICK_PERIOD_MS);  // let the rest of the answer arrive
+                    while (uart_pio_available()) uart_pio_read();
+                    return true;
+                }
+                if (state == 2 && c == 0x0A)
+                    state = 3;
+                else if (state == 1 && c == 0x62)
+                    state = 2;
+                else
+                    state = (c == 0xB5) ? 1 : 0;
+            }
+        }
+    }
+    return false;
 }
 
 static void nmea_msg(char *cmd, bool enable) {
