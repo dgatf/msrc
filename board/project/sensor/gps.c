@@ -153,6 +153,7 @@ static void nmea_msg(char *cmd, bool enable);
 static void ubx_cfg_msg(uint8_t class, uint8_t id, bool enable);
 static void ubx_cfg_rate(uint16_t rate);
 static void ubx_cfg_dynmodel(uint8_t dynmodel);
+static void ubx_cfg_valset_dynmodel(uint8_t dynmodel);
 static void ubx_cfg_cfg(void);
 static bool set_home_altitude(uint fix_type);
 static bool check_ublox_crc(ublox_msg_t *msg);
@@ -507,6 +508,7 @@ static void set_ublox_config(uint rate, uint dynmodel) {
     ubx_cfg_msg(0x01, 0x07, true);  // Enable message UBX-NAV-PVT
     ubx_cfg_msg(0x01, 0x04, true);  // Enable message UBX-NAV-DOP
     ubx_cfg_dynmodel(dynmodel);     // Set dynmodel UBX-CFG-NAV5
+    ubx_cfg_valset_dynmodel(dynmodel);  // Set dynmodel UBX-CFG-VALSET (M9/M10)
     ubx_cfg_rate(rate);             // Set messages rate (UBX-CFG-RATE (0x06 0x08))
     ubx_cfg_cfg();                  // Save changes
 }
@@ -522,6 +524,7 @@ static void set_nmea_config(uint rate, uint dynmodel) {
     ubx_cfg_msg(0x01, 0x07, false);  // Disable message UBX-NAV-PVT
     ubx_cfg_msg(0x01, 0x04, false);  // Disable message UBX-NAV-DOP
     ubx_cfg_dynmodel(dynmodel);      // Set dynmodel UBX-CFG-NAV5
+    ubx_cfg_valset_dynmodel(dynmodel);  // Set dynmodel UBX-CFG-VALSET (M9/M10)
     ubx_cfg_rate(rate);              // Set messages rate (UBX-CFG-RATE (0x06 0x08))
     ubx_cfg_cfg();                   // Save changes
 }
@@ -575,6 +578,22 @@ static void ubx_cfg_dynmodel(uint8_t value) {
     ublox_msg.header = (ublox_header_t){.header = 0x62B5, .class = 0x06, .id = 0x24, .size = sizeof(ublox_cfg_nav5_t)};
     ublox_cfg_nav5_t payload = {.mask = 0x0001, .dynModel = value};
     ublox_msg.payload = (uint8_t *)&payload;
+    send_ublox_message(&ublox_msg);
+}
+
+static void ubx_cfg_valset_dynmodel(uint8_t value) {
+    // UBX-CFG-VALSET is the configuration interface of u-blox generation 9+ modules (M9/M10); UBX-CFG-NAV5 is the
+    // legacy one. Set CFG-NAVSPG-DYNMODEL (0x20110021) in RAM, BBR and Flash. Older modules answer with a NAK.
+    uint8_t payload[] = {
+        0x00,                    // version
+        0x07,                    // layers: RAM | BBR | Flash
+        0x00, 0x00,              // reserved
+        0x21, 0x00, 0x11, 0x20,  // key CFG-NAVSPG-DYNMODEL, little endian
+        value                    // value (U1)
+    };
+    ublox_msg_t ublox_msg;
+    ublox_msg.header = (ublox_header_t){.header = 0x62B5, .class = 0x06, .id = 0x8A, .size = sizeof(payload)};
+    ublox_msg.payload = payload;
     send_ublox_message(&ublox_msg);
 }
 
