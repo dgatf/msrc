@@ -544,7 +544,7 @@ static void set_baudrate(uint baudrate) {
                        UART_PARITY_NONE);
         vTaskDelay(10 / portTICK_PERIOD_MS);
         uart_pio_write_bytes(msg, strlen(msg));
-        vTaskDelay(200 / portTICK_PERIOD_MS);
+        vTaskDelay(1200 / portTICK_PERIOD_MS);
         uart_pio_remove();
     }
 }
