@@ -133,6 +133,7 @@ static volatile bool packet_pending = false;
 static void process(smart_esc_parameters_t *parameter);
 static void read_packet(uint8_t *buffer, smart_esc_parameters_t *parameter);
 static void send_packet(void);
+static uint16_t pwm_to_srxl2(uint pulse);
 static void capture_pwm_throttle_handler(uint counter, edge_type_t edge);
 static void capture_pwm_reverse_handler(uint counter, edge_type_t edge);
 static int64_t timeout_throttle_callback(alarm_id_t id, void *user_data);
@@ -343,6 +344,12 @@ static void send_packet(void) {
     }
 }
 
+static uint16_t pwm_to_srxl2(uint pulse) {
+    int delta = (int)pulse - 1000;
+    float value = 10912 + delta * (32766 - 10912) / 500.0F;
+    return (uint16_t)(value < 0 ? 0 : value > 65535 ? 65535 : value);
+}
+
 static void capture_pwm_throttle_handler(uint counter, edge_type_t edge) {
     static uint counter_edge_rise = 0;
     static alarm_id_t timeout_throttle_alarm_id = 0;
@@ -350,10 +357,8 @@ static void capture_pwm_throttle_handler(uint counter, edge_type_t edge) {
         counter_edge_rise = counter;
     } else if (edge == EDGE_FALL && counter_edge_rise) {
         uint pulse = (float)(counter - counter_edge_rise) / clock_get_hz(clk_sys) * COUNTER_CYCLES * 1000000;
-        if (pulse < 800) pulse = 800;
-        if (pulse > 2200) pulse = 2200;
-        int delta = (int)pulse - 1000;
-        throttle = 10912 + delta * (32766 - 10912) / 500.0F;
+        if (pulse < 700 || pulse > 2300) return;
+        throttle = pwm_to_srxl2(pulse);
         if (timeout_throttle_alarm_id) cancel_alarm(timeout_throttle_alarm_id);
         timeout_throttle_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_throttle_callback, NULL, true);
         debug("\nSmart Esc. Thr %u, %.0f%% (Pulse us %i)", throttle, throttle / 65532.0F * 100, pulse);
@@ -367,10 +372,8 @@ static void capture_pwm_reverse_handler(uint counter, edge_type_t edge) {
         counter_edge_rise = counter;
     } else if (edge == EDGE_FALL && counter_edge_rise) {
         uint pulse = (float)(counter - counter_edge_rise) / clock_get_hz(clk_sys) * COUNTER_CYCLES * 1000000;
-        if (pulse < 800) pulse = 800;
-        if (pulse > 2200) pulse = 2200;
-        int delta = (int)pulse - 1000;
-        reverse = 10912 + delta * (32766 - 10912) / 500.0F;
+        if (pulse < 700 || pulse > 2300) return;
+        reverse = pwm_to_srxl2(pulse);
         if (timeout_reverse_alarm_id) cancel_alarm(timeout_reverse_alarm_id);
         timeout_reverse_alarm_id = add_alarm_in_ms(PWM_TIMEOUT_MS, timeout_reverse_callback, NULL, true);
         // debug("\nSmart Esc. Rev %u, (%.0f%%) (Pulse us %i)", reverse, reverse / 65532.0F * 100, pulse);
